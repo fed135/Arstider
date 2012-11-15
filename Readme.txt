@@ -1,9 +1,10 @@
 
-	*** *** *** *** *** *** *** *** *** *** ***
-	*** **				     ** ***
-	*** *		*Artstider* 	      * ***
-	*** **				     ** ***
-	*** *** *** *** *** *** *** *** *** *** ***
+		*** *** *** *** *** *** *** *** *** *** ***
+		*** **				     ** ***
+		*** *		*Artstider* 	      * ***
+		*** **				     ** ***
+		*** *** *** *** *** *** *** *** *** *** ***
+
 
 
 
@@ -11,7 +12,7 @@
 
 
 @Author: Frederic Charette <fredericcharette@gmail.com>
-@Version: 0.1.2
+@Version: 0.1.3
 @Copyright: Feb 9 2012 - GNU License
 
 
@@ -100,9 +101,7 @@ The Drawing Package, known as [Graphics] is what actually allows you to turn a D
 #####
 
 //Main
-- 0.1.3		- Fix Scoping issues with Inherit (the only potent thing in this branch)
-		- Redesign ALL the system (It actually makes no sense !)
-		- Make the whole Architecture more modular + RequireJS compliant.
+- 0.1.4		- Fix Scoping issues with Inherit (the only potent thing in this branch)
 
 
 //Graphics

@@ -23,197 +23,176 @@
 
 //TODO -> Redo all
 
-var Ar = {};
-Ar.classmap = [];
-Ar.extmap = [];
-if (console === undefined) {
-	console = {error: function (m) { return m; }};
-}
-Ar.proto = ((Ar.__proto__ === undefined)?"prototype":"__proto__");
-
-function checkclassmap(c, add) {
-	var i, l = Ar.classmap.length;
-	for (i = 0; i < l; i++) {
-		if (Ar.classmap[i] === c) {
-			return false;
-		}
-	}
-	if(add === true)
-	{
-		Ar.classmap.push(c);
-	}
-	return true;
-}
-
-function checkextmap(c) {
-	var i, l = Ar.extmap.length;
-	for (i = 0; i < l; i++) {
-		if (Ar.extmap[i] === c) {
-			return false;
-		}
-	}
-	return true;
-}
-
-function Class(path, body) {
-	var obj, data, i, crawler, t;
+;(function(window){
 	
-	this.type = "Class";
+	//Private definitions
 	
-	if(!(path instanceof String) && !(typeof path === "string")) {
-		//unregistered
-		body = path;
-	}
-	else
-	{
-		data = path.split(".");
-		
-		if(data.length <=1) {
-			console.error("Invalid path parameter at "+path+" expecting \"Package.Class\" format.");
-			return false;
-		}
-		
-		crawler = window;
-		t=data.concat();
-		while(t.length >1) {
-			if(crawler[t[0]] !== undefined) {
-				crawler = t[0];
-				t.splice(0,1);
-			}
-			else {
-				console.error("Invalid path : "+data);
+	var 
+		Ar = {},			//Base Object
+		classMap = [],		//Map of classes //Hidden
+		rOnceNS = [],		//List of require once classnames
+		debug = true,		//Shows logs, warns and errors from Arstider. (TODO: What about error handling ? Return an exeption ?)
+		proto,				//Gets appropriate name of the prototype parameter, depending on the browser.
+		console				//overrides the window console within this scope
+	;
+	
+	//Assign Prototype value
+	proto = ((Ar.__proto__ === undefined)?"prototype":"__proto__");
+	
+	//Looks through the classmap (see if we didnt already call a requireOnce class)
+	function checkclassmap(c, add) {
+		var i, l = classMap.length;
+		for (i = 0; i < l; i++) {
+			if (classMap[i] === c) {
 				return false;
 			}
 		}
-		t=crawler=null;
-		
-		//Sets registered Class-specific values
-		this.name = data[data.length-1];
-		this.parent = data[data.length-2];
-	}
-	
-	if(checkclassmap(this.name, (body.requireOnce!==undefined)) === false) {
-		console.error("Class "+this.name+" has already been defined and specified as requiredOnce.");
-		return false;
-	}
-	
-	for (obj in body) {
-		if (body.hasOwnProperty(obj)) {
-			this[obj] = body[obj];
+		if(add === true)
+		{
+			classMap.push(c);
 		}
+		return true;
 	}
 	
-	//Class-specific functions
+	//Take care of console output
+	(function(){
+		//Earlier versions of IE don't have a console object defined unless the console window is explicitly opened.
+		var dummy = function (m) { return m; };
+		if (window.console === undefined) {
+			console = {error: dummy, warn:dummy, log:dummy};
+		}
+		else {
+			if(debug === true) {
+				console = window.console;
+			}
+			else{
+				console = {error: dummy, warn:dummy, log:dummy};
+			}
+		}
+	})();
 	
-	//extend by reference
-	this.inherit = function() {
-		var obj,i,getter,setter ;
+	//Class definition
+	function Class(stamp, body) {
+		var 
+			obj, 
+			id, 
+			b,
+			i
+		;
 		
-		for(i = 0; i<arguments.length; i++) {
-			for (obj in arguments[i]) {
-				if (arguments[i].hasOwnProperty(obj)) {
-					if(arguments[i][obj] instanceof Function) {
-						if(this[obj] === undefined) {
-							getter = arguments[i].__lookupGetter__(arguments[i][obj]);
-							setter = arguments[i].__lookupSetter__(arguments[i][obj]);
-							
-							if ( getter || setter ) {
-								if ( getter ) {
-									this.__defineGetter__(arguments[i][obj], getter);
+		id = stamp;
+		b = body.body || {};
+		
+		for (obj in b) {
+			if (b.hasOwnProperty(obj)) {
+				if(b[obj] instanceof Function) {
+					this[proto][obj] = b[obj];
+				}
+				else {
+					this.__defineGetter__(obj, b[obj]);
+					this.__defineSetter__(obj, b[obj]);
+				}
+			}
+		}
+		
+		this.parent = body.parent || window;
+		
+		//extend by reference
+		/*this.inherit = function() {
+			var obj,i,getter,setter ;
+			
+			for(i = 0; i<arguments.length; i++) {
+				for (obj in arguments[i]) {
+					if (arguments[i].hasOwnProperty(obj)) {
+						if(arguments[i][obj] instanceof Function) {
+							if(this[obj] === undefined) {
+								getter = arguments[i].__lookupGetter__(arguments[i][obj]);
+								setter = arguments[i].__lookupSetter__(arguments[i][obj]);
+								
+								if ( getter || setter ) {
+									if ( getter ) {
+										this.__defineGetter__(arguments[i][obj], getter);
+									}
+									if ( setter ) {
+										this.__defineSetter__(arguments[i][obj], setter);
+									}
+								} 
+								else {
+									this[obj] = arguments[i][obj];
 								}
-								if ( setter ) {
-									this.__defineSetter__(arguments[i][obj], setter);
-								}
-							} 
-							else {
-								this[obj] = arguments[i][obj];
 							}
 						}
 					}
 				}
 			}
+		};*/
+		
+		//Defines init
+		if(this.init === undefined) {
+			this.init = function(){ return true;};
 		}
-	};
-
-	//Defines init
-	if(this.init === undefined) {
-		this.init = function(){ return true;};
+		
+		//Defines Test (Batch Unit testing)
+		if(this.test === undefined) {
+			this.test = function(){ return true;};
+		}
+		
+		this.init();
+		return this;
 	}
 	
-	//Defines Test (Batch Unit testing)
-	if(this.test === undefined) {
-		//Typically a batch of Core.UnitTest(target, [type, reg]);
-		this.test = function(){ return true;};
-	}
-	
-	this.init();
-	return this;
-}
-
-var Package = function(n){
-	var p,thisRef = this;
-	
-	this.require = function(path) {
-		var t = document.getElementsByTagName('body')[0], script, sheme, tag;
+	Ar.Class = function(body) {
+		var
+			def = false,	//Holds if we need to define or not
+			cl				//Holds the return value of the class request
+		;
 		
-		if(checkextmap(path) === false)
-		{
-			console.error("File already required "+path);
-			return false;
-		}
+		body = body || {};
 		
-		if(document.getElementById("Ar_imports") === null)
-		{
-			tag = document.createElement('script');
-			tag.id = 'Ar_imports';
-			t.appendChild(tag);
-		}
-		
-		t = document.getElementById("Ar_imports");
-		script = document.createElement('script');
-		script.type= 'text/javascript';
-		
-		sheme = (((document.URL).indexOf("http:") === -1 && (document.URL).indexOf("https:") === -1)?"http:":"");
-		
-		p=path.split(".");
-		
-		if(p[0]==="core") {
-			
-			//This one of my packages. Required from the CDN.
-			script.src= sheme+'//arstider-libs.appspot.com/libs/'+p[1]+"/"+p[2]+".js";
-		}
-		else {
-			if(sheme === "http:")
-			{
-				sheme = (((path).indexOf("http:") === -1 && (path).indexOf("https:") === -1)?"http:":"");
-			}
-			script.src= sheme + path;
-		}
-		
-		t.appendChild(script);
-	};
-	
-	this.type = "Package";
-	this.name = n;
-	
-	//Once every class is ready, we build the hierachy - > bind some events for the extends and inherits
-	/*document.addEventListener("DOMContentLoaded", function() {
-		var c,s;
-		//For every class in this package. //Lighter than putting it in each classes.
-		for(c in thisRef) {
-			if (thisRef.hasOwnProperty(c)) {
-				if(thisRef[c].type === "Class") {
-					thisRef[c].init();
+		if(body.requireOnce === true || body.requireOnce === "true") {
+			if(body.name !== undefined) {
+				if(checkclassmap(this.name, (body.requireOnce!==undefined)) === false) {
+					console.error("Class "+this.name+" has already been defined and specified as requiredOnce.");
+					return false;
+				}
+				else {
+					//Register passed the scan,
+					//Allow AMD definition of Class
+					def = true;
 				}
 			}
+			else {
+				console.error("Cannot reserve namespace without a proper 'name' parameter");
+				return false;
+			}
 		}
-	});*/
-	
-	return p;
-};
+		
+		cl = new Class((Date.now()+""),body);
+		
+		if(cl === false) {
+			console.error("Class creation Failed");
+			return false;
+		}
+		else {
+			if(def === true) {
+				if (typeof define === "function" && define.amd) {
+					define( ("ar."+body.name), function () { return cl; } );
+				}
+			}
+			return cl;
+		}
+	};
 
-Ar.start = function (fct){
-	document.addEventListener("DOMContentLoaded", function() {
-		fct();
-	});
-}
+	Ar.start = function (fct){
+		document.addEventListener("DOMContentLoaded", function() {
+			fct();
+		});
+	};
+	
+	window.Ar = Ar;
+	
+	//Allow AMD definition of Arstider
+	if (typeof define === "function" && define.amd) {
+		define( "arstider", function () { return Ar; } );
+	}
+})(window);

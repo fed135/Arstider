@@ -21,20 +21,22 @@
 *	along with this program. If not, see <http://www.gnu.org/licenses/>. 	
 */
 
-//Declare Arstider Object if not already defined.
-//NOTE:Thus far, we do not need the main package for this package to work properly, so developers can actually just import this only.
-if(window.Ar == undefined) {
-	window.Ar = { };
-}
-//Pick up Animation Frame handler, depending on browser engine.
-(function() {
-  var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
-                              window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
-  window.requestAnimationFrame = requestAnimationFrame;
-})();
+;(function(window){
+	
+	//Declarations
+	
+	
+	//Declare Arstider Object if not already defined.
+	//NOTE:Thus far, we do not need the main package for this package to work properly, so developers can actually just import this only.
+	if(window.Ar == undefined) {
+		window.Ar = { };
+	}
+	//Pick up Animation Frame handler, depending on browser engine.
+	var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame ||
+								window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
 
-//Define Current Package.
-Ar.Graphics = {version:"0.0.1"};
+	//Define Current Package.
+	Ar.Graphics = {version:"0.0.1"};
 
 
 /**
@@ -220,3 +222,4 @@ Ar.Graphics.Canvas = function(/*(Dom Object) element*/elem) {
 //Prototypes
 Object.prototype.drawCanvas = function(){return Ar.Graphics.Canvas(this)};
 
+})(window);
