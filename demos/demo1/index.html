@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Arstider</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+			
+		<link rel="stylesheet" href="http://yandex.st/highlightjs/7.3/styles/default.min.css" />
+		
+		<script type="text/javascript" src="../lib/arstider.js"></script>
+		<script type="text/javascript" src="demo1.js"></script>
+		
+		<style type="text/css">
+			#canvas_zone{
+				background-color:black;
+			}
+			
+			#hiddenCode{
+				display:block;
+				position:relative;
+				left:80px;
+				max-width:650px;
+				overflow-x:scroll;
+				max-height:800px;
+				border:1px solid #AAA;
+				background-color:#FBF9EA;
+				padding:15px;
+				padding-left:25px;
+				margin:10px;
+			}
+			
+		</style>
+	</head>
+	<body>
+		<h1>Arstider</h1>
+		<h2>Basic Features</h2>
+		<p>This is a quick showcase implementation of the Core elements</p>
+		
+		<div class="numberedCodeBlock">
+		<pre id="hiddenCode" style="display:none">
+var Eng = new Ar({debug:true});
+
+var square = new Eng.DisplayObject();
+		</pre>
+		</div>
+		<script type="text/javascript" src="js/libs/highlight/highlight.pack.js"></script>
+		<script type="text/javascript">
+			var tag = document.getElementById("hiddenCode");
+			tag.innerHTML = hljs.highlight("javascript",	tag.innerHTML).value;
+			tag.style.display = "block";
+		</script>
+		
+		<div id="canvas_zone" style="height:500px;width:650px;"></div>
+	</body>
+</html>
