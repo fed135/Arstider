@@ -55,4 +55,17 @@
 		this.debug = props.debug || false;
 		this.exceptions = props.exceptions || false;
 		this.stopOnError = props.stopOnError || false;
+		
+		function loadError(err, data) {
+			if(this.debug && console) {
+				console.error(err);
+				console.error(data);
+			}
+			if(this.exceptions) {
+				throw err;
+			}
+			if(this.stopOnError) {
+				window.requestAnimFrame = null;
+			}
+		}
 	

@@ -1,69 +1,119 @@
-this.DisplayObject = function() {
+this.DisplayObject = function(bag) {
 	//Private
 	var 
-		id = Date.now(),
 		props = {
 			blue:0,
 			red:0,
 			green:0,
-			alpha:100,
-			rotation:0,
-			x:0,
-			y:0,
-			scaleX:1,
-			scaleY:1,
+			alpha:null,
+			rotation:null,
+			x:null,
+			y:null,
+			scaleX:null,
+			scaleY:null,
 			data:null,
-			width:0,
-			height:0,
-			framerate:30
+			width:null,
+			height:null
 		},
-		state = STATE.STOP,
+		state = STATE.LOADING,
 		loaded = false,
 		ctxRef = null
 	;
 	
+	if(bag && (typeof bag === "object" || bag instanceof Object)) {
+		for(var p in bag) {
+			if(p in bag) {
+				if(p in props) {
+					if(p === "data") {
+						loadBitmap(bag[p]);
+					}
+					else {
+						props[p] = bag[p];
+					}
+				}
+			}
+		}
+	}
+	
+	function loadBitmap(data) {
+		var prevState = state;
+		state = STATE.LOADING;
+		props.data = new Image();
+		props.data.onload = function(){state = prevState;}
+		props.data.onerror = loadError;
+		props.data.src = data;
+	}
+	
 	//Public
 	return {
 		//Public proprieties
-		name:name,
-		id:id,
+		id:null,
 		
 		//Constructor
-		constructor:function(ctx) {
-			ctxRef = ctx;
-			ctxRef.drawImg(props.data, props.x, props.y, props.width, props.height);
+		_draw:function(ctx) {
+			ctxRef = ctx || ctxRef;
+			if(ctxRef) {
+				ctxRef.drawImg(props.data, this._x(), this._y(), this._width(), this._height());
+			}
 		},
 		
 		//Getters and setters
+		_alpha:function(val) {
+			if(val !== undefined) {
+				props.alpha = val;
+			}
+			return props.alpha || 100;
+		},
 		_x:function(val) {
 			if(val !== undefined) {
 				props.x = val;
 			}
-			return props.x;
+			return props.x || 0;
 		},
 		_y:function(val) {
 			if(val !== undefined) {
 				props.y = val;
 			}
-			return props.y;
+			return props.y || 0;
 		},
 		_width:function(val) {
 			if(val !== undefined) {
 				props.width = val;
 			}
-			return props.width;
+			return props.width || 0;
 		},
 		_height:function(val) {
 			if(val !== undefined) {
 				props.height = val;
 			}
-			return props.height;
+			return props.height || 0;
+		},
+		_rotation:function(val) {
+			if(val !== undefined) {
+				props.rotation = val;
+			}
+			return props.rotation || 0;
+		},
+		_scaleX:function(val) {
+			if(val !== undefined) {
+				props.scaleX = val;
+			}
+			return props.scaleX || 1;
+		},
+		_scaleY:function(val) {
+			if(val !== undefined) {
+				props.scaleY = val;
+			}
+			return props.scaleY || 1;
 		},
 		_data:function() {
 			if(loaded === false) {
 				return false;
 			}
 			return props.data;
+		},
+		_state:function() {
+			return state;
 		},
 		
 		//Methods
@@ -82,6 +132,7 @@ this.DisplayObject = function() {
 		},
 		//Rotates object a certain angle
 		rotate:function(angle) {
+			this._rotation(this._rotation() += angle);
 			this.clear();
 			ctxRef.rotate(angle);
 			ctxRef.drawImage(props.data, props.x, props.y, props.width, props.height);
