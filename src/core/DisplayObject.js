@@ -16,7 +16,6 @@ this.DisplayObject = function(bag) {
 			height:null
 		},
 		state = STATE.LOADING,
-		loaded = false,
 		ctxRef = null
 	;
 	
@@ -34,6 +33,8 @@ this.DisplayObject = function(bag) {
 			}
 		}
 	}
+	
+	state = STATE.STOP;
 	
 	function loadBitmap(data) {
 		var prevState = state;
@@ -54,6 +55,12 @@ this.DisplayObject = function(bag) {
 			ctxRef = ctx || ctxRef;
 			if(ctxRef) {
 				ctxRef.drawImg(props.data, this._x(), this._y(), this._width(), this._height());
+			}
+		},
+		
+		_update:function() {
+			if(this.parent) {
+				this.parent._update();
 			}
 		},
 		
@@ -107,9 +114,6 @@ this.DisplayObject = function(bag) {
 			return props.scaleY || 1;
 		},
 		_data:function() {
-			if(loaded === false) {
-				return false;
-			}
 			return props.data;
 		},
 		_state:function() {
@@ -120,36 +124,36 @@ this.DisplayObject = function(bag) {
 		
 		//Move a define ammount of pixels in a direction
 		move:function(coords) {
-			props.x += coords[0];
-			props.y += coords[1];
-			this.parent.parent._update();
+			this._x(this._x() += coords[0]);
+			this._y(this._y() += coords[1]);
+			this._update();
 		},
 		//Move to a defined area
 		moveTo:function(coord) {
-			props.x = coord[0];
-			props.y = coord[1]
-			this.parent.parent._update();
+			this._x(coord[0]);
+			this._y(coord[1]);
+			this._update();
 		},
 		//Rotates object a certain angle
 		rotate:function(angle) {
 			this._rotation(this._rotation() += angle);
 			this.clear();
 			ctxRef.rotate(angle);
-			ctxRef.drawImage(props.data, props.x, props.y, props.width, props.height);
+			this._draw();
 			ctxRef.rotate(-angle);
-			this.parent.parent._update();
+			this._update();
 		},
 		//Scales on the x, y or both axis
 		scale:function(val) {
 			this.clear();
-			ctxRef.drawImage(props.data, props.x, props.y, props.width, props.height);
+			this._draw();
 		},
 		//Skew on the x, y or both axis
 		skew:function(angle) {
 			this.clear();
 			ctxRef.setTransform(1, Math.tan(angle[0]), 0, 1, 0, 0);
 			ctxRef.setTransform(1, Math.tan(angle[1]), 1, 0, 0, 0);
-			ctxRef.drawImage(props.data, props.x, props.y, props.width, props.height);
+			this._draw();
 			ctxRef.setTransform(1, Math.tan(-angle[0]), 0, 1, 0, 0);
 			ctxRef.setTransform(1, Math.tan(-angle[1]), 1, 0, 0, 0);
 		},
@@ -159,7 +163,7 @@ this.DisplayObject = function(bag) {
 		},
 		//Removes the object data, without deleting the actual Display Object
 		clear:function() {
-			ctxRef.clearRect(props.x, props.y, props.width, props.height);
+			ctxRef.clearRect(this._x(), this._y(), this._width(), this._height());
 		}
 	}
 }

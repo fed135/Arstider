@@ -5,10 +5,6 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 			
 		<link rel="stylesheet" href="http://yandex.st/highlightjs/7.3/styles/default.min.css" />
-		
-		<script type="text/javascript" src="../lib/arstider.js"></script>
-		<script type="text/javascript" src="demo1.js"></script>
-		
 		<style type="text/css">
 			#canvas_zone{
 				background-color:black;
@@ -35,6 +31,8 @@
 		<h2>Basic Features</h2>
 		<p>This is a quick showcase implementation of the Core elements</p>
 		
+		<div id="canvas_zone"></div>
+		
 		<div class="numberedCodeBlock">
 		<pre id="hiddenCode" style="display:none">
 var Eng = new Ar({debug:true});
@@ -48,7 +46,7 @@ var square = new Eng.DisplayObject();
 			tag.innerHTML = hljs.highlight("javascript",	tag.innerHTML).value;
 			tag.style.display = "block";
 		</script>
-		
-		<div id="canvas_zone" style="height:500px;width:650px;"></div>
+		<script type="text/javascript" src="../lib/arstider.js"></script>
+		<script type="text/javascript" src="demo1.js"></script>
 	</body>
 </html>
