@@ -1,94 +1,118 @@
-this.Dockable = function(){
+this.Dockable = function(p){
+	
+	var
+		_bound = false,
+		_self = p
+	;
+	
+	return {
+		_packageName : "Dockable",
+	
+		currentXDock : null,
+		currentYDock : null,
 
-	this._bound = false;
-	this.currentXDock = null;
-	this.currentYDock = null;
-
-	this.relativeDock = function(x, y, static){
+		relativeDock : function(x, y, static){
+			
+			if(!_self.parent) {
+				systemError("Unable to dock an element with no parent.", _self);
+				return false;
+			}
+		
 			var 
-				wWidth = window.stage.width || window.innerWidth,
-				wHeight = window.stage.height || window.innerHeight
+				wWidth = _self.parent._width(),
+				wHeight = _self.parent._height()
 			;
 			
 			if(x == x){
 				if(x === "left"){
-					this.x = 0;
+					_self._x(0);
 				}
 				else if(x === "mid"){
-					this.x = (wWidth * 0.5)-(this.width *  0.5);
+					_self._x((wWidth * 0.5)-(_self._width() *  0.5));
 				}
 				else if(x === "right"){
-					this.x = wWidth - this.width;
+					_self._x(wWidth - _self._width());
 				}
 				else{
-					this.x = (wWidth*0.01)*x;
+					_self._x((wWidth*0.01)*x);
 				}
 				this.currentXDock = "r"+x;
 			}
 			
 			if(y == y){
 				if(y === "top"){
-					this.y = 0;
+					_self._y(0);
 				}
 				if(y === "mid"){
-					this.y = (wHeight * 0.5) - (this.height * 0.5);
+					_self._y((wHeight * 0.5) - (_self._height() * 0.5));
 				}
 				if(y === "bottom"){
-					this.y = wHeight - this.height;
+					_self._y(wHeight - _self._height());
 				}
 				else{
-					this.y = (wHeight*0.01)*y;
+					_self._y((wHeight*0.01)*y);
 				}
 				this.currentYDock = "r"+y;
 			}
 			
 			if(!static){
-				if(!this._bound){
-					this._bound = true;
+				if(!_bound){
+					_bound = true;
 					window.addEventListener("resize", this.doDock);
 				}
 			}
-	}
+		},
 	
-	this.absoluteDock = function(x, y, static){
+		absoluteDock : function(x, y, static){
+			
+			if(!_self.parent) {
+				systemError("Unable to dock an element with no parent.", _self);
+				return false;
+			}
+			
 			if(x == x){
 				if(x < 0){
-					x = (window.stage.width || window.innerWidth) - x;
+					_self._x(_self.parent._width() - x);
 				}
-				this.x = x;
+				else {
+					_self._x(x);
+				}
 				this.currentXDock = "a" + x;
 			}
 			if(y == y){
 				if(y < 0){
-					y = (window.stage.height || window.innerHeight) - y;
+					_self._y(_self.parent._height() - y);
 				}
-				this.y = y;
+				else {
+					_self._y(y);
+				}
 				this.currentYDock = "a" + y;
 			}
 			
 			if(!static){
-				if(!this._bound){
-					this._bound = true;
+				if(!_bound){
+					_bound = true;
 					window.addEventListener("resize", this.doDock);
 				}
 			}
-	}
+		},
 	
-	doDock = function(){
-		if(this.currentXDock == this.currentXDock){
-			if(this.currentXDock[0] === "r"){
-				this.relativeDock(this.currentXDock.substring(1), null);
+		doDock : function(){
+			if(this.currentXDock == this.currentXDock){
+				if(this.currentXDock[0] === "r"){
+					this.relativeDock(this.currentXDock.substring(1), null);
+				}
+				else if(this.currentXDock[0] === "a"){
+					this.absoluteDock(this.currentXDock.substring(1), null);
+				}
 			}
-			else if(this.currentXDock[0] === "a"){
-				this.absoluteDock(this.currentXDock.substring(1), null);
-			}
-		}
-		if(this.currentYDock == this.currentYDock){
-			if(this.currentYDock[0] === "r"){
-				this.relativeDock(null, this.currentYDock.substring(1));
-			}
-			else if(this.currentYDock[0] === "a"){
-				this.absoluteDock(null, this.currentYDock.substring(1));
+			if(this.currentYDock == this.currentYDock){
+				if(this.currentYDock[0] === "r"){
+					this.relativeDock(null, this.currentYDock.substring(1));
+				}
+				else if(this.currentYDock[0] === "a"){
+					this.absoluteDock(null, this.currentYDock.substring(1));
+				}
 			}
 		}
 	}

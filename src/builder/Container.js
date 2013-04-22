@@ -1,8 +1,9 @@
-this.DisplayObjectContainer = function(){
+this.Container = function(p){
 	//Private
 	var
 		children = [],
-		currentIndex = 0
+		currentIndex = 0,
+		_self = p
 	;
 	
 	function getChildIndexByName(/*(String) name*/name) {
@@ -16,11 +17,10 @@ this.DisplayObjectContainer = function(){
 	
 	//Public
 	return {
-		constructor:function(index) {
-			currentIndex = index;
-		},
+		_packageName : "Container",
+		
 		addChild:function(/*(Clip) clip*/clip) {
-			clip.parent = this;
+			clip.parent = _self;
 			clip.name = clip.name || Date.now();
 			children[children.length]=clip;
 			return children.length-1;

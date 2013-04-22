@@ -38,7 +38,8 @@
 	var Ar = function(props) {
 		var 
 			STATE = {LOADING:0, STOP:1, PLAY:2, PAUSE:3, ERROR:4},
-			maxLayerSize = 4096
+			maxLayerSize = 4096,
+			selfRef = this
 		;
 		
 		window.requestAnimFrame = (function(){
@@ -56,15 +57,26 @@
 		this.exceptions = props.exceptions || false;
 		this.stopOnError = props.stopOnError || false;
 		
-		function loadError(err, data) {
-			if(this.debug && console) {
-				console.error(err);
-				console.error(data);
+		function loadError(err) {
+			if(selfRef.debug && console) {
+				console.error("Load Error :: " + err);
 			}
-			if(this.exceptions) {
+			if(selfRef.exceptions) {
 				throw err;
 			}
-			if(this.stopOnError) {
+		}
+		
+		function systemError(err, data) {
+			if(selfRef.debug && console) {
+				console.error("System Error :: " + err);
+				if(data) {
+					console.error(data);
+				}
+			}
+			if(selfRef.exceptions) {
+				throw err;
+			}
+			if(selfRef.stopOnError) {
 				window.requestAnimFrame = null;
 			}
 		}
