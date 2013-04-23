@@ -23,18 +23,22 @@ this.Container = function(p){
 			clip.parent = _self;
 			clip.name = clip.name || Date.now();
 			children[children.length]=clip;
+			_self._update();
 			return children.length-1;
 		},
 		removeChildByName:function(/*(String) name*/name) {
 			var index = getChildIndexByName(name);
 			if(index != -1) {
 				children.splice(index,1);
+				_self._update();
 				return true;
 			}
 			return false;
 		},
 		removeChildAt:function(index) {
-			return children.splice(index,1);
+			var r = children.splice(index,1);
+			_self._update();
+			return r;
 		},
 		getChildByName:function(name) {
 			var index = getChildIndexByName(name);

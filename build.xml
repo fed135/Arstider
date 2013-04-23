@@ -31,15 +31,16 @@
 		</copy>
 		<echo>->Minifying Javascript using V8...</echo>
 		<concat destfile="${dest}/lib/_temp.js">
-			<fileset dir="${src}" includes="**/*.js" excludes="**/a_closure.js" />
+			<fileset dir="${src}" includes="**/*.js" excludes="**/a_closure.js,**/FileSystem.js" />
 		</concat>
 		<copy todir="${dest}/lib/">
-			<fileset dir="${src}" includes="**/a_closure.js" />
+			<fileset dir="${src}" includes="**/a_closure.js,**/FileSystem.js" />
 		</copy>
 		<concat destfile="${dest}/lib/arstider.js">
 			<fileset dir="${dest}/lib/" includes="*.js" />
 		</concat>
 		<delete file="${dest}/lib/a_closure.js"/>
+		<delete file="${dest}/lib/FileSystem.js"/>
 		<delete file="${dest}/lib/_temp.js"/>
 		<exec executable="v8compile.bat">
 			<arg value="${dest}\lib\arstider.js" />

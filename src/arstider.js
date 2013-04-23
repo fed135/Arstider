@@ -42,6 +42,9 @@
 			selfRef = this
 		;
 		
+		window.document.body.style["-webkit-tap-highlight-color"] = "rgba(0, 0, 0, 0)";
+		window.offscreenBuffering = false;
+		
 		window.requestAnimFrame = (function(){
 		  return  window.requestAnimationFrame       || 
 				  window.webkitRequestAnimationFrame || 
@@ -57,13 +60,15 @@
 		this.exceptions = props.exceptions || false;
 		this.stopOnError = props.stopOnError || false;
 		
-		function loadError(err) {
-			if(selfRef.debug && console) {
-				console.error("Load Error :: " + err);
-			}
-			if(selfRef.exceptions) {
-				throw err;
-			}
+		this.perfReport = function() {
+			console.log("************************************************");
+			console.log("*	PERFORMANCE REPORT");
+			console.log("************************************************");
+			console.log("* 1- Engine heap size:");
+			console.log("* 		"+(window.performance.memory.usedJSHeapSize-window.performance.memory.totalJSHeapSize));
+			console.log("* 2- Texture Dowloaded:");
+			console.log("* 		"+FileSystem.imgMem);
+			console.log("************************************************");	
 		}
 		
 		function systemError(err, data) {

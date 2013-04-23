@@ -20,39 +20,18 @@ this.DisplayObject = function(bag) {
 		thisRef = this
 	;
 	
-	function loadBitmap(data) {
-		var prevState = state;
-		state = STATE.LOADING;
-		props.data = new Image();
-		props.data.onload = function(){state = prevState;thisRef._update();}
-		props.data.onerror = loadError;
-		props.data.src = data;
-	}
-	
-	if(bag && (typeof bag === "object" || bag instanceof Object)) {
-		for(var p in bag) {
-			if(p in bag) {
-				if(p in props) {
-					if(p === "data") {
-						loadBitmap(bag[p]);
-					}
-					else {
-						props[p] = bag[p];
-					}
-				}
-			}
-		}
-	}
-	
-	state = STATE.STOP;
-	
 	//Public properties
 	this.id = null;
 	
 	this._draw = function(ctx) {
 		ctxRef = ctx || ctxRef;
-		if(ctxRef) {
-			ctxRef.drawImage(props.data, this._x(), this._y(), this._width(), this._height());
+		if(state != STATE.ERROR){
+			state = STATE.PLAY;
+			if(ctxRef) {
+				if(props.data) {
+					ctxRef.drawImage(props.data, this._x(), this._y(), this._width(), this._height());
+				}
+			}
 		}
 	}
 	
@@ -163,4 +142,54 @@ this.DisplayObject = function(bag) {
 	this.clear = function() {
 		ctxRef.clearRect(thisRef._x(), thisRef._y(), thisRef._width(), thisRef._height());
 	}
+	
+	function loadBitmap(url) {
+		if(typeof url === 'string' || url instanceof String) {
+			var prevState = state;
+			state = STATE.LOADING;
+			FileSystem.downloadImg(url, function(b) {
+				if(props.width == null){
+					props.width = b.width;
+				}
+				if(props.height == null){
+					props.height = b.height;
+				}
+				props.data = b;
+				state = prevState;
+				thisRef._update();
+			},
+			null, //No progress event
+			function(e){
+				state = STATE.ERROR;
+			});
+		}
+		else {
+			props.data = url;
+			
+			if(props.width == null){
+				props.width = url.width;
+			}
+			if(props.height == null){
+				props.height = url.height;
+			}
+			thisRef._update();
+		}
+	}
+	
+	if(bag && (typeof bag === "object" || bag instanceof Object)) {
+		for(var p in bag) {
+			if(p in bag) {
+				if(p in props) {
+					if(p === "data") {
+						loadBitmap(bag[p]);
+					}
+					else {
+						props[p] = bag[p];
+					}
+				}
+			}
+		}
+	}
+	
+	state = STATE.STOP;
 }

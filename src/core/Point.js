@@ -1,4 +1,5 @@
-this.Point = function(x,y){
+this.Point = function(x,y,z){
 	this.x = x;
 	this.y = y;
+	this.z = z;
 }

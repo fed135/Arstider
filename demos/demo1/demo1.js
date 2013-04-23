@@ -23,10 +23,26 @@ var super_square = new Eng.DisplayObject({
 ]);
 canvas.Container.addChild(super_square);
 
+var lame_square;
+var lamer_square;
+setTimeout(function() {
+	lame_square = new Eng.DisplayObject({
+		data:'../demo1/images/textures/digicam-test1.png',
+		y:200,
+		x:0
+	});
+	canvas.Container.addChild(lame_square);
+	
+	lamer_square= new Eng.DisplayObject({
+		data:super_square._data(),
+		y:0,
+		x:100,
+		width:100,
+		height:100
+	});
+	canvas.Container.addChild(lamer_square)
+},500);
 
 //super_square.Dockable.relativeDock("left","top");
 
-//console.warn(canvas);
-//console.warn(square);
-//console.warn(super_square);
-//setTimeout(function(){console.warn(square._data());},1000);
+//setTimeout(Eng.perfReport, 3000);
