@@ -1,6 +1,7 @@
-this.DisplayObject = function(bag) {
+Ar.prototype.DisplayObject = function(bag) {
 	//Private
 	var 
+		STATE = {LOADING:0, STOP:1, PLAY:2, PAUSE:3, ERROR:4},
 		props = {
 			blue:0,
 			red:0,
@@ -147,7 +148,7 @@ this.DisplayObject = function(bag) {
 		if(typeof url === 'string' || url instanceof String) {
 			var prevState = state;
 			state = STATE.LOADING;
-			FileSystem.downloadImg(url, function(b) {
+			Ar.prototype.FileSystem.download(url, function(b) {
 				if(props.width == null){
 					props.width = b.width;
 				}
@@ -192,4 +193,4 @@ this.DisplayObject = function(bag) {
 	}
 	
 	state = STATE.STOP;
-}
+};

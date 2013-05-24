@@ -1,4 +1,4 @@
-this.Dockable = function(p){
+Ar.prototype.Dockable = function(p){
 	
 	var
 		_bound = false,
@@ -116,4 +116,4 @@ this.Dockable = function(p){
 			}
 		}
 	}
-}
+};

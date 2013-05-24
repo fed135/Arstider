@@ -1,4 +1,4 @@
-this.Canvas = function (target, props) {
+Ar.prototype.Canvas = function (target, props) {
 	
 	var lastUpdate = Date.now();
 	var lastRender = null;
@@ -44,4 +44,4 @@ this.Canvas = function (target, props) {
 	}
 
 	_draw();
-}
+};

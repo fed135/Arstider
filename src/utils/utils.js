@@ -14,4 +14,4 @@ Object.prototype.extend = function(extentions) {
 	}
 	
 	return this;
-}
+};

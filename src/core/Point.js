@@ -1,5 +1,5 @@
-this.Point = function(x,y,z){
+Ar.prototype.Point = function(x,y,z){
 	this.x = x;
 	this.y = y;
 	this.z = z;
-}
+};

@@ -43,6 +43,5 @@ setTimeout(function() {
 	canvas.Container.addChild(lamer_square)
 },500);
 
+//window.requireFS();
 //super_square.Dockable.relativeDock("left","top");
-
-//setTimeout(Eng.perfReport, 3000);

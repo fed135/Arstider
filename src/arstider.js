@@ -24,65 +24,62 @@
  *	along with this program. If not, see <http://www.gnu.org/licenses/>. 	
  */
 
-;(function(window){
 	
-	/**
-	 * //Main Arstider instance//
-	 * 
-	 * Attributes are given inside an object an can be as follow:
-	 *	 - debug : true | false 									//Toggles extensive debug. Default is False.
-	 *	 - exceptions : true | false								//Toggles the use of exceptions throwing (can be used along extensive debug). Default is False.
-	 *	 - stopOnError : true | false								//Toggles the stopping of the app when an error is encountered. Default is False.
-	 */
+/**
+ * //Main Arstider instance//
+ * 
+ * Attributes are given inside an object an can be as follow:
+ *	 - debug : true | false 									//Toggles extensive debug. Default is False.
+ *	 - exceptions : true | false								//Toggles the use of exceptions throwing (can be used along extensive debug). Default is False.
+ *	 - stopOnError : true | false								//Toggles the stopping of the app when an error is encountered. Default is False.
+ * 	 - performanceAdapter : true | false						//Toggles the automatic performance enhancer: automatically reduces target FPS and physics accuracy. Default is False.
+ * 	 - fps : int												//Sets target FPS. Default is 60.
+ * 	 - physicsAccuracy : int									//Sets physics accuracy (if box2dweb implementation is present). Default is 10 - (lower = less accuracy).
+ */
+
+var Ar = function(props) {
 	
-	var Ar = function(props) {
-		var 
-			STATE = {LOADING:0, STOP:1, PLAY:2, PAUSE:3, ERROR:4},
-			maxLayerSize = 4096,
-			selfRef = this
-		;
-		
-		window.document.body.style["-webkit-tap-highlight-color"] = "rgba(0, 0, 0, 0)";
-		window.offscreenBuffering = false;
-		
-		window.requestAnimFrame = (function(){
+	var 
+		selfRef = this
+	;
+	
+	//Call proper css fixes and polyfills depending on platform
+	window.document.body.style["-webkit-tap-highlight-color"] = "rgba(0, 0, 0, 0)";
+	window.offscreenBuffering = false;
+	
+	//Set proprieties
+	this.debug = props.debug || false;
+	this.exceptions = props.exceptions || false;
+	this.stopOnError = props.stopOnError || false;
+	this.performanceAdapter = props.performanceAdapter || false;
+	this.fps = props.fps || 60;
+	this.physicsAccuracy = props.physicsAccuracy || 10;
+	
+	//Set vendor prefixed requestAnimationFrameValue
+	window.requestAnimFrame = (function(a){
 		  return  window.requestAnimationFrame       || 
 				  window.webkitRequestAnimationFrame || 
 				  window.mozRequestAnimationFrame    || 
 				  window.oRequestAnimationFrame      || 
 				  window.msRequestAnimationFrame     || 
 				  function( callback ){
-					window.setTimeout(callback, 17 /*60 fps*/);
+					window.setTimeout(callback, (1000/a) );
 				  };
-		})();
-		
-		this.debug = props.debug || false;
-		this.exceptions = props.exceptions || false;
-		this.stopOnError = props.stopOnError || false;
-		
-		this.perfReport = function() {
-			console.log("************************************************");
-			console.log("*	PERFORMANCE REPORT");
-			console.log("************************************************");
-			console.log("* 1- Engine heap size:");
-			console.log("* 		"+(window.performance.memory.usedJSHeapSize-window.performance.memory.totalJSHeapSize));
-			console.log("* 2- Texture Dowloaded:");
-			console.log("* 		"+FileSystem.imgMem);
-			console.log("************************************************");	
-		}
-		
-		function systemError(err, data) {
-			if(selfRef.debug && console) {
-				console.error("System Error :: " + err);
-				if(data) {
-					console.error(data);
-				}
-			}
-			if(selfRef.exceptions) {
-				throw err;
-			}
-			if(selfRef.stopOnError) {
-				window.requestAnimFrame = null;
-			}
-		}
+	})(this.fps);
 	
+	//Arstider error method
+	this.error = function(err, data) {
+		if(selfRef.debug && console) {
+			console.error("System Error :: " + err);
+			if(data) {
+				console.error(data);
+			}
+		}
+		if(selfRef.exceptions) {
+			throw err;
+		}
+		if(selfRef.stopOnError) {
+			window.requestAnimFrame = null;
+		}
+	}
+};

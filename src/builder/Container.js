@@ -1,4 +1,4 @@
-this.Container = function(p){
+Ar.prototype.Container = function(p){
 	//Private
 	var
 		children = [],
@@ -58,4 +58,4 @@ this.Container = function(p){
 			if(parent.
 		}*/
 	}
-}
+};
