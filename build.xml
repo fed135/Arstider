@@ -1,8 +1,8 @@
-<project name="SDK" basedir=".">
+<project name="Arstider" basedir=".">
 	
 	<property name="src" location="src"/>
 	<property name="tools" location="tools"/>
-	<property name="dest" location="/games/StarBlasters/libs"/>
+	<property name="dest" location="/var/www/sdk"/>
 	<!--property name="dest" location="./bin"/-->
 	
 	<target name="build.dev" description="dev build">
@@ -28,12 +28,12 @@
 		<filter token="debug" value="true"/>
 		<filter token="version" value="0.1"/>
 				
-		<copy toFile="${dest}/Arstider.js" file="${src}/_temp.js" filtering="true" />
+		<copy toFile="${dest}/Arstider.js" file="${dest}/_temp.js" filtering="true" />
 				
 		<delete file="${dest}/_temp.js" />
 		
 		<exec executable="python" failonerror="true">
-			<arg line="./tools/jsmin.py ${dest}/Arstider.min.js" />
+			<arg line="./tools/closureMinifier.py ${dest}/Arstider.js" />
 		</exec>
 	</target>
 </project>

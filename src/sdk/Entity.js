@@ -33,7 +33,7 @@
 	/**
 	 * Defines the Entity module
 	 */
-	define("Arstider/Entity", [], function(){
+	define("Arstider/Entity", ["Arstider/Buffer"], function(Buffer){
 			
 		/**
 		 * Creates an instance of Entity.
@@ -145,6 +145,12 @@
 			 * @type {HTMLCanvasElement|Image|null}
 			 */
 			this.data = null;
+			
+			/**
+			 * Name of the data's buffer/ image url. Can be used for memory management.
+			 * @type {string|null}
+			 */
+			this.dataUrl = null;
 			
 			/**
 			 * Is element a mask for inferior layers
@@ -339,6 +345,16 @@
 			}
 			
 			return -1;
+		};
+		
+		/**
+		 * Kills the Entity's Buffer(s).
+		 * @this {Entity}
+		 */
+		Entity.prototype.killBuffer = function(){
+			this.data = null;
+			this.dataCtx = null;
+			Buffer.kill(this.name);
 		};
 			
 		/**
