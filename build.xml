@@ -1,52 +1,39 @@
-<project name="Arstider" basedir=".">
-    <description>
-        simple example build file
-    </description>
-	<!-- set global properties for this build -->
+<project name="SDK" basedir=".">
+	
 	<property name="src" location="src"/>
-	<property name="dest" location="c:\wamp\www\Arstider\dev"/>
-	<!-- you could change it to whichever browser you prefer -->
-	<property name="browser" location="C:\Users\Frederic\AppData\Local\Google\Chrome\Application\chrome.exe"/>
+	<property name="tools" location="tools"/>
+	<property name="dest" location="/games/StarBlasters/libs"/>
+	<!--property name="dest" location="./bin"/-->
 	
-	<target name="clean">
-		<!-- Create the time stamp -->
-		<echo>Preparing...</echo>
-		<tstamp/>
-		<!-- Clear the build directory structure used by compile -->
-		<delete dir="${dest}"/>
-		<mkdir dir="${dest}"/>
-	</target>
-
-	<target name="build.dev" depends="clean">
-		<echo>### Building Dev...</echo>
-		<echo>###############################################</echo>
-		<echo>->Moving demo to destination folder...</echo>
-		<copy todir="${dest}">
-			<fileset dir="demos">
-				<exclude name="**/*.scss"/>
-				<exclude name="**/*.css"/>
-				<exclude name="**/*.css"/>
-				<exclude name="**/empty.txt"/>
-			</fileset>
-		</copy>
-		<echo>->Minifying Javascript using V8...</echo>
-		<concat destfile="${dest}/lib/arstider.js">
-			<fileset dir="${src}" includes="**/*.js" />
+	<target name="build.dev" description="dev build">
+		<concat destfile="${dest}/_temp.js">
+			<fileset dir="${src}/sdk" includes="**/*.js" />
 		</concat>
-		<exec executable="v8compile.bat">
-			<arg value="${dest}\lib\arstider.js" />
-		</exec>
-		<echo>Ok</echo>
-		<echo>->Launching in chrome...</echo>
-		<exec executable="${browser}" spawn="false">
-			<arg value="http://localhost/Arstider/dev/demo1/index.html"/>
-		</exec>
+		
+		<filter token="target" value="dev"/>
+		<filter token="debug" value="true"/>
+		<filter token="version" value="0.1"/>
+		
+		<copy toFile="${dest}/Arstider.js" file="${dest}/_temp.js" filtering="true" />
+		
+		<delete file="${dest}/_temp.js" />
 	</target>
 	
-	<target name="build.release" depends="build.dev">
-			<echo>### Building Official...</echo>
-			<echo>###############################################</echo>
-			<!--Move latest in RL to it's apropriate version folder-->
-			<!--Move build in RL latest-->
-		</target>
+	<target name="build.release" description="release build">
+		<concat destfile="${dest}/_temp.js">
+			<fileset dir="${src}/sdk" includes="**/*.js" />
+		</concat>
+				
+		<filter token="target" value="dev"/>
+		<filter token="debug" value="true"/>
+		<filter token="version" value="0.1"/>
+				
+		<copy toFile="${dest}/Arstider.js" file="${src}/_temp.js" filtering="true" />
+				
+		<delete file="${dest}/_temp.js" />
+		
+		<exec executable="python" failonerror="true">
+			<arg line="./tools/jsmin.py ${dest}/Arstider.min.js" />
+		</exec>
+	</target>
 </project>

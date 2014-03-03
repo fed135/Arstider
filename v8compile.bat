@@ -1,1 +1,0 @@
-C:\Python27\python.exe "C:\Python27\v8\v8build.py" %1
