@@ -14,6 +14,7 @@
 		 * @type {number}
 		 */
 		staticAnonymousCounter = 0,
+		
 		/**
 		 * Default composition mode 
 		 * @const
@@ -21,6 +22,7 @@
 		 * @type {string}
 		 */
 		defaultComposition = "source-over",
+		
 		/**
 		 * Anonymous name prefix
 		 * @const
@@ -229,6 +231,13 @@
 			this.onleave = Arstider.checkIn(props.onleave, Arstider.emptyFunction);
 			
 			/**
+			 * User-defined behavior when element is updated before a draw
+			 * @override
+			 * @type {function(this:Entity)}
+			 */
+			this.update = Arstider.emptyFunction;
+			
+			/**
 			 * Whenever the element is hovered
 			 * @private
 			 * @type {boolean}
@@ -240,7 +249,35 @@
 			 * @private
 			 * @type {boolean}
 			 */
-			this._pressed = false;	
+			this._pressed = false;
+			
+			/**
+			 * Defines horizontal docking option
+			 * @private
+			 * @type {string|number|null}
+			 */
+			this._dockX = null;
+			
+			/**
+			 * Defines vertical docking option
+			 * @private
+			 * @type {string|number|null}
+			 */
+			this._dockY = null;
+			
+			/**
+			 * Defines horizontal filling option
+			 * @private
+			 * @type {string|number|null}
+			 */
+			this._fillX = null;
+			
+			/**
+			 * Defines vertical filling option
+			 * @private
+			 * @type {string|number|null}
+			 */
+			this._fillY = null;
 		};
 		
 		/**
@@ -285,6 +322,67 @@
 			this._pressed = false;
 			
 			this.onrelease();
+		};
+		
+		/**
+		 * Private logic with each frame updates (see core/Performance for draw vs update skips)
+		 * @this {Entity}
+		 * @protected
+		 */
+		Entity.prototype._update = function(){
+			/**
+			 * Check for docking options
+			 */
+			if(this.parent != null){
+				if(this._fillX != null){
+					this.width = this.parent.width * (this._fillX * 0.01);
+				}
+				if(this._fillY != null){
+					this.height = this.parent.height * (this._fillY * 0.01);
+				}
+				if(this._dockX != null){
+					
+				}
+				if(this._dockY != null){
+					
+				}
+			}
+			
+			this.update();
+		};
+		
+		/**
+		 * Sets the value for horizontal and vertical docking of the Entity
+		 * @this {Entity}
+		 * @param {string|number|null} x The horizontal docking propriety.
+		 * @param {string|number|null} y The vertical docking propriety.
+		 */
+		Entity.prototype.dock = function(x, y){
+			if(x === "left") this._dockX = 0;
+			else if(x === "center") this._dockX = 50;
+			else if(x === "right") this._dockX = 100;
+			else this._dockX = x || null;
+			
+			if(y === "top") this._dockY = 0;
+			else if(y === "center") this._dockY = 50;
+			else if(y === "bottom") this._dockY = 100;
+			else this._dockY = y || null;
+		};
+		
+		/**
+		 * Sets the value for horizontal and vertical filling of the Entity
+		 * @this {Entity}
+		 * @param {string|number|null} x The horizontal filling propriety.
+		 * @param {string|number|null} y The vertical filling propriety.
+		 */
+		Entity.prototype.fill = function(x, y){
+			if(x === "full") this._fillX = 100;
+			else if(x === "half") this._fillX = 50;
+			else this._fillX = x || null;
+			
+			if(y === "full") this._fillY = 100;
+			else if(y === "half") this._fillY = 50;
+			else this._fillY = y || null;
 		};
 		
 		/**

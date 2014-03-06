@@ -1,5 +1,11 @@
 <project name="Arstider" basedir=".">
 	
+	<property name="jsdoc.home" location="tools/jsdoc"/>
+	<property name="jsdoc3-task-jar" value="${jsdoc.home}/jsdoc3-ant-task-1.0.jar"/>
+	<property name="rhino-jar" value="${jsdoc.home}/rhino/js.jar"/>
+		
+	<taskdef name="jsdoc3" classname="net.jannon.ant.tasks.JsDoc3" classpath="${jsdoc3-task-jar}:${rhino-jar}"/>
+	
 	<property name="src" location="src"/>
 	<property name="tools" location="tools"/>
 	<property name="dest" location="/var/www/sdk"/>
@@ -35,5 +41,12 @@
 		<exec executable="python" failonerror="true">
 			<arg line="./tools/closureMinifier.py ${dest}/Arstider.js" />
 		</exec>
+	</target>
+	
+	<target name="build.documentation" description="documentation builder">
+		<jsdoc3 jsdochome="${jsdoc.home}" 
+		    to="${dest}/SDK-Documentation" 
+		    file="${dest}/Arstider.js" 
+		    template="spartan" />
 	</target>
 </project>

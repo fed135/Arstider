@@ -29,7 +29,7 @@
 				if(curChild.alpha <= 0) return;
 				
 				if(!skip){
-					if(typeof curChild.update === fctCheck) curChild.update();
+					if(typeof curChild.update === fctCheck) curChild._update();
 				}
 				
 				if(
