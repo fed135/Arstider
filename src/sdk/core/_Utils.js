@@ -118,7 +118,7 @@ Arstider.Super = function(child){
 Arstider.Inherit = function(child, parent){
 	if(parent instanceof Function || typeof parent === 'function'){
 		Arstider._inheritanceHistory[child.toString()] = parent;
-		child.prototype = new parent();
+		child.prototype = Object.create(parent.prototype);
 		child.prototype.constructor = child;
 	}
 	else console.error("could not make ",child, " inherit", parent);

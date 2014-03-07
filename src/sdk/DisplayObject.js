@@ -60,7 +60,6 @@
 		 * @this {DisplayObject}
 		 * @param {Object=} props Optional properties for the element.
 		 */
-		Arstider.Inherit(DisplayObject, Entity);
 		function DisplayObject(props) {
 			
 			Arstider.Super(this, props);
@@ -81,6 +80,11 @@
 			 */
 			if(props.data !== undefined) this.loadBitmap(props.data);
 		};
+		
+		/**
+		 * Defines parent module
+		 */
+		Arstider.Inherit(DisplayObject, Entity);
 		
 		/**
 		 * Adds an Entity-type to the list of children.

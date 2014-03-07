@@ -1,22 +1,61 @@
 /**
  * Text Field Wrapper. 
- * 
- * Provides common private variables and methods for the TF as well as
- * AMD Closure and prototypes.
  *
- * @author frederic charette <fredc@meetfidel.com>
+ * @version 1.1
+ * @author frederic charette <fredericcharette@gmail.com>
  */
-;(function(window){
+
+;(function(){
 	
-	//Utility method for text-wrap and multiline
-	function wrapText(context, myText, strokeText, fillText, x, y, maxWidth, lineHeight) {
+	var
+		/**
+		 * Break-line character
+		 * @const
+		 * @private
+		 * @type {string}
+		 */
+		breakLine = "@@"
+	;
+	
+	/**
+	 * Utility method to calculate the size in pixel of some text rendered with a set font
+	 * 
+	 * @private
+	 * @param {CanvasRenderingContext2D} context The Context to use for testing
+	 * @param {Obejct} font The font object
+	 * @param {string} text The text to test
+	 * @return {number} The size in pixels
+	 */
+	function calculateTextWidth(context, font, text){
+		var ret;
+		
+		context.save();
+		context.font  = ((font.style == "")?"":(font.style + " ")) + font.size + " " + font.family;
+		ret = context.measureText(text);
+		context.restore();
+		
+		return ret;
+	}
+	
+	/**
+	 * Method for text-wrap and multiline TEXT, not sequences
+	 * 
+	 * @private
+	 * @param {CanvasRenderingContext2D} context The Textfield's context
+	 * @param {string} myText The full string to wrap/multiline
+	 * @param {boolean} strokeText Defines if text needs to be stroked
+	 * @param {boolean} fillText Defines if text needs to be filled
+	 * @param {number} x Initial horizontal position of the writing carot
+	 * @param {number} maxWidth Maximum width of the paragraph, delimits wrapping edges
+	 */
+	function wrapText(context, myText, strokeText, fillText, x, maxWidth) {
 				
 		var 
 	       	words = [],
 	       	paragraphs = [],
 	       	line = '',
-	       	breakLine = "@@",
 	       	n,
+	       	y = 0,
 	       	inc,
 	       	testLine,
 	       	metrics,
@@ -34,177 +73,193 @@
 		       	testWidth = metrics.width;
 		       	if(testWidth > maxWidth) {
 		       		if(strokeText){
-		       			context.strokeText(line, x, y + (inc*lineHeight));
+		       			context.strokeText(line, x, y + (inc*context.lineHeight));
 					}
 					if(fillText){
-						if(strokeText && context.shadowColor){
-							context.shadowColor = "transparent";
-						}
-						context.fillText(line, x, y + (inc*lineHeight));
+						if(strokeText && context.shadowColor) context.shadowColor = "transparent";
+						
+						context.fillText(line, x, y + (inc*context.lineHeight));
 					}
 					line = words[n] + ' ';
-					y += lineHeight;
+					y += context.lineHeight;
 		       	}
 		       	else {
 		       		line = testLine;
 		       	}
 			}
 		    if(strokeText){
-		 		context.strokeText(line, x, y + (inc*lineHeight));
+		 		context.strokeText(line, x, y + (inc*context.lineHeight));
 			}
 			if(fillText){
-				if(strokeText && context.shadowColor){
-					context.shadowColor = "transparent";
-				}
-				context.fillText(line, x, y + (inc*lineHeight));
+				if(strokeText && context.shadowColor) context.shadowColor = "transparent";
+				
+				context.fillText(line, x, y + (inc*context.lineHeight));
 			}
 	    }
 	}
 	
 	/**
-	 * AMD Closure
+	 * Defines the TextField module
 	 */	
-		define( "Arstider/TextField", ["Arstider/Buffer", "Arstider/Entity"], function (Buffer, Entity) {
+	define( "Arstider/TextField", ["Arstider/Buffer", "Arstider/Entity", "Arstider/core/BBParser"], function (Buffer, Entity, Parser) {
 		
-			/**
-			 * Creates an instance of TextField.
-			 *
-			 * @constructor
-			 * @this {TextField}
-			 * @param {string} name The desired name of the TextField. Uses timestamp if empty : not recommended
-			 */
-			TextField.Inherit(Entity);
-			function TextField(name) {
-				Super(this, name);
-				
-			};
+		/**
+		 * Creates an instance of TextField.
+		 *
+		 * @constructor
+		 * @this {TextField}
+		 * @param {Object=} props Can optionally overwrite build properties of the entity    
+		 */
+		function TextField(props) {
 			
 			/**
-			 * Kills the TextField's Buffer(s).
-			 *
-			 * @this {TextField}
+			 * Defines if text should be filled
+			 * @type {boolean}
 			 */
-			TextField.prototype.killBuffer = function(){
-				this.data = null;
-				this.dataCtx = null;
-				Buffer.kill("TextField_"+this.name);
-			};
+			this.fillText = Arstider.checkIn(props.fill, true);
 			
 			/**
-			 * Sets the fill text of the TextField and re-renders it's data.
-			 *
-			 * @this {TextField}
-			 * @param {string} name The desired fill text.
+			 * Defines if text should be stroked
+			 * @type {boolean}
 			 */
-			TextField.prototype.setFillText = function(txt, conc){
-				this.fillText = txt?true:false;
-				this.setTextInternal(txt, conc);
-			};
+			this.strokeText = Arstider.checkIn(props.stroke, false);
 			
 			/**
-			 * Sets the stroke text of the TextField and re-renders it's data.
-			 * If fillText is empty, it will automatically be set unless strokeOnly is explicitly set to true 
-			 *
-			 * @this {TextField}
-			 * @param {string} name The desired stroke text.
-			 * @param {boolean} strokeOnly If text is applied to the stroke only.
+			 * Stores the context of the TextField's buffer
+			 * @type {CanvasRenderingContext2D|null}
 			 */
-			TextField.prototype.setStrokeText = function(txt, conc, strokeOnly){
-				this.strokeText = txt?true:false;
-				if(!strokeOnly) this.fillText = txt?true:false;
-				this.setTextInternal(txt, conc);
-			};
+			this.dataCtx = null;
 			
 			/**
-			 * Sets the text of the textfield and re-renders its data
-			 *
-			 * @this {TextField}
-			 * @param {string} name The desired stroke text.
+			 * Stores the text value of the TextField.
+			 * Changed through the setText method.
+			 * Can be a plain String, an Array of Segments or empty (null)
+			 * 
 			 * @private
+			 * @type {string|Array|null}
 			 */
-			TextField.prototype.setTextInternal = function(txt, conc){
-				var entry = txt;
-				this.customSize = entry.fontSize;
-				this.myText = entry.value;
-				this.render();
+			this._textValue = null;
+			
+			/**
+			 * Stores the font to use for this TextField.
+			 * Changed through the setFont method
+			 * 
+			 * @private
+			 * @type {Object|null}
+			 */
+			this._font = null;
+			
+			Arstider.Super(this, props);
+		};
+		
+		/**
+		 * Defines parent module
+		 */
+		Arstider.Inherit(Textfield, Entity);
+			
+		/**
+		 * Kills the TextField's Buffer(s).
+		 *
+		 * @override
+		 * @this {TextField}
+		 */
+		TextField.prototype.killBuffer = function(){
+			this.data = null;
+			this.dataCtx = null;
+			Buffer.kill("TextField_"+this.name);
+		};
+			
+		/**
+		 * Sets the text of the TextField and re-renders it's data.
+		 * @this {TextField}
+		 * @param {string} name The desired text.
+		 */
+		TextField.prototype.setText = function(txt, parse){
+			if(parse) this._textValue = Parser.parseString(txt);
+			else this._textValue = txt;
+			
+			this.render();
+		};
+		
+		/**
+		 * Sets the font of the TextField and re-renders it's data.
+		 * @this {TextField}
+		 * @param {Font|Object} name The desired text.
+		 */
+		TextField.prototype.setFont = function(font){
+			this._font = font;
+			
+			if(font.size == undefined) this._font.size = "12px";
+			if(font.family == undefined) this._font.family = "arial";
+			if(font.textBaseline == undefined) this._font.textBaseline = "top";
+			if(font.lineHeight == undefined) this._font.lineHeight = 12;
+			
+			this.render();
+		};
+			
+		/**
+		 * Makes the buffer to draw the text in
+		 * @this {TextField}
+		 * @private
+		 */
+		TextField.prototype._makeBuffer = function(){
+			
+			if (this.data == null) this.data = Buffer.create("TextField_"+this.name);
+			this.dataCtx = this.data.getContext('2d');
+				
+			if(this.width === 0) this.width = calculateTextWidth(this.dataCtx, this._font, this._textValue);
+			
+			this.data.width = this.dataWidth = this.width;
+			
+			if(this.height === 0) this.height = parseInt(this._font.size.split("px").join(""));
+			
+			this.data.height = this.dataHeight = this.height;
+		};
+		
+		/**
+		 * Renders the text and it's style into a buffer. Saves on context transformation. 
+		 *
+		 * @this {TextField}
+		 * @private
+		 * @param {CanvasContext} buff The context to use as buffer.
+		 */
+		TextField.prototype.render = function(buff){
+			
+			/**
+			 * Cancel operation if not all required fields are filled
+			 */
+			if(this._font === null || this._textValue === null) return;
+			
+			this.makeBuffer(this.width,this.height);
+			
+			for(var i in this._font){
+				this.dataCtx[i] = this._font[i];
 			}
+			this.dataCtx.font = ((this._font.style == "")?"":(this._font.style + " ")) + this._font.size + " " + this._font.family;
 			
-			/**
-			 * Makes the buffer (used by some descendants) 
-			 *
-			 * @this {TextField}
-			 * @private
-			 */
-			TextField.prototype.makeBuffer = function(bufferW,bufferH){
-				
-				if (this.data == null) this.data = Buffer.create("TextField_"+this.name);
-				
-				if (bufferW) this.data.width = bufferW;
-				if (bufferH) this.data.height = bufferH;
-				
-				this.dataCtx = this.data.getContext('2d'); //Fonts need to be smooth - could put an option if you have pixelled fonts.
-				
-				for(i in this.font){
-					if(i != "family" && i != "size" && i != "style"){
-						this.dataCtx[i] = this.font[i];
-					}
-					this.dataCtx.font = ((this.font.style == "")?"":(this.font.style + " ")) + this.font.family + " " + (this.customSize?this.customSize:this.font.size);
-				}
-				
+			
+			var xShift = 0;
+			if(this._font.textAlign === "center") xShift = this.width*0.5;
+			else if(this._font.textAlign === "right") xShift = this.width;
+			
+			if(this._font.textWrap === true){
+				//TODO:Strings only, do check for BB Segments
+				wrapText(this.dataCtx, this._textValue, this.strokeText, this.fillText, xShift, this.width);
 			}
-			
-			/**
-			 * Renders the text and it's style into a buffer. Saves on context transformation. 
-			 *
-			 * @this {TextField}
-			 * @private
-			 * @param {CanvasContext} buff The context to use as buffer.
-			 */
-			TextField.prototype.render = function(buff){
-				var i, pad, vs, xShift = 0, lPad, tPad, fontSize;
-				
-				this.dataWidth = this.width;
-				this.dataHeight = this.height;
-				
-				this.makeBuffer(this.width,this.height);
-				
-				pad = (this.font.padding == undefined)?0:this.font.padding;
-				vs = (this.font.verticalSpacing  == undefined)?0:this.font.verticalSpacing;
-				
-				if(this.font.textAlign === "center"){
-					xShift = this.width*0.5;
+			else{
+				//TODO:Strings only, do check for BB Segments
+				if(this.strokeText){
+					this.dataCtx.strokeText(this._textValue, xShift, 0);
 				}
-				else if(this.font.textAlign === "right"){
-					xShift = this.width;
+				if(this.fillText){
+					//Prevent shadow from being applied twice- and over the already placed stroke
+					if(this.strokeText && this._font.shadowColor) this.dataCtx.shadowColor = "transparent";
+					
+					this.dataCtx.fillText(this._textValue, xShift, 0);
 				}
-				
-				lPad = (this.font.paddingLeft == undefined)?0:this.font.paddingLeft;
-				tPad = (this.font.paddingTop == undefined)?0:this.font.paddingTop;
-				
-				if(this.font.textWrap === true){
-					fontSize = this.font.font.split(" ");
-					if(fontSize.length == 3){
-						fontSize = parseFloat(fontSize[1].substring(0,fontSize[1].indexOf('px')));
-					}
-					else{
-						fontSize = parseFloat(fontSize[0].substring(0,fontSize[0].indexOf('px')));
-					}
-					wrapText(this.dataCtx, this.myText, this.strokeText, this.fillText, xShift+lPad, tPad, this.width-(pad*2), fontSize+vs);
-				}
-				else{
-					if(this.strokeText){
-						this.dataCtx.strokeText(this.myText, xShift+lPad, tPad);
-					}
-					if(this.fillText){
-						//Prevent shadow from being applied twice- and over the already placed stroke
-						if(this.strokeText && this.font.shadowColor){
-							this.dataCtx.shadowColor = "transparent";
-						}
-						this.dataCtx.fillText(this.myText, xShift+lPad, tPad);
-					}
-				}
-			};
-			
-			return TextField; 
-		});
-})(window);
+			}
+		};
+		
+		return TextField; 
+	});
+})();

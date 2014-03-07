@@ -335,16 +335,16 @@
 			 */
 			if(this.parent != null){
 				if(this._fillX != null){
-					this.width = this.parent.width * (this._fillX * 0.01);
+					this.width = this.parent.width * this._fillX;
 				}
 				if(this._fillY != null){
-					this.height = this.parent.height * (this._fillY * 0.01);
+					this.height = this.parent.height * this._fillY;
 				}
 				if(this._dockX != null){
-					
+					this.x = this.parent.x + (this.parent.width * this._dockX) - (this.width * this._dockX);
 				}
 				if(this._dockY != null){
-					
+					this.y = this.parent.y + (this.parent.height * this._dockY) - (this.width * this._dockY);
 				}
 			}
 			
@@ -359,13 +359,13 @@
 		 */
 		Entity.prototype.dock = function(x, y){
 			if(x === "left") this._dockX = 0;
-			else if(x === "center") this._dockX = 50;
-			else if(x === "right") this._dockX = 100;
+			else if(x === "center") this._dockX = 0.5;
+			else if(x === "right") this._dockX = 1;
 			else this._dockX = x || null;
 			
 			if(y === "top") this._dockY = 0;
-			else if(y === "center") this._dockY = 50;
-			else if(y === "bottom") this._dockY = 100;
+			else if(y === "center") this._dockY = 0.5;
+			else if(y === "bottom") this._dockY = 1;
 			else this._dockY = y || null;
 		};
 		
@@ -376,12 +376,12 @@
 		 * @param {string|number|null} y The vertical filling propriety.
 		 */
 		Entity.prototype.fill = function(x, y){
-			if(x === "full") this._fillX = 100;
-			else if(x === "half") this._fillX = 50;
+			if(x === "full") this._fillX = 1;
+			else if(x === "half") this._fillX = 0.5;
 			else this._fillX = x || null;
 			
-			if(y === "full") this._fillY = 100;
-			else if(y === "half") this._fillY = 50;
+			if(y === "full") this._fillY = 1;
+			else if(y === "half") this._fillY = 0.5;
 			else this._fillY = y || null;
 		};
 		

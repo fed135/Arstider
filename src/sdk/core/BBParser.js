@@ -2,52 +2,22 @@
 	var BBTagsList = {
 	
 		//BOLDNESS
-		"B":{
-			effect : function(segment){
-				segment.addStyle("bold");
-			}
-		},
+		"B":{},
 		
 		//ITALIC
-		"I":{
-			effect : function(segment){
-				segment.addStyle("italic");
-			}
-		},
+		"I":{},
 		
 		//COLOR
-		"C":{
-			effect : function(segment, param){
-				segment.fillStyle = param;
-			},
-			param : true
-		},
+		"C":{param : true},
 		
 		//ENABLE STROKE
-		"S":{
-			effect : function(segment, param){
-				if(param == "true") segment.stroke = true;
-				else segment.stroke = false;
-			},
-			param : true
-		},
+		"S":{param : true},
 		
 		//ENABLE FILL
-		"F":{
-			effect : function(segment, param){
-				if(param == "true") segment.fill = true;
-				else segment.fill = false;
-			},
-			param : true
-		},
+		"F":{param : true},
 		
 		//TABS 
-		"T":{
-			effect : function(segment, param){
-				segment.paddingRight = parseInt(param);
-			},
-			param : true
-		}
+		"T":{param : true}
 	};
 	
 	define("BBParser", [], function(){
@@ -55,6 +25,12 @@
 		function Segment(text){
 			this.text = text;
 			this.styles = [];
+		}
+		
+		function BBParser(text){
+			this.segments = [];
+			
+			this.parse(text);
 		}
 		
 		BBParser.prototype.parse = function(str, styles){
@@ -130,14 +106,7 @@
 					return this.parse(str.substring(cutStart), styles);
 				}
 			}
-		}
-	
-		function BBParser(text){
-			this.segments = [];
-			
-			this.parse(text);
-		}
-			
+		};
 			
 		return BBParser;
 	});
