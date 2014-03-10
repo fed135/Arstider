@@ -67,6 +67,8 @@
 		};
 		
 		Engine.prototype.stepLogic = function(){
+			if(singleton === null) return;
+			
 			//Check if canvas rendering is on/off
 			if(singleton.handbreak) return;
 			

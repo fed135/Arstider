@@ -117,8 +117,6 @@
 			 * @type {function()}
 			 */
 			this.updateLogic = Arstider.emptyFunction;
-			
-			this._stepLogic();
 		}
 		
 		/**
@@ -126,7 +124,7 @@
 		 * @private
 		 */
 		Performance.prototype._stepLogic = function(){
-			setTimeout(singleton.stepLogic, Arstider._fullFPS);
+			setTimeout(singleton._stepLogic, Arstider._fullFPS);
 			
 			singleton.updateLogic();
 		};
@@ -181,6 +179,9 @@
 		};
 		
 		singleton = new Performance();
+		
+		singleton._stepLogic();
+		
 		return singleton;
 	});
 })();

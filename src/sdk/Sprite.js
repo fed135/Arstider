@@ -36,10 +36,9 @@
 			 * @this {Sprite}
 			 * @param {string} name The desired name of the display object. Uses timestamp if empty : not recommended
 			 */
-			Sprite.Inherit(Entity);
 			function Sprite(name) { 
 				
-				Super(this, name);
+				Arstider.Super(this, name);
 				
 				//Self reference for stepping 
 				var thisRef = this;
@@ -49,8 +48,10 @@
 				//Current animation frame
 				this.currentFrame = -1;
 				//Animation timer
-				this.stepTimer = setTimeout(function(){thisRef.step(thisRef);}, 20); //wait 1 frame
+				this.stepTimer = setTimeout(function(){thisRef.step(thisRef);}, Arstider._fullFPS); //wait 1 frame
 			};
+			
+			Arstider.Inherit(Sprite, Entity);
 			
 			/**
 			 * Kills the Sprite's Buffer(s).

@@ -155,7 +155,7 @@
 		/**
 		 * Defines parent module
 		 */
-		Arstider.Inherit(Textfield, Entity);
+		Arstider.Inherit(TextField, Entity);
 			
 		/**
 		 * Kills the TextField's Buffer(s).

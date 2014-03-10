@@ -34,9 +34,9 @@
 
 define("Arstider/Emitter", ["Arstider/DisplayObject", "Arstider/Pool", "Arstider/GlobalTimers", "Arstider/Timer"], function(DisplayObject, Pool, GlobalTimers, Timer){
 
-	Emitter.Inherit(DisplayObject);
+	
 	function Emitter(name){
-		Super(this, name);
+		Arstider.Super(this, name);
 		
 		//TODO
 		//this.maxParticles = 100;
@@ -48,6 +48,8 @@ define("Arstider/Emitter", ["Arstider/DisplayObject", "Arstider/Pool", "Arstider
 		this.canonTimer = null;
 		this.canonActivated = false;
 	}
+	
+	Arstider.Inherit(Emitter, DisplayObject);
 	
 	Emitter.prototype.addParticleType = function(name, module, options){
 		this.modulePool.push({name:name, module:module, options:options});
@@ -86,7 +88,7 @@ define("Arstider/Emitter", ["Arstider/DisplayObject", "Arstider/Pool", "Arstider
 			type = thisRef.modulePool[0];
 		}
 		
-		Pool.get(function(type.module, function(particle){
+		Pool.get(type.module, function(particle){
 			resetParticleSettings(particle, type.options);
 			
 			//adjust starting variants
@@ -129,7 +131,7 @@ define("Arstider/Emitter", ["Arstider/DisplayObject", "Arstider/Pool", "Arstider
 					
 					//Change speed values
 					currPart.__rotation += currPart.__rotationDecay;
-					currPart.__scale -= currPart].__scaleDecay;
+					currPart.__scale -= currPart.__scaleDecay;
 					currPart.__xVelocity -= currPart.__xVelocityDecay;
 					currPart.__yVelocity -= currPart.__yVelocityDecay;
 				}
@@ -139,3 +141,4 @@ define("Arstider/Emitter", ["Arstider/DisplayObject", "Arstider/Pool", "Arstider
 
 	return Emitter;
 });
+})();

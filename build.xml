@@ -12,7 +12,7 @@
 	<!--property name="dest" location="./bin"/-->
 	
 	<target name="build.dev" description="dev build">
-		<concat destfile="${dest}/_temp.js">
+		<concat destfile="${dest}/_temp.js" fixlastline="true" ignoreempty="true">
 			<fileset dir="${src}/sdk" includes="**/*.js" />
 		</concat>
 		
@@ -21,6 +21,9 @@
 		<filter token="version" value="0.1"/>
 		
 		<copy toFile="${dest}/Arstider.js" file="${dest}/_temp.js" filtering="true" />
+		<copy todir="${dest}/libs" filtering="false">
+			<fileset dir="${src}/libs"></fileset>
+		</copy>
 		
 		<delete file="${dest}/_temp.js" />
 	</target>
@@ -35,7 +38,10 @@
 		<filter token="version" value="0.1"/>
 				
 		<copy toFile="${dest}/Arstider.js" file="${dest}/_temp.js" filtering="true" />
-				
+		<copy todir="${dest}/libs" filtering="false">
+			<fileset dir="${src}/libs"></fileset>
+		</copy>
+		
 		<delete file="${dest}/_temp.js" />
 		
 		<exec executable="python" failonerror="true">

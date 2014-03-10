@@ -15,7 +15,7 @@
 	/**
 	 * AMD Closure
 	 */	
-		define( "Arstider/GameData", ["Arstider/core/Storage", "libs/text!..{game}/media/config.json", "libs/minify"], function (Storage, config) {
+		define( "Arstider/GameData", ["Arstider/core/Storage", "libs/text!../media/config.json", "libs/minify"], function (Storage, config) {
 			if(singleton != null){return singleton;}
 			
 			function GameData(){

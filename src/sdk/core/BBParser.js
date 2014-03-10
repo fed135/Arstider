@@ -50,7 +50,7 @@
 	/**
 	 * defines BBParser
 	 */
-	define("BBParser", [], function(){
+	define("Arstider/core/BBParser", [], function(){
 	
 		/**
 		 * BB Syntax parser constructor

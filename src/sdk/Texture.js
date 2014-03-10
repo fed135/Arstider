@@ -1,4 +1,4 @@
-;(function(window){
+;(function(){
 
 	var cnv = null;
 	var ctx = null;
@@ -50,4 +50,4 @@
 		return Texture;
 	});
 
-})(window);
+})();
