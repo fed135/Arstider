@@ -1,7 +1,6 @@
 ;(function(){
 	
 	var degToRad = Math.PI/180;
-	var fctCheck = "function";
 	var defaultComposition = "source-over";
 	var engRef = null;
 	var singleton = null;
@@ -13,7 +12,7 @@
 			
 			if(singleton != null) return singleton;
 			
-			function renderChild(curChild,curX,curY,ctx,pre,post,skip,showBoxes){
+			function renderChild(curChild,curX,curY,ctx,pre,post,showBoxes){
 				
 				if(!curChild) return;
 				
@@ -26,11 +25,9 @@
 				
 				Performance.elements++;
 				
-				if(curChild.alpha <= 0) return;
+				if(curchild.draw) curChild.draw();
 				
-				if(!skip){
-					if(typeof curChild.update === fctCheck) curChild._update();
-				}
+				if(curChild.alpha <= 0) return;
 				
 				if(
 					(curChild.scaleX != 1) ||
@@ -141,9 +138,9 @@
 			//Module construction
 			function Renderer(){}
 			
-			Renderer.prototype.draw = function(eng, pre, post, skip, showBoxes){
+			Renderer.prototype.draw = function(eng, pre, post, showBoxes){
 				engRef = eng;
-				if(eng.currentScreen) renderChild(eng.currentScreen,0,0,eng.context,pre,post,skip, showBoxes);
+				if(eng.currentScreen) renderChild(eng.currentScreen,0,0,eng.context,pre,post, showBoxes);
 				Performance.frames++;
 			};
 			

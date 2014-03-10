@@ -231,11 +231,18 @@
 			this.onleave = Arstider.checkIn(props.onleave, Arstider.emptyFunction);
 			
 			/**
-			 * User-defined behavior when element is updated before a draw
+			 * User-defined behavior for asynchronous, constant logic (60 times per sec)
 			 * @override
 			 * @type {function(this:Entity)}
 			 */
 			this.update = Arstider.emptyFunction;
+			
+			/**
+			 * User defined behavior for synchronous logic before a draw
+			 * @override
+			 * @type {function(this:Entity)}
+			 */
+			this.draw = Arstider.emptyFunction;
 			
 			/**
 			 * Whenever the element is hovered
@@ -348,7 +355,15 @@
 				}
 			}
 			
-			this.update();
+			this.update(); 
+			
+			if(this.children && this.children.length > 0){
+				for(var i = 0; i<this.children.length; i++){
+					if(this.children[i] && this.children[i]._update){
+						this.children[i]._update();
+					}
+				}
+			}
 		};
 		
 		/**

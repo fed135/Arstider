@@ -55,6 +55,8 @@
 			this.canvas = Buffer.create("Arstider_main");
 			this.canvas.id = tag+"_canvas";
 			this.context = this.canvas.getContext("2d");
+			
+			Performance.updateLogic = this.stepLogic;
 				
 			Viewport.init(tag, this.canvas);
 			
@@ -62,6 +64,14 @@
 			Events.bind("showPopup", this.showPopup);
 			Events.bind("hidePopup", this.hidePopup);
 			Events.bind("loadingCompleted", this.startMenu);
+		};
+		
+		Engine.prototype.stepLogic = function(){
+			//Check if canvas rendering is on/off
+			if(singleton.handbreak) return;
+			
+			GlobalTimers.step();
+			if(singleton.currentScreen && singleton.currentScreen._update) singleton.currentScreen._update();
 		};
 			
 		Engine.prototype.startMenu = function(){
@@ -161,10 +171,6 @@
 			
 			Background.render(singleton.context);
 			
-			if(Performance.getStatus() === 1){
-				GlobalTimers.step();
-				if(singleton.currentScreen && singleton.currentScreen.update) singleton.currentScreen.update();
-			}
 			//Run through the elements and draw them at their global x and y with their global width and height
 			Renderer.draw(singleton, function(e){
 				if(e.isTouched(mouseX, mouseY)){
@@ -179,7 +185,7 @@
 				else{
 					if(e._hovered) e._onleave();
 				}
-			}, null, Performance.getStatus(), showFrames);
+			}, null, showFrames);
 				
 			Mouse.step();
 				
