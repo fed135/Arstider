@@ -33,7 +33,7 @@
 		}
 		
 		Sound.prototype.proxyPipe = function(){
-			return soundRef._pipeSound();
+			return singleton._pipeSound();
 		};
 		
 		Sound.prototype.init = function(url){
@@ -83,24 +83,24 @@
 		
 		Sound.prototype.play = function(id, keepPlaying, callback){
 			if(GameData.get("muted", true) != "true"){
-				if(soundRef.mobileInPipe){
+				if(singleton.mobileInPipe){
 					if(!keepPlaying){
-						soundRef.mobileSound.pause();
+						singleton.mobileSound.pause();
 					}
 						
-					soundRef.mobileSound.play(id);
-					if(soundRef.sounds[id].loop === true){
+					singleton.mobileSound.play(id);
+					if(singleton.sounds[id].loop === true){
 						setTimeout(function(){
-							soundRef.play(id, keepPlaying, callback);
-						},soundRef.sounds[id].duration+100);
+							singleton.play(id, keepPlaying, callback);
+						},singleton.sounds[id].duration+100);
 					}
 					if(callback){
-						setTimeout(callback, soundRef.sounds[id].duration+100);
+						setTimeout(callback, singleton.sounds[id].duration+100);
 					}
 				}
 				else{
-					window.GameContainer.pendingSound = id;
-					soundRef._pendingSound = id;
+					Arstider.pendingSound = id;
+					singleton._pendingSound = id;
 				}
 			}
 		};

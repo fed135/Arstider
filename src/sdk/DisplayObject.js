@@ -61,8 +61,7 @@
 		 * @param {Object=} props Optional properties for the element.
 		 */
 		function DisplayObject(props) {
-			
-			Arstider.Super(this, props);
+			Arstider.Super(this, Entity, props);
 			
 			/**
 			 * If props is undefined, use the Engine's empty object constant

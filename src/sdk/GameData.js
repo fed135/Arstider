@@ -15,12 +15,12 @@
 	/**
 	 * AMD Closure
 	 */	
-		define( "Arstider/GameData", ["Arstider/core/Storage", "libs/text!../media/config.json", "libs/minify"], function (Storage, config) {
+		define( "Arstider/GameData", ["Arstider/core/Storage", "libs/text!../media/config.json"], function (Storage, config) {
 			if(singleton != null){return singleton;}
 			
 			function GameData(){
 				
-				this.defaultSet = JSON.parse(JSON.minify(config));
+				this.defaultSet = JSON.parse(config);
 				this.runtimeSet = {};
 			}
 			

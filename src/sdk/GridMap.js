@@ -15,9 +15,9 @@
 			 * @this {Entity}
 			 * @param {string} name The desired name of the Entity
 			 */
-			GridMap.Inherit(DisplayObject);
+			Arstider.Inherit(GridMap, DisplayObject);
 			function GridMap(map) {
-				Super(this);
+				Arstider.Super(this, DisplayObject);
 				var thisRef = this;
 				
 				this.asset = null;

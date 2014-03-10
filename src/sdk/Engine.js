@@ -36,6 +36,8 @@
 				
 			this.canvas = null;
 			this.context = null;
+			
+			this.frameRequest = null;
 				
 			this.profiler = null;
 				
@@ -160,7 +162,8 @@
 			if(singleton.handbreak) return;
 			
 			//Immediately request the next frame
-			Arstider.requestAnimFrame(singleton.draw);
+			//Arstider.cancelAnimFrame(singleton.frameRequest); //TODO
+			singleton.frameRequest = Arstider.requestAnimFrame.apply(window, [singleton.draw]);
 			
 			Performance.startStep(singleton.allowSkip);
 			

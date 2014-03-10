@@ -11,6 +11,8 @@
 	
 	define("Arstider/core/Storage", [], function(){
 		
+		if(singleton != null) return singleton;
+		
 		function Storage(){
 			this.enabled = false;
 			this.key = "";
@@ -33,7 +35,7 @@
 			if(this.enabled === false) return null;
 			
 			if(localStorage[this.key+key] == undefined){
-				if(isSafekey(key)){
+				if(isSafekey(key, this.safeKeys)){
 					if(localStorage[key] == undefined) return null;
 					else return localStorage[key];
 				}
@@ -45,7 +47,7 @@
 		Storage.prototype.set = function(key, value){
 			if(this.enabled === false) return null;
 			
-			if(isSafekey(key)) localStorage[key]=value;
+			if(isSafekey(key, this.safeKeys)) localStorage[key]=value;
 			else localStorage[this.key+key]=value;
 		};
 		
@@ -54,10 +56,13 @@
 			
 			if(this.enabled === false) return null;
 			for(item in localStorage) {
-				if(!isSafekey(item) && item.indexOf(this.key) != -1) {
+				if(!isSafekey(item, this.safeKeys) && item.indexOf(this.key) != -1) {
 					localStorage.removeItem(item);
 				}
 			}
 		};
+		
+		singleton = new Storage();
+		return singleton;
 	});
 })();

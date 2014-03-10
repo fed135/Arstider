@@ -36,7 +36,7 @@ define("Arstider/Emitter", ["Arstider/DisplayObject", "Arstider/Pool", "Arstider
 
 	
 	function Emitter(name){
-		Arstider.Super(this, name);
+		Arstider.Super(this, DisplayObject, name);
 		
 		//TODO
 		//this.maxParticles = 100;

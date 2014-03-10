@@ -149,7 +149,7 @@
 			 */
 			this._font = null;
 			
-			Arstider.Super(this, props);
+			Arstider.Super(this, Entity, props);
 		};
 		
 		/**

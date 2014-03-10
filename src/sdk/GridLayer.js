@@ -18,9 +18,9 @@
 			 * @constructor
 			 * @this {Grid}
 			 */
-			GridLayer.Inherit(DisplayObject);
+			Arstider.Inherit(GridLayer, DisplayObject);
 			function GridLayer(name, data, tileSize, tiles, mapWidth, mapHeight, props){
-				Super(this, name);
+				Arstider.Super(this, DisplayObject, name);
 				
 				this.tileSize = tileSize;
 				this.tiles = new Array(mapWidth);

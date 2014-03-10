@@ -38,7 +38,7 @@
 			 */
 			function Sprite(name) { 
 				
-				Arstider.Super(this, name);
+				Arstider.Super(this, Entity, name);
 				
 				//Self reference for stepping 
 				var thisRef = this;

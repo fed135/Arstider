@@ -20,7 +20,7 @@
 				this.lastStep = start;
 			}
 			
-			Tween.Inherit(Timer);
+			Arstider.Inherit(Tween, Timer);
 			function Tween(target, changes, time, easing, easeOpt, loop){
 				this._setup(target, changes, time, easing, easeOpt, loop);
 			}
@@ -49,7 +49,7 @@
 				if(!this.callbackList){
 					this.callbackList = [];
 				}
-				Super(this, this._runCallbacks, time, false);
+				Arstider.Super(this, Timer, this._runCallbacks, time, false);
 				
 				return this;
 			};

@@ -34,14 +34,6 @@ Arstider.emptyString = "";
 Arstider.emptyImgSrc = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
 
 /**
- * Quick-ref for Module Inheritance
- * @const
- * @private
- * @type {Object}
- */
-Arstider._inheritanceHistory = {};
-
-/**
  * Min/Max FPS value
  * @const
  * @type {number}
@@ -104,9 +96,8 @@ Arstider.chop = function(i){
  * Supers the values of a module to it's parent module
  * @param {?} child The child that will super to a defined inherited parent - requires the constructor to have been Inherited at least once
  */
-Arstider.Super = function(child){
-	var parent = Arstider._inheritanceHistory[child.constructor.toString()];
-	if(arguments.length > 1) parent.apply(child, Array.prototype.slice.call(arguments,1));
+Arstider.Super = function(child, parent){
+	if(arguments.length > 2) parent.apply(child, Array.prototype.slice.call(arguments,2));
 	else parent.call(child);
 };
 
@@ -117,7 +108,6 @@ Arstider.Super = function(child){
  */
 Arstider.Inherit = function(child, parent){
 	if(parent instanceof Function || typeof parent === 'function'){
-		Arstider._inheritanceHistory[child.toString()] = parent;
 		child.prototype = Object.create(parent.prototype);
 		child.prototype.constructor = child;
 	}

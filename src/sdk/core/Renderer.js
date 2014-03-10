@@ -25,7 +25,7 @@
 				
 				Performance.elements++;
 				
-				if(curchild.draw) curChild.draw();
+				if(curChild.draw) curChild.draw();
 				
 				if(curChild.alpha <= 0) return;
 				
@@ -84,12 +84,14 @@
 				if(curChild.mask === true) ctx.globalCompositeOperation = "destination-in";
 				
 				//Update globals
-				curChild.global.x = curX;
-				curChild.global.y = curY;
-				curChild.global.scaleX = curChild.scaleX * curChild.parent.scaleX;
-				curChild.global.scaleY = curChild.scaleY * curChild.parent.scaleY;
-				curChild.global.rotation = curChild.rotation + curChild.parent.rotation;
-				curChild.global.alpha = curChild.alpha * curChild.parent.alpha;
+				if(curChild.global && curChild.parent){
+					curChild.global.x = curX;
+					curChild.global.y = curY;
+					curChild.global.scaleX = curChild.scaleX * curChild.parent.scaleX;
+					curChild.global.scaleY = curChild.scaleY * curChild.parent.scaleY;
+					curChild.global.rotation = curChild.rotation + curChild.parent.rotation;
+					curChild.global.alpha = curChild.alpha * curChild.parent.alpha;
+				}
 				
 				//Render
 				if(curChild.data && curChild.data != null){
@@ -123,7 +125,7 @@
 					if(curChild.children.length > 0) {
 						len = curChild.children.length;
 						for(li=0; li<len; li++){
-							renderChild(curChild.children[li],curX,curY,ctx,pre,post,skip,showBoxes);
+							renderChild(curChild.children[li],curX,curY,ctx,pre,post,showBoxes);
 						}
 					}
 				}
