@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Arstider Unit tester</title>
+		
+		<style>
+			*{
+				border:0px;
+				margin:0px;
+				padding:0px;
+				font-family:"Arial";
+			}
+		
+			.test{
+				display:block;
+				position:relative;
+				clear:both;
+				border:1px solid #222;
+				border-radius:6px;
+				margin:3px;
+				height:29px;
+			}
+			
+			.testFile{
+				display:block;
+				position:relative;
+				width:15%;
+				float:left;
+				padding:5px;
+				padding-left:0.5%;
+				padding-right:0.5%;
+				font-weight:bold;
+			}
+			
+			.testStatus{
+				display: block;
+				position:relative;
+				width:83%;
+				float:right;
+				background-color:#aaa;
+				padding:5px;
+				padding-left:0.5%;
+				padding-right:0.5%;
+				border-top-right-radius: 6px;
+				border-bottom-right-radius: 6px;
+				color:#222;
+			}
+		</style>
+	</head>
+	
+	<body>
+		<div id="moduleList"> </div>
+		<div id="scripts"> </div>
+		
+		<script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.js"></script>
+		
+		<script>
+			window.addEventListener("error", function(e){
+				if(e.filename.indexOf(".js") == -1) return;
+				
+				var name = e.filename.substring(e.filename.lastIndexOf("/")+1, e.filename.indexOf("."));
+				if(modules.indexOf(name != -1)){
+					modules.splice(modules.indexOf(name),1);
+				}
+				
+				document.getElementById(name + "_status").innerHTML = "ERROR!";
+				document.getElementById(name + "_status").style.backgroundColor = "#FFCCCC";
+			});
+		
+			var modules = [
+				"core/_Utils",
+				"core/BBParser",
+				"core/Performance",
+				"core/Storage",
+				
+				"Background",
+				"Browser",
+				"Buffer",
+				"Collidable",
+				"Debugger",
+				"Dictionary",
+				"DisplayObject",
+				"Easings",
+				"Emitter",
+				"Engine",
+				"Entity",
+				"Events",
+				"FileSystem",
+				"Font",
+				"GameData",
+				"GlobalTimers",
+				"Gradient",
+				"GridLayer",
+				"GridMap",
+				"Input",
+				"Mouse",
+				"Pool",
+				"Preloader",
+				"Screen",
+				"Sequence",
+				"Sound",
+				"Sprite",
+				"SpriteSheet",
+				"Tag",
+				"TextField",
+				"Texture",
+				"Timer",
+				"Tween",
+				"Viewport"
+			];
+		
+		var moduleListTag = document.getElementById("moduleList");
+		var scriptsTag = document.getElementById("scripts");
+		var loadedModules = 0;
+		
+		for(var i = 0; i<modules.length; i++){
+			startTest(modules[i]);
+		}
+		
+		function startTest(name){
+			
+			var testElement = document.createElement("div");
+			moduleListTag.appendChild(testElement);
+			
+			testElement.className = "test";
+			testElement.innerHTML = "<div class='testFile'>"+name+"</div><div class='testStatus' id='"+(name.substring(name.lastIndexOf("/")+1))+"_status'>Loading...</div>";
+			
+			var loader = document.createElement("script");
+			
+			scriptsTag.appendChild(loader);
+			loader.src = name + ".js";
+			
+			loader.onload = function(){
+				console.log("Module loaded: ", name);
+				loadedModules++;
+				document.getElementById(name.substring(name.lastIndexOf("/")+1) + "_status").innerHTML = "LOADED!";
+				document.getElementById(name.substring(name.lastIndexOf("/")+1) + "_status").style.backgroundColor = "#FFFFCC";
+				
+				if(loadedModules == modules.length){
+					setTimeout(startTests, 1000);
+				}
+			};
+		}
+		
+		function startTests(){
+			for(var i = 0; i<modules.length; i++){
+				
+				(function(url){
+					
+					var name = url.substring(url.lastIndexOf("/")+1);
+					
+					try{
+						//Try to call module
+						require(["Arstider/"+url], function(module){
+							document.getElementById(name + "_status").innerHTML = "SUCCESS!";
+							document.getElementById(name + "_status").style.backgroundColor = "#CCFFCC";
+						});
+					}
+					catch(e){
+						document.getElementById(name + "_status").innerHTML = "ERROR!";
+						document.getElementById(name + "_status").style.backgroundColor = "#FFCCCC";
+					}
+				})(modules[i]);
+			}
+		}
+		
+		</script>
+	</body>
+</html>
