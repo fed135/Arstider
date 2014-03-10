@@ -1,46 +1,85 @@
+/**
+ * BB Parser
+ * 
+ * @version 1.1
+ * @author frederic charette <fredericcharette@gmail.com>
+ */
+
+/*
+ * Self-invoked singleton wrapper
+ */
 ;(function(){
-	var BBTagsList = {
 	
-		//BOLDNESS
-		"B":{},
-		
-		//ITALIC
-		"I":{},
-		
-		//COLOR
-		"C":{param : true},
-		
-		//ENABLE STROKE
-		"S":{param : true},
-		
-		//ENABLE FILL
-		"F":{param : true},
-		
-		//TABS 
-		"T":{param : true}
-	};
+	var 
+		/**
+		 * The list of accepted BBTags
+		 * @private
+		 * @type {Object}
+		 */
+		BBTagsList = {
+			"B":{},
+			"I":{},
+			"C":{param : true},
+			"S":{param : true},
+			"F":{param : true}, 
+			"T":{param : true}
+		}
+	;
 	
+	/**
+	 * Segment constructor
+	 * @private
+	 * @constructor
+	 * @param {string} text The parsed text
+	 */
+	function Segment(text){
+		
+		/**
+		 * The segment of text
+		 * @type {string}
+		 */
+		this.text = text;
+		
+		/**
+		 * The list of styles for the segment of text
+		 * @type {Array}
+		 */
+		this.styles = [];
+	}
+	
+	/**
+	 * defines BBParser
+	 */
 	define("BBParser", [], function(){
 	
-		function Segment(text){
-			this.text = text;
-			this.styles = [];
-		}
-		
+		/**
+		 * BB Syntax parser constructor
+ 		 * @param {string} text Translated or not piece of text to split into style-ruled segments
+		 */
 		function BBParser(text){
+			
+			/**
+			 * The list of segments for the string
+			 * @type {Array}
+			 */
 			this.segments = [];
 			
 			this.parse(text);
 		}
 		
+		/**
+		 * Recursive string parsing method
+		 * @param {string} str The piece of string to parse
+ 		 * @param {Array} styles The current list of styles
+ 		 * @return {boolean} If parsing was successful or not
+		 */
 		BBParser.prototype.parse = function(str, styles){
 			var 
 				carot,
 				cutStart,
 				cutEnd = null,
 				cut,
-				
-				styles = styles || []
+				styles = styles || [],
 				currentStyle = null
 			;
 			
