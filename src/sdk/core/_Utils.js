@@ -164,6 +164,52 @@ Arstider.cancelAnimFrame = (function(){
  */
 require(["Arstider/Buffer"], function(Buffer){
 	
+	Arstider.debugDraw = function(targetBuffer){
+		var 
+			ctx = null,
+			win = document.getElementById("debugWindow")
+		;
+			
+		if(!win){
+			win = document.createElement('canvas');
+			win.width=300;
+			win.height=300;
+			win.id = "debugWindow";
+			win.style.height = "300px";
+			win.style.width = "300px";
+			win.style.position = "absolute";
+			win.style.display = "block";
+			win.style.backgroundColor = "green";
+			win.style.bottom = "0px";
+			win.style.right = "0px";
+			win.style.zIndex = 999;
+			document.body.appendChild(win);
+		}
+		ctx = win.getContext('2d');
+		ctx.clearRect(0,0,300,300);
+		ctx.drawImage(Buffer.get(targetBuffer), 0,0,300,300);
+	};
+	
+	/**
+	 * Saves graphic data into a new buffer
+	 * @param {string} name The name of the future Buffer
+	 * @param {Image|HTMLCanvasElement} img The graphic resource to draw onto the canvas
+	 * @return {HTMLCanvasElement} The newly created Buffer
+	 */
+	Arstider.saveToCanvas = function(name, img){
+		
+		var
+			canvas = Buffer.create(name),
+			ctx = canvas.context2D()
+		;
+				
+		canvas.width = img.width;
+		canvas.height = img.height;
+		ctx.drawImage(img,0,0,canvas.width,canvas.height);
+		
+		return canvas;
+	};
+	
 	/**
 	* Inverts the colors of the Entity.
 	* @param {HTMLCanvasElement} buffer The target data buffer
@@ -179,7 +225,7 @@ require(["Arstider/Buffer"], function(Buffer){
 			imageData = buffer.getContext("2d").getImageData(Arstider.checkIn(x,0),Arstider.checkIn(y,0), Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height)), 
 			pixels = imageData.data, 
 			i = (Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height))-1,
-			ret = Buffer.create(buffer.name + " _inverted")
+			ret = Buffer.create(buffer.name + "_inverted")
 		;
 		
 		
@@ -210,13 +256,13 @@ require(["Arstider/Buffer"], function(Buffer){
 		var 
 			imageData = buffer.getContext("2d").getImageData(Arstider.checkIn(x,0),Arstider.checkIn(y,0), Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height)), 
 			pixels = imageData.data, 
-			i = (Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height))-1,
-			ret = Buffer.create(buffer.name + " _grayscale"),
+			i = (Arstider.checkIn(w,buffer.width) * Arstider.checkIn(h,buffer.height))-1,
+			ret = Buffer.create(buffer.name + "_grayscale"),
 			avg = null
 		;
 		
 		for(i; i >= 0; i--){
-			avg = (pixels[i*4] + pixels[i*4+1] +  + pixels[i*4+2])/3;
+			avg = (pixels[i*4] + pixels[i*4+1] + pixels[i*4+2])/3;
 			
 			pixels[i*4] = avg;
 	    	pixels[i*4+1] = avg;  
@@ -247,7 +293,7 @@ require(["Arstider/Buffer"], function(Buffer){
 			imageData = buffer.getContext("2d").getImageData(Arstider.checkIn(x,0),Arstider.checkIn(y,0), Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height)), 
 			pixels = imageData.data, 
 			i = (Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height))-1,
-			ret = Buffer.create(buffer.name + " _tint"+r+g+b),
+			ret = Buffer.create(buffer.name + "_tint"+r+g+b),
 			rPcent = r/255,
 			gPcent = g/255,
 			bPcent = b/255
@@ -283,7 +329,7 @@ require(["Arstider/Buffer"], function(Buffer){
 			copy = Buffer.create(buffer.name+"_blurred_temp"), 
 			copyCtx = copy.getContext("2d"), 
 			ratio = (1/force),
-			ret = Buffer.create(buffer.name+"_blurred"),
+			ret = Buffer.create(buffer.name+"_blur"),
 			retCtx = ret.getContext("2d")
 		;
 		

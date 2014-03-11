@@ -49,47 +49,48 @@
 			}
 			
 			Mouse.prototype.step = function(){
-				this.prevX = this.x();
-				this.prevY = this.y();
+				singleton.prevX = singleton.x();
+				singleton.prevY = singleton.y();
 			};
 			
 			Mouse.prototype.reset = function(){
-				this.prevX = 0;
-				this.prevY = 0;
-				this.touch = [];
-				this.pressed = false;
-				this._input = false;
-				this.mouse.x = 0;
-				this.mouse.y = 0;
+				singleton.prevX = 0;
+				singleton.prevY = 0;
+				singleton.touch = [];
+				singleton.pressed = false;
+				singleton._input = false;
+				singleton.mouse.x = 0;
+				singleton.mouse.y = 0;
 			};
 			
 			Mouse.prototype.x = function(input){
 				input = input || 0;
-			
-				if(this.pressed){
-					if(Browser.isMobile){
-						return this.touch[input].x;
+				
+				if(Browser.isMobile){
+					if(singleton.pressed){
+						return singleton.touch[input].x;
 					}
-					else{
-						return this.mouse.x;
-					}
+				}
+				else{
+					return singleton.mouse.x;
 				}
 			};
 			
 			Mouse.prototype.y = function(input){
 				input = input || 0;
 			
-				if(this.pressed){
-					if(Browser.isMobile){
-						return this.touch[input].y;
+				if(Browser.isMobile){
+					if(singleton.pressed){
+						return singleton.touch[input].y;
 					}
-					else{
-						return this.mouse.y;
-					}
+				}
+				else{
+					return singleton.mouse.y;
 				}
 			};
 			
 			Mouse.prototype.handleTouchMove = function(event){
+				
 				e = event || window.event;
 				e.stopPropagation();
 				e.preventDefault();
@@ -98,21 +99,22 @@
 				var newTouch;
 				for(var i=0; i<e.touches.length && i<singleton.touchLimit; i++){
 					newTouch = singleton.touchObjBank[i];
-					singleton.setMousePos(newTouch, e.touches[i].clientX, e.touches[i].clientY);
+					newTouch.x = ((e.touches[i].clientX - Viewport.xOffset) / Viewport.canvasRatio) * Viewport.globalScale;
+		        	newTouch.y = ((e.touches[i].clientY - Viewport.yOffset) / Viewport.canvasRatio) * Viewport.globalScale;
 					singleton.touch[i] = newTouch;
 				}
 			};
 			
 			Mouse.prototype.checkTouch = function(drag){
-				if(this._input === true || (drag && this.pressed === true)){
-					this._input = false;
+				if(singleton._input === true || (drag && singleton.pressed === true)){
+					singleton._input = false;
 					return true;
 				}
 				return false;
 			};
 			
 			Mouse.prototype.checkHover = function(drag){
-				if(!drag && this.pressed){
+				if(!drag && singleton.pressed){
 					return true;
 				}
 				return false;
@@ -143,11 +145,6 @@
 				return false;
 			};
 			
-			Mouse.prototype.setMousePos = function(ret, x, y){
-				ret.x = (x - Viewport.xOffset) / Viewport.canvasRatio;
-		        ret.y = (y - Viewport.yOffset) / Viewport.canvasRatio;
-			};
-			
 			Mouse.prototype.handleMouseDown = function(e){
 				singleton.pressed = true;
 			};
@@ -155,12 +152,17 @@
 			Mouse.prototype.handleMouseUp = function(e){
 				singleton._input = true;
 				singleton.pressed = false;
+				
+				if(Viewport._fullScreenRequested){
+					Viewport._enterFullScreen();
+				}
 			};
 			
 			Mouse.prototype.handleMouseMove = function(event) {
 		        event = event || window.event; // IE-ism
-		        singleton.setMousePos(singleton.mouse, event.clientX, event.clientY);
-		    };
+		        singleton.mouse.x = ((event.clientX - Viewport.xOffset) / Viewport.canvasRatio) * Viewport.globalScale;
+		        singleton.mouse.y = ((event.clientY - Viewport.yOffset) / Viewport.canvasRatio) * Viewport.globalScale;
+		   };
 			
 			singleton = new Mouse();
 			

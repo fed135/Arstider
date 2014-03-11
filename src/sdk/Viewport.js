@@ -1,14 +1,18 @@
 ;(function(){
 
-	var singleton = null;
+	var 
+		singleton = null,
+		PORTRAIT = "portrait",
+		LANDSCAPE = "landscape"
+	;
 	
-	define( "Arstider/Viewport", [], function(){
+	define( "Arstider/Viewport", ["Arstider/Browser"], function(Browser){
 		if(singleton != null) return singleton;
 		
 		function Viewport(){
 			this.tag = null;
 			
-			this.orientation = "portrait";
+			this.orientation = PORTRAIT;
 				
 			this.canvasRatio = 1;
 			
@@ -26,12 +30,14 @@
 			this.minHeight = 536;
 			
 			this.container = null;
-				
+			
+			this._fullScreenRequested = false;
 			this._requestFullscreenEvent = null;
 			this._cancelFullscreenEvent = null;
 			
 			//Override me!
-			this.onresize = function(){};
+			this.onresize = Arstider.emptyFunction;
+			this.onrotate = function(){console.log("New orientation:",singleton.orientation);};
 		}
 			
 		Viewport.prototype.init = function(tag, canvas){
@@ -45,33 +51,110 @@
 				this.container.style.width = this.maxWidth + "px";
 				this.container.style.height = this.maxHeight + "px";
 				
-				this.container.addEventListener("resize", this._resize);
+				window.addEventListener("resize", this._resize);
+				if(Browser.isMobile){
+					window.addEventListener("orientationchange", this._rotate);
+				}
 				
 				this._requestFullscreenEvent = (this.tag.requestFullScreen)?"requestFullScreen":(this.tag.mozRequestFullScreen)?"mozRequestFullScreen":(this.tag.webkitRequestFullScreenWithKeys)?"webkitRequestFullScreenWithKeys":(this.tag.webkitRequestFullScreen)?"webkitRequestFullScreen":"FullscreenError";
 				this._cancelFullscreenEvent =  (window.document.cancelFullScreen)?"cancelFullScreen":(window.document.mozCancelFullScreen)?"mozCancelFullScreen":(window.document.webkitCancelFullScreen)?"webkitCancelFullScreen":"FullscreenError";
+				
+				this._resize();
 			}
 			else{
 				console.error("Could not find element with id \"" + tag + "\"");
 			}
 		};
 		
-		Viewport.prototype.enterFullScreen = function(scale){
-			scale = scale || false;
+		Viewport.prototype._enterFullScreen = function(scale){
+			
+			this._fullScreenRequested = false;
+			
+			scale = Arstider.checkIn(scale, false);
 		
 			if(scale) this.tag.classList.add("fs_scaled_element");
 			else this.tag.classList.remove("fs_scaled_element");
 			
+			console.log(this._requestFullscreenEvent);
+			console.log(this.tag);
+			
 			return this.tag[this._requestFullscreenEvent]();
+		};
+		
+		Viewport.prototype.enterFullScreen = function(scale){
+			this._fullScreenRequested = true;
 		};
 		
 		Viewport.prototype.quitFullScreen = function(){
 			return window.document[this._cancelFullscreenEvent]();
 		};
 			
-		Viewport.prototype._resize = function(){
-			console.log(singleton.container.innerWidth, ",", singleton.container.innerHeight);
+		Viewport.prototype._resize = function(e){
+			var windowW = window.innerWidth;
+			var windowH = window.innerHeight;
+			var ratio = 1;
+			var scaleX, scaleY;
+			var posX, posY;
 			
-			singleton.resize();
+			//Retina detection
+			if( Browser.isMobile &&
+			    windowW*2 >= singleton.minWidth &&
+			    windowW*2 <= singleton.maxWidth &&
+			    windowH*2 >= singleton.minHeight &&
+			    windowH*2 <= singleton.maxHeight
+			){
+				ratio = 0.5;
+			} else {	
+				scaleX = windowW / singleton.minWidth;
+				scaleY = windowH / singleton.minHeight;
+				ratio = Math.min(scaleX,scaleY);
+				ratio = Math.min(1,ratio);
+			}
+				
+			scaleX = Math.round(singleton.maxWidth*ratio);
+			scaleY = Math.round(singleton.maxHeight*ratio);
+			
+			posX = Math.round( (windowW - scaleX) * 0.5 );
+			posY = Math.round( (windowH - scaleY) * 0.5 );
+			
+			singleton.xOffset = posX;
+			singleton.yOffset = posY;
+			
+			singleton.tag.style.left = posX+"px";
+			singleton.tag.style.top = posY+"px";
+			singleton.tag.style.width = scaleX+"px";
+			singleton.tag.style.height = scaleY+"px";
+			singleton.tag.style.position = "absolute";
+			singleton.tag.width = singleton.maxWidth;
+			singleton.tag.height = singleton.maxHeight;
+			
+			singleton.canvasRatio = ratio;
+			singleton.visibleWidth = Math.round(windowW / ratio);
+			singleton.visibleHeight = Math.round(windowH / ratio);
+			singleton.visibleWidth = Math.min(singleton.visibleWidth, singleton.maxWidth);
+			singleton.visibleHeight = Math.min(singleton.visibleHeight, singleton.maxHeight);
+			
+			singleton.onresize();
+		};
+		
+		Viewport.prototype._rotate = function(e){
+			if(window.orientation){
+				if (window.orientation === -90 || window.orientation === 90) singleton.orientation = LANDSCAPE;
+				else singleton.orientation = PORTRAIT;
+			}
+			else singleton.orientation = (window.innerHeight>window.innerWidth)?PORTRAIT:LANDSCAPE;
+			
+			singleton.onrotate();
+		};
+		
+		Viewport.prototype.removeDecorations = function(target){
+			target = target || window;
+			if(target.locationbar) target.locationbar.visible=false;
+			if(target.menubar) target.menubar.visible=false;
+			if(target.personalbar) target.personalbar.visible=false;
+			if(target.scrollbars) target.scrollbars.visible=false;
+			if(target.statusbar) target.statusbar.visible=false;
+			if(target.toolbar) target.toolbar.visible=false;
 		};
 		
 		Viewport.prototype.setGlobalScale = function(num){

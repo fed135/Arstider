@@ -35,31 +35,6 @@
 		return ret;
 	}
 	
-	function debugDraw(target){
-		var ctx = null;
-			win = document.getElementById("debugWindow");
-		if(!win){
-			win = document.createElement('canvas');
-			win.width=300;
-			win.height=300;
-			win.id = "debugWindow";
-			win.style.height = "300px";
-			win.style.width = "300px";
-			win.style.position = "absolute";
-			win.style.display = "block";
-			win.style.backgroundColor = "green";
-			win.style.bottom = "0px";
-			win.style.right = "0px";
-			win.style.zIndex = 999;
-			document.body.appendChild(win);
-		}
-		ctx = win.getContext('2d');
-		ctx.clearRect(0,0,300,300);
-		if(target.data){
-			ctx.drawImage(target.data, 0,0,300,300);
-		}
-	}
-	
 	/**
 	 * AMD Closure
 	 */	

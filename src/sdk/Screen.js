@@ -37,30 +37,30 @@ define("Arstider/Screen", ["Arstider/DisplayObject", "Arstider/Viewport"], funct
 		 */
 		this.width = Viewport.maxWidth;
 		this.height = Viewport.maxHeight;
-		
-		/**
-		 * On screen load behavior
-		 * @override
-		 * @type {function(this:Screen)}
-		 */
-		this.onload = Arstider.emptyFunction;
-		
-		/**
-		 * On screen unload behavior
-		 * @override
-		 * @type {function(this:Screen)}
-		 */
-		this.onunload = Arstider.emptyFunction;
-		
-		/**
-		 * On screen resume behavior - when overlay closes
-		 * @override
-		 * @type {function(this:Screen)}
-		 */
-		this.onresume = Arstider.emptyFunction;
 	}
 	
 	Arstider.Inherit(Screen, DisplayObject);
+	
+	/**
+	 * On screen load behavior
+	 * @override
+	 * @type {function(this:Screen)}
+	 */
+	Screen.prototype.onload = Arstider.emptyFunction;
+		
+	/**
+	 * On screen unload behavior
+	 * @override
+	 * @type {function(this:Screen)}
+	 */
+	Screen.prototype.onunload = Arstider.emptyFunction;
+		
+	/**
+	 * On screen resume behavior - when overlay closes
+	 * @override
+	 * @type {function(this:Screen)}
+	 */
+	Screen.prototype.onresume = Arstider.emptyFunction;
 	
 	return Screen;
 });

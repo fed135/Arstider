@@ -1,9 +1,12 @@
 ;(function(){
 	
-	var degToRad = Math.PI/180;
-	var defaultComposition = "source-over";
-	var engRef = null;
-	var singleton = null;
+	var 
+		degToRad = Math.PI/180,
+		defaultComposition = "source-over",
+		engRef = null,
+		singleton = null,
+		defaultShadowColor = "transparent"
+	;
 	
 	/**
 	 * AMD Closure
@@ -20,7 +23,11 @@
 					isComplex = false,	//Determines if geometrical transformations have been applied
 					oldAlpha = null,	//Stores the old alpha of the context, if need be
 					li = null,			//To loop through the element's children, if need be
-					len = null
+					len = null,
+					oldShadowColor,
+					oldShadowBlur,
+					oldShadowOffsetX,
+					oldShadowOffsetY
 				;
 				
 				Performance.elements++;
@@ -89,8 +96,25 @@
 					curChild.global.y = curY;
 					curChild.global.scaleX = curChild.scaleX * curChild.parent.scaleX;
 					curChild.global.scaleY = curChild.scaleY * curChild.parent.scaleY;
+					curChild.global.width = curChild.width * curChild.global.scaleX;
+					curChild.global.height = curChild.height * curChild.global.scaleY;
 					curChild.global.rotation = curChild.rotation + curChild.parent.rotation;
 					curChild.global.alpha = curChild.alpha * curChild.parent.alpha;
+				}
+				
+				//Shadow
+				if(curChild.shadowColor != defaultShadowColor){
+					
+					//save old properties
+					oldShadowColor = ctx.shadowColor;
+					oldShadowBlur = ctx.shadowBlur;
+					oldShadowOffsetX = ctx.shadowOffsetX;
+					oldShadowOffsetY = ctx.shadowOffsetY;
+					
+					ctx.shadowColor = curChild.shadowColor;
+					ctx.shadowBlur = curChild.shadowBlur;
+					ctx.shadowOffsetX = curChild.shadowOffsetX;
+					ctx.shadowOffsetY = curChild.shadowOffsetY;
 				}
 				
 				//Render
@@ -134,6 +158,14 @@
 				if(oldAlpha !== null) ctx.globalAlpha = oldAlpha;
 				if(curChild.compositeMode != defaultComposition) ctx.globalCompositeOperation = defaultComposition;
 				if(isComplex) ctx.restore();
+				else{
+					if(curChild.shadowColor != defaultShadowColor){
+						ctx.shadowColor =oldShadowColor;
+						ctx.shadowBlur = oldShadowBlur;
+						ctx.shadowOffsetX = oldShadowOffsetX;
+						ctx.shadowOffsetY = oldShadowOffsetY;
+					}
+				}
 			}
 			
 			

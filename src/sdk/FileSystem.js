@@ -90,16 +90,8 @@
 			};
 			
 			FileSystem.prototype.save = function(name, img){
-				var
-					canvas = Buffer.create(name),
-					ctx = canvas.context2D()
-				;
 				
-				canvas.width = img.width;
-				canvas.height = img.height;
-				ctx.drawImage(img,0,0,canvas.width,canvas.height);
-				
-				this.stored[name] = canvas;
+				this.stored[name] = Arstider.saveToCanvas(name, img);
 				img.src = empty;
 			};
 			

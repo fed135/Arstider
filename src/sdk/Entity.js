@@ -24,6 +24,14 @@
 		defaultComposition = "source-over",
 		
 		/**
+		 * Default shadow color
+		 * @const
+		 * @private
+		 * @type {string}
+		 */
+		defaultShadowColor = "transparent",
+		
+		/**
 		 * Anonymous name prefix
 		 * @const
 		 * @private
@@ -161,6 +169,30 @@
 			this.mask = false;
 			
 			/**
+			 * Element's shadow color
+			 * @type {string}
+			 */
+			this.shadowColor = Arstider.checkIn(props.shadowColor, defaultShadowColor);
+			
+			/**
+			 * Element's shadow blur
+			 * @type {number}
+			 */
+			this.shadowBlur = Arstider.checkIn(props.shadowBlur, 0);
+			
+			/**
+			 * Element's shadow horizontal offset
+			 * @type {number}
+			 */
+			this.shadowOffsetX = Arstider.checkIn(props.shadowOffsetX, 0);
+			
+			/**
+			 * Element's shadow vertical offset
+			 * @type {number}
+			 */
+			this.shadowOffsetY = Arstider.checkIn(props.shadowOffsetY, 0);
+			
+			/**
 			 * Composite mode to draw the data in. Cancels masking!
 			 * @type {string}
 			 */
@@ -231,13 +263,6 @@
 			this.onleave = Arstider.checkIn(props.onleave, Arstider.emptyFunction);
 			
 			/**
-			 * User-defined behavior for asynchronous, constant logic (60 times per sec)
-			 * @override
-			 * @type {function(this:Entity)}
-			 */
-			this.update = Arstider.emptyFunction;
-			
-			/**
 			 * User defined behavior for synchronous logic before a draw
 			 * @override
 			 * @type {function(this:Entity)}
@@ -286,6 +311,13 @@
 			 */
 			this._fillY = null;
 		};
+		
+		/**
+		 * User-defined behavior for asynchronous, constant logic (60 times per sec)
+		 * @override
+		 * @type {function(this:Entity)}
+		 */
+		Entity.prototype.update = Arstider.emptyFunction;
 		
 		/**
 		 * Private logic when element is hovered
@@ -408,7 +440,6 @@
 		 * @return {boolean} Are the coordinates within the zone of the Entity
 		 */
 		Entity.prototype.isTouched = function(x,y){
-			
 			if(x > this.global.x && x < (this.global.x + this.global.width)){
 				if(y > this.global.y && y < (this.global.y + this.global.height)) return true;
 			}

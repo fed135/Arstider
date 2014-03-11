@@ -179,7 +179,7 @@
 			//Run through the elements and draw them at their global x and y with their global width and height
 			Renderer.draw(singleton, function(e){
 				if(e.isTouched(mouseX, mouseY)){
-					if(Mouse.down){
+					if(Mouse.pressed){
 						if(!e._pressed) e._onpress();
 					}
 					else{

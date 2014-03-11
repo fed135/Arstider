@@ -59,7 +59,8 @@
 	       	inc,
 	       	testLine,
 	       	metrics,
-	       	testWidth
+	       	testWidth,
+	       	oldShadow = null
 		;
 		
 		paragraphs = myText.split(breakLine);
@@ -76,9 +77,17 @@
 		       			context.strokeText(line, x, y + (inc*context.lineHeight));
 					}
 					if(fillText){
-						if(strokeText && context.shadowColor) context.shadowColor = "transparent";
+						if(strokeText && context.shadowColor){
+							oldShadow = context.shadowColor;
+							context.shadowColor = "transparent";
+						} 
 						
 						context.fillText(line, x, y + (inc*context.lineHeight));
+						
+						if(oldShadow != null){
+							context.shadowColor = oldShadow;
+							oldShadow = null;
+						}
 					}
 					line = words[n] + ' ';
 					y += context.lineHeight;
@@ -91,9 +100,18 @@
 		 		context.strokeText(line, x, y + (inc*context.lineHeight));
 			}
 			if(fillText){
-				if(strokeText && context.shadowColor) context.shadowColor = "transparent";
+				
+				if(strokeText && context.shadowColor){
+					oldShadow = context.shadowColor;
+					context.shadowColor = "transparent";
+				}
 				
 				context.fillText(line, x, y + (inc*context.lineHeight));
+				
+				if(oldShadow != null){
+					context.shadowColor = oldShadow;
+					oldShadow = null;
+				}
 			}
 	    }
 	}
@@ -225,6 +243,12 @@
 		 */
 		TextField.prototype.render = function(buff){
 			
+			var 
+				i,
+				oldShadow,
+				xShift = 0
+			;
+			
 			/**
 			 * Cancel operation if not all required fields are filled
 			 */
@@ -232,13 +256,11 @@
 			
 			this.makeBuffer(this.width,this.height);
 			
-			for(var i in this._font){
+			for(i in this._font){
 				this.dataCtx[i] = this._font[i];
 			}
 			this.dataCtx.font = ((this._font.style == "")?"":(this._font.style + " ")) + this._font.size + " " + this._font.family;
 			
-			
-			var xShift = 0;
 			if(this._font.textAlign === "center") xShift = this.width*0.5;
 			else if(this._font.textAlign === "right") xShift = this.width;
 			
@@ -253,9 +275,17 @@
 				}
 				if(this.fillText){
 					//Prevent shadow from being applied twice- and over the already placed stroke
-					if(this.strokeText && this._font.shadowColor) this.dataCtx.shadowColor = "transparent";
+					if(this.strokeText && this._font.shadowColor){
+						oldShadow = this.dataCtx.shadowColor;
+						this.dataCtx.shadowColor = "transparent";
+					}
 					
 					this.dataCtx.fillText(this._textValue, xShift, 0);
+					
+					if(oldShadow != null){
+						this.dataCtx.shadowColor = oldShadow;
+						oldShadow = null;
+					}
 				}
 			}
 		};

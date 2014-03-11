@@ -70,10 +70,12 @@
 			
 			Tween.prototype.loop = function(val){
 				this._loop = val || true;
+				return this;
 			};
 			
 			Tween.prototype.yoyo = function(val){
 				this._yoyo = val || true;
+				return this;
 			};
 			
 			Tween.prototype.play = function(){
