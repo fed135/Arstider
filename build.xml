@@ -8,7 +8,7 @@
 	
 	<property name="src" location="src"/>
 	<property name="tools" location="tools"/>
-	<property name="dest" location="/var/www/sdk"/>
+	<property name="dest" location="C:\wamp\www\sdk"/>
 	<!--property name="dest" location="./bin"/-->
 	
 	<target name="build.dev" description="dev build">

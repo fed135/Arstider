@@ -1,40 +1,5 @@
 ;(function(){
 	
-	//Get all canvas elements
-	function getCanvasElements(engine, target){
-		var ret = [], i = 0, t = (target && target.children)?target:engine.captureTarget;
-		if(t && t.children){
-			for(i; i<t.children.length; i++){
-				ret.push(t.children[i]);
-				if(t.children[i].children){
-					ret = ret.concat(window.getCanvasElements(t.children[i]));
-				}
-			}
-		}
-		return ret;
-	}
-	
-	//Get specific canvas element
-	function findCanvasElement(name, target){
-		var ret = [], i = 0, t = (target && target.children)?target:thisRef.captureTarget;
-		if(t && t.children){
-			for(i; i<t.children.length; i++){
-				if(t.children[i].name === name){
-					ret.push(t.children[i]);
-				}
-				if(t.children[i].children && t.children[i].children.length > 0){
-					ret = ret.concat(window.findCanvasElement(name, t.children[i]));
-				}
-			}
-		}
-		
-		if(ret.length == 1){
-			return ret[0];
-		}
-		
-		return ret;
-	}
-	
 	/**
 	 * AMD Closure
 	 */	
@@ -84,12 +49,6 @@
 						}
 					});
 				}
-				
-				//Global access debug methods
-				window.arstider_getCanvasElements = window.Arstider_getCanvasElements = function(){getCanvasElements(thisRef.engine, thisRef)};
-				window.arstider_findCanvasElement = window.Arstider_findCanvasElement = function(target){findCanvasElement(target, thisRef.engine.currentScreen);};
-				window.arstider_debugDraw = window.Arstider_debugDraw = function(target){debugDraw(target);};
-				window.arstider_debugBroadcast = window.Arstider_debugBroadcast = Events.broadcast;
 			}
 			
 			Debugger.prototype.step = function(ref){

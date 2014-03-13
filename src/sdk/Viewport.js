@@ -75,9 +75,6 @@
 			if(scale) this.tag.classList.add("fs_scaled_element");
 			else this.tag.classList.remove("fs_scaled_element");
 			
-			console.log(this._requestFullscreenEvent);
-			console.log(this.tag);
-			
 			return this.tag[this._requestFullscreenEvent]();
 		};
 		

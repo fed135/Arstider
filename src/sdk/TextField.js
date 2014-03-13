@@ -1,5 +1,5 @@
 /**
- * Text Field Wrapper. 
+ * Text Field. 
  *
  * @version 1.1
  * @author frederic charette <fredericcharette@gmail.com>
@@ -27,6 +27,7 @@
 	 * @return {number} The size in pixels
 	 */
 	function calculateTextWidth(context, font, text){
+		
 		var ret;
 		
 		context.save();
@@ -34,7 +35,7 @@
 		ret = context.measureText(text);
 		context.restore();
 		
-		return ret;
+		return ret.width;
 	}
 	
 	/**
@@ -48,14 +49,14 @@
 	 * @param {number} x Initial horizontal position of the writing carot
 	 * @param {number} maxWidth Maximum width of the paragraph, delimits wrapping edges
 	 */
-	function wrapText(context, myText, strokeText, fillText, x, maxWidth) {
+	function wrapText(context, myText, strokeText, fillText, x, padding, maxWidth) {
 				
 		var 
 	       	words = [],
 	       	paragraphs = [],
 	       	line = '',
 	       	n,
-	       	y = 0,
+	       	y = padding,
 	       	inc,
 	       	testLine,
 	       	metrics,
@@ -134,13 +135,18 @@
 			 * Defines if text should be filled
 			 * @type {boolean}
 			 */
-			this.fillText = Arstider.checkIn(props.fill, true);
+			this.fillText = Arstider.checkIn(props.fillText, true);
 			
 			/**
 			 * Defines if text should be stroked
 			 * @type {boolean}
 			 */
-			this.strokeText = Arstider.checkIn(props.stroke, false);
+			this.strokeText = Arstider.checkIn(props.strokeText, false);
+			
+			/**
+			 * The amount of pixels between the text and the edges of the buffer
+			 */
+			this.padding = Arstider.checkIn(props.padding, 0);
 			
 			/**
 			 * Stores the context of the TextField's buffer
@@ -193,7 +199,7 @@
 		 * @param {string} name The desired text.
 		 */
 		TextField.prototype.setText = function(txt, parse){
-			if(parse) this._textValue = Parser.parseString(txt);
+			if(parse) this._textValue = new Parser(txt).segments;
 			else this._textValue = txt;
 			
 			this.render();
@@ -225,11 +231,11 @@
 			if (this.data == null) this.data = Buffer.create("TextField_"+this.name);
 			this.dataCtx = this.data.getContext('2d');
 				
-			if(this.width === 0) this.width = calculateTextWidth(this.dataCtx, this._font, this._textValue);
+			if(this.width === 0) this.width = calculateTextWidth(this.dataCtx, this._font, this._textValue) + (this.padding*2);
 			
 			this.data.width = this.dataWidth = this.width;
 			
-			if(this.height === 0) this.height = parseInt(this._font.size.split("px").join(""));
+			if(this.height === 0) this.height = parseInt(this._font.size.split("px").join("")) + (this.padding*2);
 			
 			this.data.height = this.dataHeight = this.height;
 		};
@@ -254,24 +260,25 @@
 			 */
 			if(this._font === null || this._textValue === null) return;
 			
-			this.makeBuffer(this.width,this.height);
+			this._makeBuffer();
 			
 			for(i in this._font){
 				this.dataCtx[i] = this._font[i];
 			}
 			this.dataCtx.font = ((this._font.style == "")?"":(this._font.style + " ")) + this._font.size + " " + this._font.family;
 			
-			if(this._font.textAlign === "center") xShift = this.width*0.5;
-			else if(this._font.textAlign === "right") xShift = this.width;
+			if(this._font.textAlign === "left") xShift = this.padding;
+			else if(this._font.textAlign === "center") xShift = this.width*0.5;
+			else if(this._font.textAlign === "right") xShift = this.width - this.padding;
 			
 			if(this._font.textWrap === true){
 				//TODO:Strings only, do check for BB Segments
-				wrapText(this.dataCtx, this._textValue, this.strokeText, this.fillText, xShift, this.width);
+				wrapText(this.dataCtx, this._textValue, this.strokeText, this.fillText, xShift, this.padding, this.width - (this.padding*2));
 			}
 			else{
 				//TODO:Strings only, do check for BB Segments
 				if(this.strokeText){
-					this.dataCtx.strokeText(this._textValue, xShift, 0);
+					this.dataCtx.strokeText(this._textValue, xShift, this.padding);
 				}
 				if(this.fillText){
 					//Prevent shadow from being applied twice- and over the already placed stroke
@@ -280,7 +287,7 @@
 						this.dataCtx.shadowColor = "transparent";
 					}
 					
-					this.dataCtx.fillText(this._textValue, xShift, 0);
+					this.dataCtx.fillText(this._textValue, xShift, this.padding);
 					
 					if(oldShadow != null){
 						this.dataCtx.shadowColor = oldShadow;
