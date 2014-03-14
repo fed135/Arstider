@@ -14,10 +14,10 @@
 	 * @param {modes.SHARP | modes.AUTO} renderMode The render mode for the canvas taken from the manager setting _renderMode
 	 * @returns {HTMLCanvasElement} The new buffer
 	 */
-	function createBuffer(name, renderMode){
+	function createBuffer(name, renderMode, width, height){
 		var buffer = document.createElement("canvas");
-		buffer.width = 1136;
-		buffer.height = 672;
+		buffer.width = width;
+		buffer.height = height;
 		buffer.name = name;
 		buffer._renderMode = renderMode;
 		
@@ -69,7 +69,7 @@
 		}
 	}
 	
-	define("Arstider/Buffer", ["Arstider/Events"], function(Events){
+	define("Arstider/Buffer", ["Arstider/Events", "Arstider/Viewport"], function(Events, Viewport){
 			
 		if(singleton != null) return singleton;
 			
@@ -172,11 +172,11 @@
 				return this._pool[name];
 			}
 			else if(name && this._pool[name] == undefined){
-				this._pool[name] = createBuffer(name, this._renderMode);
+				this._pool[name] = createBuffer(name, this._renderMode, Viewport.maxWidth, Viewport.maxHeight);
 				return this._pool[name];
 			}
 			anonymousBuffers++;
-			this._pool["buffer"+anonymousBuffers] = createBuffer("buffer"+anonymousBuffers, this._renderMode);
+			this._pool["buffer"+anonymousBuffers] = createBuffer("buffer"+anonymousBuffers, this._renderMode, Viewport.maxWidth, Viewport.maxHeight);
 			return this._pool["buffer"+anonymousBuffers];
 		};
 		
@@ -208,10 +208,11 @@
 			var hexSize = 8;
 			for(var i  in this._pool){
 				if(this._pool[i] && this._pool[i].context2D){
-					mem+=((this._pool[i].height * this._pool[i].width * hexSize) >> 10);
+					this._pool[i].memInfo = (((this._pool[i].height * this._pool[i].width * hexSize) >> 10) / 1024);
+					mem+=this._pool[i].memInfo;
 				}
 			}
-			return (mem / 1024).toFixed(2) +"m";
+			return mem.toFixed(2) +"m";
 		};
 			
 		singleton = new Buffer();

@@ -93,6 +93,23 @@ Arstider.chop = function(i){
 };
 
 /**
+ * Utility function to copy the simple direct properties of an object
+ * @const
+ * @param {Object} obj The object to copy
+ * @return {Object} The newly created object
+ */
+Arstider.clone = function(obj){
+	var ret = {};
+	for(var i in obj){
+		if(i in obj && typeof obj[i] != "function"){
+			ret[i] = obj[i];
+		}
+	}
+	
+	return ret;
+};
+
+/**
  * Supers the values of a module to it's parent module
  * @param {?} child The child that will super to a defined inherited parent - requires the constructor to have been Inherited at least once
  */
@@ -188,6 +205,10 @@ require(["Arstider/Buffer"], function(Buffer){
 		ctx = win.getContext('2d');
 		ctx.clearRect(0,0,300,300);
 		ctx.drawImage(Buffer.get(targetBuffer), 0,0,300,300);
+	};
+	
+	Arstider.getBuffers = function(){
+		return Buffer._pool;
 	};
 	
 	/**

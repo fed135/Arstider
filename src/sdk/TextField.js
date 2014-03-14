@@ -120,7 +120,7 @@
 	/**
 	 * Defines the TextField module
 	 */	
-	define( "Arstider/TextField", ["Arstider/Buffer", "Arstider/Entity", "Arstider/core/BBParser"], function (Buffer, Entity, Parser) {
+	define( "Arstider/TextField", ["Arstider/Buffer", "Arstider/Entity", "Arstider/core/BBParser", "Arstider/Fonts"], function (Buffer, Entity, Parser, Fonts) {
 		
 		/**
 		 * Creates an instance of TextField.
@@ -227,7 +227,10 @@
 			if(font.textBaseline == undefined) this._font.textBaseline = "top";
 			if(font.lineHeight == undefined) this._font.lineHeight = 12;
 			
-			this.render();
+			var thisRef = this;
+			this._font._onFontLoaded(function(){
+				thisRef.render.apply(thisRef);
+			});
 		};
 			
 		/**
@@ -237,10 +240,28 @@
 		 */
 		TextField.prototype._makeBuffer = function(){
 			
+			var 
+				fullStr = ""
+			;
+			
 			if (this.data == null) this.data = Buffer.create("TextField_"+this.name);
 			this.dataCtx = this.data.getContext('2d');
 				
-			if(this.width === 0) this.width = calculateTextWidth(this.dataCtx, this._font, this._textValue) + (this.padding*2);
+			if(this.width === 0){
+				if(this._BBparsed){
+					for(i = 0; i<this._textValue.length; i++){
+						fullStr += this._textValue[i].text;
+					}
+				}
+				else{
+					fullStr += this._textValue;
+				}
+				
+				console.log(fullStr);
+				console.log(this._font);
+				this.width = calculateTextWidth(this.dataCtx, this._font, fullStr) + (this.padding*2);
+				console.log(this.width);
+			} 
 			
 			this.data.width = this.dataWidth = this.width;
 			
@@ -249,11 +270,85 @@
 			this.data.height = this.dataHeight = this.height;
 		};
 		
+		TextField.prototype._renderSegmentList = function(){
+			var startX = 0;
+			var startY = 0;
+			var segRes = null;
+			
+			for(var i = 0; i<this._textValue.length; i++){
+				segRes = this._renderSegment(this._textValue[i], startX, startY);
+				startX += segRes.width;
+				//startY += segRes.height;//in the cas of wrapped text
+			}
+		};
+		
 		/**
 		 * Renders a single segment of text with over-ruling styles
 		 */
-		Textfield.prototype._renderSegment = function(segment, startX, startY){
+		TextField.prototype._renderSegment = function(segment, startX, startY){
 			
+			var 
+				i = 0,
+				fontCopy = Arstider.clone(this._font),	//For safe revert
+				wasStroke = this.strokeText,
+				wasFill = this.fillText,
+				oldShadow = null
+			;
+			
+			this.dataCtx.save();
+			
+			for(i; i<segment.styles.length; i++){
+				switch(segment.styles[i][0]){
+					case "B": 
+						fontCopy.style = "bold";
+						break;
+					case "I":
+						fontCopy.style = "italic";
+						break;
+					case "C":
+						this.dataCtx.fillStyle = segment.styles[i].substring(2);
+						break;
+					case "S":
+						this.strokeText = true;
+						break;
+					case "F":
+						this.fillText = true;
+						break;
+					case "T":
+						this.width = parseInt(segment.styles[i].substring(2));
+						break;
+				}
+			}
+			
+			this.dataCtx.font  = ((fontCopy.style == "")?"":(fontCopy.style + " ")) + fontCopy.size + " " + fontCopy.family;
+			
+			//render segment
+			if(this.strokeText){
+				this.dataCtx.strokeText(segment.text, startX, startY);
+			}
+			if(this.fillText){
+				//Prevent shadow from being applied twice- and over the already placed stroke
+				if(this.strokeText && fontCopy.shadowColor){
+					oldShadow = this.dataCtx.shadowColor;
+					this.dataCtx.shadowColor = "transparent";
+				}
+				
+				this.dataCtx.fillText(segment.text, startX, startY);
+				
+				if(oldShadow != null){
+					this.dataCtx.shadowColor = oldShadow;
+					oldShadow = null;
+				}
+			}
+			
+			segment.width = this.dataCtx.measureText(segment.text).width;
+			segment.height = this.dataCtx.lineHeight;
+			
+			this.strokeText = wasStroke;
+			this.fillText = wasFill;
+			this.dataCtx.restore();
+			
+			return segment;
 		};
 		
 		/**
@@ -275,6 +370,7 @@
 			 * Cancel operation if not all required fields are filled
 			 */
 			if(this._font === null || this._textValue === null) return;
+			if(this._font.loaded === false) return;
 			
 			this._makeBuffer();
 			
@@ -289,29 +385,33 @@
 			
 			if(this._font.textWrap === true){
 				if(this._BBparsed){
-					
+					this._renderSegmentList();
 				}
 				else{
 					wrapText(this.dataCtx, this._textValue, this.strokeText, this.fillText, xShift, this.padding, this.width - (this.padding*2));
 				}
 			}
 			else{
-				//TODO:Strings only, do check for BB Segments
-				if(this.strokeText){
-					this.dataCtx.strokeText(this._textValue, xShift, this.padding);
+				if(this._BBparsed){
+					this._renderSegmentList();
 				}
-				if(this.fillText){
-					//Prevent shadow from being applied twice- and over the already placed stroke
-					if(this.strokeText && this._font.shadowColor){
-						oldShadow = this.dataCtx.shadowColor;
-						this.dataCtx.shadowColor = "transparent";
+				else{
+					if(this.strokeText){
+						this.dataCtx.strokeText(this._textValue, xShift, this.padding);
 					}
-					
-					this.dataCtx.fillText(this._textValue, xShift, this.padding);
-					
-					if(oldShadow != null){
-						this.dataCtx.shadowColor = oldShadow;
-						oldShadow = null;
+					if(this.fillText){
+						//Prevent shadow from being applied twice- and over the already placed stroke
+						if(this.strokeText && this._font.shadowColor){
+							oldShadow = this.dataCtx.shadowColor;
+							this.dataCtx.shadowColor = "transparent";
+						}
+						
+						this.dataCtx.fillText(this._textValue, xShift, this.padding);
+						
+						if(oldShadow != null){
+							this.dataCtx.shadowColor = oldShadow;
+							oldShadow = null;
+						}
 					}
 				}
 			}

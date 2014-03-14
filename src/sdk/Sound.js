@@ -64,8 +64,18 @@
 		};
 		
 		Sound.prototype.setSounds = function(url, obj){
-			this.sounds = obj;
-			this.init(url);
+			if(obj instanceof String || typeof obj == "string"){
+				var thisRef = this;
+				require(["libs/text!./"+obj],function(file){
+					console.log(url);
+					thisRef.sounds = JSON.parse(file);
+					thisRef.init(url);
+				});
+			}
+			else{
+				this.sounds = obj;
+				this.init(url);
+			}
 		};
 		
 		Sound.prototype._pipeSound = function(){

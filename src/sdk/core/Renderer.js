@@ -27,7 +27,8 @@
 					oldShadowColor,
 					oldShadowBlur,
 					oldShadowOffsetX,
-					oldShadowOffsetY
+					oldShadowOffsetY,
+					shadowSafe
 				;
 				
 				Performance.elements++;
@@ -129,9 +130,12 @@
 					}
 				}
 				
-				if(showBoxes || curChild.showDebugBox === true){
+				if(showBoxes || curChild._showDebugBox === true){
+					shadowSafe = ctx.shadowColor;
+					ctx.shadowColor = "transparent";
 					var prevAlpha = ctx.globalAlpha;
-					ctx.globalAlpha = 0.5;
+					ctx.globalAlpha = 0.7;
+					ctx.lineWidth = 1;
 					if(curChild instanceof Sprite) ctx.strokeStyle = "blue";
 					else if(curChild instanceof TextField) ctx.strokeStyle = "green";
 					else if(curChild instanceof DisplayObject) ctx.strokeStyle = "red";
@@ -139,6 +143,7 @@
 					
 					ctx.strokeRect(Math.round(curX), Math.round(curY), curChild.width, curChild.height);
 					ctx.globalAlpha = prevAlpha;
+					ctx.shadowColor = shadowSafe;
 				}
 				
 				//runs post-render methods

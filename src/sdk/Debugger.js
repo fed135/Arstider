@@ -31,25 +31,26 @@
 				this.stepTimer = null;
 				
 				var thisRef = this;
+					
+				this.framesImg = new Image();
 				
-				if(this.engine.container){
 					
-					this.framesImg = new Image();
-					this.framesImg.src = this.engine.container.folderPath + "media\/images\/backgrounds\/iOSframes.png";
+				window.addEventListener('keydown', function(e){
+					if(e.keyCode == "68"){
+						thisRef.showFrames = true;
+					}
+				});
 					
-					window.addEventListener('keydown', function(e){
-						if(e.keyCode == "68"){
-							thisRef.showFrames = true;
-						}
-					});
-					
-					window.addEventListener('keyup', function(e){
-						if(e.keyCode == "68"){
-							thisRef.showFrames = true;
-						}
-					});
-				}
+				window.addEventListener('keyup', function(e){
+					if(e.keyCode == "68"){
+						thisRef.showFrames = false;
+					}
+				});
 			}
+			
+			Debugger.prototype.setFramesAsset = function(e){
+				this.framesImg.src = e;
+			};
 			
 			Debugger.prototype.step = function(ref){
 				ref.stepTimer = setTimeout(function(){ref.step(ref);}, 1000);
