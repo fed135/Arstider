@@ -165,6 +165,13 @@
 			this._textValue = null;
 			
 			/**
+			 * Indicates whether data is text or BB-parsed array
+			 * @private
+			 * @type {boolean} 
+			 */
+			this._BBparsed = false;
+			
+			/**
 			 * Stores the font to use for this TextField.
 			 * Changed through the setFont method
 			 * 
@@ -199,6 +206,8 @@
 		 * @param {string} name The desired text.
 		 */
 		TextField.prototype.setText = function(txt, parse){
+			
+			this._BBparsed = parse || false;
 			if(parse) this._textValue = new Parser(txt).segments;
 			else this._textValue = txt;
 			
@@ -241,6 +250,13 @@
 		};
 		
 		/**
+		 * Renders a single segment of text with over-ruling styles
+		 */
+		Textfield.prototype._renderSegment = function(segment, startX, startY){
+			
+		};
+		
+		/**
 		 * Renders the text and it's style into a buffer. Saves on context transformation. 
 		 *
 		 * @this {TextField}
@@ -272,8 +288,12 @@
 			else if(this._font.textAlign === "right") xShift = this.width - this.padding;
 			
 			if(this._font.textWrap === true){
-				//TODO:Strings only, do check for BB Segments
-				wrapText(this.dataCtx, this._textValue, this.strokeText, this.fillText, xShift, this.padding, this.width - (this.padding*2));
+				if(this._BBparsed){
+					
+				}
+				else{
+					wrapText(this.dataCtx, this._textValue, this.strokeText, this.fillText, xShift, this.padding, this.width - (this.padding*2));
+				}
 			}
 			else{
 				//TODO:Strings only, do check for BB Segments
