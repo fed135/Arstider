@@ -93,20 +93,36 @@ Arstider.chop = function(i){
 };
 
 /**
- * Utility function to copy the simple direct properties of an object
+ * Generic, simple mixin function. Replaces undefined elements in obj A with properties of obj B 
  * @const
- * @param {Object} obj The object to copy
- * @return {Object} The newly created object
+ * @param {Object} objA The object that will receive the new properties
+ * @param {Object} objB The object to transfer the properties from
+ * @param {boolean} includeMethods Whether or not to include functions, defaults to false 
+ * @return {Object} Returns the updated objA
  */
-Arstider.clone = function(obj){
-	var ret = {};
-	for(var i in obj){
-		if(i in obj && typeof obj[i] != "function"){
-			ret[i] = obj[i];
+Arstider.mixin = function(objA, objB, includeMethods){
+	
+	for(var i in objB){
+		if(objA[i] == undefined){
+			if(objB[i] instanceof Function || typeof objB[i] === 'function'){
+				if(includeMethods) objA[i] = objB[i];
+			}
+			else objA[i] = objB[i];
 		}
 	}
 	
-	return ret;
+	return objA;
+};
+
+/**
+ * Utility function to copy the simple direct properties of an object
+ * @const
+ * @param {Object} obj The object to copy
+ * @param {boolean} includeMethods Whether or not to include functions, defaults to false 
+ * @return {Object} The newly created object
+ */
+Arstider.clone = function(obj, includeMethods){
+	return Arstider.mixin({}, obj, includeMethods);
 };
 
 /**
