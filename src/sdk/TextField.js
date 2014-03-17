@@ -49,14 +49,15 @@
 	 * @param {number} x Initial horizontal position of the writing carot
 	 * @param {number} maxWidth Maximum width of the paragraph, delimits wrapping edges
 	 */
-	function wrapText(context, myText, strokeText, fillText, x, padding, maxWidth) {
-				
+	function wrapText(context, myText, strokeText, fillText, x, padding, maxWidth, otherLineX, otherLineWrap) {
+		
 		var 
 	       	words = [],
 	       	paragraphs = [],
 	       	line = '',
 	       	n,
 	       	y = padding,
+	       	lineNum = 0,
 	       	inc,
 	       	testLine,
 	       	metrics,
@@ -73,9 +74,9 @@
 		      	testLine = line + words[n] + ' ';
 		       	metrics = context.measureText(testLine);
 		       	testWidth = metrics.width;
-		       	if(testWidth > maxWidth) {
+		       	if(testWidth > ((lineNum === 0)?maxWidth:(otherLineWrap == undefined)?maxWidth:otherLineWrap)) {
 		       		if(strokeText){
-		       			context.strokeText(line, x, y + (inc*context.lineHeight));
+		       			context.strokeText(line, ((lineNum === 0)?x:(otherLineX == undefined)?x:otherLineX), y + (inc*context.lineHeight));
 					}
 					if(fillText){
 						if(strokeText && context.shadowColor){
@@ -83,7 +84,7 @@
 							context.shadowColor = "transparent";
 						} 
 						
-						context.fillText(line, x, y + (inc*context.lineHeight));
+						context.fillText(line, ((lineNum === 0)?x:(otherLineX == undefined)?x:otherLineX), y + (inc*context.lineHeight));
 						
 						if(oldShadow != null){
 							context.shadowColor = oldShadow;
@@ -92,13 +93,14 @@
 					}
 					line = words[n] + ' ';
 					y += context.lineHeight;
+					lineNum++;
 		       	}
 		       	else {
 		       		line = testLine;
 		       	}
 			}
 		    if(strokeText){
-		 		context.strokeText(line, x, y + (inc*context.lineHeight));
+		 		context.strokeText(line, ((lineNum === 0)?x:(otherLineX == undefined)?x:otherLineX), y + (inc*context.lineHeight));
 			}
 			if(fillText){
 				
@@ -107,7 +109,7 @@
 					context.shadowColor = "transparent";
 				}
 				
-				context.fillText(line, x, y + (inc*context.lineHeight));
+				context.fillText(line, ((lineNum === 0)?x:(otherLineX == undefined)?x:otherLineX), y + (inc*context.lineHeight));
 				
 				if(oldShadow != null){
 					context.shadowColor = oldShadow;
@@ -115,6 +117,8 @@
 				}
 			}
 	    }
+	    
+	    return [((lineNum === 0)?x:(otherLineX == undefined)?x:otherLineX) + context.measureText(line).width,y];
 	}
 	
 	/**
@@ -172,6 +176,19 @@
 			this._BBparsed = false;
 			
 			/**
+			 * Whether to wrap text in a predefined space
+			 * @type {boolean}
+			 */
+			this.textWrap = Arstider.checkIn(props.textWrap, false);
+			
+			/**
+			 * Detects errors in textWrapping configs (width undefined)
+			 * @private
+			 * @type {boolean}
+			 */
+			this._textWrappingError = false;
+			
+			/**
 			 * Stores the font to use for this TextField.
 			 * Changed through the setFont method
 			 * 
@@ -222,10 +239,13 @@
 		TextField.prototype.setFont = function(font){
 			this._font = font;
 			
+			console.log("setting font!", font.textAlign);
+			
 			if(font.size == undefined) this._font.size = "12px";
 			if(font.family == undefined) this._font.family = "arial";
 			if(font.textBaseline == undefined) this._font.textBaseline = "top";
 			if(font.lineHeight == undefined) this._font.lineHeight = 12;
+			if(font.textAlign == undefined) this._font.textAlign = "left";
 			
 			var thisRef = this;
 			this._font._onFontLoaded(function(){
@@ -248,6 +268,7 @@
 			this.dataCtx = this.data.getContext('2d');
 				
 			if(this.width === 0){
+				if(this._font.textWrap) this._textWrappingError = true;
 				if(this._BBparsed){
 					for(i = 0; i<this._textValue.length; i++){
 						fullStr += this._textValue[i].text;
@@ -257,10 +278,7 @@
 					fullStr += this._textValue;
 				}
 				
-				console.log(fullStr);
-				console.log(this._font);
 				this.width = calculateTextWidth(this.dataCtx, this._font, fullStr) + (this.padding*2);
-				console.log(this.width);
 			} 
 			
 			this.data.width = this.dataWidth = this.width;
@@ -270,29 +288,39 @@
 			this.data.height = this.dataHeight = this.height;
 		};
 		
-		TextField.prototype._renderSegmentList = function(){
-			var startX = 0;
-			var startY = 0;
+		TextField.prototype._renderSegmentList = function(maxWidth){
+			var startX = this._font.fontOffsetX + this.padding;
+			var startY = this._font.fontOffsetY + this.padding;
 			var segRes = null;
 			
-			for(var i = 0; i<this._textValue.length; i++){
-				segRes = this._renderSegment(this._textValue[i], startX, startY);
-				startX += segRes.width;
-				//startY += segRes.height;//in the cas of wrapped text
+			if(maxWidth == undefined){
+				for(var i = 0; i<this._textValue.length; i++){
+					segRes = this._renderSegment(this._textValue[i], startX, startY);
+					startX += segRes.width;
+					//startY += segRes.height;//in the cas of wrapped text
+				}
+			}
+			else{
+				for(var i = 0; i<this._textValue.length; i++){
+					segRes = this._renderSegment(this._textValue[i], startX, startY, this._font.fontOffsetX + this.padding, true);
+					startX = segRes[0];
+					startY = segRes[1];
+				}
 			}
 		};
 		
 		/**
 		 * Renders a single segment of text with over-ruling styles
 		 */
-		TextField.prototype._renderSegment = function(segment, startX, startY){
+		TextField.prototype._renderSegment = function(segment, startX, startY, iniX, wrapped){
 			
 			var 
 				i = 0,
 				fontCopy = Arstider.clone(this._font),	//For safe revert
 				wasStroke = this.strokeText,
 				wasFill = this.fillText,
-				oldShadow = null
+				oldShadow = null,
+				wrapPos = null
 			;
 			
 			this.dataCtx.save();
@@ -316,39 +344,50 @@
 						break;
 					case "T":
 						this.width = parseInt(segment.styles[i].substring(2));
-						break;
+						return;
 				}
 			}
 			
 			this.dataCtx.font  = ((fontCopy.style == "")?"":(fontCopy.style + " ")) + fontCopy.size + " " + fontCopy.family;
 			
-			//render segment
-			if(this.strokeText){
-				this.dataCtx.strokeText(segment.text, startX, startY);
+			if(wrapped){
+				wrapPos = wrapText(this.dataCtx, segment.text, this.strokeText, this.fillText, startX, startY, this.width - (this.padding*2) - (this.width - (this.width - startX)), iniX, this.width - (this.padding*2));
+				
+				this.strokeText = wasStroke;
+				this.fillText = wasFill;
+				this.dataCtx.restore();
+				
+				return wrapPos;
 			}
-			if(this.fillText){
-				//Prevent shadow from being applied twice- and over the already placed stroke
-				if(this.strokeText && fontCopy.shadowColor){
-					oldShadow = this.dataCtx.shadowColor;
-					this.dataCtx.shadowColor = "transparent";
+			else{
+				//render segment
+				if(this.strokeText){
+					this.dataCtx.strokeText(segment.text, startX, startY);
+				}
+				if(this.fillText){
+					//Prevent shadow from being applied twice- and over the already placed stroke
+					if(this.strokeText && fontCopy.shadowColor){
+						oldShadow = this.dataCtx.shadowColor;
+						this.dataCtx.shadowColor = "transparent";
+					}
+					
+					this.dataCtx.fillText(segment.text, startX, startY);
+					
+					if(oldShadow != null){
+						this.dataCtx.shadowColor = oldShadow;
+						oldShadow = null;
+					}
 				}
 				
-				this.dataCtx.fillText(segment.text, startX, startY);
+				segment.width = this.dataCtx.measureText(segment.text).width;
+				segment.height = this.dataCtx.lineHeight;
 				
-				if(oldShadow != null){
-					this.dataCtx.shadowColor = oldShadow;
-					oldShadow = null;
-				}
+				this.strokeText = wasStroke;
+				this.fillText = wasFill;
+				this.dataCtx.restore();
+				
+				return segment;
 			}
-			
-			segment.width = this.dataCtx.measureText(segment.text).width;
-			segment.height = this.dataCtx.lineHeight;
-			
-			this.strokeText = wasStroke;
-			this.fillText = wasFill;
-			this.dataCtx.restore();
-			
-			return segment;
 		};
 		
 		/**
@@ -365,6 +404,9 @@
 				oldShadow,
 				xShift = 0
 			;
+			
+			//Reset
+			this._textWrappingError = false;
 			
 			/**
 			 * Cancel operation if not all required fields are filled
@@ -383,12 +425,13 @@
 			else if(this._font.textAlign === "center") xShift = this.width*0.5;
 			else if(this._font.textAlign === "right") xShift = this.width - this.padding;
 			
-			if(this._font.textWrap === true){
+			if(this.textWrap === true && !this._textWrappingError){
 				if(this._BBparsed){
-					this._renderSegmentList();
+					this._renderSegmentList(this.width);
 				}
 				else{
-					wrapText(this.dataCtx, this._textValue, this.strokeText, this.fillText, xShift, this.padding, this.width - (this.padding*2));
+					console.log("wrapped text, standard, ",xShift," startline and context alignement:", this.dataCtx.textAlign);
+					wrapText(this.dataCtx, this._textValue, this.strokeText, this.fillText, xShift + this._font.fontOffsetX, this.padding + this._font.fontOffsetY, this.width - (this.padding*2));
 				}
 			}
 			else{
@@ -397,7 +440,7 @@
 				}
 				else{
 					if(this.strokeText){
-						this.dataCtx.strokeText(this._textValue, xShift, this.padding);
+						this.dataCtx.strokeText(this._textValue, xShift  + this._font.fontOffsetX, this.padding + this._font.fontOffsetY);
 					}
 					if(this.fillText){
 						//Prevent shadow from being applied twice- and over the already placed stroke
@@ -406,7 +449,7 @@
 							this.dataCtx.shadowColor = "transparent";
 						}
 						
-						this.dataCtx.fillText(this._textValue, xShift, this.padding);
+						this.dataCtx.fillText(this._textValue, xShift + this._font.fontOffsetX, this.padding + this._font.fontOffsetY);
 						
 						if(oldShadow != null){
 							this.dataCtx.shadowColor = oldShadow;

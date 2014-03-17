@@ -80,8 +80,9 @@
 		this.shadowBlur = Arstider.checkIn(props.shadowBlur, 0);
 		this.shadowOffsetX = Arstider.checkIn(props.shadowOffsetX, 0);
 		this.shadowOffsetY = Arstider.checkIn(props.shadowOffsetY, 0);
-		
-		
+		this.fontOffsetX = Arstider.checkIn(props.fontOffsetX, 0);
+		this.fontOffsetY = Arstider.checkIn(props.fontOffsetY, 0);
+		this.textAlign = Arstider.checkIn(props.textAlign, "left");
 		
 		this.loadCallbacks = [];
 	}
