@@ -46,6 +46,8 @@
 			this.handbreak = false;
 			
 			this._savedScreen = null;
+			
+			this.onerror = Arstider.emptyFunction;
 		}
 			
 		Engine.prototype.start = function(tag){
@@ -59,6 +61,8 @@
 			this.context = this.canvas.getContext("2d");
 			
 			Performance.updateLogic = this.stepLogic;
+			
+			window.addEventListener("error", this._handleError);
 				
 			Viewport.init(tag, this.canvas);
 			
@@ -76,6 +80,14 @@
 			
 			GlobalTimers.step();
 			if(singleton.currentScreen && singleton.currentScreen._update) singleton.currentScreen._update();
+		};
+		
+		Engine.prototype._handleError = function(e){
+			//Private Error behavior
+			//...
+			
+			//User-defined Error behavior
+			singleton.onerror(e);
 		};
 			
 		Engine.prototype.startMenu = function(){
@@ -162,7 +174,7 @@
 			if(singleton.handbreak) return;
 			
 			//Immediately request the next frame
-			//Arstider.cancelAnimFrame(singleton.frameRequest); //TODO
+			if(singleton.frameRequest) Arstider.cancelAnimFrame.apply(window, [singleton.frameRequest]);
 			singleton.frameRequest = Arstider.requestAnimFrame.apply(window, [singleton.draw]);
 			
 			Performance.startStep(singleton.allowSkip);

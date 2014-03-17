@@ -56,6 +56,10 @@
 				}
 			};
 			
+			GameData.prototype.reset = function(){
+				this.runtimeSet = {};
+			};
+			
 			singleton = new GameData();
 			return singleton;
 		});
