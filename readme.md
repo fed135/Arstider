@@ -19,9 +19,12 @@ Special thanks to:
 	Fidel Studios
 	
 Javascript Libraries included:
-	Howler <http://howlerjs.com>
-	JSDoc3 <http://usejsdoc.org>
+	Howler <http://howlerjs.com>, 
+	JSDoc3 <http://usejsdoc.org>, 
+	RequireJS Text plugin <https://github.com/requirejs/text>
 	
+Non-included Javascript Libraries:
+	RequireJS <http://requirejs.org> (Required for loading modules)
 
 /*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***/
 
