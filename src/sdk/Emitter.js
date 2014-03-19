@@ -1,8 +1,6 @@
 ;(function(){
 
 	function resetParticleSettings(particle, settings){
-		particle.__isParticle = true;
-		
 		particle.__spawnRate = Arstider.checkIn(settings.spawnRate, 150);
 		
 		particle.__startingIndex = Arstider.checkIn(settings.startingIndex, 0);
@@ -44,7 +42,7 @@ define("Arstider/Emitter", ["Arstider/DisplayObject", "Arstider/Pool"], function
 		Arstider.Super(this, DisplayObject, props);
 		
 		//TODO
-		this.maxParticles = Arstider.checkIn(props.maxParticles, 100);
+		//this.maxParticles = Arstider.checkIn(props.maxParticles, 100);
 		
 		props = props || Arstider.emptyObject;
 		
@@ -52,6 +50,8 @@ define("Arstider/Emitter", ["Arstider/DisplayObject", "Arstider/Pool"], function
 		
 		this.canonTimers = {};
 		this.canonActivated = false;
+		
+		this._container = new DisplayObject();
 	}
 	
 	Arstider.Inherit(Emitter, DisplayObject);
@@ -60,7 +60,7 @@ define("Arstider/Emitter", ["Arstider/DisplayObject", "Arstider/Pool"], function
 		options = options || Arstider.emptyObject;
 		
 		this.modulePool.push({name:name, module:module, options:options});
-		Pool.prealloc(module, 1, options.maxParticles || this.maxParticles);
+		Pool.prealloc(module, 1/*, options.maxParticles || this.maxParticles*/);
 		
 		if(this.canonActivated){
 			//Restart already playing emitter to include new particles
@@ -85,6 +85,8 @@ define("Arstider/Emitter", ["Arstider/DisplayObject", "Arstider/Pool"], function
 	
 	Emitter.prototype.start = function(){
 		this.canonActivated = true;
+		
+		if(this._container.parent == null) this.parent.addChild(this._container);
 		
 		for(var i=0; i<this.modulePool.length; i++){
 			if(this.canonTimers[this.modulePool[i].name] == undefined){
@@ -125,45 +127,43 @@ define("Arstider/Emitter", ["Arstider/DisplayObject", "Arstider/Pool"], function
 			if(particle.alpha >1) particle.alpha = 1;
 			if(particle.alpha < 0) particle.alpha = 0;
 			particle.scaleX = particle.scaleY = particle.__scale;
-			particle.x = 0;
-			particle.y = 0;
+			particle.x = thisRef.x;
+			particle.y = thisRef.y;
 			
-			particle.parent = thisRef;
-			if(particle.__startingIndex < thisRef.children.length){
-				thisRef.children.splice(particle.__startingIndex, 0, particle);
+			particle.parent = thisRef._container;
+			if(particle.__startingIndex < thisRef._container.children.length){
+				thisRef._container.children.splice(particle.__startingIndex, 0, particle);
 			}
 			else{
-				thisRef.children[thisRef.children.length] = particle;
+				thisRef._container.children[thisRef.children.length] = particle;
 			}
 		});
 	};
 	
 	Emitter.prototype.update = function(){
-		var i = this.children.length-1, currPart;
+		var i = this._container.children.length-1, currPart;
 		for(i; i>=0; i--){
-			if(this.children[i].__isParticle){
-				currPart = this.children[i];
-				currPart.__lifeTime++;
-				if(currPart.__lifeTime >= currPart.__maxLifeTime){
-					currPart.parent = null;
-					Pool.free(currPart, true);
-					this.children.splice(i,1);
-				}
-				else{
-					//Move it
-					currPart.alpha -= currPart.__alphaDecay;
-					currPart.rotation += currPart.__rotation;
-					currPart.scaleX *= currPart.__scale;
-					currPart.scaleY *= currPart.__scale;
-					currPart.x += currPart.__xVelocity;
-					currPart.y += currPart.__yVelocity;
-					
-					//Change speed values
-					currPart.__rotation += currPart.__rotationDecay;
-					currPart.__scale -= currPart.__scaleDecay;
-					currPart.__xVelocity -= currPart.__xVelocityDecay;
-					currPart.__yVelocity -= currPart.__yVelocityDecay;
-				}
+			currPart = this._container.children[i];
+			currPart.__lifeTime++;
+			if(currPart.__lifeTime >= currPart.__maxLifeTime || currPart.alpha <= 0){
+				currPart.parent = null;
+				Pool.free(currPart, true);
+				this._container.children.splice(i,1);
+			}
+			else{
+				//Move it
+				currPart.alpha -= currPart.__alphaDecay;
+				currPart.rotation += currPart.__rotation;
+				currPart.scaleX *= currPart.__scale;
+				currPart.scaleY *= currPart.__scale;
+				currPart.x += currPart.__xVelocity;
+				currPart.y += currPart.__yVelocity;
+				
+				//Change speed values
+				currPart.__rotation += currPart.__rotationDecay;
+				currPart.__scale -= currPart.__scaleDecay;
+				currPart.__xVelocity -= currPart.__xVelocityDecay;
+				currPart.__yVelocity -= currPart.__yVelocityDecay;
 			}
 		}
 	};

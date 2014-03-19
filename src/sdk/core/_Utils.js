@@ -433,43 +433,27 @@ require(["Arstider/Buffer"], function(Buffer){
 
 require(["Arstider/Engine"], function(Engine){
 	
-	Arstider.findElement = function(name){
+	Arstider.findElement = function(name, t){
 		if(!Engine.debug) return;
 		
 		var 
 			ret = [], 
 			i = 0, 
-			t = Engine.currentScreen
+			t = t || Engine.currentScreen
 		;
-		
-		if(name == undefined){
 			
-			if(t && t.children){
-				for(i; i<t.children.length; i++){
+		if(t && t.children){
+			for(i; i<t.children.length; i++){
+				if(!name || name === t.children[i]){
 					ret.push(t.children[i]);
-					if(t.children[i].children){
-						ret = ret.concat(window.getCanvasElements(t.children[i]));
-					}
 				}
-			}
-		}
-		else{
-			if(t && t.children){
-				for(i; i<t.children.length; i++){
-					if(t.children[i].name === name){
-						ret.push(t.children[i]);
-					}
-					if(t.children[i].children && t.children[i].children.length > 0){
-						ret = ret.concat(window.findCanvasElement(name, t.children[i]));
-					}
+				if(t.children[i].children){
+					ret = ret.concat(Arstider.findElement(name, t.children[i]));
 				}
-			}
-			
-			if(ret.length == 1){
-				return ret[0];
 			}
 		}
 		
+		if(ret.length == 1) return ret[0];
 		return ret;
 	};
 });
