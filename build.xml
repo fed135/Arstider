@@ -18,7 +18,7 @@
 		
 		<filter token="target" value="dev"/>
 		<filter token="debug" value="true"/>
-		<filter token="version" value="0.1"/>
+		<filter token="version" value="1.1"/>
 		
 		<copy toFile="${dest}/Arstider.js" file="${dest}/_temp.js" filtering="true" />
 		<copy todir="${dest}/libs" filtering="false">
@@ -33,9 +33,9 @@
 			<fileset dir="${src}/sdk" includes="**/*.js" />
 		</concat>
 				
-		<filter token="target" value="dev"/>
-		<filter token="debug" value="true"/>
-		<filter token="version" value="0.1"/>
+		<filter token="target" value="release"/>
+		<filter token="debug" value="false"/>
+		<filter token="version" value="1.1"/>
 				
 		<copy toFile="${dest}/Arstider.js" file="${dest}/_temp.js" filtering="true" />
 		<copy todir="${dest}/libs" filtering="false">
@@ -45,7 +45,28 @@
 		<delete file="${dest}/_temp.js" />
 		
 		<exec executable="python" failonerror="true">
-			<arg line="./tools/closureMinifier.py ${dest}/Arstider.js" />
+			<arg line="./tools/closureMinifier.py ${dest}/Arstider.js SIMPLE_OPTIMIZATIONS" />
+		</exec>
+	</target>
+	
+	<target name="build.turbo" description="turbo build">
+		<concat destfile="${dest}/_temp.js">
+			<fileset dir="${src}/sdk" includes="**/*.js" />
+		</concat>
+					
+		<filter token="target" value="turbo"/>
+		<filter token="debug" value="false"/>
+		<filter token="version" value="1.1"/>
+					
+		<copy toFile="${dest}/Arstider.js" file="${dest}/_temp.js" filtering="true" />
+		<copy todir="${dest}/libs" filtering="false">
+			<fileset dir="${src}/libs"></fileset>
+		</copy>
+			
+		<delete file="${dest}/_temp.js" />
+			
+		<exec executable="python" failonerror="true">
+			<arg line="./tools/closureMinifier.py ${dest}/Arstider.js ADVANCED_OPTIMIZATIONS" />
 		</exec>
 	</target>
 	

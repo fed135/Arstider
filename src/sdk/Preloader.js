@@ -32,6 +32,8 @@
 				this.gracePeriodTimer = null;
 				
 				this.clickToDismiss = false;
+				
+				this._checks = 0;
 					
 				this.update = function(p,c){}; /*This get overriden by game main for handling progress*/
 			}	
@@ -39,6 +41,7 @@
 			Preloader.prototype.set = function(name, clickReq){
 				Events.broadcast("showPreloader", name);
 				this.queue = [];
+				this._checks = 0;
 				this.clickToDismiss = clickReq || false;
 			};
 				
@@ -68,19 +71,25 @@
 				var currPcent = this.totalPercent();
 				this.update(currPcent, this.clickToDismiss);
 				if(currPcent >= 100){
-					this.checkComplete();
+					this.checkComplete(true);
 				}
 			};
 				
 				
-			Preloader.prototype.checkComplete = function(){
-				if(singleton.gracePeriodTimer == null){
-					singleton.gracePeriodTimer = setTimeout(singleton.complete, 100);
+			Preloader.prototype.checkComplete = function(fromProgress){
+				if(singleton._checks == 0 && fromProgress){
+					singleton._checks = 1;
+					singleton.gracePeriodTimer = setTimeout(singleton.checkComplete, 100);
 				}
-				else{
-					clearTimeout(singleton.gracePeriodTimer);
-					singleton.checkComplete();
+				else if(!fromProgress && singleton._checks == 1){
+					if(singleton.totalPercent() < 100){
+						singleton._checks = 0;
+					}
+					else{
+						singleton.complete();
+					}
 				}
+				
 			};
 				
 			Preloader.prototype.totalPercent = function(){

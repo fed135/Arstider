@@ -78,6 +78,7 @@
 						if(this._sets[typeName][_i] == item){
 							if(obliterate){
 								this._trashCan = this._sets[typeName].splice(_i, 1);
+								delete this._trashCan;
 							}
 							else{
 								if(this._pending[typeName].length > 0){

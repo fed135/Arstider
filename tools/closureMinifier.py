@@ -10,7 +10,7 @@ with open(sys.argv[1]) as f:
 print "::finished"
 
 params = urllib.urlencode([
-    ('compilation_level', 'SIMPLE_OPTIMIZATIONS'),
+    ('compilation_level', sys.argv[2]),
     ('output_format', 'text'),
     ('output_info', 'compiled_code'),
     ('language', 'ECMASCRIPT5')

@@ -152,7 +152,7 @@
 		Fonts.prototype.load = function(filename){
 			var thisRef = this;
 			
-			require(["libs/text!./"+filename],function(file){
+			require(["textLib!./"+filename],function(file){
 				thisRef.create.apply(thisRef, [JSON.parse(file)]);
 			});
 		};

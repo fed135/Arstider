@@ -5,7 +5,7 @@
  *
  * @author frederic charette <fredc@meetfidel.com>
  */
-;(function(window){
+;(function(){
 
 	var singleton = null,
 		defaultSet = {},
@@ -15,7 +15,7 @@
 	/**
 	 * AMD Closure
 	 */	
-		define( "Arstider/GameData", ["Arstider/core/Storage", "libs/text!../media/config.json"], function (Storage, config) {
+		define( "Arstider/GameData", ["Arstider/core/Storage", "textLib!../media/config.json"], function (Storage, config) {
 			if(singleton != null){return singleton;}
 			
 			function GameData(){
@@ -63,4 +63,4 @@
 			singleton = new GameData();
 			return singleton;
 		});
-})(window);
+})();

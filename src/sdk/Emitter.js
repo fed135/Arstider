@@ -3,90 +3,111 @@
 	function resetParticleSettings(particle, settings){
 		particle.__isParticle = true;
 		
-		particle.__maxLifeTime = (settings.maxLifeTime == undefined)?1000:settings.maxLifeTime;
-		particle.__maxLifeTimeVariant = (settings.maxLifeTimeVariant == undefined)?0:settings.maxLifeTimeVariant;
+		particle.__spawnRate = Arstider.checkIn(settings.spawnRate, 150);
+		
+		particle.__startingIndex = Arstider.checkIn(settings.startingIndex, 0);
+		
+		particle.__maxLifeTime = Arstider.checkIn(settings.maxLifeTime, 100);
+		particle.__maxLifeTimeVariant = Arstider.checkIn(settings.maxLifeTimeVariant, 0);
 		particle.__lifeTime = 0;
 		
-		particle.__xVelocity = (settings.xVelocity == undefined)?0:settings.xVelocity;
-		particle.__xVelocityDecay = (settings.xVelocityDecay == undefined)?0:settings.xVelocityDecay;
-		particle.__xVelocityVariant = (settings.xVelocityVariant == undefined)?0:settings.xVelocityVariant;
+		particle.__xVelocity = Arstider.checkIn(settings.xVelocity, 0);
+		particle.__xVelocityDecay = Arstider.checkIn(settings.xVelocityDecay, 0);
+		particle.__xVelocityVariant = Arstider.checkIn(settings.xVelocityVariant, 0);
 		
-		particle.__yVelocity = (settings.yVelocity == undefined)?0:settings.yVelocity;
-		particle.__yVelocityDecay = (settings.yVelocityDecay == undefined)?0:settings.yVelocityDecay;
-		particle.__yVelocityVariant = (settings.yVelocityVariant == undefined)?0:settings.yVelocityVariant;
+		particle.__yVelocity = Arstider.checkIn(settings.yVelocity, 0);
+		particle.__yVelocityDecay = Arstider.checkIn(settings.yVelocityDecay, 0);
+		particle.__yVelocityVariant = Arstider.checkIn(settings.yVelocityVariant, 0);
 		
-		particle.__scale  = (settings.scale == undefined)?1:settings.scale;
-		particle.__scaleDecay = (settings.scaleDecay == undefined)?0:settings.scaleDecay;
-		particle.__scaleVariant = (settings.scaleVariant == undefined)?0:settings.scaleVariant;
+		particle.__scale  = Arstider.checkIn(settings.scale, 1);
+		particle.__scaleDecay = Arstider.checkIn(settings.scaleDecay, 0);
+		particle.__scaleVariant = Arstider.checkIn(settings.scaleVariant, 0);
 		
-		particle.__rotation = (settings.rotation == undefined)?0:settings.rotation;
-		particle.__rotationDecay = (settings.rotationDecay == undefined)?0:settings.rotationDecay;
-		particle.__rotationVariant = (settings.rotationVariant == undefined)?0:settings.rotationVariant;
+		particle.__rotation = Arstider.checkIn(settings.rotation, 0);
+		particle.__rotationDecay = Arstider.checkIn(settings.rotationDecay, 0);
+		particle.__rotationVariant = Arstider.checkIn(settings.rotationVariant, 0);
 		
-		particle.__alpha = (settings.alpha == undefined)?1:settings.alpha;
-		particle.__alphaDecay = (settings.alphaDecay == undefined)?0:settings.alphaDecay;
-		particle.__alphaVariant = (settings.alphaVariant == undefined)?0:settings.alphaVariant;
+		particle.__alpha = Arstider.checkIn(settings.alpha, 1);
+		particle.__alphaDecay = Arstider.checkIn(settings.alphaDecay, 0);
+		particle.__alphaVariant = Arstider.checkIn(settings.alphaVariant, 0);
 	}
 	
 	function rollVariant(base, variant){
 		return base + ((Math.random()*(variant*2))-variant);
 	}
 
-define("Arstider/Emitter", ["Arstider/DisplayObject", "Arstider/Pool", "Arstider/GlobalTimers", "Arstider/Timer"], function(DisplayObject, Pool, GlobalTimers, Timer){
+define("Arstider/Emitter", ["Arstider/DisplayObject", "Arstider/Pool"], function(DisplayObject, Pool){
 
 	
-	function Emitter(name){
-		Arstider.Super(this, DisplayObject, name);
+	function Emitter(props){
+		
+		Arstider.Super(this, DisplayObject, props);
 		
 		//TODO
-		//this.maxParticles = 100;
+		this.maxParticles = Arstider.checkIn(props.maxParticles, 100);
+		
+		props = props || Arstider.emptyObject;
 		
 		this.modulePool = [];
 		
-		this.spawnRate = 100;
-		
-		this.canonTimer = null;
+		this.canonTimers = {};
 		this.canonActivated = false;
 	}
 	
 	Arstider.Inherit(Emitter, DisplayObject);
 	
 	Emitter.prototype.addParticleType = function(name, module, options){
+		options = options || Arstider.emptyObject;
+		
 		this.modulePool.push({name:name, module:module, options:options});
+		Pool.prealloc(module, 1, options.maxParticles || this.maxParticles);
+		
+		if(this.canonActivated){
+			//Restart already playing emitter to include new particles
+			this.stop();
+			this.start();
+		}
+	};
+	
+	Emitter.prototype.removeParticleType = function(name){
+		for(var i=0; i<this.modulePool.length; i++){
+			if(this.modulePool[i].name === name){
+				this.modulePool.splice(i,1);
+			}	
+		}
+		
+		if(this.canonActivated){
+			//Restart already playing emitter to exclude new particles
+			this.stop();
+			this.start();
+		}
 	};
 	
 	Emitter.prototype.start = function(){
 		this.canonActivated = true;
-		var thisRef = this;
-		if(this.canonTimer == null){
-			this.canonTimer = new Timer(function(){thisRef.spawn(thisRef);}, this.spawnRate);
-			GlobalTimers.push(this.canonTimer);
-		}
 		
-		this.canonTimer.initialDelay = this.spawnRate;
-		this.canonTimer.restart();
+		for(var i=0; i<this.modulePool.length; i++){
+			if(this.canonTimers[this.modulePool[i].name] == undefined){
+				this.spawn(this, this.modulePool[i]);
+			}
+		}
 	};
 	
 	Emitter.prototype.stop = function(){
 		this.canonActivated = false;
+		for(var i in this.canonTimers){
+			clearTimeout(this.canonTimers[i]);
+		}
+		this.canonTimers = {};
 	};
 	
-	Emitter.prototype.spawn = function(thisRef){
+	Emitter.prototype.spawn = function(thisRef, type){
 		
-		if(!this.canonActivated) return;
+		if(!thisRef.canonActivated) return;
 		
-		//Call next timer
-		thisRef.canonTimer.initialDelay = thisRef.spawnRate;
-		thisRef.canonTimer.restart();
-		
-		var type;
-		
-		if(thisRef.modulePool.length > 1){
-			type = thisRef.modulePool[Math.ceil(Math.random()*thisRef.modulePool.length)-1];
-		}
-		else{
-			type = thisRef.modulePool[0];
-		}
+		thisRef.canonTimers[type.name] = setTimeout(function(){
+			thisRef.spawn(thisRef, type);
+		}, type.options.spawnRate || 150);
 		
 		Pool.get(type.module, function(particle){
 			resetParticleSettings(particle, type.options);
@@ -107,25 +128,33 @@ define("Arstider/Emitter", ["Arstider/DisplayObject", "Arstider/Pool", "Arstider
 			particle.x = 0;
 			particle.y = 0;
 			
-			thisRef.addChild(particle);
+			particle.parent = thisRef;
+			if(particle.__startingIndex < thisRef.children.length){
+				thisRef.children.splice(particle.__startingIndex, 0, particle);
+			}
+			else{
+				thisRef.children[thisRef.children.length] = particle;
+			}
 		});
 	};
 	
 	Emitter.prototype.update = function(){
-		var i = this.children.length, currPart;
+		var i = this.children.length-1, currPart;
 		for(i; i>=0; i--){
 			if(this.children[i].__isParticle){
 				currPart = this.children[i];
 				currPart.__lifeTime++;
 				if(currPart.__lifeTime >= currPart.__maxLifeTime){
-					Pool.free(currPart);
+					currPart.parent = null;
+					Pool.free(currPart, true);
 					this.children.splice(i,1);
 				}
 				else{
 					//Move it
 					currPart.alpha -= currPart.__alphaDecay;
-					currPart.rotation = currPart.__rotation;
-					currPart.scaleX = currPart.scaleY = currPart.__scale;
+					currPart.rotation += currPart.__rotation;
+					currPart.scaleX *= currPart.__scale;
+					currPart.scaleY *= currPart.__scale;
 					currPart.x += currPart.__xVelocity;
 					currPart.y += currPart.__yVelocity;
 					

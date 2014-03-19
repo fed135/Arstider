@@ -6,6 +6,42 @@
 window.Arstider = {};
 
 /**
+ * Define libs folder for sdk-libs
+ */
+;(function(scripts){
+	var stack;
+    
+    try {
+         getRunningFolder
+    } catch(e) {
+    	stack = e.stack;
+    };
+
+	var e = stack.indexOf(' at ') !== -1 ? ' at ' : '@';
+    	while (stack.indexOf(e) !== -1)
+        	stack = stack.substring(stack.indexOf(e) + e.length);
+            stack = stack.substring(0, stack.indexOf(':', stack.indexOf(':')+1));
+ 
+	stack = stack.substring(0, stack.lastIndexOf("/"));
+	
+	requirejs.config({
+		packages:[{
+			name: "textLib",
+			location: stack + "/libs",
+			main: "text"
+		},
+		{
+			name: "howler",
+			location: stack + "/libs",
+			main: "howler.min"
+		}]
+	});
+	
+	Arstider.currentFolder = stack;
+})();
+
+
+/**
  * Re-usable empty object
  * @const
  * @type {Object}

@@ -20,7 +20,7 @@
 	/*
 	 * Defines the Dictionary module
 	 */
-	define("Arstider/Dictionary", ["libs/text!..{game}/media/strings.json"], function(strs){
+	define("Arstider/Dictionary", ["textLib!..{game}/media/strings.json"], function(strs){
 		
 		/**
 		 * Returns singleton if it has been instantiated
