@@ -167,7 +167,7 @@
 		DisplayObject.prototype.removeChildren = function(){
 			for(var i=0; i<this.children.length; i++) {
 				if(this.children[i]){
-					if(this.children[i].children && this.children[i].removeChildren && this.children[i].children.length != 0 && !keepBuffer){
+					if(this.children[i].children && this.children[i].removeChildren && this.children[i].children.length != 0){
 						this.children[i].removeChildren();
 					}
 					this.children[i].killBuffer();

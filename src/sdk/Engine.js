@@ -66,7 +66,7 @@
 				
 			Viewport.init(tag, this.canvas);
 			
-			Events.bind("gotoScreen", this.loadMenu);
+			Events.bind("gotoScreen", this.loadScreen);
 			Events.bind("showPopup", this.showPopup);
 			Events.bind("hidePopup", this.hidePopup);
 			Events.bind("loadingCompleted", this.startMenu);

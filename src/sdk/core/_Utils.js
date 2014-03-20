@@ -431,7 +431,7 @@ require(["Arstider/Buffer"], function(Buffer){
 	};
 });
 
-require(["Arstider/Engine"], function(Engine){
+require(["Arstider/Engine", "Arstider/Events"], function(Engine, Events){
 	
 	Arstider.findElement = function(name, t){
 		if(!Engine.debug) return;
@@ -455,5 +455,17 @@ require(["Arstider/Engine"], function(Engine){
 		
 		if(ret.length == 1) return ret[0];
 		return ret;
+	};
+	
+	Arstider.debugBroadcast = function(name, param){
+		if(!Engine.debug) return;
+		
+		Events.broadcast(name, param);
+	};
+	
+	Arstider.debugEventMap = function(){
+		if(!Engine.debug) return;
+		
+		Events._print();
 	};
 });

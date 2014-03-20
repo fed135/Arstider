@@ -5,12 +5,23 @@
  *
  * @author frederic charette <fredc@meetfidel.com>
  */	
+;(function(){
+	
+	function findTile(x, y, data){
+		var i = data.length-1;
+		
+		for(i; i>=0; i--){
+			if(data[i].x === x && data[i].y === y) return data[i];	
+		}
+		
+		return;
+	}
 	
 	/**
 	 * AMD Closure
 	 */	
 
-		define( "Arstider/GridLayer", ["Arstider/DisplayObject"], function (DisplayObject) {
+		define( "Arstider/GridLayer", ["Arstider/DisplayObject", "Arstider/FileSystem"], function (DisplayObject, FileSystem) {
 		
 			/**
 			 * Creates an instance of Grid.
@@ -18,70 +29,137 @@
 			 * @constructor
 			 * @this {Grid}
 			 */
-			Arstider.Inherit(GridLayer, DisplayObject);
-			function GridLayer(name, data, tileSize, tiles, mapWidth, mapHeight, props){
-				Arstider.Super(this, DisplayObject, name);
+			function GridLayer(name, data, tileSizeX, tileSizeY, mapWidth, mapHeight){
+				Arstider.Super(this, DisplayObject);
 				
-				this.tileSize = tileSize;
-				this.tiles = new Array(mapWidth);
+				this.tileSizeX = tileSizeX;
+				this.tileSizeY = tileSizeY;
 				
-				this.props = [];
+				this.name = name;
 				
-				var i = 0, len = tiles.length, p, newTile, off, thisRef = this;
-				for(i = 0; i< props.length; i++){
-					this.props[props[i].textureId] = props[i].aProps;
-				}
+				this.tiles = [];
 				
-				for(i = 0; i< mapWidth; i++){
-					this.tiles[i] = new Array(mapHeight);
-				}
-				for(i = 0; i<len; i++){
-					newTile = new DisplayObject();
-					newTile.x = tiles[i].x*this.tileSize;
-					newTile.y = tiles[i].y*this.tileSize;
-					newTile.largeData = true;
-					newTile.width = this.tileSize;
-					newTile.height = this.tileSize;
-					newTile.type = tiles[i].type;
-					(function(_t){
-						_t.loadBitmap("media/images/maps/"+data, function(){
-							off = thisRef.getTileTexturePos(_t.type, _t.data.width);
-							_t.dataHeight = thisRef.tileSize;
-							_t.dataWidth = thisRef.tileSize;
-							_t.xOffset = off[0];
-							_t.yOffset = off[1];
-						});
-					})(newTile);
-					
-					
-					if(this.props[tiles[i].type]){
-						for(p in this.props[tiles[i].type]){
-							if(p == "spawn"){
-								this.addChild(new this.props[tiles[i].type][p]());
-							}
-							else{
-								newTile[p] = this.props[tiles[i].type][p];
-							}
-						}
-					}
-					this.tiles[tiles[i].x][tiles[i].y] = newTile;
-					this.addChild(newTile);
-				}
+				this.mapData = data.tiles;
 				
-				this.centerW = (1136*0.5) - (this.tileSize*0.5);
-				this.centerH = (672*0.5) - (this.tileSize*0.5);
+				this._parseRequested = false;
+				this._texturePosSave = {};
+				
+				var thisRef = this;
+				this._data = null;
+				FileSystem.download(data.asset || Arstider.emptyImgSrc, function(bitmap){
+					thisRef._data = bitmap;
+					thisRef._parseRequested = true;
+				});
 			};
 			
-			GridLayer.prototype.getTileTexturePos = function(id, w){
-				var xCoord = id*this.tileSize, yCoord = 0;
+			Arstider.Inherit(GridLayer, DisplayObject);
+			
+			GridLayer.prototype._getTileTexturePos = function(id, w){
+				
+				if(this._texturePosSave[id] != undefined) return this._texturePosSave[id];
+				
+				var xCoord = id*this.tileSizeX, yCoord = 0;
 				
 				while(xCoord >= w){
 					xCoord -= (w);
-					yCoord += this.tileSize;
+					yCoord += this.tileSizeY;
 				}
 				
-				return [xCoord, yCoord];
+				this._texturePosSave[id] = [xCoord, yCoord];
+				return this._texturePosSave[id];
+			};
+			
+			GridLayer.prototype._createTile = function(x, y){
+				
+				var dataTile = findTile(x, y, this.mapData);
+				
+				if(dataTile == undefined) return Arstider.emptyObject;
+				
+				var ret = new DisplayObject({
+					x:(x*this.tileSizeX),
+					y:(y*this.tileSizeY),
+					name:this.name + "_tile_"+x+"_"+y,
+					width:this.tileSizeX,
+					height:this.tileSizeY
+				});
+				
+				if(dataTile.tileId != undefined){
+					ret.data = this._data;
+					ret.dataWidth = this.tileSizeX;
+					ret.dataHeight = this.tileSizeY;
+					
+					ret.largeData = true;
+					
+					ret.xOffset = this._getTileTexturePos(dataTile.tileId, this._data.width)[0];
+					ret.yOffset = this._getTileTexturePos(dataTile.tileId)[1];
+				}
+				
+				if(dataTile.spawns && dataTile.spawns.length > 0){
+					for(var i = 0; i< dataTile.spawns.length;i++){
+						(function(_ret, _spawns, _i, _x, _y){
+							try{
+								require([_spawns[_i].module], function(spwn){
+									if(_ret.spawns == undefined) _ret.spawns = [];
+									
+									if(_spawns[_i].props == undefined) _spawns[_i].props = {};
+									if(_spawns[_i].props.x == undefined) _spawns[_i].props.x = _x;
+									if(_spawns[_i].props.y == undefined) _spawns[_i].props.y = _y;
+									
+									_ret.spawns.push(new spwn(_spawns[_i].props));
+								});
+							}
+							catch(e){
+								console.warn("Spawn error:", e);
+							}
+						})(ret, dataTile.spawns, i, x*this.tileSizeX, y*this.tileSizeY);
+					}
+				}
+				
+				return ret;
+			};
+			
+			GridLayer.prototype._parseFOV = function(){
+				this.children = [];
+				
+				var 
+					rz = this.parent._getRenderZone(),
+					i,
+					u
+				;
+				
+				for(i = rz[0]; i<rz[1]; i++){
+					if(i>=0 && i<=this.parent.mapWidth){
+						if(this.tiles[i] == undefined){
+							this.tiles[i] = [];
+						}
+						
+						for(u = rz[2]; u<rz[3]; u++){
+							if(u>=0 && u<=this.parent.mapHeight){
+								if(this.tiles[i][u] == undefined){
+									//create tile if it has data
+									//also place spawns
+									this.tiles[i][u] = this._createTile(i, u);
+								}
+								
+								//place tile in children tile
+								if(this.tiles[i][u].data != null) this.children[this.children.length] = this.tiles[i][u];
+								
+								if(this.tiles[i][u].spawns && this.tiles[i][u].spawns.length != 0) this.children = this.children.concat(this.tiles[i][u].spawns);
+							}
+						}
+					}
+				}
+			};
+			
+			GridLayer.prototype.update = function(){
+				if(this._parseRequested){
+					this._parseFOV();
+				}
+				else{
+					this.cancelBubble();
+				}
 			};
 			
 			return GridLayer; 
 		});
+})();

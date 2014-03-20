@@ -102,6 +102,12 @@
 				}
 			}
 		};
+		
+		Events.prototype._print = function(){
+			console.log("targets:", targets);
+			console.log("functions:", functions);
+			console.log("junctions:", junctions);
+		};
 			
 		Events.prototype.broadcast = function(event, data, target){
 			target = target || NO_TARGET;	//0 means no specific target
@@ -114,7 +120,13 @@
 				if(junctions[i]){
 					if(junctions[i][EVENT] == event){
 						if(targets[junctions[i][TARGET]] == target || target === NO_TARGET){
-							functions[junctions[i][FUNCTION]](data);
+							if(functions[junctions[i][FUNCTION]] instanceof Function || typeof functions[junctions[i][FUNCTION]] === "function"){
+								functions[junctions[i][FUNCTION]](data);
+							}
+							else{
+								console.log("Discrepancy found, flushing events.");
+								singleton.flush();
+							}
 						}
 					}
 				}

@@ -310,6 +310,13 @@
 			 * @type {string|number|null}
 			 */
 			this._fillY = null;
+			
+			/**
+			 * Flag to skip update propagation
+			 * @private
+			 * @type {boolean}
+			 */
+			this._skipUpdateBubble = false;
 		};
 		
 		/**
@@ -369,6 +376,7 @@
 		 * @protected
 		 */
 		Entity.prototype._update = function(){
+			
 			/**
 			 * Check for docking options
 			 */
@@ -387,7 +395,12 @@
 				}
 			}
 			
-			this.update(); 
+			this.update();
+			
+			if(this._skipUpdateBubble){
+				this._skipUpdateBubble = false;
+				return;
+			}
 			
 			if(this.children && this.children.length > 0){
 				for(var i = 0; i<this.children.length; i++){
@@ -480,7 +493,7 @@
 		 * @this {Entity}
 		 * @returns {number} Returns the element index
 		 */
-		Entity.prototype.getIndex = function(index) {
+		Entity.prototype.getIndex = function(index){
 			if(this.parent){
 				return this.parent.children.indexOf(this);
 			}
@@ -489,6 +502,13 @@
 			}
 			
 			return -1;
+		};
+		
+		/**
+		 * Stops update propagation during that frame
+		 */
+		Entity.prototype.cancelBubble = function(){
+			this._skipUpdateBubble = true;
 		};
 		
 		/**
