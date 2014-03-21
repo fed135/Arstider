@@ -40,6 +40,61 @@ window.Arstider = {};
 	Arstider.currentFolder = stack;
 })();
 
+/**
+* RandomGenerator
+* @constructor
+* @param {number=} seed The generator seed.
+*/
+Arstider.RandomGenerator = function(seed) {
+
+    /** @type {number} */
+    this.seed = seed && !isNaN(seed) ? seed : (new Date()).getTime();
+
+    /** @type {number} @private */
+    this.i_ = 0;
+
+    /** @type {number} @private */
+    this.j_ = 0;
+
+    /** @type {Array.<number>} @private */
+    this.S_ = [];
+
+    this.init(('' + seed).split(''));
+};
+
+/**
+* Get a random number
+* @param {Array.<number>} key The generator key.
+*/
+Arstider.RandomGenerator.prototype.init = function(key) {
+    var i, j, t;
+    for (i = 0; i < 256; ++i) {
+        this.S_[i] = i;
+    }
+    j = 0;
+    for (i = 0; i < 256; ++i) {
+        j = (j + this.S_[i] + key[i % key.length]) & 255;
+        t = this.S_[i];
+        this.S_[i] = this.S_[j];
+        this.S_[j] = t;
+    }
+    this.i_ = 0;
+    this.j_ = 0;
+};
+
+/**
+* Get a random number
+* @return {number} A random number.
+*/
+Arstider.RandomGenerator.prototype.next = function() {
+    var t;
+    this.i_ = (this.i_ + 1) & 255;
+    this.j_ = (this.j_ + this.S_[this.i_]) & 255;
+    t = this.S_[this.i_];
+    this.S_[this.i_] = this.S_[this.j_];
+    this.S_[this.j_] = t;
+    return this.S_[(t + this.S_[this.i_]) & 255];
+};
 
 /**
  * Re-usable empty object
