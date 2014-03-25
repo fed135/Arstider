@@ -13,9 +13,9 @@
 	/**
 	 * AMD Closure
 	 */	
-		define( "Arstider/Preloader", ["Arstider/Events", "Arstider/DisplayObject"], function (Events, DisplayObject) {
+		define( "Arstider/Preloader", ["Arstider/Events", "Arstider/DisplayObject"], function(Events, DisplayObject) {
 		
-			if(singleton != null){return singleton;}
+			if(singleton != null) return singleton;
 			
 			/**
 			 * Creates a singleton instance of Preloader.
@@ -24,19 +24,25 @@
 			 * @this {Preloader}
 			 * @param {Engine} engine The game engine reference
 			 */
-			//Preloader.Inherit(DisplayObject);
+			
 			function Preloader(){
-				//this.Inherit(DisplayObject, "Arstider_Preloader");
+				Arstider.Super(this, DisplayObject);
 				
 				this.queue = [];
 				this.gracePeriodTimer = null;
 				
 				this.clickToDismiss = false;
 				
+				this.name = "_Arstider_Preloader";
+				
+				this.global.alpha = 1;
+				
 				this._checks = 0;
 					
 				this.update = function(p,c){}; /*This get overriden by game main for handling progress*/
-			}	
+			}
+			
+			Arstider.Inherit(Preloader, DisplayObject);
 				
 			Preloader.prototype.set = function(name, clickReq){
 				Events.broadcast("showPreloader", name);
@@ -45,11 +51,19 @@
 				this.clickToDismiss = clickReq || false;
 			};
 				
-			Preloader.prototype.progress = function(key, value){
+			Preloader.prototype.progress = function(key, value, force){
 				var
 					i,
-					len = this.queue.length
+					len = this.queue.length,
+					thisRef = this
 				;
+				
+				if(value > 0 && !force){
+					setTimeout(function(){
+						thisRef.progress.apply(thisRef, [key, value, true]);
+					}, 100);
+					return;
+				}
 				
 				if(value == undefined || value === 0){
 					if(notInQueue(this.queue, key)){
@@ -108,6 +122,8 @@
 				
 			Preloader.prototype.reset = function(){
 				//this.canvas.removeEventListener('click', this.hide);
+				this.queue = [];
+				this._checks = 0;
 			};
 				
 			Preloader.prototype.complete = function(){

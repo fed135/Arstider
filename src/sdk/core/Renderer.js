@@ -119,7 +119,7 @@
 				}
 				
 				//Render
-				if(curChild.data && curChild.data != null){
+				if(curChild.data){
 					Performance.draws++;
 					//instanceof is pretty fast,  we want to leverage data offset rather than having an extra buffer for sprites.
 					if(curChild instanceof Sprite || curChild.largeData === true){
@@ -177,9 +177,9 @@
 			//Module construction
 			function Renderer(){}
 			
-			Renderer.prototype.draw = function(eng, pre, post, showBoxes){
+			Renderer.prototype.draw = function(eng, rootChild, pre, post, showBoxes){
 				engRef = eng;
-				if(eng.currentScreen) renderChild(eng.currentScreen,0,0,eng.context,pre,post, showBoxes);
+				renderChild(rootChild,0,0,eng.context,pre,post, showBoxes);
 				Performance.frames++;
 			};
 			

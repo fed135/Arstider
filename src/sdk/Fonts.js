@@ -69,6 +69,11 @@
 			this.loaded = true;
 		}
 		
+		this.name = props.name;
+		
+		//is temp fonts - async
+		this.temp = Arstider.checkIn(props, false);
+		
 		this.lineHeight = Arstider.checkIn(props.lineHeight, 12);
 		this.textWrap = Arstider.checkIn(props.textWrap, false);
 		this.size = Arstider.checkIn(props.size, "12px");
@@ -134,16 +139,17 @@
 			
 		Fonts.prototype.get = function(name){
 			if(this.collection[name]) return this.collection[name];
-				
-			return null;
+			
+			this.collection[name] = new Font({temp:true, name:name});
+			return this.collection[name];
 		};
 			
 		Fonts.prototype.create = function(props){
 			
 			if(props.name == undefined) return false;
 			
-			if(this.collection[props.name]) return this.collection[props.name];
-				
+			if(this.collection[props.name] && this.collection[props.name].temp == false) return this.collection[props.name];
+			
 			this.collection[props.name] = new Font(props);
 			
 			return this.collection[props.name];

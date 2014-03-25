@@ -20,37 +20,11 @@
 		}
 		return -1;
 	}
-	
-	/**
-	 * When the asset has been fetched by the FileSystem
-	 * 
-	 * @param {DisplayObject} ref The DisplayObject to put the data into
-	 * @param {HTMLCanvasElement|Image|null} asset The returned data
-	 * @param {function()|null} callback Optionnal success callback
-	 */
-	function handleAssetLoaded(ref, asset, callback){
-		if(asset != null){
-			ref.data = asset;
-			ref.dataWidth = asset.width;
-			ref.dataHeight = asset.height;
-		
-			if(ref.width == 0){
-				ref.width = asset.width;
-			}
-			if(ref.height == 0){
-				ref.height = asset.height;
-			}
-		}
-		
-		if(callback){
-			callback();
-		}
-	}
 
 	/**
 	 * Defines the DisplayObject Module
 	 */	
-	define( "Arstider/DisplayObject", ["Arstider/Buffer", "Arstider/Entity", "Arstider/FileSystem"], function (Buffer, Entity, FileSystem) {
+	define( "Arstider/DisplayObject", ["Arstider/Buffer", "Arstider/Entity", "Arstider/Bitmap"], function (Buffer, Entity, Bitmap) {
 		
 		/**
 		 * Creates an instance of DisplayObject.
@@ -77,7 +51,8 @@
 			/**
 			 * If data is present, start loading the value
 			 */
-			if(props.data !== undefined) this.loadBitmap(props.data);
+			if(props.bitmap !== undefined) this.loadBitmap(props.bitmap);
+			else if(props.data !== undefined) this.loadBitmap(props.data);
 		};
 		
 		/**
@@ -187,18 +162,20 @@
 			var thisRef = this;
 			
 			if(!(typeof url === 'string') && !(url instanceof String)){
-				handleAssetLoaded(thisRef, url, success);
+				this.data = url;
 				return;
 			}
 			
-			thisRef.dataUrl = url;
+			var req = new Bitmap(url, function(e){
+				thisRef.data = this.data;
+				
+				if(thisRef.dataWidth == 0) thisRef.dataWidth = this.width;
+				if(thisRef.dataHeight == 0) thisRef.dataHeight = this.height;
 			
-			FileSystem.download(url, function(b) {
-				handleAssetLoaded(thisRef, b, success);
-			},
-			null,
-			function(e){
-				console.error("Error loading image '"+url+"': ",e);
+				if(thisRef.width == 0) thisRef.width = this.width;
+				if(thisRef.height == 0) thisRef.height = this.height;
+				
+				if(success) success(this);
 			});
 		};
 		
@@ -212,7 +189,7 @@
 		 * @param {number} h Height of the slicing
 		 * @param {function()} callback Optional function to be triggered upon successful loading.
 		 */
-		DisplayObject.prototype.loadFromAtlas = function(url, x,y,w,h, success) {
+		DisplayObject.prototype.loadSection = function(url, x,y,w,h, success) {
 			var thisRef = this;
 			this.width = w;
 			this.height = h;

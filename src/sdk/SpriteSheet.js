@@ -2,7 +2,7 @@
  * AMD Closure
  */	
 
-	define( "Arstider/SpriteSheet", ["Arstider/FileSystem", "Arstider/Sequence"], function (FileSystem, Sequence) {
+	define( "Arstider/SpriteSheet", ["Arstider/Bitmap", "Arstider/Sequence"], function (Bitmap, Sequence) {
 		
 		/**
 		 * Creates an instance of SpriteSheet.
@@ -33,14 +33,10 @@
 					return;
 				}
 				
-				FileSystem.download(url, function(b) {
-					thisRef.data = b;
-					if(thisRef.width == 0){
-						thisRef.width = b.width;
-					}
-					if(thisRef.height == 0){
-						thisRef.height = b.height;
-					}
+				var req = new Bitmap(url, function(){
+					thisRef.data = this.data;
+					if(thisRef.width == 0) thisRef.width = this.width;
+					if(thisRef.height == 0) thisRef.height = this.height;
 				});
 			};
 			

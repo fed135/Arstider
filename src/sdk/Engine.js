@@ -70,6 +70,8 @@
 			Events.bind("showPopup", this.showPopup);
 			Events.bind("hidePopup", this.hidePopup);
 			Events.bind("loadingCompleted", this.startMenu);
+			
+			this.play();
 		};
 		
 		Engine.prototype.stepLogic = function(){
@@ -170,12 +172,22 @@
 				showFrames = false
 			;
 			
-			//Check if canvas rendering is on/off
-			if(singleton.handbreak) return;
-			
 			//Immediately request the next frame
 			if(singleton.frameRequest) Arstider.cancelAnimFrame.apply(window, [singleton.frameRequest]);
 			singleton.frameRequest = Arstider.requestAnimFrame.apply(window, [singleton.draw]);
+			
+			//Check if canvas rendering is on/off
+			if(singleton.handbreak){
+				if(Preloader.queue.length > 0){
+					Background.render(singleton.context);
+					Preloader.width = Viewport.maxWidth;
+					Preloader.height = Viewport.maxHeight;
+					Preloader.cancelBubble();
+					Preloader._update();
+					Renderer.draw(singleton, Preloader, null, null, false);
+				}
+				return;
+			}
 			
 			Performance.startStep(singleton.allowSkip);
 			
@@ -189,7 +201,7 @@
 			Background.render(singleton.context);
 			
 			//Run through the elements and draw them at their global x and y with their global width and height
-			Renderer.draw(singleton, function(e){
+			Renderer.draw(singleton, singleton.currentScreen, function(e){
 				if(e.isTouched(mouseX, mouseY)){
 					if(Mouse.pressed){
 						if(!e._pressed) e._onpress();

@@ -20,7 +20,7 @@
 	/*
 	 * Defines the Background module
 	 */
-	define( "Arstider/Background", ["Arstider/FileSystem", "Arstider/Viewport"], function (FileSystem, Viewport) {
+	define( "Arstider/Background", ["Arstider/Bitmap", "Arstider/Viewport"], function (Bitmap, Viewport) {
 		
 		/**
 		 * Returns singleton if it has been instantiated
@@ -48,8 +48,8 @@
 		 * @param {string} url The url of the image/ resource to load
 		 */
 		Background.prototype.set = function(url){
-			FileSystem.download(url,function(img){
-				singleton.data = img;
+			var req = new Bitmap(url,function(img){
+				singleton.data = this.data;
 			});
 		};
 		

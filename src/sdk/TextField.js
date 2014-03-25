@@ -239,8 +239,6 @@
 		TextField.prototype.setFont = function(font){
 			this._font = font;
 			
-			console.log("setting font!", font.textAlign);
-			
 			if(font.size == undefined) this._font.size = "12px";
 			if(font.family == undefined) this._font.family = "arial";
 			if(font.textBaseline == undefined) this._font.textBaseline = "top";
@@ -413,6 +411,7 @@
 			 */
 			if(this._font === null || this._textValue === null) return;
 			if(this._font.loaded === false) return;
+			if(this._font.temp && !Fonts.collection[this._font.name].temp) this.setFont(Fonts.get(this._font.name));
 			
 			this._makeBuffer();
 			

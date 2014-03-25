@@ -157,12 +157,6 @@
 			this.data = null;
 			
 			/**
-			 * Name of the data's buffer/ image url. Can be used for memory management.
-			 * @type {string|null}
-			 */
-			this.dataUrl = null;
-			
-			/**
 			 * Is element a mask for inferior layers
 			 * @type {boolean}
 			 */
@@ -395,20 +389,18 @@
 				}
 			}
 			
-			this.update();
-			
-			if(this._skipUpdateBubble){
-				this._skipUpdateBubble = false;
-				return;
-			}
+			if(!this._skipUpdateBubble) this.update();
 			
 			if(this.children && this.children.length > 0){
 				for(var i = 0; i<this.children.length; i++){
 					if(this.children[i] && this.children[i]._update){
+						if(this._skipUpdateBubble && this.children[i].cancelBubble) this.children[i].cancelBubble();
 						this.children[i]._update();
 					}
 				}
 			}
+			
+			if(this._skipUpdateBubble) this._skipUpdateBubble = false;
 		};
 		
 		/**

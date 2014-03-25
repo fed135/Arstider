@@ -83,6 +83,8 @@
 			this._renderMode = modes.AUTO;
 			this._pool = {};
 			this._ctxPool = {};
+			
+			this.imagesMemory = 0;
 		}
 			
 		/**

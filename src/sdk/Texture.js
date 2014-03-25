@@ -6,7 +6,7 @@
 /**
  * AMD Closure
  */	
-	define( "Arstider/Texture", ['Arstider/Buffer', 'Arstider/FileSystem'], function (Buffer, FileSystem) {
+	define( "Arstider/Texture", ['Arstider/Buffer', 'Arstider/Bitmap'], function (Buffer, Bitmap) {
 	
 		if(cnv == null){
 			cnv = Buffer.create('textureLoader');
@@ -26,8 +26,8 @@
 			
 			var thisRef = this;
 			
-			FileSystem.download(url, function(b){
-				thisRef.pattern = ctx.createPattern(b, 'repeat');
+			var req = new Bitmap(url, function(){
+				thisRef.pattern = ctx.createPattern(this.data, 'repeat');
 			});
 		};
 			

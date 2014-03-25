@@ -21,7 +21,7 @@
 	 * AMD Closure
 	 */	
 
-		define( "Arstider/GridLayer", ["Arstider/DisplayObject", "Arstider/FileSystem"], function (DisplayObject, FileSystem) {
+		define( "Arstider/GridLayer", ["Arstider/DisplayObject", "Arstider/Bitmap"], function (DisplayObject, Bitmap) {
 		
 			/**
 			 * Creates an instance of Grid.
@@ -46,8 +46,8 @@
 				
 				var thisRef = this;
 				this._data = null;
-				FileSystem.download(data.asset || Arstider.emptyImgSrc, function(bitmap){
-					thisRef._data = bitmap;
+				var req = new Bitmap(data.asset || Arstider.emptyImgSrc, function(bitmap){
+					thisRef._data = this.data;
 					thisRef._parseRequested = true;
 				});
 			};

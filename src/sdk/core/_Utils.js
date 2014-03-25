@@ -48,7 +48,7 @@ window.Arstider = {};
 Arstider.RandomGenerator = function(seed) {
 
     /** @type {number} */
-    this.seed = seed && !isNaN(seed) ? seed : (new Date()).getTime();
+    this.seed = seed && !isNaN(seed) ? seed : Arstider.timestamp();
 
     /** @type {number} @private */
     this.i_ = 0;
@@ -60,6 +60,14 @@ Arstider.RandomGenerator = function(seed) {
     this.S_ = [];
 
     this.init(('' + seed).split(''));
+};
+
+/**
+ * Gets a number timestamp, usefull for id-ing or cache busting
+ * @return {number} the timestamp
+ */
+Arstider.timestamp = function(){
+	return (new Date()).getTime();
 };
 
 /**
