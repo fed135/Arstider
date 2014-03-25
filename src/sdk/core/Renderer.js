@@ -28,7 +28,8 @@
 					oldShadowBlur,
 					oldShadowOffsetX,
 					oldShadowOffsetY,
-					shadowSafe
+					shadowSafe,
+					prevFill
 				;
 				
 				Performance.elements++;
@@ -121,12 +122,20 @@
 				//Render
 				if(curChild.data){
 					Performance.draws++;
-					//instanceof is pretty fast,  we want to leverage data offset rather than having an extra buffer for sprites.
-					if(curChild instanceof Sprite || curChild.largeData === true){
-						ctx.drawImage(curChild.data, curChild.xOffset, curChild.yOffset, curChild.dataWidth, curChild.dataHeight, Math.round(curX), Math.round(curY), curChild.width, curChild.height);
+					if(curChild.data.pattern){
+						prevFill = ctx.fillStyle;
+						ctx.fillStyle = curChild.data.pattern;
+						ctx.fillRect(Math.round(curX), Math.round(curY), curChild.width, curChild.height);
+						ctx.fillStyle = prevFill;
 					}
 					else{
-						ctx.drawImage(curChild.data, Math.round(curX), Math.round(curY), curChild.width, curChild.height);
+						//instanceof is pretty fast,  we want to leverage data offset rather than having an extra buffer for sprites.
+						if(curChild instanceof Sprite || curChild.largeData === true){
+							ctx.drawImage(curChild.data, curChild.xOffset, curChild.yOffset, curChild.dataWidth, curChild.dataHeight, Math.round(curX), Math.round(curY), curChild.width, curChild.height);
+						}
+						else{
+							ctx.drawImage(curChild.data, Math.round(curX), Math.round(curY), curChild.width, curChild.height);
+						}
 					}
 				}
 				
