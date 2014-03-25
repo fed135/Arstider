@@ -44,6 +44,8 @@
 				thisRef.width = thisRef.data.width;
 				thisRef.height = thisRef.data.height;
 				
+				Buffer.setRenderMode.apply(Buffer, [thisRef.data, Buffer._renderMode]);
+				
 				if(thisRef.post) thisRef.post();
 			};
 			this.data.src = url;

@@ -99,8 +99,8 @@
 				var newTouch;
 				for(var i=0; i<e.touches.length && i<singleton.touchLimit; i++){
 					newTouch = singleton.touchObjBank[i];
-					newTouch.x = ((e.touches[i].clientX - Viewport.xOffset) / Viewport.canvasRatio) * Viewport.globalScale;
-		        	newTouch.y = ((e.touches[i].clientY - Viewport.yOffset) / Viewport.canvasRatio) * Viewport.globalScale;
+					newTouch.x = ((e.touches[i].clientX - Viewport.xOffset) / Viewport.canvasRatio) / Viewport.globalScale;
+		        	newTouch.y = ((e.touches[i].clientY - Viewport.yOffset) / Viewport.canvasRatio) / Viewport.globalScale;
 					singleton.touch[i] = newTouch;
 				}
 			};
@@ -160,8 +160,8 @@
 			
 			Mouse.prototype.handleMouseMove = function(event) {
 		        event = event || window.event; // IE-ism
-		        singleton.mouse.x = ((event.clientX - Viewport.xOffset) / Viewport.canvasRatio) * Viewport.globalScale;
-		        singleton.mouse.y = ((event.clientY - Viewport.yOffset) / Viewport.canvasRatio) * Viewport.globalScale;
+		        singleton.mouse.x = ((event.clientX - Viewport.xOffset) / Viewport.canvasRatio) / Viewport.globalScale;
+		        singleton.mouse.y = ((event.clientY - Viewport.yOffset) / Viewport.canvasRatio) / Viewport.globalScale;
 		   };
 			
 			singleton = new Mouse();

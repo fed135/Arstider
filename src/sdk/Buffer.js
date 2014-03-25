@@ -24,13 +24,13 @@
 		setRenderStyle(buffer);
 		
 		//Encouraged method to get context
-		buffer.context2D = function(){
-			if(singleton._ctxPool[name] != undefined){
+		buffer.context2D = function(force){
+			if(singleton._ctxPool[name] != undefined && !force){
 				return singleton._ctxPool[name];
 			}
 			else{
 				singleton._ctxPool[name] = buffer.getContext('2d');
-				setImageSmoothing(buffer, buffer._renderMode == modes.AUTO);
+				setImageSmoothing(singleton._ctxPool[name], buffer._renderMode == modes.AUTO);
 				return singleton._ctxPool[name];
 			}
 		};
@@ -110,33 +110,34 @@
 		 * @param {String} target Can target a specific buffer to change the mode on | {mode.SHARP | mode.AUTO} target -> type Type of rendering, effects all buffers if only type was specified 
 		 */
 		Buffer.prototype.setRenderMode = function(target, type){
-				
+			
 			if(type == undefined){
 				//Apply to all
 				type = target;
-				
+				if(type instanceof String || typeof type === 'string') type = modes[type];
+					
 				target = this._pool;
 				//Can safely remove contexts without impacting the buffer content
 				//They will get regenerated on demand
-				this._ctxPool = {};
-				this._renderMode = modes[type]; //Only applies to new buffers
+				this._renderMode = type; //Only applies to new buffers
+					
+				for(var c in this._ctxPool){
+					setImageSmoothing(this._ctxPool[c], (type === 1));
+				}	
+					
+				for(var b in target){
+					this.setRenderMode(this._pool[b], type);
+				}
 			}
 			else{
-				target = {target:this._pool[target]};
-				delete this._ctxPool[target];
-			}
-			
-			if(!(type in modes)){
-				console.warn("Cannot set render mode "+type+". Must be SHARP or AUTO");
-				return false;
-			}
+				if(type instanceof String || typeof type === 'string') type = modes[type];
 				
-			for(var b in target){
-				if(b != "Inherit"){
-					target[b]._renderMode = modes[type];
-					setRenderStyle(target[b]);
+				target._renderMode = type;
+				if(this._ctxPool[target.name]){
+					setImageSmoothing(this._ctxPool[target.name], (type === 1));
 				}
-			};
+				setRenderStyle(target);
+			}
 		};
 			
 		/**
@@ -148,7 +149,7 @@
 		 */
 		Buffer.prototype.get = function(name){
 			if(name && this._pool[name] != undefined){
-				return this._pool[name]
+				return this._pool[name];
 			}
 			else if(name && this._pool[name] == undefined){
 				return null;

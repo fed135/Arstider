@@ -58,7 +58,7 @@
 				
 			this.canvas = Buffer.create("Arstider_main");
 			this.canvas.id = tag+"_canvas";
-			this.context = this.canvas.getContext("2d");
+			this.context = this.canvas.context2D();
 			
 			Performance.updateLogic = this.stepLogic;
 			
@@ -175,6 +175,8 @@
 			//Immediately request the next frame
 			if(singleton.frameRequest) Arstider.cancelAnimFrame.apply(window, [singleton.frameRequest]);
 			singleton.frameRequest = Arstider.requestAnimFrame.apply(window, [singleton.draw]);
+			
+			if(Viewport.globalScale != 1) Buffer.setRenderMode(singleton.canvas, Buffer._renderMode);
 			
 			//Check if canvas rendering is on/off
 			if(singleton.handbreak){

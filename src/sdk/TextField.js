@@ -279,7 +279,7 @@
 			;
 			
 			if (this.data == null) this.data = Buffer.create("TextField_"+this.name);
-			this.dataCtx = this.data.getContext('2d');
+			this.dataCtx = this.data.context2D();
 				
 			if(this.width === 0){
 				if(this._font.textWrap) this._textWrappingError = true;
