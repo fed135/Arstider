@@ -72,7 +72,7 @@
 		this.name = props.name;
 		
 		//is temp fonts - async
-		this.temp = Arstider.checkIn(props, false);
+		this.temp = Arstider.checkIn(props.temp, false);
 		
 		this.lineHeight = Arstider.checkIn(props.lineHeight, 12);
 		this.textWrap = Arstider.checkIn(props.textWrap, false);

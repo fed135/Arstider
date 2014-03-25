@@ -189,6 +189,13 @@
 			this._textWrappingError = false;
 			
 			/**
+			 * Autogrow enabled. set as true if no width or height properties are defined at spawn
+			 * @private
+			 * @type {boolean | null}
+			 */
+			this._autogrow = null;
+			
+			/**
 			 * Stores the font to use for this TextField.
 			 * Changed through the setFont method
 			 * 
@@ -223,6 +230,10 @@
 		 * @param {string} name The desired text.
 		 */
 		TextField.prototype.setText = function(txt, parse){
+			if(this._autogrow === true){
+				this.height = 0;
+				this.width = 0;
+			}
 			
 			this._BBparsed = parse || false;
 			if(parse) this._textValue = new Parser(txt).segments;
@@ -238,6 +249,11 @@
 		 */
 		TextField.prototype.setFont = function(font){
 			this._font = font;
+			
+			if(this._autogrow === true){
+				this.height = 0;
+				this.width = 0;
+			}
 			
 			if(font.size == undefined) this._font.size = "12px";
 			if(font.family == undefined) this._font.family = "arial";
@@ -413,6 +429,8 @@
 			if(this._font.loaded === false) return;
 			if(this._font.temp && !Fonts.collection[this._font.name].temp) this.setFont(Fonts.get(this._font.name));
 			
+			if(this.width === 0 && this.height === 0 && this._autogrow == null) this._autogrow = true;
+			
 			this._makeBuffer();
 			
 			for(i in this._font){
@@ -429,7 +447,6 @@
 					this._renderSegmentList(this.width);
 				}
 				else{
-					console.log("wrapped text, standard, ",xShift," startline and context alignement:", this.dataCtx.textAlign);
 					wrapText(this.dataCtx, this._textValue, this.strokeText, this.fillText, xShift + this._font.fontOffsetX, this.padding + this._font.fontOffsetY, this.width - (this.padding*2));
 				}
 			}
