@@ -13,7 +13,7 @@
 	/**
 	 * AMD Closure
 	 */	
-		define( "Arstider/Preloader", ["Arstider/Events", "Arstider/DisplayObject"], function(Events, DisplayObject) {
+		define( "Arstider/Preloader", ["Arstider/Events"], function(Events) {
 		
 			if(singleton != null) return singleton;
 			
@@ -26,29 +26,28 @@
 			 */
 			
 			function Preloader(){
-				Arstider.Super(this, DisplayObject);
-				
 				this.queue = [];
 				this.gracePeriodTimer = null;
 				
 				this.clickToDismiss = false;
 				
 				this.name = "_Arstider_Preloader";
-				
-				this.global.alpha = 1;
+				this._screen = null;
 				
 				this._checks = 0;
 					
 				this.update = function(p,c){}; /*This get overriden by game main for handling progress*/
 			}
-			
-			Arstider.Inherit(Preloader, DisplayObject);
 				
 			Preloader.prototype.set = function(name, clickReq){
 				Events.broadcast("showPreloader", name);
 				this.queue = [];
 				this._checks = 0;
 				this.clickToDismiss = clickReq || false;
+			};
+			
+			Preloader.prototype.setScreen = function(screen){
+				this._screen = new screen();
 			};
 				
 			Preloader.prototype.progress = function(key, value, force){
@@ -83,7 +82,9 @@
 				}
 				
 				var currPcent = this.totalPercent();
-				this.update(currPcent, this.clickToDismiss);
+				if(this._screen){
+					this._screen.update(currPcent, this.clickToDismiss);
+				}
 				if(currPcent >= 100){
 					this.checkComplete(true);
 				}

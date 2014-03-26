@@ -13,7 +13,6 @@ window.Arstider = {};
     
 	window.onerror = function(e){
 		e = e || window.event;
-		e.stopPropagation();
 		e.preventDefault();
 		return false;
 	};

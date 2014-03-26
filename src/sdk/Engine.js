@@ -182,11 +182,9 @@
 			if(singleton.handbreak){
 				if(Preloader.queue.length > 0){
 					singleton.context.clearRect(0,0,Viewport.maxWidth,Viewport.maxHeight);
-					Preloader.width = Viewport.maxWidth;
-					Preloader.height = Viewport.maxHeight;
-					Preloader.cancelBubble();
-					Preloader._update();
-					Renderer.draw(singleton, Preloader, null, null, false);
+					Preloader._screen.cancelBubble();
+					Preloader._screen._update();
+					Renderer.draw(singleton, Preloader._screen, null, null, false);
 				}
 				return;
 			}
