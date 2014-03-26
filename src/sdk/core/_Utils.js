@@ -11,18 +11,23 @@ window.Arstider = {};
 ;(function(scripts){
 	var stack;
     
+	window.onerror = function(e){
+		e = e || window.event;
+		e.stopPropagation();
+		e.preventDefault();
+		return false;
+	};
+	
     try {
          getRunningFolder
     } catch(e) {
     	stack = e.stack;
     };
-
-    console.log(stack);
     
 	var e = stack.indexOf(' at ') !== -1 ? ' at ' : '@';
     	while (stack.indexOf(e) !== -1)
         	stack = stack.substring(stack.indexOf(e) + e.length);
-            stack = stack.substring(0, stack.indexOf(':', stack.indexOf(':')+1));
+            //stack = stack.substring(0, stack.indexOf(':', stack.indexOf(':')+1));
  
 	stack = stack.substring(0, stack.lastIndexOf("/"));
 	
