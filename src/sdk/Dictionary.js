@@ -20,7 +20,7 @@
 	/*
 	 * Defines the Dictionary module
 	 */
-	define("Arstider/Dictionary", ["textLib!..{game}/media/strings.json"], function(strs){
+	define("Arstider/Dictionary", ["textLib!../media/strings.json"], function(strs){
 		
 		/**
 		 * Returns singleton if it has been instantiated
@@ -40,16 +40,6 @@
 			 * @type {Object|null}
 			 */
 			this.strList = null;
-			
-			/**
-			 * JSON Parse of the strings.json file
-			 */
-			if(strs){
-				this.strList = JSON.parse(strs);
-			}
-			else{
-				console.warn("No string file");
-			}
 		}
 		
 		/**
@@ -63,7 +53,7 @@
 		 * 	stringID_001:"You have [X] points!"
 		 * 
 		 * 	//Game code
-		 * 	Dictionary.translate("stringID_001", {"[X]":20}).value;
+		 * 	Dictionary.translate("stringID_001", {"[X]":20});
 		 * 	//Result: "You have 20 points!"
 		 * 
 		 * @param {string} key The string ID to translate
@@ -79,8 +69,8 @@
 				keyword
 			;
 							
-			if(dictionary[key] != undefined) {
-				ret = singleton.strList[key].value;
+			if(singleton.strList[key] != undefined) {
+				ret = singleton.strList[key];
 				if(delimiters != undefined) {
 					for(keyword in delimiters) {
 						ret = ret.split(keyword).join(delimiters[keyword]);
@@ -88,6 +78,14 @@
 				}
 			}
 			return ret;
+		};
+		
+		Dictionary.prototype.load = function(filename){
+			var thisRef = this;
+			
+			require(["textLib!./"+filename],function(file){
+				thisRef.strList = JSON.parse(file);
+			});
 		};
 		
 		/**
