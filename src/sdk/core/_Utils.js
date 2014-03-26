@@ -9,7 +9,7 @@ window.Arstider = {};
  * Define libs folder for sdk-libs
  */
 ;(function(scripts){
-	var stack;
+	var stack, offpos;
     
 	window.onerror = function(e){
 		e = e || window.event;
@@ -29,7 +29,14 @@ window.Arstider = {};
         	stack = stack.substring(stack.indexOf(e) + e.length);
             //stack = stack.substring(0, stack.indexOf(':', stack.indexOf(':')+1));
  
-	stack = stack.substring(0, stack.lastIndexOf("/"));
+    offpos = stack.indexOf(" (");
+    if(offpos != -1){
+    	offpos += 2;
+    }
+    else{
+    	offpos = 0;
+    }
+	stack = stack.substring(offpos, stack.lastIndexOf("/"));
 	
 	requirejs.config({
 		packages:[{

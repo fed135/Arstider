@@ -64,7 +64,6 @@
 			if(obj instanceof String || typeof obj == "string"){
 				var thisRef = this;
 				require(["textLib!./"+obj],function(file){
-					console.log(url);
 					thisRef.sounds = JSON.parse(file);
 					thisRef.init(url);
 				});
