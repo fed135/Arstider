@@ -17,6 +17,8 @@ window.Arstider = {};
     	stack = e.stack;
     };
 
+    console.log(stack);
+    
 	var e = stack.indexOf(' at ') !== -1 ? ' at ' : '@';
     	while (stack.indexOf(e) !== -1)
         	stack = stack.substring(stack.indexOf(e) + e.length);
