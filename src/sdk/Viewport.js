@@ -12,7 +12,7 @@
 		function Viewport(){
 			this.tag = null;
 			
-			this.orientation = PORTRAIT;
+			this.orientation = null;
 				
 			this.canvasRatio = 1;
 			
@@ -48,8 +48,8 @@
 				
 				this.container.style.position = "relative";
 				this.container.style.display = "block";
-				this.container.style.width = this.maxWidth + "px";
-				this.container.style.height = this.maxHeight + "px";
+				this.container.style.width = "100%";
+				this.container.style.height = "100%";
 				
 				window.addEventListener("resize", this._resize);
 				if(Browser.isMobile){
@@ -60,6 +60,7 @@
 				this._cancelFullscreenEvent =  (window.document.cancelFullScreen)?"cancelFullScreen":(window.document.mozCancelFullScreen)?"mozCancelFullScreen":(window.document.webkitCancelFullScreen)?"webkitCancelFullScreen":"FullscreenError";
 				
 				this._resize();
+				this._rotate();
 			}
 			else{
 				console.error("Could not find element with id \"" + tag + "\"");
@@ -93,43 +94,45 @@
 			var scaleX, scaleY;
 			var posX, posY;
 			
-			//Retina detection
-			if( Browser.isMobile &&
-			    windowW*2 >= singleton.minWidth &&
-			    windowW*2 <= singleton.maxWidth &&
-			    windowH*2 >= singleton.minHeight &&
-			    windowH*2 <= singleton.maxHeight
-			){
-				ratio = 0.5;
-			} else {	
-				scaleX = windowW / singleton.minWidth;
-				scaleY = windowH / singleton.minHeight;
-				ratio = Math.min(scaleX,scaleY);
-				ratio = Math.min(1,ratio);
-			}
+			if(singleton.orientation != PORTRAIT){
+				//Retina detection
+				if( Browser.isMobile &&
+				    windowW*2 >= singleton.minWidth &&
+				    windowW*2 <= singleton.maxWidth &&
+				    windowH*2 >= singleton.minHeight &&
+				    windowH*2 <= singleton.maxHeight
+				){
+					ratio = 0.5;
+				} else {	
+					scaleX = windowW / singleton.minWidth;
+					scaleY = windowH / singleton.minHeight;
+					ratio = Math.min(scaleX,scaleY);
+					ratio = Math.min(1,ratio);
+				}
+					
+				scaleX = Math.round(singleton.maxWidth*ratio);
+				scaleY = Math.round(singleton.maxHeight*ratio);
 				
-			scaleX = Math.round(singleton.maxWidth*ratio);
-			scaleY = Math.round(singleton.maxHeight*ratio);
-			
-			posX = Math.round( (windowW - scaleX) * 0.5 );
-			posY = Math.round( (windowH - scaleY) * 0.5 );
-			
-			singleton.xOffset = posX;
-			singleton.yOffset = posY;
-			
-			singleton.tag.style.left = posX+"px";
-			singleton.tag.style.top = posY+"px";
-			singleton.tag.style.width = scaleX+"px";
-			singleton.tag.style.height = scaleY+"px";
-			singleton.tag.style.position = "absolute";
-			singleton.tag.width = singleton.maxWidth;
-			singleton.tag.height = singleton.maxHeight;
-			
-			singleton.canvasRatio = ratio;
-			singleton.visibleWidth = Math.round(windowW / ratio);
-			singleton.visibleHeight = Math.round(windowH / ratio);
-			singleton.visibleWidth = Math.min(singleton.visibleWidth, singleton.maxWidth);
-			singleton.visibleHeight = Math.min(singleton.visibleHeight, singleton.maxHeight);
+				posX = Math.round( (windowW - scaleX) * 0.5 );
+				posY = Math.round( (windowH - scaleY) * 0.5 );
+				
+				singleton.xOffset = posX;
+				singleton.yOffset = posY;
+				
+				singleton.tag.style.left = posX+"px";
+				singleton.tag.style.top = posY+"px";
+				singleton.tag.style.width = scaleX+"px";
+				singleton.tag.style.height = scaleY+"px";
+				singleton.tag.style.position = "absolute";
+				singleton.tag.width = singleton.maxWidth;
+				singleton.tag.height = singleton.maxHeight;
+				
+				singleton.canvasRatio = ratio;
+				singleton.visibleWidth = Math.round(windowW / ratio);
+				singleton.visibleHeight = Math.round(windowH / ratio);
+				singleton.visibleWidth = Math.min(singleton.visibleWidth, singleton.maxWidth);
+				singleton.visibleHeight = Math.min(singleton.visibleHeight, singleton.maxHeight);
+			}
 			
 			singleton.onresize();
 		};

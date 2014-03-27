@@ -434,7 +434,8 @@
 			this._makeBuffer();
 			
 			for(i in this._font){
-				this.dataCtx[i] = this._font[i];
+				if(this[i] != undefined) this.dataCtx[i] = [i];
+				else this.dataCtx[i] = this._font[i];
 			}
 			this.dataCtx.font = ((this._font.style == "")?"":(this._font.style + " ")) + this._font.size + " " + this._font.family;
 			

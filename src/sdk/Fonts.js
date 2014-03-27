@@ -159,7 +159,11 @@
 			var thisRef = this;
 			
 			require(["textLib!./"+filename],function(file){
-				thisRef.create.apply(thisRef, [JSON.parse(file)]);
+				var fontList = JSON.parse(file);
+				for(var i in fontList){
+					fontList[i].name = i;
+					thisRef.create.apply(thisRef, [fontList[i]]);
+				}
 			});
 		};
 			

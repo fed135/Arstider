@@ -15,14 +15,26 @@
 	/**
 	 * AMD Closure
 	 */	
-		define( "Arstider/GameData", ["Arstider/core/Storage", "textLib!../media/config.json"], function (Storage, config) {
+		define( "Arstider/GameData", ["Arstider/core/Storage"], function (Storage) {
 			if(singleton != null){return singleton;}
 			
 			function GameData(){
 				
-				this.defaultSet = JSON.parse(config);
+				this.defaultSet = {};
 				this.runtimeSet = {};
 			}
+			
+			GameData.prototype.load = function(filename){
+				var thisRef = this;
+			
+				require(["textLib!./"+filename],function(file){
+					thisRef.defaultSet = JSON.parse(file);
+				});
+			};
+			
+			GameData.prototype.setStorageKey = function(key){
+				Storage.key = key;
+			};
 			
 			GameData.prototype.get = function(id, seekLocalStorage){
 				var ls = null;

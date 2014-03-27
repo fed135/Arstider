@@ -44,6 +44,7 @@
 			this.currentScreen = null;
 			
 			this.handbreak = false;
+			this.pausedByRequest = false;
 			
 			this._savedScreen = null;
 			
@@ -71,7 +72,7 @@
 			Events.bind("hidePopup", this.hidePopup);
 			Events.bind("loadingCompleted", this.startMenu);
 			
-			this.play();
+			if(!this.pausedByRequest) this.play();
 		};
 		
 		Engine.prototype.stepLogic = function(){
@@ -99,7 +100,7 @@
 					singleton.currentScreen.onload();
 				}
 				singleton.canvas.focus();
-				singleton.play();
+				if(!singleton.pausedByRequest) singleton.play();
 			}
 		};
 			
@@ -141,7 +142,7 @@
 				singleton.currentScreen.stage = singleton;
 				singleton.currentScreen.scaleX = singleton.currentScreen.scaleY = Viewport.globalScale;
 				singleton.currentScreen.origin = singleton._savedScreen;
-				singleton.play();
+				if(!singleton.pausedByRequest) singleton.play();
 				if(singleton.currentScreen.onload) singleton.currentScreen.onload();
 			});
 		};
@@ -180,7 +181,7 @@
 			
 			//Check if canvas rendering is on/off
 			if(singleton.handbreak){
-				if(Preloader.queue.length > 0){
+				if(Preloader.queue.length > 0 && !singleton.pausedByRequest){
 					singleton.context.clearRect(0,0,Viewport.maxWidth,Viewport.maxHeight);
 					Preloader._screen.cancelBubble();
 					Preloader._screen._update();
