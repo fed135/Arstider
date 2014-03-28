@@ -15,7 +15,7 @@
 			this.height = 0;
 			
 			if(blobCache[url] != undefined){
-				this.loadUrl(blobCache[url]);
+				this.loadUrl(blobCache[url].url);
 			}
 			else{
 				this.req = new Request({
