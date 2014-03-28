@@ -20,7 +20,7 @@
 	/*
 	 * Defines the Dictionary module
 	 */
-	define("Arstider/Dictionary", ["textLib!../media/strings.json"], function(strs){
+	define("Arstider/Dictionary", [], function(){
 		
 		/**
 		 * Returns singleton if it has been instantiated
@@ -34,6 +34,20 @@
 		 * @this {Dictionary}
 		 */
 		function Dictionary(){
+			
+			/**
+			 * Is string file being loaded
+			 * @private
+			 * @type {boolean}
+			 */
+			this._isLoading = false;
+			
+			/**
+			 * Pending loaded strings file callbacks
+			 * @private
+			 * @type {Array}
+			 */
+			this._pendingStrings = [];
 			
 			/**
 			 * List of strings
@@ -60,9 +74,14 @@
 		 * @param {Object} delimiters The dynamic data delimiters
 		 * @return {string} The translated string
 		 */
-		Dictionary.prototype.translate = function(key, delimiters){
+		Dictionary.prototype.translate = function(key, delimiters, callback){
 			
-			if(singleton.strList === null) return key;
+			if(singleton.strList === null && !singleton._isLoading) return key;
+			
+			if(singleton._isLoading){
+				singleton._pendingStrings.push([key, delimiters, callback]);
+				return key;
+			}
 			
 			var 
 				ret = key, 
@@ -77,14 +96,24 @@
 					}
 				}
 			}
+			if(callback) callback(ret);
 			return ret;
 		};
 		
 		Dictionary.prototype.load = function(filename){
 			var thisRef = this;
 			
+			this._isLoading = true;
+			
 			require(["textLib!./"+filename],function(file){
 				thisRef.strList = JSON.parse(file);
+				thisRef._isLoading = false;
+				if(thisRef._pendingStrings.length > 0){
+					for(var i = 0; i < thisRef._pendingStrings.length; i++){
+						thisRef.translate(thisRef._pendingStrings[i][0], thisRef._pendingStrings[i][1], thisRef._pendingStrings[i][2]);
+					}
+					thisRef._pendingStrings = [];
+				}
 			});
 		};
 		

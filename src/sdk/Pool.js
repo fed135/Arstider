@@ -10,7 +10,7 @@
     var singleton = null;	
     
     function constructorName(type){
-    	var func = type.toString()
+    	var func = type.toString();
     	return func.substring(func.indexOf("function") + 9, func.indexOf("("));
     }
 

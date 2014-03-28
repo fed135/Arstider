@@ -20,7 +20,7 @@
 	/*
 	 * Defines the Background module
 	 */
-	define( "Arstider/Background", ["Arstider/Bitmap", "Arstider/Viewport"], function (Bitmap, Viewport) {
+	define( "Arstider/Background", ["Arstider/Bitmap"], function (Bitmap) {
 		
 		/**
 		 * Returns singleton if it has been instantiated
@@ -66,9 +66,9 @@
 		 * @this {Background}
 		 * @param {CanvasRenderingContext2D} ctx The Engine's canvas context
 		 */
-		Background.prototype.render = function(ctx){
-			if(singleton.data == null) ctx.clearRect(0, 0, Viewport.maxWidth, Viewport.maxHeight);
-			else ctx.drawImage(singleton.data, 0, 0, Viewport.maxWidth, Viewport.maxHeight);
+		Background.prototype.render = function(ctx, w, h){
+			if(singleton.data == null) ctx.clearRect(0, 0, w, h);
+			else ctx.drawImage(singleton.data, 0, 0, w, h);
 		};
 		
 		/**

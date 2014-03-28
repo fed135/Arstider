@@ -5,7 +5,7 @@
 		blobCache = {}
 	;
 
-	define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Buffer"], function(Request, Buffer){
+	define("Arstider/Bitmap", ["Arstider/Request"], function(Request){
 	
 		function Bitmap(url, success){
 			this.url = url;
@@ -30,10 +30,9 @@
 		
 		Bitmap.prototype.parse = function(e){
 			if(blobCache[this.url] == undefined){
-				Buffer.imagesMemory += e.size;
-				blobCache[this.url] = window.URL.createObjectURL(e);
+				blobCache[this.url] = {url:window.URL.createObjectURL(e), size:e.size};
 			}
-			this.loadUrl(blobCache[this.url]);
+			this.loadUrl(blobCache[this.url].url);
 		};
 		
 		Bitmap.prototype.loadUrl = function(url){
@@ -44,7 +43,7 @@
 				thisRef.width = thisRef.data.width;
 				thisRef.height = thisRef.data.height;
 				
-				Buffer.setRenderMode.apply(Buffer, [thisRef.data, Buffer._renderMode]);
+				Arstider.setRenderStyle(thisRef.data);
 				
 				if(thisRef.post) thisRef.post();
 			};

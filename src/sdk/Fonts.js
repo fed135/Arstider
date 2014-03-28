@@ -89,11 +89,11 @@
 		this.fontOffsetY = Arstider.checkIn(props.fontOffsetY, 0);
 		this.textAlign = Arstider.checkIn(props.textAlign, "left");
 		
-		this.loadCallbacks = [];
+		this.loadCallbacks = Arstider.checkIn(props.loadCallbacks, []);
 	}
 	
 	Font.prototype._onFontLoaded = function(callback){
-		if(this.loaded){
+		if(this.loaded && !this.temp){
 			callback();
 			return;
 		}
@@ -150,6 +150,7 @@
 			
 			if(this.collection[props.name] && this.collection[props.name].temp == false) return this.collection[props.name];
 			
+			if(this.collection[props.name] && this.collection[props.name].loadCallbacks.length > 0) props.loadCallbacks = this.collection[props.name].loadCallbacks;
 			this.collection[props.name] = new Font(props);
 			
 			return this.collection[props.name];

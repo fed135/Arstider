@@ -4,11 +4,10 @@
 	 * AMD Closure
 	 */	
 		define( "Arstider/Debugger", [
-		                   "Arstider/Buffer", 
-		                   "Arstider/Events",
+		         "Arstider/Buffer", 
 		                   "Arstider/core/Performance"
 		                   ], 
-		function (Buffer, Events,Performance){
+		function (Buffer,Performance){
 
 			function Debugger(eng){
 				this.engine = eng;

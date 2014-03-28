@@ -6,7 +6,7 @@
 	//Set these in main/index
 	var singleton = null;
 
-	define( "Arstider/Sound", ["howler", "Arstider/GameData", "Arstider/Browser"], function (howlerreq, GameData, Browser) {
+	define( "Arstider/Sound", ["howler", "Arstider/Browser"], function (howlerreq, Browser) {
 		
 		if(singleton != null){return singleton;}
 		
@@ -88,26 +88,24 @@
 		};
 		
 		Sound.prototype.play = function(id, keepPlaying, callback){
-			if(GameData.get("muted", true) != "true"){
-				if(singleton.mobileInPipe){
-					if(!keepPlaying){
-						singleton.mobileSound.pause();
-					}
-						
-					singleton.mobileSound.play(id);
-					if(singleton.sounds[id].loop === true){
-						setTimeout(function(){
-							singleton.play(id, keepPlaying, callback);
-						},singleton.sounds[id].duration+100);
-					}
-					if(callback){
-						setTimeout(callback, singleton.sounds[id].duration+100);
-					}
+			if(singleton.mobileInPipe){
+				if(!keepPlaying){
+					singleton.mobileSound.pause();
 				}
-				else{
-					Arstider.pendingSound = id;
-					singleton._pendingSound = id;
+					
+				singleton.mobileSound.play(id);
+				if(singleton.sounds[id].loop === true){
+					setTimeout(function(){
+						singleton.play(id, keepPlaying, callback);
+					},singleton.sounds[id].duration+100);
 				}
+				if(callback){
+					setTimeout(callback, singleton.sounds[id].duration+100);
+				}
+			}
+			else{
+				Arstider.pendingSound = id;
+				singleton._pendingSound = id;
 			}
 		};
 		

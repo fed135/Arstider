@@ -303,11 +303,32 @@ Arstider.cancelAnimFrame = (function(){
 		Arstider.fixedCancelAnimationFrame;
 })();
 
-
 /**
  * Image Transformations
  */
 require(["Arstider/Buffer"], function(Buffer){
+	
+	/**
+	 * Set render style for canvas tags 
+	 *
+	 * @private
+	 * @param {HTMLCanvasElement} cnv Applies the imageRendering style from the tag's _renderMode property
+	 */
+	Arstider.setRenderStyle = function(element, mode){
+		if(mode) element._renderMode = mode;
+		else element._renderMode = Buffer._renderMode;
+		
+		if(element._renderMode === "sharp"){
+			element.style.imageRendering = '-moz-crisp-edges';
+			element.style.imageRendering = '-o-crisp-edges';
+			element.style.imageRendering = '-webkit-optimize-contrast';
+			element.style.imageRendering = 'crisp-edges';
+			element.style.msInterpolationMode = 'nearest-neighbor';
+		}
+		else if(element._renderMode === "auto"){
+			element.style.imageRendering = 'auto';
+		}
+	};
 	
 	Arstider.debugDraw = function(targetBuffer){
 		var 
@@ -482,8 +503,8 @@ require(["Arstider/Buffer"], function(Buffer){
 			retCtx = ret.getContext("2d")
 		;
 		
-		Buffer.setRenderMode(copy.name, "AUTO");
-		Buffer.setRenderMode(ret.name, "AUTO");
+		Arstider.setRenderStyle(copy.name, "auto");
+		Buffer.setRenderMode(ret.name, "auto");
 		
 		ret.width = Arstider.checkIn(w, buffer.width);
 		ret.height = Arstider.checkIn(h, buffer.height);

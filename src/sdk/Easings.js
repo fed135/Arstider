@@ -33,7 +33,7 @@
 	function easeOut(delta){ 
 		return function(progress, x){
 			return 1-delta(1-progress, x);
-		}
+		};
 	}
 	
 	//EASE IN-OUTS
@@ -45,7 +45,7 @@
 			else{
 				return (2 - delta(2*(1-progress), x)) * 0.5;
 			}
-		}
+		};
 	}
 	
 	define( "Arstider/Easings", [], function () {

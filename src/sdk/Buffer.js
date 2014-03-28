@@ -2,7 +2,9 @@
 	var 
 		singleton = null, 
 		anonymousBuffers = 0,
-		modes={SHARP:0, AUTO:1}
+		
+		SHARP = "sharp", 
+		AUTO = "auto"
 	;
 	
 	/**
@@ -21,7 +23,7 @@
 		buffer.name = name;
 		buffer._renderMode = renderMode;
 		
-		setRenderStyle(buffer);
+		Arstider.setRenderStyle(buffer, renderMode);
 		
 		//Encouraged method to get context
 		buffer.context2D = function(force){
@@ -30,7 +32,7 @@
 			}
 			else{
 				singleton._ctxPool[name] = buffer.getContext('2d');
-				setImageSmoothing(singleton._ctxPool[name], buffer._renderMode == modes.AUTO);
+				setImageSmoothing(singleton._ctxPool[name], buffer._renderMode == AUTO);
 				return singleton._ctxPool[name];
 			}
 		};
@@ -50,26 +52,7 @@
 		ctx[attr] = ctx['ms'+uc] = ctx['moz'+uc] = ctx['webkit'+uc] = ctx['o'+uc] = val;
 	}
 	
-	/**
-	 * Set render style for canvas tags 
-	 *
-	 * @private
-	 * @param {HTMLCanvasElement} cnv Applies the imageRendering style from the tag's _renderMode property
-	 */
-	function setRenderStyle(cnv){
-		if(cnv._renderMode === modes.SHARP){
-			cnv.style.imageRendering = '-moz-crisp-edges';
-			cnv.style.imageRendering = '-o-crisp-edges';
-			cnv.style.imageRendering = '-webkit-optimize-contrast';
-			cnv.style.imageRendering = 'crisp-edges';
-			cnv.style.msInterpolationMode = 'nearest-neighbor';
-		}
-		else if(cnv._renderMode === modes.AUTO){
-			cnv.style.imageRendering = 'auto';
-		}
-	}
-	
-	define("Arstider/Buffer", ["Arstider/Events", "Arstider/Viewport"], function(Events, Viewport){
+	define("Arstider/Buffer", [], function(){
 			
 		if(singleton != null) return singleton;
 			
@@ -80,11 +63,9 @@
 		 * @this {Buffer}
 		 */
 		function Buffer(){
-			this._renderMode = modes.AUTO;
+			this._renderMode = AUTO;
 			this._pool = {};
 			this._ctxPool = {};
-			
-			this.imagesMemory = 0;
 		}
 			
 		/**
@@ -114,7 +95,6 @@
 			if(type == undefined){
 				//Apply to all
 				type = target;
-				if(type instanceof String || typeof type === 'string') type = modes[type];
 					
 				target = this._pool;
 				//Can safely remove contexts without impacting the buffer content
@@ -130,13 +110,12 @@
 				}
 			}
 			else{
-				if(type instanceof String || typeof type === 'string') type = modes[type];
 				
 				target._renderMode = type;
 				if(this._ctxPool[target.name]){
 					setImageSmoothing(this._ctxPool[target.name], (type === 1));
 				}
-				setRenderStyle(target);
+				Arstider.setRenderStyle(target, type);
 			}
 		};
 			
@@ -167,19 +146,19 @@
 		 * @param {String} name Optional. The name of the desired buffer.
 		 * @returns {HTMLCanvasElement} The newly created buffer.
 		 */
-		Buffer.prototype.create = function(name){
+		Buffer.prototype.create = function(name, w, h){
 			if(name && this._pool[name] != undefined){
 				this._pool[name]._renderMode = this._renderMode;
-				setRenderStyle(this._pool[name]);
+				Arstider.setRenderStyle(this._pool[name]);
 				this._pool[name].context2D().clearRect(0,0,this._pool[name].width,this._pool[name].height);
 				return this._pool[name];
 			}
 			else if(name && this._pool[name] == undefined){
-				this._pool[name] = createBuffer(name, this._renderMode, Viewport.maxWidth, Viewport.maxHeight);
+				this._pool[name] = createBuffer(name, this._renderMode, w || 1, h || 1);
 				return this._pool[name];
 			}
 			anonymousBuffers++;
-			this._pool["buffer"+anonymousBuffers] = createBuffer("buffer"+anonymousBuffers, this._renderMode, Viewport.maxWidth, Viewport.maxHeight);
+			this._pool["buffer"+anonymousBuffers] = createBuffer("buffer"+anonymousBuffers, this._renderMode, w || 1, h || 1);
 			return this._pool["buffer"+anonymousBuffers];
 		};
 		
@@ -196,8 +175,6 @@
 			if(name && this._ctxPool[name] != undefined){
 				delete this._ctxPool[name];
 			}
-			
-			Events.broadcast("clearStoredAsset",name);
 		};
 			
 		/**
@@ -206,16 +183,22 @@
 		 * @this {Buffer}
 		 * @returns {String} The mem print with unit.
 		 */
-		Buffer.prototype.getMemInfo = function(){
+		Buffer.prototype.getMemInfo = function(target){
 			var mem = 0;
 			var hexSize = 8;
-			for(var i  in this._pool){
-				if(this._pool[i] && this._pool[i].context2D){
-					this._pool[i].memInfo = (((this._pool[i].height * this._pool[i].width * hexSize) >> 10) / 1024);
-					mem+=this._pool[i].memInfo;
+			
+			if(!target){
+				for(var i  in this._pool){
+					if(this._pool[i] && this._pool[i].context2D){
+						mem += this.getMemInfo(this._pool[i]);
+					}
 				}
 			}
-			return mem.toFixed(2) +"m";
+			else{
+				target.memInfo = (((target.height * target.width * hexSize) >> 10) / 1024);
+				mem=target.memInfo;
+			}
+			return mem;
 		};
 			
 		singleton = new Buffer();

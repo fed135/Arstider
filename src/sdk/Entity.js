@@ -43,7 +43,7 @@
 	/**
 	 * Defines the Entity module
 	 */
-	define("Arstider/Entity", ["Arstider/Buffer"], function(Buffer){
+	define("Arstider/Entity", [], function(){
 			
 		/**
 		 * Creates an instance of Entity.
@@ -510,7 +510,11 @@
 		Entity.prototype.killBuffer = function(){
 			this.data = null;
 			this.dataCtx = null;
-			Buffer.kill(this.name);
+			(function(_name){
+				require(["Arstider/Buffer"],function(Buffer){
+					Buffer.kill(_name);
+				});
+			})(this.name);
 		};
 			
 		/**

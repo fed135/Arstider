@@ -24,7 +24,7 @@
 	/**
 	 * Defines the DisplayObject Module
 	 */	
-	define( "Arstider/DisplayObject", ["Arstider/Buffer", "Arstider/Entity", "Arstider/Bitmap"], function (Buffer, Entity, Bitmap) {
+	define( "Arstider/DisplayObject", ["Arstider/Entity", "Arstider/Bitmap"], function (Entity, Bitmap) {
 		
 		/**
 		 * Creates an instance of DisplayObject.
