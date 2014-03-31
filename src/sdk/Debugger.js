@@ -12,25 +12,23 @@
 	
 	function gradeColor(min, max, current, reverse){
 		//return extremes
-		if((current < min && !reverse) || (current > min && reverse)) return "rgba(255, 0, 0, 1)";
-		if((current > max && !reverse) || (current < max && reverse)) return "rgba(0, 255, 0, 1)";
+		if((current < min && !reverse) || (current > max && reverse)) return "rgba(255, 0, 0, 1)";
+		if((current > max && !reverse) || (current < min && reverse)) return "rgba(0, 255, 0, 1)";
 		
-		var red, green;
+		var red, green, inc;
 		
-		if(!reverse){
-			//red
+		if(reverse){
 			red = Math.round(((current - min)/(max-min)) * 255);
-			//green
 			green = 255 - Math.round(((current - min)/(max-min)) * 255);
 		}
 		else{
-			//red
 			red = 255 - Math.round(((current - min)/(max-min)) * 255);
-			//green
 			green = Math.round(((current - min)/(max-min)) * 255);
 		}
 		
-		return "rgba("+red+","+green+",0,1)";
+		inc = Math.floor(Math.max(red-(255-red), 0)*0.6 + Math.max(green-(255-green))*0.6);
+		
+		return "rgba("+(red+inc)+","+(green+inc)+",0,1)";
 	}
 	
 	/**
@@ -138,6 +136,25 @@
 				else{
 					this.profiler.detailsTab.innerHTML = "";
 				}
+				
+				this.profiler.minibar.innerHTML = [
+ 				                           //FPS
+ 				                           "<span style='color:#FFFF99;'>FPS:",Performance.frames ,"</span>",
+ 				                           "&nbsp;|&nbsp;",
+ 				                           //Buffer Memory
+ 				                           "<span style='color:#99FF99;'>Memory:",Buffer.getMemInfo(),"</span>",
+ 				                           "&nbsp;|&nbsp;",
+ 				                           //Drawn Objects
+ 				                           "<span style='color:#FF9999;'>Draws:", Math.ceil(Performance.draws/Performance.frames) ,"/ Entities:",Math.ceil(Performance.elements/Performance.frames),"</span>",
+ 				                           "&nbsp;|&nbsp;",
+ 				                           //Transformations
+ 				                           "<span style='color:#9999FF;'>Transformations:",Math.ceil(Performance.transforms/Performance.frames),"</span>",
+ 				                           "&nbsp;|&nbsp;",
+ 				                           //Num Buffers
+ 				                           "<span style='color:#FFFFFF;'>Buffers:",Buffer.count(),"</span>",
+ 				                           "&nbsp;|&nbsp;",
+ 				                           //Skips
+ 				                           "<span style='color:#FF0000;'>D-",Performance.skippedDraw,"</span>"].join("");
 				
 				Performance.update();
 			};

@@ -54,6 +54,7 @@ define("Arstider/core/Profiler", [], function(){
 	profiler.style.cursor = "default";
 	profiler.collapsed = true;
 	profiler.currentTab = "draw";
+	profiler.minibar = document.createElement("div");
 	
 	/**
 	 * Close button
@@ -112,6 +113,13 @@ define("Arstider/core/Profiler", [], function(){
 	};
 	memTab.innerHTML = "Memory";
 	profiler.appendChild(memTab);
+	
+	profiler.minibar.style.position = "relative";
+	profiler.minibar.style.display = "block";
+	profiler.minibar.style.float = "left";
+	profiler.minibar.style.paddingTop = "5px";
+	profiler.minibar.style.fontSize = "12px";
+	profiler.appendChild(profiler.minibar);
 	
 	var details = document.createElement("div");
 	details.style.width = "100%";

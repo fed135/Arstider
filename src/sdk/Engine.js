@@ -206,6 +206,7 @@
 				if(e.isTouched(mouseX, mouseY)){
 					if(Mouse.pressed){
 						if(!e._pressed) e._onpress();
+						if(!e._hovered) e._onhover();
 					}
 					else{
 						if(e._pressed) e._onrelease();
