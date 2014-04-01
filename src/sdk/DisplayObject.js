@@ -67,7 +67,7 @@
 		 * @return {number} Index of the newly added child
 		 */
 		DisplayObject.prototype.addChild = function(clip){
-			if(clip.parent != null) console.warn("Object already has a parent!");
+			if(clip.parent != null && Arstider.verbose) console.warn("Object already has a parent!");
 			clip.parent = this;
 			this.children[this.children.length]=clip;
 			return this.children.length-1;
@@ -89,7 +89,7 @@
 				this.children.splice(index,1);
 				return true;
 			}
-			console.warn("could not find children "+name);
+			if(Arstider.verbose) console.warn("could not find children "+name);
 			return false;
 		};
 		
@@ -109,7 +109,7 @@
 				this.children.splice(index,1);
 				return true;
 			}
-			console.warn("could not find children");
+			if(Arstider.verbose) console.warn("could not find children");
 			return false;
 		};
 		

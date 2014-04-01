@@ -11,7 +11,7 @@
 	 * AMD Closure
 	 */	
 
-		define( "Arstider/Tween", ["Arstider/Easings", "Arstider/GlobalTimers", "Arstider/Timer"], function (Easings, GlobalTimers, Timer){
+		define( "Arstider/Tween", ["Arstider/Easings", "Arstider/GlobalTimers"], function (Easings, GlobalTimers){
 			
 			function Transformation(property, start, end){
 				this.property = property;
@@ -20,62 +20,109 @@
 				this.lastStep = start;
 			}
 			
-			Arstider.Inherit(Tween, Timer);
-			function Tween(target, changes, time, easing, easeOpt, loop){
-				this._setup(target, changes, time, easing, easeOpt, loop);
-			}
-			
-			Tween.prototype._setup = function(target, changes, time, easing, easeOpt){
-				this.target = target || this.target;
+			function Animation(target, changes, time, easing, easeOpt){
 				this.changes = [];
-				
-				this.startTime = time;
-				
-				this._loop = this._loop || false;
-				this._yoyo = this._yoyo || false;
-				
-				this.easing = (easing == undefined)?Easings.LINEAR:easing;
-				this.easeOpt = (easeOpt == undefined)?1:easeOpt;
-				
 				var prop;
 				for(prop in changes){
-					if(prop in target && !(target[prop] instanceof Function)){
+					if(!(target[prop] instanceof Function)){
+						if(!(prop in target)) target[prop] = 0;
 						this.changes.push(new Transformation(prop, target[prop], changes[prop]));
 					}
 				}
 				
-				this._loopCallbacks = this._loopCallbacks || [];
+				this.startTime = Arstider.checkIn(time, 1000);
+				this.time = this.startTime;
+				this.easing = Arstider.checkIn(easing, Easings.LINEAR);
+				this.easeOpt = easeOpt;
+			}
+			
+			Animation.prototype.rewind = function(target){
+				this.time = this.startTime;
+			};
+			
+			Animation.prototype.step = function(target){
+				var i = this.changes.length-1, progress = Math.min(this.time / this.startTime, 1);
 				
-				if(!this.callbackList){
-					this.callbackList = [];
+				for(i; i>= 0; i--){
+					this.changes[i].lastStep = target.target[this.changes[i].property];
+					target.target[this.changes[i].property] = this.changes[i].end - ((this.changes[i].end - this.changes[i].start) * this.easing(progress, this.easeOpt));
 				}
-				Arstider.Super(this, Timer, this._runCallbacks, time, false);
+			};
+			
+			Animation.prototype.stepBack = function(target){
+				var i = this.changes.length-1;
+				
+				for(i; i>= 0; i--){
+					target.target[this.changes[i].property] = this.changes[i].lastStep;
+				}
+			};
+			
+			function Action(callback, option){
+				this.startTime = 1;
+				this.time = this.startTime;
+				this.callback = callback;
+				this.callbackOption = Arstider.checkIn(option, []);
+			}
+			
+			Action.prototype.rewind = function(target){
+				this.time = this.startTime;
+			};
+			
+			Action.prototype.step = function(target){
+				this.callback.apply(target, this.callbackOption);
+			};
+			
+			function Tween(target, changes, time, easing, easeOpt){
+				this.target = target;
+				this.running = false;
+				this.completed = false;
+				
+				this._stack = [];
+				this._currentStep = 0;
+				this._repeat = 0;	//TODO
+				
+				this.delay = 512;
+				
+				this._addAnimation(changes, time, easing, easeOpt);
+			}
+			
+			Tween.prototype._addAnimation = function(changes, time, easing, easeOpt){
+				this._stack.push(new Animation(this.target, changes, time, easing, easeOpt));
+			};
+			
+			Tween.prototype._addAction = function(callback, option){
+				this._stack.push(new Action(callback, option));
+			};
+			
+			Tween.prototype.nextStep = function(){
+				this._currentStep++;
+				if(this._currentStep < this._stack.length){
+					if(this._stack[this._currentStep].changes){
+						for(var i = this._stack[this._currentStep].changes.length-1; i >= 0; i--){
+							this._stack[this._currentStep].changes[i].start = this.target[this._stack[this._currentStep].changes[i].property];
+						}
+					}
+				}
 				
 				return this;
 			};
 			
 			Tween.prototype.step = function(){
-				var i = this.changes.length-1, progress = this.delay / this.startTime;
+				this.delay = 512;
 				
-				if(progress > 1){
-					progress = 1;
+				if(this._currentStep < this._stack.length){
+					if(this._stack[this._currentStep].time > 0){
+						if(this._stack[this._currentStep].step) this._stack[this._currentStep].step(this);
+						this._stack[this._currentStep].time -= 20;
+					}
+					else{
+						this.nextStep();
+						this.step();
+					}
 				}
-				
-				for(i; i>= 0; i--){
-					this.changes[i].lastStep = this.target[this.changes[i].property];
-					this.target[this.changes[i].property] = this.changes[i].end - ((this.changes[i].end - this.changes[i].start) * this.easing(progress, this.easeOpt));
+				else{
+					this._repeat++;
 				}
-				return this;
-			};
-			
-			Tween.prototype.loop = function(val){
-				this._loop = val || true;
-				return this;
-			};
-			
-			Tween.prototype.yoyo = function(val){
-				this._yoyo = val || true;
-				return this;
 			};
 			
 			Tween.prototype.play = function(){
@@ -85,99 +132,80 @@
 				return this;
 			};
 			
+			Tween.prototype.pause = function(){
+				this.running = false;
+				return this;
+			};
+			
 			Tween.prototype.sleep = function(time){
-				this.target.__tweenSleep = time;
-				this.then({__tweenSleep:0}, time);
+				var sleepProp = {};
+				sleepProp["__tweenSleep" + Arstider.timestamp()] = time;
+				
+				this.then(sleepProp, time);
 				
 				return this;
 			};
 			
-			Tween.prototype.rewind = function(ref){
-				var thisRef = ref || this;
+			Tween.prototype.then = function(parA, parB, easing, easeOpt){
+				if(parA instanceof Function || typeof parA === "function") this._addAction(parA, parB);
+				else this._addAnimation(parA, parB, easing, easeOpt);
 				
-				thisRef.callbackList = thisRef._loopCallbacks;
-				thisRef._loopCallbacks = [];
-				
-				var i = thisRef.changes.length-1;
-				
-				for(i; i>= 0; i--){
-					thisRef.target[thisRef.changes[i].property] = thisRef.changes[i].start;
-				}
-				
-				thisRef.restart();
-				
-				return thisRef;
+				return this;
 			};
 			
-			Tween.prototype.invert = function(ref){
-				var thisRef = ref || this;
-				
-				var i = thisRef.changes.length-1, cVal;
-				
-				for(i; i>= 0; i--){
-					cVal = thisRef.changes[i].start;
-					thisRef.changes[i].start = thisRef.changes[i].end;
-					thisRef.changes[i].end = cVal;
+			Tween.prototype.rewind = function(){
+				this._currentStep = 0;
+				for(var i = this._stack.length-1; i>=0; i--){
+					this._stack[i].rewind();
 				}
 				
-				thisRef.restart();
-				return thisRef;
+				return this;
 			};
 			
-			Tween.prototype.kill = function(){
+			Tween.prototype.reverse = function(){
+				
+				var 
+					cVal,
+					revStep,
+					trans,
+					i
+				;
+				
+				for(i = this._stack.length-1; i>= 0; i--){
+					if(this._stack[i].changes){
+						revStep = new Animation(this, {}, this._stack[i].startTime, this._stack[i].easing, this._stack[i].easingOpt);
+						for(trans = this._stack[i].changes.length-1; trans >= 0; trans--){
+							revStep.changes.push(new Transformation(this._stack[i].changes[trans].property, this._stack[i].changes[trans].start, this._stack[i].changes[trans].end));
+						}
+						this._stack.push(revStep);
+					}
+				}
+				
+				return this;
+			};
+			
+			Tween.prototype.kill = Tween.prototype.stop = function(){
 				this.running = false;
 				GlobalTimers.remove(this);
 				return this;
 			};
 			
-			Tween.prototype.then = function(fct, time, easing, easeOpt){
-				if(fct instanceof Function){
-					this.callbackList.push(fct);
-					return this;
-				}
-				
-				this.callbackList.push([fct, time, easing, easeOpt]);
+			
+			Tween.prototype.loop = function(val){
+				this._addAction(this.rewind);
+				return this;
+			};
+			
+			Tween.prototype.yoyo = function(val){
+				this._addAction(this.reverse);
 				return this;
 			};
 			
 			Tween.prototype.stepBack = function(){
-				var i = this.changes.length-1;
-				
-				for(i; i>= 0; i--){
-					this.target[this.changes[i].property] = this.changes[i].lastStep;
-				}
+				if(this._stack[this._currentStep].stepBack) this._stack[this._currentStep].stepBack(this);
 				return this;
 			};
 			
-			Tween.prototype._runCallbacks = function(){
-				//For tween chaining, callbacks are called one at a time, not all at once
-				if(this.callbackList.length > 0){
-					var thisRef = this, fct = this.callbackList.shift();
-					if(fct instanceof Function){
-						fct(this);
-						this._runCallbacks();
-					}
-					else{
-						(function(_fct){
-							setTimeout(function(){
-								thisRef._setup(thisRef.target, fct[0], fct[1], fct[2], fct[3], fct[4]).play();
-							},0);
-						})(fct);
-					}
-					
-					if(this._loop || this._yoyo){
-						this._loopCallbacks.push(fct);
-					}
-				}
-				else{
-					if(this._loop){
-						this.rewind();
-					}
-					else if(this._yoyo){
-						this.invert();
-					}
-				}
-			};
 			
 			return Tween;
 		});

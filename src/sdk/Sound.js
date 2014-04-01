@@ -60,11 +60,12 @@
 			console.log("Sound ended: " + id);
 		};
 		
-		Sound.prototype.setSounds = function(url, obj){
+		Sound.prototype.setSounds = function(url, obj, callback){
 			if(obj instanceof String || typeof obj == "string"){
 				var thisRef = this;
 				require(["textLib!./"+obj],function(file){
 					thisRef.sounds = JSON.parse(file);
+					if(callback) callback();
 					thisRef.init(url);
 				});
 			}

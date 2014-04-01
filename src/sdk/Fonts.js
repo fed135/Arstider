@@ -156,7 +156,7 @@
 			return this.collection[props.name];
 		};
 		
-		Fonts.prototype.load = function(filename){
+		Fonts.prototype.load = function(filename, callback){
 			var thisRef = this;
 			
 			require(["textLib!./"+filename],function(file){
@@ -165,6 +165,8 @@
 					fontList[i].name = i;
 					thisRef.create.apply(thisRef, [fontList[i]]);
 				}
+				
+				if(callback) callback();
 			});
 		};
 			

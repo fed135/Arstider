@@ -24,11 +24,13 @@
 				this.runtimeSet = {};
 			}
 			
-			GameData.prototype.load = function(filename){
+			GameData.prototype.load = function(filename, callback){
 				var thisRef = this;
 			
 				require(["textLib!./"+filename],function(file){
 					thisRef.defaultSet = JSON.parse(file);
+					
+					if(callback) callback();
 				});
 			};
 			

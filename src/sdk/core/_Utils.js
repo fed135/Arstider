@@ -50,6 +50,8 @@ window.Arstider = {};
 		}]
 	});
 	
+	window.onerror = null;
+	
 	Arstider.currentFolder = stack;
 })();
 
@@ -175,6 +177,12 @@ Arstider.checkIn = function(val, def){
 	if(val === undefined) return def;
 	return val;
 };
+
+/**
+ * Indicates whether or not to output full verbose warnings, for, like, everything!
+ * @type {boolean}
+ */
+Arstider.verbose = false;
 
 /**
  * Fisher-Yates array shuffling method

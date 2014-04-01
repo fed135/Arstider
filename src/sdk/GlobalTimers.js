@@ -31,7 +31,7 @@
 					this.list[i].delay -= this.stepLength;
 					
 					if(this.list[i].step){
-						this.list[i].step();
+						this.list[i].step.apply(this.list[i]);
 					}
 					
 					if(this.list[i].delay <= 0 && this.list[i].completed == false){

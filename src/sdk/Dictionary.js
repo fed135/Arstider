@@ -100,7 +100,7 @@
 			return ret;
 		};
 		
-		Dictionary.prototype.load = function(filename){
+		Dictionary.prototype.load = function(filename, callback){
 			var thisRef = this;
 			
 			this._isLoading = true;
@@ -114,6 +114,7 @@
 					}
 					thisRef._pendingStrings = [];
 				}
+				if(callback) callback();
 			});
 		};
 		

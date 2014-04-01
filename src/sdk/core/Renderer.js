@@ -162,7 +162,10 @@
 				if(curChild.children){
 					if(curChild.children.length > 0) {
 						len = curChild.children.length;
-						for(li=0; li<len; li++){
+						/*for(li=0; li<len; li++){
+							renderChild(curChild.children[li],curX,curY,ctx,pre,post,showBoxes);
+						}*/
+						for(li=len-1; li>=0; li--){
 							renderChild(curChild.children[li],curX,curY,ctx,pre,post,showBoxes);
 						}
 					}
