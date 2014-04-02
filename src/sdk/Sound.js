@@ -6,7 +6,7 @@
 	//Set these in main/index
 	var singleton = null;
 
-	define( "Arstider/Sound", ["howler", "Arstider/Browser"], function (howlerreq, Browser) {
+	define( "Arstider/Sound", ["howler", "Arstider/Browser", "Arstider/Viewport"], function (howlerreq, Browser,Viewport) {
 		
 		if(singleton != null){return singleton;}
 		
@@ -24,22 +24,18 @@
 			//Global volume ref - mobile
 			this.volumeRef = 1;
 			
-			this.mobileSound = null;
-			this.mobileInPipe = false;
-			this._pendingSound = null;
+			this.handle = null;
+			this.queue = [];
+			
+			this.fileInPipe = false;
 		}
-		
-		Sound.prototype.proxyPipe = function(){
-			return singleton._pipeSound();
-		};
 		
 		Sound.prototype.init = function(url){
 			//Setup variables, preload and play first song
 			var 
-				i
+				i,
+				sprite = {empty:[0,1]}
 			;
-			
-			var sprite = {empty:[0,1]};
 			
 			for(i in this.sounds){
 				sprite[i] = [this.sounds[i].offset, this.sounds[i].duration];
@@ -47,17 +43,31 @@
 			
 			this.sounds['empty'] = {};
 			
-			this.mobileSound = new Howl({
+			this.handle = new Howl({
 				urls:[url+".mp3",url+".ogg"],
 				sprite:sprite,
-				onend:this.soundEnd
+				onend:this._soundEnd
 			});
-				
-			this.play('empty', true);
+			
+			if(Browser.isMobile) Viewport.tag.addEventListener("touchstart", singleton._queueFile);
+			else singleton.fileInPipe = true;
+		};
+		
+		Sound.prototype._queueFile = function(){
+			singleton.fileInPipe = true;
+			singleton.play('empty', true);
+			if(singleton.queue.length > 0){
+				for(var i = 0; i<singleton.queue.length; i++){
+					singleton.play(singleton.queue[i].id, singleton.queue[i].callback);
+				}
+			}
+			singleton.queue = [];
+			
+			Viewport.tag.removeEventListener("touchstart", singleton._queueFile);
 		};
 		
 		Sound.prototype._soundEnd = function(id, ex){
-			console.log("Sound ended: " + id);
+			if(Arstider.verbose > 2) console.warn("Arstider.Sound.ended: " + id);
 		};
 		
 		Sound.prototype.setSounds = function(url, obj, callback){
@@ -75,29 +85,12 @@
 			}
 		};
 		
-		Sound.prototype._pipeSound = function(){
-			Arstider.pendingSound = null;
-			this.mobileInPipe = true;
-			if(this._pendingSound != null){
-				this.play(this._pendingSound, true);
-				this._pendingSound = null;
-			}
-		};
-			
-		Sound.prototype.preload = function(id, play, keepPlaying, callback){
-			this.play(id, keepPlaying, callback);
-		};
-		
-		Sound.prototype.play = function(id, keepPlaying, callback){
-			if(singleton.mobileInPipe){
-				if(!keepPlaying){
-					singleton.mobileSound.pause();
-				}
-					
-				singleton.mobileSound.play(id);
+		Sound.prototype.play = function(id, callback){
+			if(singleton.fileInPipe){
+				singleton.handle.play(id);
 				if(singleton.sounds[id].loop === true){
 					setTimeout(function(){
-						singleton.play(id, keepPlaying, callback);
+						singleton.play(id, callback);
 					},singleton.sounds[id].duration+100);
 				}
 				if(callback){
@@ -105,25 +98,24 @@
 				}
 			}
 			else{
-				Arstider.pendingSound = id;
-				singleton._pendingSound = id;
+				singleton.queue.push({id:id, callback:callback});
 			}
 		};
 		
 		Sound.prototype.stop = function(id){
-			this.mobileSound.pause(id);
+			this.handle.pause(id);
 		};
 		
 		Sound.prototype.pause = function(id){
-			this.mobileSound.pause(id);
+			this.handle.pause(id);
 		};
 			
 		Sound.prototype.setVolume = function(id, val){
-			this.mobileSound.volume(val, id);
+			this.handle.volume(val, id);
 		};
 			
 		Sound.prototype.killSounds = function(){
-			this.mobileSound.pause();
+			this.handle.pause();
 		};
 	
 		singleton = new Sound();

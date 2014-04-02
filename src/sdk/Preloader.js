@@ -40,7 +40,7 @@
 			}
 				
 			Preloader.prototype.set = function(name, clickReq){
-				Events.broadcast("showPreloader", name);
+				Events.broadcast("Preloader.showPreloader", name);
 				this.queue = [];
 				this._checks = 0;
 				this.clickToDismiss = clickReq || false;
@@ -137,7 +137,7 @@
 			};
 			
 			Preloader.prototype.hide = function(){
-				Events.broadcast("loadingCompleted");
+				Events.broadcast("Preloader.loadingCompleted");
 				this.reset();
 			};
 			

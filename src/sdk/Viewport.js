@@ -6,7 +6,7 @@
 		LANDSCAPE = "landscape"
 	;
 	
-	define( "Arstider/Viewport", ["Arstider/Browser"], function(Browser){
+	define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], function(Browser, Events){
 		if(singleton != null) return singleton;
 		
 		function Viewport(){
@@ -33,10 +33,6 @@
 			
 			this._requestFullscreenEvent = null;
 			this._cancelFullscreenEvent = null;
-			
-			//Override me!
-			this.onresize = Arstider.emptyFunction;
-			this.onrotate = function(){console.log("New orientation:",singleton.orientation);};
 		}
 			
 		Viewport.prototype.init = function(tag, canvas){
@@ -54,6 +50,9 @@
 				if(Browser.isMobile){
 					window.addEventListener("orientationchange", this._rotate);
 				}
+				
+				window.document.addEventListener("unload", this._unload);
+				window.addEventListener('pagehide', this._pagehide);
 				
 				this._requestFullscreenEvent = (this.tag.requestFullScreen)?"requestFullScreen":(this.tag.mozRequestFullScreen)?"mozRequestFullScreen":(this.tag.webkitRequestFullScreenWithKeys)?"webkitRequestFullScreenWithKeys":(this.tag.webkitRequestFullScreen)?"webkitRequestFullScreen":"FullscreenError";
 				this._cancelFullscreenEvent =  (window.document.cancelFullScreen)?"cancelFullScreen":(window.document.mozCancelFullScreen)?"mozCancelFullScreen":(window.document.webkitCancelFullScreen)?"webkitCancelFullScreen":"FullscreenError";
@@ -73,11 +72,19 @@
 			if(scale) this.tag.classList.add("fs_scaled_element");
 			else this.tag.classList.remove("fs_scaled_element");
 			
-			return this.tag[this._requestFullscreenEvent]();
+			var res = this.tag[this._requestFullscreenEvent]();
+			
+			Events.broadcast("Viewport.enterFullscreen", singleton);
+			
+			return res;
 		};
 		
 		Viewport.prototype.quitFullScreen = function(){
-			return window.document[this._cancelFullscreenEvent]();
+			var res = window.document[this._cancelFullscreenEvent]();
+			
+			Events.broadcast("Viewport.quitFullscreen", singleton);
+			
+			return res;
 		};
 			
 		Viewport.prototype._resize = function(e){
@@ -127,7 +134,7 @@
 				singleton.visibleHeight = Math.min(singleton.visibleHeight, singleton.maxHeight);
 			}
 			
-			singleton.onresize();
+			Events.broadcast("Viewport.resize", singleton);
 		};
 		
 		Viewport.prototype._rotate = function(e){
@@ -137,7 +144,15 @@
 			}
 			else singleton.orientation = (window.innerHeight>window.innerWidth)?PORTRAIT:LANDSCAPE;
 			
-			singleton.onrotate();
+			Events.broadcast("Viewport.rotate", singleton);
+		};
+		
+		Viewport.prototype._unload = function(e){
+			Events.broadcast("Viewport.unload", singleton);
+		};
+		
+		Viewport.prototype._pagehide = function(e){
+			Events.broadcast("Viewport.pagehide", singleton);
 		};
 		
 		Viewport.prototype.removeDecorations = function(target){
@@ -151,6 +166,8 @@
 		};
 		
 		Viewport.prototype.setGlobalScale = function(num){
+			Events.broadcast("Viewport.globalScaleChange", singleton);
+			
 			var numRevert = 1/this.globalScale;
 			this.maxWidth = this.maxWidth / numRevert;
 			this.maxHeight = this.maxHeight / numRevert;

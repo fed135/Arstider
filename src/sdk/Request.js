@@ -2,7 +2,30 @@
 	
 	var
 		pending = [],
-		cache = {}
+		cache = {},
+		refusedHeaders = [
+			"Accept-Charset",
+			"Accept-Encoding",
+			"Access-Control-Request-Headers",
+			"Access-Control-Request-Method",
+			"Connection",
+			"Content-Length",
+			"Cookie",
+			"Cookie2",
+			"Date",
+			"DNT",
+			"Expect",
+			"Host",
+			"Keep-Alive",
+			"Origin",
+			"Referer",
+			"TE",
+			"Trailer",
+			"Transfer-Encoding",
+			"Upgrade",
+			"User-Agent",
+			"Via"
+		]
 	;
 
 	function findInPending(url){
@@ -32,12 +55,21 @@
 		function Request(props){
 			
 			this.url = props.url;
-			this.callback = props.callback;
-			this.progress = props.progress || Arstider.emptyFunction;
-			this.type = props.type || "blob";
-			this.cache = props.cache || true;
-			this.error = props.error || Arstider.emptyFunction;
-			this.caller = props.caller || this;
+			this.callback = Arstider.checkIn(props.callback, Arstider.emptyFunction);
+			this.progress = Arstider.checkIn(props.progress, Arstider.emptyFunction);
+			this.track = Arstider.checkIn(props.track, false);
+			this.type = Arstider.checkIn(props.type, "blob");
+			this.cache = Arstider.checkIn(props.cache, true);
+			this.error = Arstider.checkIn(props.error, Arstider.emptyFunction);
+			this.caller = Arstider.checkIn(props.caller, this);
+			
+			//advanced
+			this.method = Arstider.checkIn(props.method, "GET");
+			this.async = Arstider.checkIn(props.async, true);
+			this.user = Arstider.checkIn(props.user, Arstider.emptyString);
+			this.password = Arstider.checkIn(props.password, Arstider.emptyString);
+			this.headers = Arstider.checkIn(props.headers, Arstider.emptyObj);
+			this.postData = Arstider.checkIn(props.postData, null);
 			
 			this.id = this.url+"_"+Arstider.timestamp();
 		}
@@ -46,18 +78,19 @@
 			
 			var 
 				xhr,
-				thisRef = this
+				thisRef = this,
+				header
 			;
 			
 			require(["Arstider/Preloader"], function(Preloader){
 			
-				Preloader.progress(thisRef.id, 0);
+				if(thisRef.track) Preloader.progress(thisRef.id, 0);
 				
 				if(thisRef.cache){
 					if(cache[thisRef.url] !== undefined){
 						thisRef.callback.apply(thisRef.caller, [cache[thisRef.url]]);
 						updateInPending(thisRef.url);
-						Preloader.progress(thisRef.id, 100);
+						if(thisRef.track) Preloader.progress(thisRef.id, 100);
 						return;
 					}
 					
@@ -72,14 +105,23 @@
 				
 				xhr = new XMLHttpRequest();
 					
-				xhr.open('GET', thisRef.url, true); 
+				xhr.open(thisRef.method, thisRef.url, thisRef.async, thisRef.user, thisRef.password); 
 				xhr.responseType = thisRef.type;
+				
+				for(header in thisRef.headers){
+					if(refusedHeaders.indexOf(header) === -1){
+						xhr.setRequestHeader(header, thisRef.headers[header]);
+					}
+					else{
+						if(Arstider.verbose > 1) console.warn("Arstider.Request.send: header ",header," is not accepted and will be ignored");
+					}
+				}
 				
 				xhr.onprogress = function(e) {
 					if(thisRef.progress) {
 						thisRef.progress.apply(thisRef.caller, [e]);
 					}
-					Preloader.progress(thisRef.id, Math.round((e.loaded/e.total)*100));
+					if(thisRef.track) Preloader.progress(thisRef.id, Math.round((e.loaded/e.total)*100));
 				};
 						
 				xhr.onload = function () { 
@@ -91,7 +133,7 @@
 								updateInPending(thisRef.url, Preloader);
 							}
 						}
-						Preloader.progress(thisRef.id, 100);
+						if(thisRef.track) Preloader.progress(thisRef.id, 100);
 					}
 				};
 						
@@ -99,10 +141,10 @@
 					if(thisRef.error){
 						thisRef.error.apply(thisRef.caller, [e]);
 					}
-					Preloader.progress(thisRef.id, 100);
+					if(thisRef.track) Preloader.progress(thisRef.id, 100);
 				};
 							
-				xhr.send(null);
+				xhr.send(thisRef.postData);
 			});
 		};
 		

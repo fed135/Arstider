@@ -47,8 +47,6 @@
 			this.pausedByRequest = false;
 			
 			this._savedScreen = null;
-			
-			this.onerror = Arstider.emptyFunction;
 		}
 			
 		Engine.prototype.start = function(tag){
@@ -72,10 +70,9 @@
 			
 			Mouse._touchRelay = this.applyTouch;
 			
-			Events.bind("gotoScreen", this.loadScreen);
-			Events.bind("showPopup", this.showPopup);
-			Events.bind("hidePopup", this.hidePopup);
-			Events.bind("loadingCompleted", this.startScreen);
+			Events.bind("Engine.gotoScreen", this.loadScreen);
+			Events.bind("Engine.showPopup", this.showPopup);
+			Events.bind("Engine.hidePopup", this.hidePopup);
 			
 			if(!this.pausedByRequest) this.play();
 		};
@@ -91,14 +88,12 @@
 		};
 		
 		Engine.prototype._handleError = function(e){
-			//Private Error behavior
-			//...
-			
-			//User-defined Error behavior
-			singleton.onerror(e);
+			Events.broadcast("Engine.error", e);
 		};
 			
 		Engine.prototype.startScreen = function(){
+			Events.unbind("Preloader.loadingCompleted", singleton.startScreen);
+			
 			if(singleton.currentScreen){
 				if(singleton.currentScreen.onload && singleton.currentScreen.loaded === false){
 					singleton.currentScreen.loaded = true;
@@ -113,6 +108,9 @@
 		};
 			
 		Engine.prototype.loadScreen = function(name){
+			Events.unbind("Preloader.loadingCompleted", singleton.startScreen);
+			Events.bind("Preloader.loadingCompleted", singleton.startScreen);
+			
 			singleton.stop();
 			Preloader.set(name);
 			Preloader.progress("__screen__", 0);
@@ -170,12 +168,14 @@
 			if(Arstider.verbose > 2) console.warn("Arstider.Engine.play: playing...");
 			singleton.handbreak = false;
 			singleton.draw();
+			Events.broadcast("Engine.play", singleton);
 		};
 			
 		Engine.prototype.stop = function(){
 			if(Arstider.verbose > 2) console.warn("Arstider.Engine.stop: stopping...");
 			Mouse.reset();
 			singleton.handbreak = true;
+			Events.broadcast("Engine.stop", singleton);
 		};
 		
 		Engine.prototype.applyTouch = function(e, target){
@@ -235,6 +235,7 @@
 			if(Performance.getStatus() === 0){
 				Performance.endStep();
 				if(Arstider.verbose > 2) console.warn("Arstider.Engine.draw: skipping draw step");
+				Events.broadcast("Engine.skip", singleton);
 				return;	
 			}
 				

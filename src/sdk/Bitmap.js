@@ -21,7 +21,8 @@
 				this.req = new Request({
 					url:url,
 					caller:this,
-					callback:this.parse
+					callback:this.parse,
+					track:true
 				});
 			
 				this.req.send();
