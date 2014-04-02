@@ -20,8 +20,7 @@
 			"B":{},
 			"I":{},
 			"C":{param : true},
-			"S":{param : true},
-			"F":{param : true}, 
+			"S":{param : true}, 
 			"T":{param : true}
 		}
 	;

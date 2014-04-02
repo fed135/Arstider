@@ -340,7 +340,7 @@
 			this.dataCtx.save();
 			
 			for(i; i<segment.styles.length; i++){
-				switch(segment.styles[i][0]){
+				switch(segment.styles[i][0].toUpperCase()){
 					case "B": 
 						fontCopy.style = "bold";
 						break;
@@ -351,10 +351,7 @@
 						this.dataCtx.fillStyle = segment.styles[i].substring(2);
 						break;
 					case "S":
-						this.strokeText = true;
-						break;
-					case "F":
-						this.fillText = true;
+						fontCopy.size = segment.styles[i].substring(2);
 						break;
 					case "T":
 						this.width = parseInt(segment.styles[i].substring(2));

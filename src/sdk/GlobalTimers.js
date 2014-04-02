@@ -20,7 +20,6 @@
 			
 		function GlobalTimers(){
 			this.list = [];
-			this.stepLength = 20; //ms between animationFrames
 		}
 				
 		GlobalTimers.prototype.step = function(realtimeDelay){
@@ -28,7 +27,7 @@
 			for(i; i>=0; i--){
 				if(this.list[i].running){
 					
-					this.list[i].delay -= this.stepLength;
+					this.list[i].delay -= Arstider._fullFPS;
 					
 					if(this.list[i].step){
 						this.list[i].step.apply(this.list[i]);

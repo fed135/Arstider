@@ -125,7 +125,7 @@
 				if(this._currentStep < this._stack.length){
 					if(this._stack[this._currentStep].time > 0){
 						if(this._stack[this._currentStep].step) this._stack[this._currentStep].step(this);
-						this._stack[this._currentStep].time -= 20;
+						this._stack[this._currentStep].time -= Arstider._fullFPS;;
 					}
 					else{
 						this.nextStep();
