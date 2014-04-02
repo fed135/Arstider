@@ -382,10 +382,10 @@
 					this.height = this.parent.height * this._fillY;
 				}
 				if(this._dockX != null){
-					this.x = this.parent.x + (this.parent.width * this._dockX) - (this.width * this._dockX);
+					this.x = (this.parent.width * this._dockX) - (this.width * this._dockX);
 				}
 				if(this._dockY != null){
-					this.y = this.parent.y + (this.parent.height * this._dockY) - (this.width * this._dockY);
+					this.y = (this.parent.height * this._dockY) - (this.width * this._dockY);
 				}
 			}
 			
@@ -470,11 +470,11 @@
 					this.parent.children.splice(index,0,this.parent.children.splice(myIndex,1)[0]);
 				}
 				else{
-					console.warn("No re-order occured.");
+					if(Arstider.verbose > 1) console.warn("Arstider.Entity.setIndex: no re-order occured");
 				}
 			}
 			else{
-				console.warn("Element has no parent!");
+				if(Arstider.verbose > 0) console.warn("Arstider.Entity.setIndex: element has no parent");
 			}
 			
 			return this;
@@ -490,7 +490,7 @@
 				return this.parent.children.indexOf(this);
 			}
 			else{
-				console.warn("Element has no parent!");
+				if(Arstider.verbose > 0) console.warn("Arstider.Entity.getIndex: element has no parent");
 			}
 			
 			return -1;

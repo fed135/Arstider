@@ -5,7 +5,7 @@
  *
  * @author frederic charette <fredc@meetfidel.com>
  */	
-;(function(window){
+;(function(){
 	
     var singleton = null;	
     
@@ -133,4 +133,4 @@
 			singleton = new Pool();
 			return singleton;
 		});
-	})(window);
+	})();

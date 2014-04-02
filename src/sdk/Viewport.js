@@ -31,7 +31,6 @@
 			
 			this.container = null;
 			
-			this._fullScreenRequested = false;
 			this._requestFullscreenEvent = null;
 			this._cancelFullscreenEvent = null;
 			
@@ -63,13 +62,11 @@
 				this._rotate();
 			}
 			else{
-				console.error("Could not find element with id \"" + tag + "\"");
+				if(Arstider.verbose > 0) console.warn("Arstider.Viewport.init: no DOM element specified, viewport broken");
 			}
 		};
 		
-		Viewport.prototype._enterFullScreen = function(scale){
-			
-			this._fullScreenRequested = false;
+		Viewport.prototype.enterFullScreen = function(scale){
 			
 			scale = Arstider.checkIn(scale, false);
 		
@@ -77,10 +74,6 @@
 			else this.tag.classList.remove("fs_scaled_element");
 			
 			return this.tag[this._requestFullscreenEvent]();
-		};
-		
-		Viewport.prototype.enterFullScreen = function(scale){
-			this._fullScreenRequested = true;
 		};
 		
 		Viewport.prototype.quitFullScreen = function(){

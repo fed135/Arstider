@@ -103,10 +103,12 @@
 					if((!minBrowser.name || this.name == minBrowser.name) &&
 						(!minBrowser.platform || this.platform == minBrowser.platform)){
 						if(minBrowser.minVersion < 0) {
+							if(Arstider.verbose > 0) console.warn("Arstider.Browser: browser not supported");
 							this.isSupported = false;
 							return this.isSupported;
 						}
-						if(this.version < minBrowser.minVersion) {
+						if(this.version < minBrowser.minVersion){
+							if(Arstider.verbose > 0) console.warn("Arstider.Browser: browser version not supported");
 							this.isSupported = false;
 							return this.isSupported;
 						}
@@ -114,6 +116,7 @@
 					}
 				}
 				
+				if(Arstider.verbose > 0) console.warn("Arstider.Browser: browser not supported");
 				this.isSupported = false;
 				return false;
 			};

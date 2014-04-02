@@ -28,6 +28,8 @@
 				
 				this._input = false;
 				
+				this._touchRelay = Arstider.emptyFunction;
+				
 				if(Browser.isMobile){
 					window.addEventListener('touchmove', this.handleTouchMove);
 					window.addEventListener('touchstart',  this.handleTouchStart, false);			
@@ -105,25 +107,14 @@
 				}
 			};
 			
-			Mouse.prototype.checkTouch = function(drag){
-				if(singleton._input === true || (drag && singleton.pressed === true)){
-					singleton._input = false;
-					return true;
-				}
-				return false;
-			};
-			
-			Mouse.prototype.checkHover = function(drag){
-				if(!drag && singleton.pressed){
-					return true;
-				}
-				return false;
-			};
-			
 			Mouse.prototype.handleTouchStart = function(e){
 				singleton.handleTouchMove(e);
 				singleton.pressed = true;
 				e = e || window.event;
+				
+				singleton.handleTouchMove(e);
+				singleton._touchRelay(e);
+				
 				e.stopPropagation();
 				e.preventDefault();
 				return false;
@@ -138,6 +129,7 @@
 				singleton._input = true;
 				
 				setTimeout(function(){singleton.handleTouchMove(e);},10);
+				singleton._touchRelay(e);
 				
 				e = e || window.event;
 				e.stopPropagation();
@@ -147,15 +139,15 @@
 			
 			Mouse.prototype.handleMouseDown = function(e){
 				singleton.pressed = true;
+				singleton.handleMouseMove(e);
+				singleton._touchRelay(e);
 			};
 			
 			Mouse.prototype.handleMouseUp = function(e){
 				singleton._input = true;
 				singleton.pressed = false;
-				
-				if(Viewport._fullScreenRequested){
-					Viewport._enterFullScreen();
-				}
+				singleton.handleMouseMove(e);
+				singleton._touchRelay(e);
 			};
 			
 			Mouse.prototype.handleMouseMove = function(event) {

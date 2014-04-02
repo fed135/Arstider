@@ -67,7 +67,7 @@
 		 * @return {number} Index of the newly added child
 		 */
 		DisplayObject.prototype.addChild = function(clip){
-			if(clip.parent != null && Arstider.verbose) console.warn("Object already has a parent!");
+			if(clip.parent != null && Arstider.verbose > 1) console.warn("Arstider.DisplayObject.addChild: object already has a parent");
 			clip.parent = this;
 			this.children[this.children.length]=clip;
 			return this.children.length-1;
@@ -89,7 +89,7 @@
 				this.children.splice(index,1);
 				return true;
 			}
-			if(Arstider.verbose) console.warn("could not find children "+name);
+			if(Arstider.verbose > 1) console.warn("Arstider.DisplayObject.removeChildByName: could not find children "+name);
 			return false;
 		};
 		
@@ -109,7 +109,7 @@
 				this.children.splice(index,1);
 				return true;
 			}
-			if(Arstider.verbose) console.warn("could not find children");
+			if(Arstider.verbose > 1) console.warn("Arstider.DisplayObject.removeChild: could not find child");
 			return false;
 		};
 		
@@ -123,6 +123,7 @@
 		DisplayObject.prototype.getChild = function(name) {
 			var index = getChildIndexByName(this.children, name);
 			if(index != -1) return this.children[index];
+			if(Arstider.verbose > 1) console.warn("Arstider.DisplayObject.getChild: could not find child ", name);
 			return null;
 		};
 		
@@ -132,6 +133,7 @@
 		 * @return {Array} The list of children.
 		 */
 		DisplayObject.prototype.getChildren = function(){
+			if(this.children.length === 0 && Arstider.verbose > 2) console.warn("Arstider.DisplayObject.getChildren: object has no children");
 			return this.children;
 		};
 		
@@ -140,6 +142,7 @@
 		 * @this {DisplayObject}
 		 */
 		DisplayObject.prototype.removeChildren = function(){
+			if(this.children.length === 0 && Arstider.verbose > 2) console.warn("Arstider.DisplayObject.removeChildren: object has no children");
 			for(var i=0; i<this.children.length; i++) {
 				if(this.children[i]){
 					if(this.children[i].children && this.children[i].removeChildren && this.children[i].children.length != 0){

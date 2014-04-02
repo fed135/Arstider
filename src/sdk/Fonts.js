@@ -146,7 +146,10 @@
 			
 		Fonts.prototype.create = function(props){
 			
-			if(props.name == undefined) return false;
+			if(props.name == undefined){
+				if(Arstider.verbose > 0) console.warn("Arstider.Fonts.create: name not specified, font not created");
+				return false;	
+			}
 			
 			if(this.collection[props.name] && this.collection[props.name].temp == false) return this.collection[props.name];
 			

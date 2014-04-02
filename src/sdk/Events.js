@@ -124,7 +124,7 @@
 								functions[junctions[i][FUNCTION]](data);
 							}
 							else{
-								console.log("Discrepancy found, flushing events.");
+								if(Arstider.verbose > 1) console.warn("Arstider.Events.broadcast: discrepancy found, flushing events");
 								singleton.flush();
 							}
 						}

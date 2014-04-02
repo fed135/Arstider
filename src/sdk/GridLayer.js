@@ -57,6 +57,9 @@
 			GridLayer.prototype._getTileTexturePos = function(id, w){
 				
 				if(this._texturePosSave[id] != undefined) return this._texturePosSave[id];
+				else{
+					if(Arstider.verbose > 2) console.warn("Arstider.GridLayer._getTileTexturePos: texture tile not found");
+				}
 				
 				var xCoord = id*this.tileSizeX, yCoord = 0;
 				

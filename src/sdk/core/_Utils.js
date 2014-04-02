@@ -179,10 +179,16 @@ Arstider.checkIn = function(val, def){
 };
 
 /**
- * Indicates whether or not to output full verbose warnings, for, like, everything!
- * @type {boolean}
+ * Indicates whether or not to output full verbose warnings
+ * 
+ * 0 = nothing,
+ * 1 = important warnings
+ * 2 = notices
+ * 3+ = EVERYTHING!
+ * 
+ * @type {number}
  */
-Arstider.verbose = false;
+Arstider.verbose = 0;
 
 /**
  * Fisher-Yates array shuffling method
@@ -264,7 +270,7 @@ Arstider.Inherit = function(child, parent){
 		child.prototype = Object.create(parent.prototype);
 		child.prototype.constructor = child;
 	}
-	else console.error("could not make ",child, " inherit", parent);
+	else console.warn("Arstider.Inherit: Could not make ",child, " inherit", parent);
 };
 
 /**
@@ -335,6 +341,9 @@ require(["Arstider/Buffer"], function(Buffer){
 		}
 		else if(element._renderMode === "auto"){
 			element.style.imageRendering = 'auto';
+		}
+		else{
+			if(Arstider.verbose > 0) console.warn("Arstider.setRenderStyle: Cannot apply mode '",mode,"'");
 		}
 	};
 	

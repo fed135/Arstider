@@ -79,7 +79,8 @@
 				
 				this._stack = [];
 				this._currentStep = 0;
-				this._repeat = 0;	//TODO
+				this._repeat = 0;
+				this.maxLoop = null;
 				
 				this.delay = 512;
 				
@@ -95,10 +96,21 @@
 			};
 			
 			Tween.prototype.nextStep = function(){
+				var i;
+				
+				//make sure we reached the final step of the animation
+				if(this._stack[this._currentStep].changes){
+					for(i = this._stack[this._currentStep].changes.length-1; i >= 0; i--){
+						this._stack[this._currentStep].changes[i].lastStep = this.target[this._stack[this._currentStep].changes[i].property];
+						this.target[this._stack[this._currentStep].changes[i].property] = this._stack[this._currentStep].changes[i].end;
+					}
+				}
+				
+				//prepare new animation
 				this._currentStep++;
 				if(this._currentStep < this._stack.length){
 					if(this._stack[this._currentStep].changes){
-						for(var i = this._stack[this._currentStep].changes.length-1; i >= 0; i--){
+						for(i = this._stack[this._currentStep].changes.length-1; i >= 0; i--){
 							this._stack[this._currentStep].changes[i].start = this.target[this._stack[this._currentStep].changes[i].property];
 						}
 					}
@@ -121,7 +133,7 @@
 					}
 				}
 				else{
-					this._repeat++;
+					this.completed = true;
 				}
 			};
 			
@@ -154,6 +166,13 @@
 			};
 			
 			Tween.prototype.rewind = function(){
+				this._repeat++;
+				if(this.maxLoop && this._repeat > this.maxLoop){
+					this.completed = true;
+					
+					return;
+				} 
+				
 				this._currentStep = 0;
 				for(var i = this._stack.length-1; i>=0; i--){
 					this._stack[i].rewind();
@@ -192,6 +211,8 @@
 			
 			
 			Tween.prototype.loop = function(val){
+				if(val) this.maxLoop = val;
+				
 				this._addAction(this.rewind);
 				return this;
 			};
@@ -203,6 +224,9 @@
 			
 			Tween.prototype.stepBack = function(){
 				if(this._stack[this._currentStep].stepBack) this._stack[this._currentStep].stepBack(this);
+				else{
+					if(Arstider.verbose > 2) console.warn("Arstider.Tween.stepBack: no step to back to");
+				}
 				return this;
 			};
 			

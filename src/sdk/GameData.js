@@ -7,7 +7,8 @@
  */
 ;(function(){
 
-	var singleton = null,
+	var 
+		singleton = null,
 		defaultSet = {},
 		runtimeSet = {}
 	;
@@ -51,6 +52,9 @@
 							this.runtimeSet[id] = ls;
 							return runtimeSet[id];
 						}
+						else{
+							if(Arstider.verbose > 1) console.warn("Arstider.GameData.get: ", id," not found in localStorage");
+						}
 					}
 					
 					if(this.defaultSet[id] != undefined){
@@ -58,6 +62,7 @@
 						return this.runtimeSet[id];
 					}
 					else{
+						if(Arstider.verbose > 1) console.warn("Arstider.GameData.get: ", id," not found in config");
 						return;
 					}
 				}
@@ -70,8 +75,10 @@
 				}
 			};
 			
-			GameData.prototype.reset = function(){
+			GameData.prototype.reset = function(seekLocalStorage){
+				if(Arstider.verbose > 1) console.warn("Arstider.GameData.reset: resetting runtime variables");
 				this.runtimeSet = {};
+				if(seekLocalStorage) Storage.reset();
 			};
 			
 			singleton = new GameData();

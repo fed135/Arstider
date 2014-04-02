@@ -76,7 +76,10 @@
 		 */
 		Dictionary.prototype.translate = function(key, delimiters, callback){
 			
-			if(singleton.strList === null && !singleton._isLoading) return key;
+			if(singleton.strList === null && !singleton._isLoading){
+				if(Arstider.verbose > 2) console.warn("Arstider.Dictionary.translate: no string file");
+				return key;
+			} 
 			
 			if(singleton._isLoading){
 				singleton._pendingStrings.push([key, delimiters, callback]);
@@ -95,6 +98,9 @@
 						ret = ret.split(keyword).join(delimiters[keyword]);
 					}
 				}
+			}
+			else{
+				if(Arstider.verbose > 2) console.warn("Arstider.Dictionary.translate: string not found");
 			}
 			if(callback) callback(ret);
 			return ret;

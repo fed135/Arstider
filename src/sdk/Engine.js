@@ -56,6 +56,9 @@
 				this.profiler = new Debugger(this);
 				this.profiler.init();
 			}
+			else{
+				Arstider.verbose = 0;
+			}
 				
 			this.canvas = Buffer.create("Arstider_main");
 			this.canvas.id = tag+"_canvas";
@@ -67,10 +70,12 @@
 				
 			Viewport.init(tag, this.canvas);
 			
+			Mouse._touchRelay = this.applyTouch;
+			
 			Events.bind("gotoScreen", this.loadScreen);
 			Events.bind("showPopup", this.showPopup);
 			Events.bind("hidePopup", this.hidePopup);
-			Events.bind("loadingCompleted", this.startMenu);
+			Events.bind("loadingCompleted", this.startScreen);
 			
 			if(!this.pausedByRequest) this.play();
 		};
@@ -93,7 +98,7 @@
 			singleton.onerror(e);
 		};
 			
-		Engine.prototype.startMenu = function(){
+		Engine.prototype.startScreen = function(){
 			if(singleton.currentScreen){
 				if(singleton.currentScreen.onload && singleton.currentScreen.loaded === false){
 					singleton.currentScreen.loaded = true;
@@ -101,6 +106,9 @@
 				}
 				singleton.canvas.focus();
 				if(!singleton.pausedByRequest) singleton.play();
+			}
+			else{
+				if(Arstider.verbose > 0) console.warn("Arstider.Engine.startScreen: no current screen");
 			}
 		};
 			
@@ -126,6 +134,9 @@
 				if(singleton.currentScreen.onunload) singleton.currentScreen.onunload();
 				singleton.currentScreen.removeChildren();
 				delete singleton.currentScreen;
+			}
+			else{
+				if(Arstider.verbose > 0) console.warn("Arstider.Engine.killScreen: no current screen");
 			}
 		};
 			
@@ -156,13 +167,42 @@
 		};
 			
 		Engine.prototype.play = function(){
+			if(Arstider.verbose > 2) console.warn("Arstider.Engine.play: playing...");
 			singleton.handbreak = false;
 			singleton.draw();
 		};
 			
 		Engine.prototype.stop = function(){
+			if(Arstider.verbose > 2) console.warn("Arstider.Engine.stop: stopping...");
 			Mouse.reset();
 			singleton.handbreak = true;
+		};
+		
+		Engine.prototype.applyTouch = function(e, target){
+			
+			target = target || singleton.currentScreen;
+			
+			var 
+				mouseX = Mouse.x(),
+				mouseY = Mouse.y(),
+				i
+			;
+			
+			if(target.children && target.children.length > 0){
+				for(i = target.children.length-1; i>=0; i--){
+					if(target.children[i].isTouched(mouseX, mouseY)){
+						if(Mouse.pressed){
+							if(!target.children[i]._pressed) target.children[i]._onpress(e);
+						}
+						else{
+							if(target.children[i]._pressed) target.children[i]._onrelease(e);
+						}
+					}
+					
+					//recursion
+					if(target.children[i].children && target.children[i].children.length > 0) singleton.applyTouch(e, target.children[i]);
+				}
+			}
 		};
 			
 		Engine.prototype.draw = function(){
@@ -194,6 +234,7 @@
 			
 			if(Performance.getStatus() === 0){
 				Performance.endStep();
+				if(Arstider.verbose > 2) console.warn("Arstider.Engine.draw: skipping draw step");
 				return;	
 			}
 				
@@ -204,14 +245,7 @@
 			//Run through the elements and draw them at their global x and y with their global width and height
 			Renderer.draw(singleton, singleton.currentScreen, function(e){
 				if(e.isTouched(mouseX, mouseY)){
-					if(Mouse.pressed){
-						if(!e._pressed) e._onpress();
-						if(!e._hovered) e._onhover();
-					}
-					else{
-						if(e._pressed) e._onrelease();
-						if(!e._hovered) e._onhover();
-					}
+					if(!e._hovered) e._onhover();
 				}
 				else{
 					if(e._hovered) e._onleave();

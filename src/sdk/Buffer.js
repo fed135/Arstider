@@ -99,6 +99,7 @@
 				target = this._pool;
 				//Can safely remove contexts without impacting the buffer content
 				//They will get regenerated on demand
+				if(Arstider.verbose > 1) console.warn("Arstider.Buffer: buffer mode is now ", type);
 				this._renderMode = type; //Only applies to new buffers
 					
 				for(var c in this._ctxPool){
@@ -131,6 +132,7 @@
 				return this._pool[name];
 			}
 			else if(name && this._pool[name] == undefined){
+				if(Arstider.verbose > 1) console.warn("Arstider.Buffer: buffer ", name, " not found");
 				return null;
 			}
 			else if(!name){
@@ -169,6 +171,7 @@
 		 * @param {String} name The name of the desired buffer.
 		 */
 		Buffer.prototype.kill = function(name){
+			if(Arstider.verbose > 2) console.warn("Arstider.Buffer: destroying buffer ", name);
 			if(name && this._pool[name] != undefined){
 				delete this._pool[name];
 			}

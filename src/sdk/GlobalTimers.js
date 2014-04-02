@@ -50,9 +50,10 @@
 			for(i; i>=0; i--){
 				if(elem == this.list[i]){
 					this.list.splice(i,1);
-					break;
+					return;
 				}
 			}
+			if(Arstider.verbose > 2) console.warn("Arstider.GlobalTimers.remove: timer not in list, nothing was removed");
 		};
 			
 		singleton = new GlobalTimers();

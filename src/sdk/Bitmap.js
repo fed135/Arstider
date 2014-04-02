@@ -26,6 +26,11 @@
 			
 				this.req.send();
 			}
+			
+			this.data.onerror = function(){
+				if(Arstider.verbose > 1) console.warn("Arstider.Bitmap.onerror: error loading asset");
+				this.url = empty;
+			};
 		}
 		
 		Bitmap.prototype.parse = function(e){
@@ -51,6 +56,7 @@
 		};
 		
 		Bitmap.prototype.save = function(){
+			if(Arstider.verbose > 0) console.warn("Arstider.Bitmap.save: Feature not yet available");
 			//Arstider.saveToCanvas();
 		};
 		
