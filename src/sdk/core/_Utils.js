@@ -475,21 +475,20 @@ require(["Arstider/Buffer"], function(Buffer){
 	 * @param {number=} h Optional zone height
 	 * @return {HTMLCanvasElement} The newly created buffer with the new colors
 	 */
-	Arstider.tint = function(buffer, r, g, b, x, y, w, h){
+	Arstider.tint = function(buffer, r, g, b, f, x, y, w, h){
 		var 
 			imageData = buffer.getContext("2d").getImageData(Arstider.checkIn(x,0),Arstider.checkIn(y,0), Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height)), 
 			pixels = imageData.data, 
 			i = (Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height))-1,
-			ret = Buffer.create(buffer.name + "_tint"+r+g+b),
-			rPcent = r/255,
-			gPcent = g/255,
-			bPcent = b/255
+			ret = Buffer.create(buffer.name + "_tint"+r+g+b)
 		;
 		
+		f = Arstider.checkIn(f, 1);
+		
 		for (i; i >= 0; i--) {  
-		    pixels[i*4] = pixels[i*4] * rPcent;
-	    	pixels[i*4+1] = pixels[i*4+1] * gPcent;  
-	    	pixels[i*4+2] = pixels[i*4+2] * bPcent;  
+		    pixels[i*4] = Math.min(r + pixels[i*4] * f);
+	    	pixels[i*4+1] = Math.min(r + pixels[i*4+1] * f); 
+	    	pixels[i*4+2] = Math.min(r + pixels[i*4+2] * f); 
 		}
 		
 		ret.width = Arstider.checkIn(w, buffer.width);

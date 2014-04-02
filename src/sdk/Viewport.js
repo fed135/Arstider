@@ -54,6 +54,9 @@
 				window.document.addEventListener("unload", this._unload);
 				window.addEventListener('pagehide', this._pagehide);
 				
+				this.container.addEventListener("mousewheel", this._mouseWheel, false);
+				this.container.addEventListener("DOMMouseScroll", this._mouseWheel, false);
+				
 				this._requestFullscreenEvent = (this.tag.requestFullScreen)?"requestFullScreen":(this.tag.mozRequestFullScreen)?"mozRequestFullScreen":(this.tag.webkitRequestFullScreenWithKeys)?"webkitRequestFullScreenWithKeys":(this.tag.webkitRequestFullScreen)?"webkitRequestFullScreen":"FullscreenError";
 				this._cancelFullscreenEvent =  (window.document.cancelFullScreen)?"cancelFullScreen":(window.document.mozCancelFullScreen)?"mozCancelFullScreen":(window.document.webkitCancelFullScreen)?"webkitCancelFullScreen":"FullscreenError";
 				
@@ -85,6 +88,11 @@
 			Events.broadcast("Viewport.quitFullscreen", singleton);
 			
 			return res;
+		};
+		
+		Viewport.prototype._mouseWheel = function(e){
+			var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+			Events.broadcast("Mouse.wheel", delta);
 		};
 			
 		Viewport.prototype._resize = function(e){
