@@ -213,6 +213,8 @@
 				showFrames = false
 			;
 			
+			if(!singleton.debug && Arstider.verbose > 0) Arstider.verbose = 0;
+			
 			//Immediately request the next frame
 			if(singleton.frameRequest) Arstider.cancelAnimFrame.apply(window, [singleton.frameRequest]);
 			singleton.frameRequest = Arstider.requestAnimFrame.apply(window, [singleton.draw]);
