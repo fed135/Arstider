@@ -14,7 +14,7 @@
 		 * @private
 		 * @type {string}
 		 */
-		breakLine = "@@"
+		breakLine = "<br>"
 	;
 	
 	/**
@@ -235,6 +235,8 @@
 				this.width = 0;
 			}
 			
+			if(txt.indexOf(breakLine) != -1 && !this.textWrap) this.textWrap = true;
+			
 			this._BBparsed = parse || false;
 			if(parse) this._textValue = new Parser(txt).segments;
 			else this._textValue = txt;
@@ -286,7 +288,10 @@
 			this.dataCtx = this.data.context2D();
 				
 			if(this.width === 0){
-				if(this._font.textWrap) this._textWrappingError = true;
+				if(this._font.textWrap){
+					this._textWrappingError = true;
+					if(Arstider.verbose > 1) console.warn("Arstider.TextField.makeBuffer: cannot wrapText for textfield with undefined width and height");
+				}
 				if(this._BBparsed){
 					for(i = 0; i<this._textValue.length; i++){
 						fullStr += this._textValue[i].text;
