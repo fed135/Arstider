@@ -118,7 +118,7 @@
 			require(["screens/"+name], function(_menu){
 				singleton.killScreen();
 				
-				singleton.currentScreen = new _menu(name);
+				singleton.currentScreen = new (new _menu())(name);
 				singleton.currentScreen.stage = singleton;
 				setTimeout(function(){
 					Preloader.progress("__screen__", 100);

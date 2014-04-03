@@ -1,5 +1,7 @@
 <project name="Arstider" basedir=".">
 	
+	<property environment="env."/>
+	
 	<property name="jsdoc.home" location="tools/jsdoc"/>
 	<property name="jsdoc3-task-jar" value="${jsdoc.home}/jsdoc3-ant-task-1.0.jar"/>
 	<property name="rhino-jar" value="${jsdoc.home}/rhino/js.jar"/>
@@ -8,8 +10,7 @@
 	
 	<property name="src" location="src"/>
 	<property name="tools" location="tools"/>
-	<!--property name="dest" location="C:\wamp\www\sdk"/-->
-	<property name="dest" location="/var/www/sdk"/>
+	<property name="dest" location="${env.BUILD_DEST}/sdk"/>
 	
 	<target name="build.dev" description="dev build">
 		<concat destfile="${dest}/_temp.js" fixlastline="true" ignoreempty="true">

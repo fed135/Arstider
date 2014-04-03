@@ -51,12 +51,14 @@
 	 */
 	function wrapText(context, myText, strokeText, fillText, x, padding, maxWidth, otherLineX, otherLineWrap) {
 		
+		console.log("putting text :", myText," on context ", context, " at ", x, ", ", padding);
+		
 		var 
 	       	words = [],
 	       	paragraphs = [],
 	       	line = '',
 	       	n,
-	       	y = padding,
+	       	y = padding + context.lineSpacing*0.5,
 	       	lineNum = 0,
 	       	inc,
 	       	testLine,
@@ -76,7 +78,7 @@
 		       	testWidth = metrics.width;
 		       	if(testWidth > ((lineNum === 0)?maxWidth:(otherLineWrap == undefined)?maxWidth:otherLineWrap)) {
 		       		if(strokeText){
-		       			context.strokeText(line, ((lineNum === 0)?x:(otherLineX == undefined)?x:otherLineX), y + (inc*context.lineHeight));
+		       			context.strokeText(line, ((lineNum === 0)?x:(otherLineX == undefined)?x:otherLineX), y + (inc*context.lineSpacing));
 					}
 					if(fillText){
 						if(strokeText && context.shadowColor){
@@ -84,7 +86,7 @@
 							context.shadowColor = "transparent";
 						} 
 						
-						context.fillText(line, ((lineNum === 0)?x:(otherLineX == undefined)?x:otherLineX), y + (inc*context.lineHeight));
+						context.fillText(line, ((lineNum === 0)?x:(otherLineX == undefined)?x:otherLineX), y + (inc*context.lineSpacing));
 						
 						if(oldShadow != null){
 							context.shadowColor = oldShadow;
@@ -92,7 +94,7 @@
 						}
 					}
 					line = words[n] + ' ';
-					y += context.lineHeight;
+					y += context.lineSpacing;
 					lineNum++;
 		       	}
 		       	else {
@@ -100,7 +102,7 @@
 		       	}
 			}
 		    if(strokeText){
-		 		context.strokeText(line, ((lineNum === 0)?x:(otherLineX == undefined)?x:otherLineX), y + (inc*context.lineHeight));
+		 		context.strokeText(line, ((lineNum === 0)?x:(otherLineX == undefined)?x:otherLineX), y + (inc*context.lineSpacing));
 			}
 			if(fillText){
 				
@@ -109,7 +111,7 @@
 					context.shadowColor = "transparent";
 				}
 				
-				context.fillText(line, ((lineNum === 0)?x:(otherLineX == undefined)?x:otherLineX), y + (inc*context.lineHeight));
+				context.fillText(line, ((lineNum === 0)?x:(otherLineX == undefined)?x:otherLineX), y + (inc*context.lineSpacing));
 				
 				if(oldShadow != null){
 					context.shadowColor = oldShadow;
@@ -313,7 +315,7 @@
 		
 		TextField.prototype._renderSegmentList = function(maxWidth){
 			var startX = this._font.fontOffsetX + this.padding;
-			var startY = this._font.fontOffsetY + this.padding + (this.height - (this.padding*2)) * 0.5;
+			var startY = this._font.fontOffsetY + this.padding + this._font.lineSpacing * 0.5;
 			var segRes = null;
 			
 			if(maxWidth == undefined){
@@ -371,6 +373,7 @@
 			this.dataCtx.font  = ((fontCopy.style == "")?"":(fontCopy.style + " ")) + fontCopy.size + " " + fontCopy.family;
 			
 			if(wrapped){
+				console.log("rather, here");
 				wrapPos = wrapText(this.dataCtx, segment.text, this.strokeText, this.fillText, startX, startY, this.width - (this.padding*2) - (this.width - (this.width - startX)), iniX, this.width - (this.padding*2));
 				
 				this.strokeText = wasStroke;
@@ -434,6 +437,7 @@
 			if(this._font === null || this._textValue === null) return;
 			if(this._font.loaded === false) return;
 			if(this._font.temp && !Fonts.collection[this._font.name].temp) this.setFont(Fonts.get(this._font.name));
+			if(this._font.lineSpacing === null) this._font.lineSpacing = parseInt(this._font.size.split("px").join(""));
 			
 			if(this.width === 0 && this.height === 0 && this._autogrow == null) this._autogrow = true;
 			
@@ -454,7 +458,8 @@
 					this._renderSegmentList(this.width);
 				}
 				else{
-					wrapText(this.dataCtx, this._textValue, this.strokeText, this.fillText, xShift + this._font.fontOffsetX, this.padding + this._font.fontOffsetY + (this.height - (this.padding*2)) * 0.5, this.width - (this.padding*2));
+					console.log("here");
+					wrapText(this.dataCtx, this._textValue, this.strokeText, this.fillText, xShift + this._font.fontOffsetX, this.padding + this._font.fontOffsetY, this.width - (this.padding*2));
 				}
 			}
 			else{
@@ -463,7 +468,7 @@
 				}
 				else{
 					if(this.strokeText){
-						this.dataCtx.strokeText(this._textValue, xShift  + this._font.fontOffsetX, this.padding + this._font.fontOffsetY + (this.height - (this.padding*2)) * 0.5);
+						this.dataCtx.strokeText(this._textValue, xShift  + this._font.fontOffsetX, this.padding + this._font.fontOffsetY + this._font.lineSpacing * 0.5);
 					}
 					if(this.fillText){
 						//Prevent shadow from being applied twice- and over the already placed stroke
@@ -472,7 +477,7 @@
 							this.dataCtx.shadowColor = "transparent";
 						}
 						
-						this.dataCtx.fillText(this._textValue, xShift + this._font.fontOffsetX, this.padding + this._font.fontOffsetY + (this.height - (this.padding*2)) * 0.5);
+						this.dataCtx.fillText(this._textValue, xShift + this._font.fontOffsetX, this.padding + this._font.fontOffsetY + this._font.lineSpacing * 0.5);
 						
 						if(oldShadow != null){
 							this.dataCtx.shadowColor = oldShadow;

@@ -2,7 +2,7 @@
 	
 	var
 		empty = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=',
-		blobCache = {}
+		blobCache = {empty:{url:empty}}
 	;
 
 	define("Arstider/Bitmap", ["Arstider/Request"], function(Request){
@@ -59,6 +59,10 @@
 		Bitmap.prototype.save = function(){
 			if(Arstider.verbose > 0) console.warn("Arstider.Bitmap.save: Feature not yet available");
 			//Arstider.saveToCanvas();
+		};
+		
+		Bitmap.prototype.dispose = function(){
+			blobCache = {empty:{url:empty}};
 		};
 		
 		return Bitmap;

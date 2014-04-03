@@ -83,6 +83,7 @@
 			var index = getChildIndexByName(this.children, name);
 			if(index != -1) {
 				this.children[index].killBuffer();
+				this.children[index].parent = null;
 				
 				if(this.children[index].removeChildren && this.children[index].children.length != 0) this.children[index].removeChildren();
 				
@@ -103,6 +104,7 @@
 			var index = this.children.indexOf(ref);
 			if(index != -1){
 				this.children[index].killBuffer();
+				this.children[index].parent = null;
 			
 				if(this.children[index].removeChildren && this.children[index].children.length != 0) this.children[index].removeChildren();
 				
@@ -149,6 +151,7 @@
 						this.children[i].removeChildren();
 					}
 					this.children[i].killBuffer();
+					this.children[i].parent = null;
 					delete this.children[i];
 				}
 			}

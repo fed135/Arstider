@@ -8,7 +8,7 @@
 /**
  * Defines the screen module
  */
-define("Arstider/Screen", ["Arstider/DisplayObject", "Arstider/Viewport", "Arstider/Events"], function(DisplayObject, Viewport, Events){
+define("Arstider/Screen", ["Arstider/DisplayObject", "Arstider/Viewport", "Arstider/Events", "Arstider/Bitmap"], function(DisplayObject, Viewport, Events, Bitmap){
 	
 	/**
 	 * Screen constructor
@@ -74,6 +74,8 @@ define("Arstider/Screen", ["Arstider/DisplayObject", "Arstider/Viewport", "Arsti
 	 * @type {function(this:Screen)}
 	 */
 	Screen.prototype._unload = function(){
+		var disposable = new Bitmap("empty", Arstider.emptyFunction);
+		disposable.dispose();
 		Events.unbind("Viewport.globalScaleChange", this.updateScale);
 	};
 	
