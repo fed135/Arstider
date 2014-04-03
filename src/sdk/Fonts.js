@@ -74,7 +74,8 @@
 		//is temp fonts - async
 		this.temp = Arstider.checkIn(props.temp, false);
 		
-		this.lineHeight = Arstider.checkIn(props.lineHeight, 12);
+		this.padding = Arstider.checkIn(props.padding, 0);
+		this.lineSpacing = Arstider.checkIn(props.lineHeight, 12);
 		this.textWrap = Arstider.checkIn(props.textWrap, false);
 		this.size = Arstider.checkIn(props.size, "12px");
 		this.style = Arstider.checkIn(props.style, "");

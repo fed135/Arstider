@@ -171,7 +171,7 @@
 				ret.style.width = "4px";
 				ret.style.height = "300px";
 				ret.style.overflow = "hidden";
-				ret.style.float = "left";
+				ret.style.cssFloat = "left";
 				ret.style.right = "0px";
 				ret.style.display = "block";
 				ret.style.position = "relative";

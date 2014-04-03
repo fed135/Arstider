@@ -150,7 +150,7 @@
 			/**
 			 * The amount of pixels between the text and the edges of the buffer
 			 */
-			this.padding = Arstider.checkIn(props.padding, 0);
+			this.padding = Arstider.checkIn(props.padding, null);
 			
 			/**
 			 * Stores the context of the TextField's buffer
@@ -255,11 +255,15 @@
 				this.width = 0;
 			}
 			
-			if(font.size == undefined) this._font.size = "12px";
-			if(font.family == undefined) this._font.family = "arial";
-			if(font.textBaseline == undefined) this._font.textBaseline = "top";
-			if(font.lineHeight == undefined) this._font.lineHeight = 12;
-			if(font.textAlign == undefined) this._font.textAlign = "left";
+			this._font.size = Arstider.checkIn(font.size, "12px");
+			this._font.family = Arstider.checkIn(font.family,"arial");
+			this._font.textBaseline = Arstider.checkIn(font.textBaseline,"middle");
+			this._font.lineHeight = Arstider.checkIn(font.lineHeight, "1em");
+			this._font.textAlign = Arstider.checkIn(font.textAlign, "left");
+			
+			if(this.padding == null){
+				this.padding = Arstider.checkIn(font.padding, 0);
+			}
 			
 			var thisRef = this;
 			this._font._onFontLoaded(function(){
@@ -292,7 +296,7 @@
 					fullStr += this._textValue;
 				}
 				
-				this.width = calculateTextWidth(this.dataCtx, this._font, fullStr) + (this.padding*2);
+				this.width = calculateTextWidth(this.dataCtx, this._font, fullStr) + (this.padding*4);
 			} 
 			
 			this.data.width = this.dataWidth = this.width;
@@ -304,7 +308,7 @@
 		
 		TextField.prototype._renderSegmentList = function(maxWidth){
 			var startX = this._font.fontOffsetX + this.padding;
-			var startY = this._font.fontOffsetY + this.padding;
+			var startY = this._font.fontOffsetY + this.padding + (this.height - (this.padding*2)) * 0.5;
 			var segRes = null;
 			
 			if(maxWidth == undefined){
@@ -445,7 +449,7 @@
 					this._renderSegmentList(this.width);
 				}
 				else{
-					wrapText(this.dataCtx, this._textValue, this.strokeText, this.fillText, xShift + this._font.fontOffsetX, this.padding + this._font.fontOffsetY, this.width - (this.padding*2));
+					wrapText(this.dataCtx, this._textValue, this.strokeText, this.fillText, xShift + this._font.fontOffsetX, this.padding + this._font.fontOffsetY + (this.height - (this.padding*2)) * 0.5, this.width - (this.padding*2));
 				}
 			}
 			else{
@@ -454,7 +458,7 @@
 				}
 				else{
 					if(this.strokeText){
-						this.dataCtx.strokeText(this._textValue, xShift  + this._font.fontOffsetX, this.padding + this._font.fontOffsetY);
+						this.dataCtx.strokeText(this._textValue, xShift  + this._font.fontOffsetX, this.padding + this._font.fontOffsetY + (this.height - (this.padding*2)) * 0.5);
 					}
 					if(this.fillText){
 						//Prevent shadow from being applied twice- and over the already placed stroke
@@ -463,7 +467,7 @@
 							this.dataCtx.shadowColor = "transparent";
 						}
 						
-						this.dataCtx.fillText(this._textValue, xShift + this._font.fontOffsetX, this.padding + this._font.fontOffsetY);
+						this.dataCtx.fillText(this._textValue, xShift + this._font.fontOffsetX, this.padding + this._font.fontOffsetY + (this.height - (this.padding*2)) * 0.5);
 						
 						if(oldShadow != null){
 							this.dataCtx.shadowColor = oldShadow;

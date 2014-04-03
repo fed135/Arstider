@@ -16,10 +16,11 @@ define("Arstider/core/Profiler", [], function(){
 		element.style.backgroundColor = "#999";
 		element.style.border = "2px solid #def";
 		element.style.color = "#070a0f";
-		element.style.float = "right";
+		element.style.cssFloat = "right";
 		element.style.cursor = "pointer";
 		element.style.textAlign = "center";
 		element.style.borderRadius = "2px";
+		element.style.maxWidth = "80px";
 		
 		element.onmouseover = function(){
 			this.style.backgroundColor = "#bcc";
@@ -92,7 +93,7 @@ define("Arstider/core/Profiler", [], function(){
 	var drawTab = document.createElement("div");
 	drawTab.id = "_ArstiderProfilerDrawTab";
 	styleAsButton(drawTab);
-	drawTab.style.float = "left";
+	drawTab.style.cssFloat = "left";
 	drawTab.onclick = function(){
 		profiler.currentTab = "draw";
 		details.innerHTML = "";
@@ -106,7 +107,7 @@ define("Arstider/core/Profiler", [], function(){
 	var memTab = document.createElement("div");
 	memTab.id = "_ArstiderProfilerMemoryTab";
 	styleAsButton(memTab);
-	memTab.style.float = "left";
+	memTab.style.cssFloat = "left";
 	memTab.onclick = function(){
 		profiler.currentTab = "memory";
 		details.innerHTML = "";
@@ -116,7 +117,7 @@ define("Arstider/core/Profiler", [], function(){
 	
 	profiler.minibar.style.position = "relative";
 	profiler.minibar.style.display = "block";
-	profiler.minibar.style.float = "left";
+	profiler.minibar.style.cssFloat = "left";
 	profiler.minibar.style.paddingTop = "5px";
 	profiler.minibar.style.fontSize = "12px";
 	profiler.appendChild(profiler.minibar);

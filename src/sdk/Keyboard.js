@@ -28,7 +28,7 @@
 		else return String.fromCharCode(code).toLowerCase();
 	}
 
-	document.addEventListener("keydown", function(e){
+	document.addEventListener("keydown", function(event){
 		var key = keyCodeToCharName(event.keyCode);
 		
 		keyMap[key] = 1;
@@ -36,7 +36,7 @@
 		runCallbacks(key, "down");
 	});
 	
-	document.addEventListener("keyup", function(e){
+	document.addEventListener("keyup", function(event){
 		var key = keyCodeToCharName(event.keyCode);
 		
 		keyMap[key] = 1;
