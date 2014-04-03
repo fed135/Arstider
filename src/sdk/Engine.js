@@ -120,7 +120,6 @@
 				
 				singleton.currentScreen = new _menu(name);
 				singleton.currentScreen.stage = singleton;
-				singleton.currentScreen.scaleX = singleton.currentScreen.scaleY = Viewport.globalScale;
 				setTimeout(function(){
 					Preloader.progress("__screen__", 100);
 				},100);
@@ -149,7 +148,6 @@
 			require(["screens/"+name], function(_menu){
 				singleton.currentScreen = new _menu();
 				singleton.currentScreen.stage = singleton;
-				singleton.currentScreen.scaleX = singleton.currentScreen.scaleY = Viewport.globalScale;
 				singleton.currentScreen.origin = singleton._savedScreen;
 				if(!singleton.pausedByRequest) singleton.play();
 				if(singleton.currentScreen.onload) singleton.currentScreen.onload();

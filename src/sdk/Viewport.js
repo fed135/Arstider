@@ -173,16 +173,20 @@
 			if(target.toolbar) target.toolbar.visible=false;
 		};
 		
-		Viewport.prototype.setGlobalScale = function(num){
-			Events.broadcast("Viewport.globalScaleChange", singleton);
-			
+		Viewport.prototype.setGlobalScale = function(num){		
 			var numRevert = 1/this.globalScale;
 			this.maxWidth = this.maxWidth / numRevert;
 			this.maxHeight = this.maxHeight / numRevert;
+			this.visibleWidth = this.visibleWidth / numRevert;
+			this.visibleHeight = this.visibleHeight / numRevert;
 			
 			this.globalScale = num;
 			this.maxWidth = this.maxWidth / num;
 			this.maxHeight = this.maxHeight / num;
+			this.visibleWidth = this.visibleWidth / num;
+			this.visibleHeight = this.visibleHeight / num;
+			
+			Events.broadcast("Viewport.globalScaleChange", num);
 		};
 			
 		singleton = new Viewport();

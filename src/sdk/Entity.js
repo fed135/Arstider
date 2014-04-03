@@ -385,7 +385,7 @@
 					this.x = (this.parent.width * this._dockX) - (this.width * this._dockX);
 				}
 				if(this._dockY != null){
-					this.y = (this.parent.height * this._dockY) - (this.width * this._dockY);
+					this.y = (this.parent.height * this._dockY) - (this.height * this._dockY);
 				}
 			}
 			

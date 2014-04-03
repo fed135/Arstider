@@ -8,7 +8,7 @@
 /**
  * Defines the screen module
  */
-define("Arstider/Screen", ["Arstider/DisplayObject", "Arstider/Viewport"], function(DisplayObject, Viewport){
+define("Arstider/Screen", ["Arstider/DisplayObject", "Arstider/Viewport", "Arstider/Events"], function(DisplayObject, Viewport, Events){
 	
 	/**
 	 * Screen constructor
@@ -33,10 +33,16 @@ define("Arstider/Screen", ["Arstider/DisplayObject", "Arstider/Viewport"], funct
 		this.stage = null;
 		
 		/**
-		 * Sets initial width and height
+		 * Sets initial width, height and scale
 		 */
 		this.width = Viewport.maxWidth;
 		this.height = Viewport.maxHeight;
+		this.scaleX = this.scaleY = Viewport.globalScale;
+		
+		/**
+		 * Listen for scale change
+		 */
+		Events.bind("Viewport.globalScaleChange", this.updateScale, this);
 	}
 	
 	Arstider.Inherit(Screen, DisplayObject);
@@ -61,6 +67,26 @@ define("Arstider/Screen", ["Arstider/DisplayObject", "Arstider/Viewport"], funct
 	 * @type {function(this:Screen)}
 	 */
 	Screen.prototype.onresume = Arstider.emptyFunction;
+	
+	/**
+	 * Private method called when screen unloads, then calls user-defined method
+	 * @private
+	 * @type {function(this:Screen)}
+	 */
+	Screen.prototype._unload = function(){
+		Events.unbind("Viewport.globalScaleChange", this.updateScale);
+	};
+	
+	/**
+	 * Resizes the screen when globalScale changes
+	 * @private
+	 * @type {function(this:Screen)}
+	 */
+	Screen.prototype.updateScale = function(){
+		this.width = Viewport.maxWidth;
+		this.height = Viewport.maxHeight;
+		this.scaleX = this.scaleY = Viewport.globalScale;
+	};
 	
 	return Screen;
 });

@@ -119,14 +119,17 @@
 			for(i=l-1; i>=0; i--){
 				if(junctions[i]){
 					if(junctions[i][EVENT] == event){
-						if(targets[junctions[i][TARGET]] == target || target === NO_TARGET){
-							if(functions[junctions[i][FUNCTION]] instanceof Function || typeof functions[junctions[i][FUNCTION]] === "function"){
-								functions[junctions[i][FUNCTION]](data);
+						if(functions[junctions[i][FUNCTION]] instanceof Function || typeof functions[junctions[i][FUNCTION]] === "function"){
+							if(targets[junctions[i][TARGET]] && (target === NO_TARGET || target == targets[junctions[i][TARGET]])){
+								functions[junctions[i][FUNCTION]].apply(targets[junctions[i][TARGET]], [data]);
 							}
 							else{
-								if(Arstider.verbose > 1) console.warn("Arstider.Events.broadcast: discrepancy found, flushing events");
-								singleton.flush();
+								functions[junctions[i][FUNCTION]](data);
 							}
+						}
+						else{
+							if(Arstider.verbose > 1) console.warn("Arstider.Events.broadcast: discrepancy found, flushing events");
+							singleton.flush();
 						}
 					}
 				}
