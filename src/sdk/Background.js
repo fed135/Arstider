@@ -66,9 +66,17 @@
 		 * @this {Background}
 		 * @param {CanvasRenderingContext2D} ctx The Engine's canvas context
 		 */
-		Background.prototype.render = function(ctx, w, h){
+		Background.prototype.render = function(ctx, w, h,s){
 			if(singleton.data == null) ctx.clearRect(0, 0, w, h);
-			else ctx.drawImage(singleton.data, 0, 0, w, h);
+			else{
+				if(s != 1){
+					ctx.scale(s, s);
+				}
+				ctx.drawImage(singleton.data, 0, 0, w*s, h*s);
+				if(s != 1){
+					ctx.scale(1/s, 1/s);
+				}
+			}
 		};
 		
 		/**

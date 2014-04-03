@@ -241,7 +241,7 @@
 				
 			if(singleton.profiler) showFrames = singleton.profiler.showFrames;
 			
-			Background.render(singleton.context, Viewport.maxWidth, Viewport.maxHeight);
+			Background.render(singleton.context, Viewport.maxWidth, Viewport.maxHeight, Viewport.globalScale);
 			
 			//Run through the elements and draw them at their global x and y with their global width and height
 			Renderer.draw(singleton, singleton.currentScreen, function(e){
