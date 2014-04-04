@@ -1,8 +1,7 @@
 ;(function(){
 	
 	var
-		empty = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=',
-		blobCache = {empty:{url:empty}}
+		empty = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='
 	;
 
 	define("Arstider/Bitmap", ["Arstider/Request"], function(Request){
@@ -14,8 +13,8 @@
 			this.width = 0;
 			this.height = 0;
 			
-			if(blobCache[url] != undefined){
-				this.loadUrl(blobCache[url].url);
+			if(Arstider.blobCache[url] != undefined){
+				this.loadUrl(Arstider.blobCache[url].url);
 			}
 			else{
 				this.req = new Request({
@@ -35,10 +34,10 @@
 		}
 		
 		Bitmap.prototype.parse = function(e){
-			if(blobCache[this.url] == undefined){
-				blobCache[this.url] = {url:window.URL.createObjectURL(e), size:e.size};
+			if(Arstider.blobCache[this.url] == undefined){
+				Arstider.blobCache[this.url] = {url:window.URL.createObjectURL(e), size:e.size};
 			}
-			this.loadUrl(blobCache[this.url].url);
+			this.loadUrl(Arstider.blobCache[this.url].url);
 		};
 		
 		Bitmap.prototype.loadUrl = function(url){
@@ -59,10 +58,6 @@
 		Bitmap.prototype.save = function(){
 			if(Arstider.verbose > 0) console.warn("Arstider.Bitmap.save: Feature not yet available");
 			//Arstider.saveToCanvas();
-		};
-		
-		Bitmap.prototype.dispose = function(){
-			blobCache = {empty:{url:empty}};
 		};
 		
 		return Bitmap;

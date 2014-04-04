@@ -87,11 +87,11 @@
 							var currPos = 0;
 							var maxHeight = 300;
 							
-							var entitiesSection = this.createSection(numEntities + " empty element(s)", 0, Math.round((numEntities/total)*maxHeight), "#889");
+							var entitiesSection = this.createSection(numEntities + " empty element(s)", 0, Math.round((numEntities/total)*maxHeight), "rgba(150,150,190,1)");
 							currPos += Math.round((numEntities/total)*maxHeight);
 							newCol.appendChild(entitiesSection);
 							
-							var drawsSection = this.createSection(numDraws + " draw(s)", currPos, Math.round((numDraws/total)*maxHeight), "#890");
+							var drawsSection = this.createSection(numDraws + " draw(s)", currPos, Math.round((numDraws/total)*maxHeight), "rgba(200,200,50,1)");
 							currPos += Math.round((numDraws/total)*maxHeight);
 							newCol.appendChild(drawsSection);
 							

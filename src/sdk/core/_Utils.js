@@ -223,15 +223,18 @@ Arstider.chop = function(i){
  * @const
  * @param {Object} objA The object that will receive the new properties
  * @param {Object} objB The object to transfer the properties from
- * @param {boolean} includeMethods Whether or not to include functions, defaults to false 
+ * @param {boolean} force Whether or not to override objA values with objB values in case they were already defined
+ * @param {boolean} includeMethods Whether or not to include functions, defaults to false
  * @return {Object} Returns the updated objA
  */
-Arstider.mixin = function(objA, objB, includeMethods){
+Arstider.mixin = function(objA, objB, force, includeMethods){
 	
 	for(var i in objB){
-		if(objA[i] == undefined){
+		if(objA[i] == undefined || force){
 			if(objB[i] instanceof Function || typeof objB[i] === 'function'){
-				if(includeMethods) objA[i] = objB[i];
+				if(includeMethods){
+					objA[i] = objB[i];
+				}
 			}
 			else objA[i] = objB[i];
 		}
@@ -316,6 +319,36 @@ Arstider.cancelAnimFrame = (function(){
 		window.msCancelAnimationFrame      || 
 		Arstider.fixedCancelAnimationFrame;
 })();
+
+
+Arstider.blobCache = {empty:{url:empty, size:0}};
+
+
+Arstider.clearBlobUrls = function(){
+	for(var i in Arstider.blobCache){
+		try{
+			window.URL.revokeObjectURL(Arstider.blobCache[i].url);
+		}
+		catch(e){
+			if(Arstider.verbose > 2) console.log("Arstider.clearBlobUrls: could not revoke blob url '",i, "'");
+		}
+	}
+	
+	Arstider.blobCache = {empty:{url:empty, size:0}};
+};
+
+Arstider.getTotalBlobSize = function(){
+	var 
+		i, 
+		total = 0
+	;
+	
+	for(i in Arstider.blobCache){
+		total += (Arstider.blobCache[i].size || 0);
+	}
+	
+	return total/1024;
+};
 
 /**
  * Image Transformations

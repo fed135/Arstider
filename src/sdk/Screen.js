@@ -16,15 +16,23 @@ define("Arstider/Screen", ["Arstider/DisplayObject", "Arstider/Viewport", "Arsti
 	 * 
 	 * @constructor
 	 */
-	function Screen(name){
-		Arstider.Super(this, DisplayObject, {"name":"Screen_" + name});
+	function Screen(screenObj){
+		
+		Arstider.Super(this, DisplayObject);
+		
+		Arstider.mixin(this, screenObj, true, true);
+		
+		if(this.init) this.init();
+		else{
+			if(Arstider.verbose > 2) console.warn("Arstider.Screen: new screen has no init method");
+		}
 		
 		/**
 		 * Whether the screen is loaded or not
 		 * @private
 		 * @type {boolean}
 		 */
-		this.loaded = false;
+		this.__loaded = false;
 		
 		/**
 		 * The engine reference
@@ -33,7 +41,7 @@ define("Arstider/Screen", ["Arstider/DisplayObject", "Arstider/Viewport", "Arsti
 		this.stage = null;
 		
 		/**
-		 * Sets initial width, height and scale
+		 * Set initial screen size and ratio
 		 */
 		this.width = Viewport.maxWidth;
 		this.height = Viewport.maxHeight;
@@ -48,35 +56,18 @@ define("Arstider/Screen", ["Arstider/DisplayObject", "Arstider/Viewport", "Arsti
 	Arstider.Inherit(Screen, DisplayObject);
 	
 	/**
-	 * On screen load behavior
-	 * @override
-	 * @type {function(this:Screen)}
-	 */
-	Screen.prototype.onload = Arstider.emptyFunction;
-		
-	/**
-	 * On screen unload behavior
-	 * @override
-	 * @type {function(this:Screen)}
-	 */
-	Screen.prototype.onunload = Arstider.emptyFunction;
-		
-	/**
-	 * On screen resume behavior - when overlay closes
-	 * @override
-	 * @type {function(this:Screen)}
-	 */
-	Screen.prototype.onresume = Arstider.emptyFunction;
-	
-	/**
 	 * Private method called when screen unloads, then calls user-defined method
 	 * @private
 	 * @type {function(this:Screen)}
 	 */
 	Screen.prototype._unload = function(){
+		this.loaded = false;
+		this.removeChildren();
 		var disposable = new Bitmap("empty", Arstider.emptyFunction);
 		disposable.dispose();
 		Events.unbind("Viewport.globalScaleChange", this.updateScale);
+		
+		if(this.onunload) this.onunload();
 	};
 	
 	/**

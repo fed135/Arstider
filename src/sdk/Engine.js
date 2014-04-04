@@ -11,6 +11,7 @@
 	var singleton = null;
 	
 	define( "Arstider/Engine", [
+		"Arstider/Screen",
 		"Arstider/Buffer", 
 		"Arstider/DisplayObject",
 		"Arstider/Events",
@@ -23,7 +24,7 @@
 		"Arstider/Browser",
 		"Arstider/Viewport",
 		"Arstider/core/Renderer"
-	], function (Buffer, DisplayObject, Events, Background, Preloader, GlobalTimers, Performance, Debugger, Mouse, Browser, Viewport, Renderer){
+	], function (Screen, Buffer, DisplayObject, Events, Background, Preloader, GlobalTimers, Performance, Debugger, Mouse, Browser, Viewport, Renderer){
 		
 		if(singleton != null) return singleton;
 			
@@ -77,6 +78,11 @@
 			if(!this.pausedByRequest) this.play();
 		};
 		
+		Engine.prototype.setPreloaderScreen = function(preloaderScreen){
+			Preloader.setScreen(new Screen(preloaderScreen));
+			Preloader._screen.stage = singleton;
+		};
+		
 		Engine.prototype.stepLogic = function(){
 			if(singleton === null) return;
 			
@@ -95,8 +101,8 @@
 			Events.unbind("Preloader.loadingCompleted", singleton.startScreen);
 			
 			if(singleton.currentScreen){
-				if(singleton.currentScreen.onload && singleton.currentScreen.loaded === false){
-					singleton.currentScreen.loaded = true;
+				if(singleton.currentScreen.onload && singleton.currentScreen.__loaded === false){
+					singleton.currentScreen.__loaded = true;
 					singleton.currentScreen.onload();
 				}
 				singleton.canvas.focus();
@@ -118,7 +124,8 @@
 			require(["screens/"+name], function(_menu){
 				singleton.killScreen();
 				
-				singleton.currentScreen = new (new _menu())(name);
+				singleton.currentScreen = new Screen(_menu);
+				
 				singleton.currentScreen.stage = singleton;
 				setTimeout(function(){
 					Preloader.progress("__screen__", 100);
@@ -128,8 +135,7 @@
 			
 		Engine.prototype.killScreen = function(){
 			if(singleton.currentScreen != null){
-				if(singleton.currentScreen.onunload) singleton.currentScreen.onunload();
-				singleton.currentScreen.removeChildren();
+				singleton.currentScreen._unload();
 				delete singleton.currentScreen;
 			}
 			else{
@@ -146,7 +152,7 @@
 			singleton.currentScreen = null;
 				
 			require(["screens/"+name], function(_menu){
-				singleton.currentScreen = new _menu();
+				singleton.currentScreen = new Screen(_menu);
 				singleton.currentScreen.stage = singleton;
 				singleton.currentScreen.origin = singleton._savedScreen;
 				if(!singleton.pausedByRequest) singleton.play();

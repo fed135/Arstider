@@ -201,7 +201,7 @@
 				target.memInfo = (((target.height * target.width * hexSize) >> 10) / 1024);
 				mem=target.memInfo;
 			}
-			return mem;
+			return mem + Arstider.getTotalBlobSize();
 		};
 			
 		singleton = new Buffer();

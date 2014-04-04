@@ -51,8 +51,6 @@
 	 */
 	function wrapText(context, myText, strokeText, fillText, x, padding, maxWidth, otherLineX, otherLineWrap) {
 		
-		console.log("putting text :", myText," on context ", context, " at ", x, ", ", padding);
-		
 		var 
 	       	words = [],
 	       	paragraphs = [],
@@ -373,7 +371,6 @@
 			this.dataCtx.font  = ((fontCopy.style == "")?"":(fontCopy.style + " ")) + fontCopy.size + " " + fontCopy.family;
 			
 			if(wrapped){
-				console.log("rather, here");
 				wrapPos = wrapText(this.dataCtx, segment.text, this.strokeText, this.fillText, startX, startY, this.width - (this.padding*2) - (this.width - (this.width - startX)), iniX, this.width - (this.padding*2));
 				
 				this.strokeText = wasStroke;
@@ -458,7 +455,6 @@
 					this._renderSegmentList(this.width);
 				}
 				else{
-					console.log("here");
 					wrapText(this.dataCtx, this._textValue, this.strokeText, this.fillText, xShift + this._font.fontOffsetX, this.padding + this._font.fontOffsetY, this.width - (this.padding*2));
 				}
 			}

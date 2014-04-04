@@ -46,8 +46,8 @@
 				this.clickToDismiss = clickReq || false;
 			};
 			
-			Preloader.prototype.setScreen = function(screen){
-				this._screen = new screen();
+			Preloader.prototype.setScreen = function(preloaderScreen){
+				this._screen = preloaderScreen;
 			};
 				
 			Preloader.prototype.progress = function(key, value, force){
