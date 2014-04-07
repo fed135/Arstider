@@ -193,9 +193,9 @@
 				i
 			;
 			
-			if(target.children && target.children.length > 0){
+			if(target && target.children && target.children.length > 0){
 				for(i = target.children.length-1; i>=0; i--){
-					if(target.children[i].isTouched(mouseX, mouseY)){
+					if(target && target.children && target.children[i] && target.children[i].isTouched(mouseX, mouseY)){
 						if(Mouse.pressed){
 							if(!target.children[i]._pressed) target.children[i]._onpress(e);
 						}
@@ -205,7 +205,7 @@
 					}
 					
 					//recursion
-					if(target.children[i].children && target.children[i].children.length > 0) singleton.applyTouch(e, target.children[i]);
+					if(target && target.children && target.children[i] && target.children[i].children && target.children[i].children.length > 0) singleton.applyTouch(e, target.children[i]);
 				}
 			}
 		};

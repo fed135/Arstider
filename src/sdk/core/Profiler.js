@@ -115,6 +115,7 @@ define("Arstider/core/Profiler", [], function(){
 	memTab.innerHTML = "Memory";
 	profiler.appendChild(memTab);
 	
+	profiler.minibar.id = "_ArstiderProfilerMinibar";
 	profiler.minibar.style.position = "relative";
 	profiler.minibar.style.display = "block";
 	profiler.minibar.style.cssFloat = "left";
