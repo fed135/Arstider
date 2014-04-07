@@ -1,8 +1,4 @@
 ;(function(){
-	
-	var
-		empty = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='
-	;
 
 	define("Arstider/Bitmap", ["Arstider/Request"], function(Request){
 	
@@ -29,7 +25,7 @@
 			
 			this.data.onerror = function(){
 				if(Arstider.verbose > 1) console.warn("Arstider.Bitmap.onerror: error loading asset");
-				this.url = empty;
+				this.url = Arstider.emptyImgSrc;
 			};
 		}
 		

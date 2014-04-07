@@ -63,8 +63,7 @@ define("Arstider/Screen", ["Arstider/DisplayObject", "Arstider/Viewport", "Arsti
 	Screen.prototype._unload = function(){
 		this.loaded = false;
 		this.removeChildren();
-		var disposable = new Bitmap("empty", Arstider.emptyFunction);
-		disposable.dispose();
+		Arstider.clearBlobUrls();
 		Events.unbind("Viewport.globalScaleChange", this.updateScale);
 		
 		if(this.onunload) this.onunload();

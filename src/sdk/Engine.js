@@ -120,9 +120,10 @@
 			singleton.stop();
 			Preloader.set(name);
 			Preloader.progress("__screen__", 0);
-				
+			singleton.killScreen();
+			
 			require(["screens/"+name], function(_menu){
-				singleton.killScreen();
+				
 				
 				singleton.currentScreen = new Screen(_menu);
 				
@@ -139,7 +140,7 @@
 				delete singleton.currentScreen;
 			}
 			else{
-				if(Arstider.verbose > 0) console.warn("Arstider.Engine.killScreen: no current screen");
+				if(Arstider.verbose > 1) console.warn("Arstider.Engine.killScreen: no current screen");
 			}
 		};
 			

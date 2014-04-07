@@ -321,7 +321,7 @@ Arstider.cancelAnimFrame = (function(){
 })();
 
 
-Arstider.blobCache = {empty:{url:empty, size:0}};
+Arstider.blobCache = {empty:{url:Arstider.emptyImgSrc, size:0}};
 
 
 Arstider.clearBlobUrls = function(){
@@ -334,7 +334,7 @@ Arstider.clearBlobUrls = function(){
 		}
 	}
 	
-	Arstider.blobCache = {empty:{url:empty, size:0}};
+	Arstider.blobCache = {empty:{url:Arstider.emptyImgSrc, size:0}};
 };
 
 Arstider.getTotalBlobSize = function(){
@@ -347,7 +347,7 @@ Arstider.getTotalBlobSize = function(){
 		total += (Arstider.blobCache[i].size || 0);
 	}
 	
-	return total/1024;
+	return total/1024/1024;
 };
 
 /**
