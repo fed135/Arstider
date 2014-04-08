@@ -135,7 +135,7 @@
 			this.points = [this.points[this.points.length-1]];
 			
 			//this.startSpread = null;
-			//this.center = null;
+			this.center = null;
 		}
 		
 		this.points.push(point);
@@ -154,6 +154,7 @@
 			
 			function Mouse(){
 				this.pressed = false;
+				this.rightPressed = false;
 			
 				this.mouse = {x:0,y:0};
 				
@@ -213,6 +214,7 @@
 				singleton.prevY = 0;
 				singleton.touch = [];
 				singleton.pressed = false;
+				singleton.rightPressed = false;
 				singleton._input = false;
 				singleton.mouse.x = 0;
 				singleton.mouse.y = 0;
@@ -312,7 +314,17 @@
 			};
 			
 			Mouse.prototype.handleMouseDown = function(e){
-				singleton.pressed = true;
+				var rightclick;
+				var e = window.event;
+				if (e.which) rightclick = (e.which == 3);
+    			else if (e.button) rightclick = (e.button == 2);
+    			
+    			if(rightclick){
+					singleton.rightPressed = true;
+				}
+				else{
+					singleton.pressed = true;
+				}
 				singleton.handleMouseMove(e);
 				singleton._touchRelay(e);
 				
@@ -326,7 +338,17 @@
 				singleton.currentGesture = null;
 				
 				singleton._input = true;
-				singleton.pressed = false;
+				var rightclick;
+				var e = window.event;
+				if (e.which) rightclick = (e.which == 3);
+    			else if (e.button) rightclick = (e.button == 2);
+    			
+    			if(rightclick){
+					singleton.rightPressed = false;
+				}
+				else{
+					singleton.pressed = false;
+				}
 				singleton.handleMouseMove(e);
 				singleton._touchRelay(e);
 			};

@@ -8,6 +8,27 @@
 	;
 	
 	/**
+	 * Pixel constructor
+	 * @constructor
+	 * @param {number} x The x position in the Buffer
+	 * @param {number} y The y position in the Buffer
+	 * @param {HTMLCanvasElement} canvas The Buffer reference
+	 * @param {number} r The red value
+	 * @param {number} g The green value
+	 * @param {number} b The blue value
+	 * @param {number} a The alpha value
+	 */
+	function Pixel(x,y,canvas,r,g,b,a){
+		this.x = x;
+		this.y = y;
+		this.canvas = canvas;
+		this.r = r;
+		this.g = g;
+		this.b = b;
+		this.a = a;
+	}
+	
+	/**
 	 * Creates the buffer tag and applies the current manager settings.
 	 * Also takes care of adding the context2D method 
 	 *
@@ -35,6 +56,44 @@
 				setImageSmoothing(singleton._ctxPool[name], buffer._renderMode == AUTO);
 				return singleton._ctxPool[name];
 			}
+		};
+		
+		buffer.getPixel = function(x, y){
+			var 
+				imgd = buffer.context2D().getImageData(x, y, 1, 1),
+				pix = imgd.data,
+				r,g,b,a
+			;
+			
+			r = pix[0]; // red
+			g = pix[1]; // green
+			b = pix[2]; // blue
+			a = pix[3]; // alpha
+			
+			return new Pixel(x, y, buffer, r, g, b, a);
+		};
+		
+		buffer.getAlpha = function(x, y){
+			var 
+				imgd = buffer.context2D().getImageData(x, y, 1, 1),
+				pix = imgd.data
+			;
+			
+			return pix[3]; // alpha
+		};
+		
+		buffer.setPixel = function(x, y, pixel){
+			var 
+				imgd = buffer.context2D().getImageData(x, y, 1, 1),
+				pix = imgd.data
+			;
+			
+			pix[0] = pixel.r; // red
+			pix[1] = pixel.g; // green
+			pix[2] = pixel.b; // blue
+			pix[3] = pixel.a; // alpha
+			
+			buffer.context2D().putImageData(imgd, x, y);
 		};
 		
 		return buffer;

@@ -36,19 +36,19 @@
 			 * @this {Sprite}
 			 * @param {string} name The desired name of the display object. Uses timestamp if empty : not recommended
 			 */
-			function Sprite(name) { 
+			function Sprite(props) { 
 				
-				Arstider.Super(this, Entity, name);
+				Arstider.Super(this, Entity, props);
 				
 				//Self reference for stepping 
 				var thisRef = this;
 				
 				//Animation Sheet
-				this.currentAnim = null;
+				this.currentAnim = Arstider.checkIn(props.currentAnim, null);
 				//Current animation frame
 				this.currentFrame = -1;
 				//Animation timer
-				this.stepTimer = setTimeout(function(){thisRef.step(thisRef);}, Arstider._fullFPS); //wait 1 frame
+				this.stepTimer = setTimeout(function(){thisRef.step.apply(thisRef);}, Arstider._fullFPS); //wait 1 frame
 			};
 			
 			Arstider.Inherit(Sprite, Entity);
@@ -61,14 +61,11 @@
 			Sprite.prototype.killBuffer = function(){
 				this.data = null;
 				this.dataCtx = null;
-				if(this.stepTimer != null){
-					clearTimeout(this.stepTimer);
-				}
+				if(this.stepTimer != null) clearTimeout(this.stepTimer);
+				
 				Buffer.kill(this.name);
 				
-				if(this.currentAnim){
-					Buffer.kill(this.currentAnim.sheet.url);
-				}
+				if(this.currentAnim && this.currentAnim.sheet.url) Buffer.kill(this.currentAnim.sheet.url);
 			};
 			
 			
@@ -78,57 +75,57 @@
 			 * @this {Sprite}
 			 * @param {Canvas2dContext} ctx The desired context to which the Sprite should be rendered in.
 			 */
-			Sprite.prototype.step = function(thisRef) {
+			Sprite.prototype.step = function() {
 				
-				var stopping = false, i = 0, len = null;
+				var stopping = false, i = 0, len = null, thisRef = this;
 				
-				if(thisRef.currentAnim !== null && thisRef.currentAnim.sheet.data !== null){
+				if(this.currentAnim !== null && this.currentAnim.sheet.data !== null){
 					//Run animation logic
-					len = thisRef.currentAnim.callbacks.length;
+					len = this.currentAnim.callbacks.length;
 					
-					thisRef.currentFrame++;
-					if(thisRef.currentFrame > thisRef.currentAnim.frames.length -1){
+					this.currentFrame++;
+					if(this.currentFrame > this.currentAnim.frames.length -1){
 						
-						thisRef.currentAnim.loops++;
+						this.currentAnim.loops++;
 						
-						if(thisRef.currentAnim.chainedAnim != null){
-							thisRef.currentAnim = thisRef.currentAnim.chainedAnim;
-							thisRef.currentFrame = 0;
+						if(this.currentAnim.chainedAnim != null){
+							this.currentAnim = this.currentAnim.chainedAnim;
+							this.currentFrame = 0;
 						}
 						else{
-							if(thisRef.currentAnim.stop < thisRef.currentAnim.loops && thisRef.currentAnim.stop !== -1){
-								thisRef.currentFrame--;
+							if(this.currentAnim.stop < this.currentAnim.loops && this.currentAnim.stop !== -1){
+								this.currentFrame--;
 								stopping = true;
-								thisRef.stop();
+								this.stop();
 							}
 							else{
-								thisRef.currentFrame = 0;
+								this.currentFrame = 0;
 							}
 							
 							for(i; i<len; i++){
-								if(thisRef.currentAnim.callbacks[i]){
-									thisRef.currentAnim.callbacks[i](thisRef);
+								if(this.currentAnim.callbacks[i]){
+									this.currentAnim.callbacks[i].apply(this);
 								}
 							}
 						}
 					}
 					
 					if(stopping === false){
-						thisRef.stepTimer = setTimeout(function(){thisRef.step(thisRef);}, thisRef.currentAnim.time);
-						thisRef.showFrame(thisRef.currentAnim.sheet,thisRef.currentAnim.frames[thisRef.currentFrame]);
+						this.stepTimer = setTimeout(function(){thisRef.step(thisRef);}, this.currentAnim.time);
+						this.showFrame(this.currentAnim.sheet,this.currentAnim.frames[this.currentFrame]);
 					}
 				}
 				else{
-					thisRef.stepTimer = setTimeout(function(){thisRef.step(thisRef);}, (thisRef.currentAnim)?thisRef.currentAnim.time:1000);
+					this.stepTimer = setTimeout(function(){thisRef.step(thisRef);}, (this.currentAnim)?this.currentAnim.time:1000);
 				}
 			};
 			
 			Sprite.prototype.showFrame = function(animSheet,frameNum){
 				this.data = animSheet.data;
-				if(animSheet.frameWidth){
+				if(animSheet.frameWidth != 0){
 					this.width = animSheet.frameWidth;
 				}
-				if(animSheet.frameHeight){
+				if(animSheet.frameHeight != 0){
 					this.height = animSheet.frameHeight;
 				}
 				var theFrame = getFrame(animSheet, frameNum, this.width, this.height);

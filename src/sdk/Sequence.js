@@ -51,9 +51,13 @@
 			 * @param {Boolean | Integer} stop The number of loops before the animation stops (accepts boolean for backwards compatibility)
 			 * @return @this.chainedAnim
 			 */
-			Sequence.prototype.then = function(time, frames, stop){
-				var thisRef = this;
-				this.chainedAnim = new Sequence(thisRef.sheet, time, frames, stop);
+			Sequence.prototype.then = function(parA, frames, stop){
+				if(parA instanceof Function || typeof parA === "function") this.callbacks.push(parA);
+				else if(parA instanceof String || typeof parA === "string") this.callbacks.push(function(){
+					this.currentAnim = this.currentAnim.sheet[parA];
+					this.rewind();
+				});
+				else this.chainedAnim = new Sequence(this.sheet, parA, frames, stop);
 				return this.chainedAnim;
 			};
 			

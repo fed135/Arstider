@@ -12,15 +12,28 @@
 		 * @param {string} url The URL for the spriteSheet
 		 */
 		 	
-			var SpriteSheet = function(url,fW,fH){
-				var thisRef = this;
+			var SpriteSheet = function(props){
+				props = props || {};
+				
 				this.data = null;
 				this.width = 0;
 				this.height = 0;
-				this.url = url;
 				
-				if(fW) this.frameWidth = fW;
-				if(fH) this.frameHeight = fH;
+				this.frameWidth = Arstider.checkIn(props.width, 0);
+				this.frameHeight = Arstider.checkIn(props.height, 0);
+				
+				var url = Arstider.checkIn(Arstider.checkIn(props.data, props.bitmap), null);
+				
+				if(url) this.loadBitmap(url);
+			};
+			
+			SpriteSheet.prototype.addSequence = function(name, time, frames, stop){
+				this[name] = new Sequence(this, time, frames, stop);
+				return this[name];
+			};
+			
+			SpriteSheet.prototype.loadBitmap = function(url){
+				var thisRef = this;
 				
 				if(!(typeof url === 'string') && !(url instanceof String)){
 					thisRef.data = url;
@@ -33,16 +46,12 @@
 					return;
 				}
 				
+				this.url = url;
 				var req = new Bitmap(url, function(){
 					thisRef.data = this.data;
 					if(thisRef.width == 0) thisRef.width = this.width;
 					if(thisRef.height == 0) thisRef.height = this.height;
 				});
-			};
-			
-			SpriteSheet.prototype.addSequence = function(name, time, frames, stop){
-				this[name] = new Sequence(this, time, frames, stop);
-				return this[name];
 			};
 			
 			return SpriteSheet;

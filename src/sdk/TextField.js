@@ -14,7 +14,15 @@
 		 * @private
 		 * @type {string}
 		 */
-		breakLine = "<br>"
+		breakLine = "<br>",
+		
+		/**
+		 * Static entity reference
+		 * @const
+		 * @private
+		 * @type {Object|null}
+		 */
+		entityRef = null
 	;
 	
 	/**
@@ -125,6 +133,8 @@
 	 * Defines the TextField module
 	 */	
 	define( "Arstider/TextField", ["Arstider/Buffer", "Arstider/Entity", "Arstider/core/BBParser", "Arstider/Fonts"], function (Buffer, Entity, Parser, Fonts) {
+		
+		if(entityRef == null) entityRef = new Entity();
 		
 		/**
 		 * Creates an instance of TextField.
@@ -441,7 +451,7 @@
 			this._makeBuffer();
 			
 			for(i in this._font){
-				if(this[i] != undefined) this.dataCtx[i] = [i];
+				if(this[i] != undefined && !(i in entityRef)) this.dataCtx[i] = [i];
 				else this.dataCtx[i] = this._font[i];
 			}
 			this.dataCtx.font = ((this._font.style == "")?"":(this._font.style + " ")) + this._font.size + " " + this._font.family;
