@@ -8,9 +8,7 @@
 ;(function(){
 
 	var 
-		singleton = null,
-		defaultSet = {},
-		runtimeSet = {}
+		singleton = null
 	;
 	
 	/**

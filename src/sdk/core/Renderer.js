@@ -165,8 +165,10 @@
 						/*for(li=0; li<len; li++){
 							renderChild(curChild.children[li],curX,curY,ctx,pre,post,showBoxes);
 						}*/
-						for(li=len-1; li>=0; li--){
-							renderChild(curChild.children[li],curX,curY,ctx,pre,post,showBoxes);
+						for(li=0; li<len; li++){
+							if(curChild.children[li]){
+								renderChild(curChild.children[li],curX,curY,ctx,pre,post,showBoxes);
+							}
 						}
 					}
 				}
