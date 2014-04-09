@@ -24,7 +24,7 @@
 				this.name = navigator.appName;
 				this.version = parseFloat(navigator.appVersion);
 				this.isMobile = false;
-				this.isSupported = null;
+				this.isSupported = true;
 	
 				//Platform
 				if(navigator.platform.indexOf('iPhone') != -1){
