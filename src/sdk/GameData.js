@@ -48,7 +48,7 @@
 						ls = Storage.get(id);
 						if(ls != null && ls != undefined){
 							this.runtimeSet[id] = ls;
-							return runtimeSet[id];
+							return this.runtimeSet[id];
 						}
 						else{
 							if(Arstider.verbose > 1) console.warn("Arstider.GameData.get: ", id," not found in localStorage");

@@ -125,7 +125,7 @@
 			require(["screens/"+name], function(_menu){
 				
 				
-				singleton.currentScreen = new Screen(_menu);
+				singleton.currentScreen = new Screen(_menu, singleton);
 				
 				singleton.currentScreen.stage = singleton;
 				setTimeout(function(){
@@ -153,7 +153,7 @@
 			singleton.currentScreen = null;
 				
 			require(["screens/"+name], function(_menu){
-				singleton.currentScreen = new Screen(_menu);
+				singleton.currentScreen = new Screen(_menu, singleton);
 				singleton.currentScreen.stage = singleton;
 				singleton.currentScreen.origin = singleton._savedScreen;
 				if(!singleton.pausedByRequest) singleton.play();
@@ -195,7 +195,7 @@
 			
 			if(target && target.children && target.children.length > 0){
 				for(i = target.children.length-1; i>=0; i--){
-					if(target && target.children && target.children[i] && target.children[i].isTouched(mouseX, mouseY)){
+					if(target && target.children && target.children[i] && !target.children[i].__skip && target.children[i].isTouched(mouseX, mouseY)){
 						if(Mouse.pressed){
 							if(!target.children[i]._pressed) target.children[i]._onpress(e);
 						}
@@ -205,7 +205,19 @@
 					}
 					
 					//recursion
-					if(target && target.children && target.children[i] && target.children[i].children && target.children[i].children.length > 0) singleton.applyTouch(e, target.children[i]);
+					if(target && target.children && target.children[i] && !target.children[i].__skip && target.children[i].children && target.children[i].children.length > 0) singleton.applyTouch(e, target.children[i]);
+				}
+			}
+		};
+		
+		Engine.prototype.removePending = function(target){
+			if(target && target.children && target.children.length > 0){
+				for(i = target.children.length-1; i>=0; i--){
+					if(target && target.children && target.children[i] && target.children[i].__skip) target.children.splice(i, 1);
+					else{
+						//recursion
+						if(target && target.children && target.children[i] && target.children[i].children && target.children[i].children.length > 0) singleton.removePending(target.children[i]);
+					}
 				}
 			}
 		};
@@ -263,6 +275,8 @@
 			Mouse.step();
 				
 			if(showFrames) singleton.profiler.drawFrames();
+			
+			singleton.removePending(singleton.currentScreen);
 				
 			Performance.endStep();
 		};

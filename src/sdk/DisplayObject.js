@@ -69,6 +69,12 @@
 		DisplayObject.prototype.addChild = function(clip){
 			if(clip.parent != null && Arstider.verbose > 1) console.warn("Arstider.DisplayObject.addChild: object already has a parent");
 			clip.parent = this;
+			clip.onStage = this.onStage;
+			if(clip.children && clip.children.length > 0){
+				for(var i = 0; i< clip.children.length; i++){
+					clip.children[i].onStage = this.onStage;
+				}
+			}
 			this.children[this.children.length]=clip;
 			return this.children.length-1;
 		};
@@ -82,12 +88,18 @@
 		DisplayObject.prototype.removeChildByName = function(name) {
 			var index = getChildIndexByName(this.children, name);
 			if(index != -1) {
-				this.children[index].killBuffer();
-				this.children[index].parent = null;
+				if(this.children[index].removeChildren && this.children[index].children.length != 0) this.children[index].removeChildren(true);
 				
-				if(this.children[index].removeChildren && this.children[index].children.length != 0) this.children[index].removeChildren();
-				
-				this.children.splice(index,1);
+				if(this.children[index].onStage){
+					this.children[index].__skip = true;
+				}
+				else{
+					this.children[index].onStage = false;
+					this.children[index].killBuffer();
+					this.children[index].parent = null;
+					
+					this.children.splice(index,1);
+				}
 				return true;
 			}
 			if(Arstider.verbose > 1) console.warn("Arstider.DisplayObject.removeChildByName: could not find children "+name);
@@ -103,12 +115,18 @@
 		DisplayObject.prototype.removeChild = function(ref, keepBuffer) {
 			var index = this.children.indexOf(ref);
 			if(index != -1){
-				this.children[index].killBuffer();
-				this.children[index].parent = null;
-			
-				if(this.children[index].removeChildren && this.children[index].children.length != 0) this.children[index].removeChildren();
+				if(this.children[index].removeChildren && this.children[index].children.length != 0) this.children[index].removeChildren(true);
 				
-				this.children.splice(index,1);
+				if(this.children[index].onStage){
+					this.children[index].__skip = true;
+				}
+				else{
+					this.children[index].onStage = false;
+					this.children[index].killBuffer();
+					this.children[index].parent = null;
+					
+					this.children.splice(index,1);
+				}
 				return true;
 			}
 			if(Arstider.verbose > 1) console.warn("Arstider.DisplayObject.removeChild: could not find child");
@@ -143,19 +161,29 @@
 		 * Removes all children from stage and destroys their buffers.
 		 * @this {DisplayObject}
 		 */
-		DisplayObject.prototype.removeChildren = function(){
+		DisplayObject.prototype.removeChildren = function(force){
+			var someKept = false;
 			if(this.children.length === 0 && Arstider.verbose > 2) console.warn("Arstider.DisplayObject.removeChildren: object has no children");
 			for(var i=0; i<this.children.length; i++) {
 				if(this.children[i]){
 					if(this.children[i].children && this.children[i].removeChildren && this.children[i].children.length != 0){
-						this.children[i].removeChildren();
+						this.children[i].removeChildren(true);
 					}
-					this.children[i].killBuffer();
-					this.children[i].parent = null;
-					delete this.children[i];
+					
+					if(this.children[i].onStage && !force){
+						this.children[i].__skip = true;
+						someKept = true;
+					}
+					else{
+						this.children[i].killBuffer();
+						this.children[i].parent = null;
+						this.children[i].onStage = false;
+						delete this.children[i];
+					}
 				}
 			}
-			this.children = [];
+			
+			if(!someKept) this.children = [];
 		};
 		
 		/**

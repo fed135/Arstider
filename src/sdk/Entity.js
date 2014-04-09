@@ -138,6 +138,12 @@
 			this.rpY = Arstider.checkIn(props.rpY, 0);
 			
 			/**
+			 * Indicates if the element is on stage 
+			 * @type {boolean}
+			 */
+			this.onStage = false;
+			
+			/**
 			 * Global values for the element's properties. Updated by the renderer. (Read-only)
 			 * @type {Object}
 			 */
@@ -507,14 +513,16 @@
 		 * Kills the Entity's Buffer(s).
 		 * @this {Entity}
 		 */
-		Entity.prototype.killBuffer = function(){
+		Entity.prototype.killBuffer = function(wipe){
 			this.data = null;
 			this.dataCtx = null;
-			(function(_name){
-				require(["Arstider/Buffer"],function(Buffer){
-					Buffer.kill(_name);
-				});
-			})(this.name);
+			if(wipe){
+				(function(_name){
+					require(["Arstider/Buffer"],function(Buffer){
+						Buffer.kill(_name);
+					});
+				})(this.name);
+			}
 		};
 			
 		/**

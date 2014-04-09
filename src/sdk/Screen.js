@@ -16,16 +16,11 @@ define("Arstider/Screen", ["Arstider/DisplayObject", "Arstider/Viewport", "Arsti
 	 * 
 	 * @constructor
 	 */
-	function Screen(screenObj){
+	function Screen(screenObj, stage){
 		
 		Arstider.Super(this, DisplayObject);
 		
 		Arstider.mixin(this, screenObj, true, true);
-		
-		if(this.init) this.init();
-		else{
-			if(Arstider.verbose > 2) console.warn("Arstider.Screen: new screen has no init method");
-		}
 		
 		/**
 		 * Whether the screen is loaded or not
@@ -38,7 +33,7 @@ define("Arstider/Screen", ["Arstider/DisplayObject", "Arstider/Viewport", "Arsti
 		 * The engine reference
 		 * @type {Engine|null}
 		 */
-		this.stage = null;
+		this.stage = stage;
 		
 		/**
 		 * Set initial screen size and ratio
@@ -46,6 +41,12 @@ define("Arstider/Screen", ["Arstider/DisplayObject", "Arstider/Viewport", "Arsti
 		this.width = Viewport.maxWidth;
 		this.height = Viewport.maxHeight;
 		this.scaleX = this.scaleY = Viewport.globalScale;
+		this.onStage = true;
+		
+		if(this.init) this.init();
+		else{
+			if(Arstider.verbose > 2) console.warn("Arstider.Screen: new screen has no init method");
+		}
 		
 		/**
 		 * Listen for scale change

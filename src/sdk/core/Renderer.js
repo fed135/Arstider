@@ -17,7 +17,7 @@
 			
 			function renderChild(curChild,curX,curY,ctx,pre,post,showBoxes){
 				
-				if(!curChild) return;
+				if(!curChild || curChild.__skip) return;
 				
 				var 
 					isComplex = false,	//Determines if geometrical transformations have been applied
