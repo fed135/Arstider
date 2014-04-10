@@ -1,204 +1,266 @@
 ;(function(){
 	
-	var 
-		degToRad = Math.PI/180,
-		defaultComposition = "source-over",
-		engRef = null,
-		singleton = null,
-		defaultShadowColor = "transparent"
+	var
+		/*
+		 * Singleton static
+	 	 * @private
+	 	 * @type {Renderer|null}
+	 	 */
+		singleton = null
 	;
 	
-	/**
-	 * AMD Closure
+	 /**
+	 * Defines performance module
 	 */	
-		define( "Arstider/core/Renderer", ["Arstider/Sprite", "Arstider/DisplayObject", "Arstider/TextField", "Arstider/core/Performance"], function (Sprite, DisplayObject, TextField, Performance){
+	define( "Arstider/core/Renderer", ["Arstider/Sprite", "Arstider/DisplayObject", "Arstider/TextField", "Arstider/core/Performance"], function (Sprite, DisplayObject, TextField, Performance){
 			
-			if(singleton != null) return singleton;
+		if(singleton != null) return singleton;
 			
-			function renderChild(curChild,curX,curY,ctx,pre,post,showBoxes){
+		/**
+		 * Renderer module constructor
+		 * @constructor 
+		 */
+		function Renderer(){
+			
+			/**
+			 * Current frame rendering context target
+			 * @private
+			 * @type {CanvasRenderingContext2D|null}
+			 */
+			this._context = null;
 				
-				if(!curChild || curChild.__skip) return;
+			/**
+			 * Current frame x carret position
+			 * @private
+			 * @type {number}
+			 */
+			this._currentX = 0;
 				
-				var 
-					isComplex = false,	//Determines if geometrical transformations have been applied
-					oldAlpha = null,	//Stores the old alpha of the context, if need be
-					li = null,			//To loop through the element's children, if need be
-					len = null,
-					oldShadowColor,
-					oldShadowBlur,
-					oldShadowOffsetX,
-					oldShadowOffsetY,
-					shadowSafe,
-					prevFill
-				;
+			/**
+			 * Current frame y carret position
+			 * @private
+			 * @type {number}
+			 */
+			this._currentY = 0;
 				
-				Performance.elements++;
+			/**
+			 * Optional pre-render method to call on elements
+			 * @private
+			 * @type {function}
+			 */
+			this._preRender = null;
 				
-				if(curChild.draw) curChild.draw();
+			/**
+			 * Optional post-render method to call on elements
+			 * @private
+			 * @type {function}
+			 */
+			this._postRender = null;
 				
-				if(curChild.alpha <= 0) return;
+			/**
+			 * Whether or not to show the debug boxes around elements
+			 * @private
+			 * @type {boolean}
+			 */
+			this._showBoxes = false;
+		}
+			
+		/**
+		 * Render a single child and it's children
+		 * @private
+		 * @type {function}
+		 * @param {Object} curChild Entity-type element to draw and call draw upon the children of
+		 */
+		Renderer.prototype.renderChild = function(curChild){
 				
-				if(
-					(curChild.scaleX != 1) ||
-					(curChild.scaleY != 1) ||
-					(curChild.rotation != 0) ||
-					(curChild.skewX != 0) ||
-					(curChild.skewY != 0)
-					) {
+			if(!curChild || curChild.__skip) return;
+				
+			var 
+				isComplex = false,	//Determines if geometrical transformations have been applied
+				oldAlpha = null,	//Stores the old alpha of the context, if need be
+				li = null,			//To loop through the element's children, if need be
+				len = null,
+				oldShadowColor,
+				oldShadowBlur,
+				oldShadowOffsetX,
+				oldShadowOffsetY,
+				shadowSafe,
+				prevFill
+			;
+				
+			Performance.elements++;
+				
+			if(curChild.draw) curChild.draw();
+				
+			if(curChild.alpha <= 0) return;
+				
+			if(
+				(curChild.scaleX != 1) ||
+				(curChild.scaleY != 1) ||
+				(curChild.rotation != 0) ||
+				(curChild.skewX != 0) ||
+				(curChild.skewY != 0)
+				) {
 					
-					isComplex = true;
-					ctx.save();
-				}
+				isComplex = true;
+				this._context.save();
+			}
 				
-				if(curChild.alpha != 1) {
-					oldAlpha = ctx.globalAlpha;
-					ctx.globalAlpha *= curChild.alpha;
-				}
+			if(curChild.alpha != 1) {
+				oldAlpha = this._context.globalAlpha;
+				this._context.globalAlpha *= curChild.alpha;
+			}
 				
-				curX += curChild.x;
-				curY += curChild.y;
+			this._currentX += curChild.x;
+			this._currentY += curChild.y;
 				
-				if(isComplex) {
-					ctx.translate(curX+ (curChild.width * curChild.rpX),curY+ (curChild.height * curChild.rpY));
-					curX = -(curChild.width * curChild.rpX);
-					curY = -(curChild.height * curChild.rpY);
-				}
+			if(isComplex) {
+				this._context.translate(this._currentX+ (curChild.width * curChild.rpX),this._currentY+ (curChild.height * curChild.rpY));
+				this._currentX = -(curChild.width * curChild.rpX);
+				this._currentY = -(curChild.height * curChild.rpY);
+			}
 				
-				//Scale
-				if((curChild.scaleX != 1) || (curChild.scaleY != 1)){
-					ctx.scale(curChild.scaleX, curChild.scaleY);
-					Performance.transforms++;
-				}
-				//Rotation
-				if (curChild.rotation != 0){
-					ctx.rotate(curChild.rotation*degToRad);
-					Performance.transforms++;
-				}
-				//Skey X
-				if (curChild.skewX){
-					ctx.transform(1, 0, curChild.skewX, 1, 0, 0);
-					Performance.transforms++;
-				}
-				//Skew Y
-				if (curChild.skewY){
-					ctx.transform(1, curChild.skewY, 0, 1, 0, 0);
-					Performance.transforms++;
-				}
+			//Scale
+			if((curChild.scaleX != 1) || (curChild.scaleY != 1)){
+				this._context.scale(curChild.scaleX, curChild.scaleY);
+				Performance.transforms++;
+			}
+			//Rotation
+			if (curChild.rotation != 0){
+				this._context.rotate(curChild.rotation*Arstider.degToRad);
+				Performance.transforms++;
+			}
+			//Skey X
+			if (curChild.skewX){
+				this._context.transform(1, 0, curChild.skewX, 1, 0, 0);
+				Performance.transforms++;
+			}
+			//Skew Y
+			if (curChild.skewY){
+				this._context.transform(1, curChild.skewY, 0, 1, 0, 0);
+				Performance.transforms++;
+			}
 				
-				//Runs pre-render method:
-				if(pre) pre(curChild);
+			//Runs pre-render method:
+			if(this._preRender) this._preRender(curChild);
+			
+			if(curChild.compositeMode != Arstider.defaultComposition) this._context.globalCompositeOperation = curChild.compositeMode;
+			
+			if(curChild.mask === true) this._context.globalCompositeOperation = "destination-in";
 				
-				if(curChild.compositeMode != defaultComposition) ctx.globalCompositeOperation = curChild.compositeMode;
+			//Update globals
+			if(curChild.global && curChild.parent){
+				curChild.global.x = this._currentX;
+				curChild.global.y = this._currentY;
+				curChild.global.scaleX = curChild.scaleX * curChild.parent.scaleX;
+				curChild.global.scaleY = curChild.scaleY * curChild.parent.scaleY;
+				curChild.global.width = curChild.width * curChild.global.scaleX;
+				curChild.global.height = curChild.height * curChild.global.scaleY;
+				curChild.global.rotation = curChild.rotation + curChild.parent.rotation;
+				curChild.global.alpha = curChild.alpha * curChild.parent.alpha;
+			}
 				
-				if(curChild.mask === true) ctx.globalCompositeOperation = "destination-in";
-				
-				//Update globals
-				if(curChild.global && curChild.parent){
-					curChild.global.x = curX;
-					curChild.global.y = curY;
-					curChild.global.scaleX = curChild.scaleX * curChild.parent.scaleX;
-					curChild.global.scaleY = curChild.scaleY * curChild.parent.scaleY;
-					curChild.global.width = curChild.width * curChild.global.scaleX;
-					curChild.global.height = curChild.height * curChild.global.scaleY;
-					curChild.global.rotation = curChild.rotation + curChild.parent.rotation;
-					curChild.global.alpha = curChild.alpha * curChild.parent.alpha;
-				}
-				
-				//Shadow
-				if(curChild.shadowColor != defaultShadowColor){
+			//Shadow
+			if(curChild.shadowColor != Arstider.defaultColor){
 					
-					//save old properties
-					oldShadowColor = ctx.shadowColor;
-					oldShadowBlur = ctx.shadowBlur;
-					oldShadowOffsetX = ctx.shadowOffsetX;
-					oldShadowOffsetY = ctx.shadowOffsetY;
+				//save old properties
+				oldShadowColor = this._context.shadowColor;
+				oldShadowBlur = this._context.shadowBlur;
+				oldShadowOffsetX = this._context.shadowOffsetX;
+				oldShadowOffsetY = this._context.shadowOffsetY;
 					
-					ctx.shadowColor = curChild.shadowColor;
-					ctx.shadowBlur = curChild.shadowBlur;
-					ctx.shadowOffsetX = curChild.shadowOffsetX;
-					ctx.shadowOffsetY = curChild.shadowOffsetY;
-				}
+				this._context.shadowColor = curChild.shadowColor;
+				this._context.shadowBlur = curChild.shadowBlur;
+				this._context.shadowOffsetX = curChild.shadowOffsetX;
+				this._context.shadowOffsetY = curChild.shadowOffsetY;
+			}
 				
-				//Render
-				if(curChild.data){
-					Performance.draws++;
-					if(curChild.data.pattern){
-						prevFill = ctx.fillStyle;
-						ctx.fillStyle = curChild.data.pattern;
-						ctx.fillRect(Math.round(curX), Math.round(curY), curChild.width, curChild.height);
-						ctx.fillStyle = prevFill;
+			//Render
+			if(curChild.data){
+				Performance.draws++;
+				if(curChild.data.pattern){
+					prevFill = this._context.fillStyle;
+					this._context.fillStyle = curChild.data.pattern;
+					this._context.fillRect(Math.round(this._currentX), Math.round(this._currentY), curChild.width, curChild.height);
+					this._context.fillStyle = prevFill;
+				}
+				else{
+					//instanceof is pretty fast,  we want to leverage data offset rather than having an extra buffer for sprites.
+					if(curChild instanceof Sprite || curChild.largeData === true){
+						this._context.drawImage(curChild.data, curChild.xOffset, curChild.yOffset, curChild.dataWidth, curChild.dataHeight, Math.round(this._currentX), Math.round(this._currentY), curChild.width, curChild.height);
 					}
 					else{
-						//instanceof is pretty fast,  we want to leverage data offset rather than having an extra buffer for sprites.
-						if(curChild instanceof Sprite || curChild.largeData === true){
-							ctx.drawImage(curChild.data, curChild.xOffset, curChild.yOffset, curChild.dataWidth, curChild.dataHeight, Math.round(curX), Math.round(curY), curChild.width, curChild.height);
-						}
-						else{
-							ctx.drawImage(curChild.data, Math.round(curX), Math.round(curY), curChild.width, curChild.height);
-						}
-					}
-				}
-				
-				if(showBoxes || curChild._showDebugBox === true){
-					shadowSafe = ctx.shadowColor;
-					ctx.shadowColor = "transparent";
-					var prevAlpha = ctx.globalAlpha;
-					ctx.globalAlpha = 0.7;
-					ctx.lineWidth = 1;
-					if(curChild instanceof Sprite) ctx.strokeStyle = "blue";
-					else if(curChild instanceof TextField) ctx.strokeStyle = "green";
-					else if(curChild instanceof DisplayObject) ctx.strokeStyle = "red";
-					else ctx.strokeStyle = "yellow";
-					
-					ctx.strokeRect(Math.round(curX), Math.round(curY), curChild.width, curChild.height);
-					ctx.globalAlpha = prevAlpha;
-					ctx.shadowColor = shadowSafe;
-				}
-				
-				//runs post-render methods
-				if(post) post(curChild);
-				
-				//Render Children
-				if(curChild.children){
-					if(curChild.children.length > 0) {
-						len = curChild.children.length;
-						/*for(li=0; li<len; li++){
-							renderChild(curChild.children[li],curX,curY,ctx,pre,post,showBoxes);
-						}*/
-						for(li=0; li<len; li++){
-							if(curChild.children[li]){
-								renderChild(curChild.children[li],curX,curY,ctx,pre,post,showBoxes);
-							}
-						}
-					}
-				}
-				
-				//Restore
-				if(oldAlpha !== null) ctx.globalAlpha = oldAlpha;
-				if(curChild.compositeMode != defaultComposition) ctx.globalCompositeOperation = defaultComposition;
-				if(isComplex) ctx.restore();
-				else{
-					if(curChild.shadowColor != defaultShadowColor){
-						ctx.shadowColor =oldShadowColor;
-						ctx.shadowBlur = oldShadowBlur;
-						ctx.shadowOffsetX = oldShadowOffsetX;
-						ctx.shadowOffsetY = oldShadowOffsetY;
+						this._context.drawImage(curChild.data, Math.round(this._currentX), Math.round(this._currentY), curChild.width, curChild.height);
 					}
 				}
 			}
+				
+			if(this._showBoxes || curChild.showOutline === true){
+				shadowSafe = this._context.shadowColor;
+				this._context.shadowColor = "transparent";
+				var prevAlpha = this._context.globalAlpha;
+				this._context.globalAlpha = 0.7;
+				this._context.lineWidth = 1;
+				if(curChild instanceof Sprite) this._context.strokeStyle = "blue";
+				else if(curChild instanceof TextField) this._context.strokeStyle = "green";
+				else if(curChild instanceof DisplayObject) this._context.strokeStyle = "red";
+				else this._context.strokeStyle = "yellow";
+					
+				this._context.strokeRect(Math.round(this._currentX), Math.round(this._currentY), curChild.width, curChild.height);
+				this._context.globalAlpha = prevAlpha;
+				this._context.shadowColor = shadowSafe;
+			}
+				
+			//runs post-render methods
+			if(this._postRender) this._postRender(curChild);
+				
+			//Render Children
+			if(curChild.children){
+				if(curChild.children.length > 0) {
+					len = curChild.children.length;
+					for(li=0; li<len; li++){
+						if(curChild.children[li]){
+							this.renderChild(curChild.children[li]);
+						}
+					}
+				}
+			}
+				
+			//Restore
+			if(oldAlpha !== null) this._context.globalAlpha = oldAlpha;
+			if(curChild.compositeMode != Arstider.defaultComposition) this._context.globalCompositeOperation = Arstider.defaultComposition;
+			if(isComplex) this._context.restore();
+			else{
+				if(curChild.shadowColor != Arstider.defaultColor){
+					this._context.shadowColor = oldShadowColor;
+					this._context.shadowBlur = oldShadowBlur;
+					this._context.shadowOffsetX = oldShadowOffsetX;
+					this._context.shadowOffsetY = oldShadowOffsetY;
+				}
+			}
+		};
 			
+		/**
+		 * Recursively draw elements from the rootChild on the desired context
+		 * @param {Engine} eng Engine reference
+		 * @param {Object} rootChild Root element to start render process at
+		 * @param {Object} pre Pre-render operation
+		 * @param {Object} post Post-render operation
+		 * @param {Object} showBoxes Whether or not to show the debug outlines
+		 */
+		Renderer.prototype.draw = function(eng, rootChild, pre, post, showBoxes){
+			this._context = this._context || eng.context;
+			this._currentX = 0;
+			this._currentY = 0;
+			this._preRender = pre;
+			this._postRender = post;
+			this._showBoxes = showBoxes;
 			
-			//Module construction
-			function Renderer(){}
+			this.renderChild(rootChild);
+			Performance.frames++;
+		};
 			
-			Renderer.prototype.draw = function(eng, rootChild, pre, post, showBoxes){
-				engRef = eng;
-				renderChild(rootChild,0,0,eng.context,pre,post, showBoxes);
-				Performance.frames++;
-			};
-			
-			singleton = new Renderer();
-			return singleton;
-			
-		});
+		singleton = new Renderer();
+		return singleton;
+	});
 })();

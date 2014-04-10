@@ -298,6 +298,12 @@
 			this.draw = Arstider.emptyFunction;
 			
 			/**
+			 * Whether or not to display de debug outline
+			 * @type {boolean}
+			 */
+			this.showOutline = false;
+			
+			/**
 			 * Whenever the element is hovered
 			 * @private
 			 * @type {boolean}

@@ -155,6 +155,27 @@ Arstider.emptyImgSrc = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACAD
 Arstider._fullFPS = 1000/60;
 
 /**
+ * Degrees-to-radians constant
+ * @const
+ * @type {number}
+ */
+Arstider.degToRad = Math.PI/180;
+
+/**
+ * Default composition mode constant
+ * @const
+ * @type {string}
+ */
+Arstider.defaultComposition = "source-over";
+
+/**
+ * Default color constant
+ * @const
+ * @type {string}
+ */
+Arstider.defaultColor = "transparent";
+
+/**
  * Utility function to apply a method through a desired scope
  * @const
  * @param {function(this:selfObj, [?])} fn Method to call
@@ -320,10 +341,17 @@ Arstider.cancelAnimFrame = (function(){
 		Arstider.fixedCancelAnimationFrame;
 })();
 
-
+/**
+ * Global blobURL cache
+ * @private
+ * @type {Object}
+ */
 Arstider.blobCache = {empty:{url:Arstider.emptyImgSrc, size:0}};
 
-
+/**
+ * Clears cached blobURLs
+ * @type {function}
+ */
 Arstider.clearBlobUrls = function(){
 	for(var i in Arstider.blobCache){
 		try{
@@ -337,6 +365,11 @@ Arstider.clearBlobUrls = function(){
 	Arstider.blobCache = {empty:{url:Arstider.emptyImgSrc, size:0}};
 };
 
+/**
+ * Returns the total size of cached blobs
+ * @type {function}
+ * @return {number} memory (in MB)
+ */
 Arstider.getTotalBlobSize = function(){
 	var 
 		i, 
@@ -351,7 +384,7 @@ Arstider.getTotalBlobSize = function(){
 };
 
 /**
- * Image Transformations
+ * Image Transformations, requiring Buffer
  */
 require(["Arstider/Buffer"], function(Buffer){
 	
@@ -378,32 +411,6 @@ require(["Arstider/Buffer"], function(Buffer){
 		else{
 			if(Arstider.verbose > 0) console.warn("Arstider.setRenderStyle: Cannot apply mode '",mode,"'");
 		}
-	};
-	
-	Arstider.debugDraw = function(targetBuffer){
-		var 
-			ctx = null,
-			win = document.getElementById("debugWindow")
-		;
-			
-		if(!win){
-			win = document.createElement('canvas');
-			win.width=300;
-			win.height=300;
-			win.id = "debugWindow";
-			win.style.height = "300px";
-			win.style.width = "300px";
-			win.style.position = "absolute";
-			win.style.display = "block";
-			win.style.backgroundColor = "green";
-			win.style.bottom = "0px";
-			win.style.right = "0px";
-			win.style.zIndex = 999;
-			document.body.appendChild(win);
-		}
-		ctx = win.getContext('2d');
-		ctx.clearRect(0,0,300,300);
-		ctx.drawImage(Buffer.get(targetBuffer), 0,0,300,300);
 	};
 	
 	Arstider.getBuffers = function(){
@@ -577,8 +584,19 @@ require(["Arstider/Buffer"], function(Buffer){
 	};
 });
 
+/**
+ * Debug methods, requiring Engine and Events
+ */
 require(["Arstider/Engine", "Arstider/Events"], function(Engine, Events){
 	
+	/**
+	 * Returns an element or a list of elements that match the search criterias for inspection
+	 * @type {function}
+	 * @const
+	 * @param {string|null} name The name of the element to search for. If none is provided, returns all elements
+	 * @param {Object|null} t The target to perform the seach in. If none is provided, seaches in the current screen
+	 * @return {Array|Object} The element(s) that fit the search query
+	 */
 	Arstider.findElement = function(name, t){
 		if(!Engine.debug) return;
 		
@@ -590,7 +608,7 @@ require(["Arstider/Engine", "Arstider/Events"], function(Engine, Events){
 			
 		if(t && t.children){
 			for(i; i<t.children.length; i++){
-				if(!name || name === t.children[i]){
+				if(!name || name === t.children[i].name){
 					ret.push(t.children[i]);
 				}
 				if(t.children[i].children){
@@ -603,12 +621,59 @@ require(["Arstider/Engine", "Arstider/Events"], function(Engine, Events){
 		return ret;
 	};
 	
-	Arstider.debugBroadcast = function(name, param){
+	/**
+	 * Draws the desired data object into a separate buffer for inspection
+	 * @type {function}
+	 * @const
+	 * @param {Image|HTMLCanvasElement} targetData The data to draw on the debug canvas
+	 */
+	Arstider.debugDraw = function(targetData){
 		if(!Engine.debug) return;
 		
-		Events.broadcast(name, param);
+		var 
+			ctx = null,
+			win = document.getElementById("debugWindow")
+		;
+			
+		if(!win){
+			win = document.createElement('canvas');
+			win.width=300;
+			win.height=300;
+			win.id = "debugWindow";
+			win.style.height = "300px";
+			win.style.width = "300px";
+			win.style.position = "absolute";
+			win.style.display = "block";
+			win.style.backgroundColor = "green";
+			win.style.bottom = "0px";
+			win.style.right = "0px";
+			win.style.zIndex = 999;
+			document.body.appendChild(win);
+		}
+		ctx = win.getContext('2d');
+		ctx.clearRect(0,0,300,300);
+		ctx.drawImage(targetData, 0,0,300,300);
 	};
 	
+	/**
+	 * Broadcasts an event for debugging
+	 * @type {function}
+	 * @const
+	 * @param {string} name The name of the event to call
+	 * @param {?} param The parameters to provide the broadcast
+	 * @param {?} target The target for broadcast
+	 */
+	Arstider.debugBroadcast = function(name, param, target){
+		if(!Engine.debug) return;
+		
+		Events.broadcast(name, param, target);
+	};
+	
+	/**
+	 * Logs the map of event tables
+	 * @type {function}
+	 * @const
+	 */
 	Arstider.debugEventMap = function(){
 		if(!Engine.debug) return;
 		

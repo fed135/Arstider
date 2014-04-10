@@ -3,7 +3,6 @@ define("Arstider/core/Profiler", [], function(){
 	function styleAsButton(element){
 		element.style.position = "relative";
 		element.style.display = "block";
-		//element.style.width = "16px";
 		element.style.height = "16px";
 		element.style.padding = "1px";
 		element.style.paddingRight = "2px";
@@ -41,8 +40,6 @@ define("Arstider/core/Profiler", [], function(){
 	profiler.style.position = "fixed";
 	profiler.style.display = "block";
 	profiler.style.width = "100%";
-	//profiler.style.height = "24px";
-	//profiler.style.overflow = "hidden";
 	profiler.style.left = "0px";
 	profiler.style.zIndex = "9001";
 	profiler.style.bottom = "0px";
