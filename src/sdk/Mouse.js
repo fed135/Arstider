@@ -315,7 +315,7 @@
 			
 			Mouse.prototype.handleMouseDown = function(e){
 				var rightclick;
-				var e = window.event;
+				var e = e || window.event;
 				if (e.which) rightclick = (e.which == 3);
     			else if (e.button) rightclick = (e.button == 2);
     			
@@ -339,7 +339,7 @@
 				
 				singleton._input = true;
 				var rightclick;
-				var e = window.event;
+				var e = e || window.event;
 				if (e.which) rightclick = (e.which == 3);
     			else if (e.button) rightclick = (e.button == 2);
     			

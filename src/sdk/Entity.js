@@ -263,11 +263,25 @@
 			this.onleave = Arstider.checkIn(props.onleave, Arstider.emptyFunction);
 			
 			/**
-			 * User-defined behavior when element is pressed then released
+			 * User-defined behavior when element is pressed, then released
 			 * @override
 			 * @type {function(this:Entity)}
 			 */
 			this.onclick = Arstider.checkIn(props.onclick, Arstider.emptyFunction);
+			
+			/**
+			 * User-defined behavior when element is pressed with the right mouse button, then released
+			 * @override
+			 * @type {function(this:Entity)}
+			 */
+			this.onrightclick = Arstider.checkIn(props.onrightclick, Arstider.emptyFunction);
+			
+			/**
+			 * User-defined behavior when element is pressed with the right mouse button, then released
+			 * @override
+			 * @type {function(this:Entity)}
+			 */
+			this.ondoubleclick = Arstider.checkIn(props.ondoubleclick, Arstider.emptyFunction);
 			
 			/**
 			 * User-defined behavior when element data has finished loading
@@ -305,6 +319,26 @@
 			this._preclick = false;
 			
 			/**
+			 * Whenever the element is pressed with the right mouse button
+			 * @private
+			 * @type {boolean}
+			 */
+			this._rightPressed = false;
+			
+			/**
+			 * Double-click delay saver
+			 * @private
+			 * @type {number}
+			 */
+			this._doubleClickCheck = 0;
+			
+			/**
+			 * Double-click max delay
+			 * @type {number}
+			 */
+			this._doubleClickDelay = 250;
+			
+			/**
 			 * Defines horizontal docking option
 			 * @private
 			 * @type {string|number|null}
@@ -338,6 +372,34 @@
 			 * @type {boolean}
 			 */
 			this._skipUpdateBubble = false;
+			
+			/**
+			 * Flag to drag element
+			 * @private
+			 * @type {boolean} 
+			 */
+			this._dragged = false;
+			
+			/**
+			 * Flag to bound dragging to parent
+			 * @private
+			 * @type {boolean}
+			 */
+			this._boundDrag = false;
+			
+			/**
+			 * Drag x offset
+			 * @private
+			 * @type {number}
+			 */
+			this._dragOffsetX = 0;
+			
+			/**
+			 * Drag y offset
+			 * @private
+			 * @type {number}
+			 */
+			this._dragOffsetY = 0;
 		};
 		
 		/**
@@ -351,6 +413,7 @@
 		 * Private logic when element is hovered
 		 * @this {Entity}
 		 * @protected
+		 * @type {function(this:Entity)}
 		 */
 		Entity.prototype._onhover = function(){
 			this._hovered = true;
@@ -362,10 +425,12 @@
 		 * Private logic when element is left
 		 * @this {Entity}
 		 * @protected
+		 * @type {function(this:Entity)}
 		 */
 		Entity.prototype._onleave = function(){
 			this._hovered = false;
 			this._preclick = false;
+			this._rightPressed = false;
 			
 			this.onleave();
 		};
@@ -374,6 +439,7 @@
 		 * Private logic when element is pressed
 		 * @this {Entity}
 		 * @protected
+		 * @type {function(this:Entity)}
 		 */
 		Entity.prototype._onpress = function(){
 			this._pressed = true;
@@ -385,20 +451,40 @@
 		 * Private logic when element is released
 		 * @this {Entity}
 		 * @protected
+		 * @type {function(this:Entity)}
 		 */
 		Entity.prototype._onrelease = function(){
 			this._pressed = false;
 			
-			if(this._preclick) this.onclick();
+			var time = Arstider.timestamp();
+			
+			if(this._preclick){
+				if(time - this._doubleClickCheck < this._doubleClickDelay && this.ondoubleclick != Arstider.emptyFunction) this.ondoubleclick();
+				else this.onclick();
+				
+				this._doubleClickCheck = time;
+			}
 			this.onrelease();
 			
 			this._preclick = false;
 		};
 		
 		/**
+		 * Private logic when element is clicked with the right mouse button
+		 * @this {Entity}
+		 * @protected
+		 * @type {function(this:Entity)}
+		 */
+		Entity.prototype._onrightclick = function(){
+			this._rightPressed = false;
+			this.onrightclick();
+		};
+		
+		/**
 		 * Private logic with each frame updates (see core/Performance for draw vs update skips)
 		 * @this {Entity}
 		 * @protected
+		 * @type {function(this:Entity)}
 		 */
 		Entity.prototype._update = function(){
 			
@@ -435,6 +521,51 @@
 		};
 		
 		/**
+		 * Starts dragging the element, following the mouse
+		 * @this {Entity}
+		 * @param {boolean|null} snapToCenter Whether to snap the dragged object centered with the pointer.
+		 * @param {boolean|null} bound Whether to bound the dragging to the confines of the parent
+		 */
+		Entity.prototype.startDrag = function(snapToCenter, bound){
+			var thisRef = this;
+			
+			if(this.parent == null){
+				if(Arstider.verbose > 0) console.warn("Arstider.Entity.startDrag: cannot drag an element with no parent");
+			}
+			
+			require(["Arstider/Mouse"], function(Mouse){
+				var mouseX = Mouse.x();
+				var mouseY = Mouse.y();
+				
+				thisRef._dragged = true;
+				if(snapToCenter || mouseX == -1 || mouseY == -1){
+					thisRef._dragOffsetX = thisRef.width*0.5;
+					thisRef._dragOffsetY = thisRef.height*0.5;
+				}
+				else{
+					thisRef._dragOffsetX = mouseX - thisRef.global.x;
+					thisRef._dragOffsetY = mouseY - thisRef.global.y;
+				}
+				
+				thisRef._boundDrag = bound || false;
+			});
+		};
+		
+		/**
+		 * Stops dragging the element
+		 * @this {Entity}
+		 */
+		Entity.prototype.stopDrag = function(){
+			var thisRef = this;
+			setTimeout(function(){
+				thisRef._dragged = false;
+				thisRef._dragOffsetX = 0;
+				thisRef._dragOffsetY = 0;
+				thisRef._boundDrag = false;
+			},0);
+		};
+		
+		/**
 		 * Sets the value for horizontal and vertical docking of the Entity
 		 * @this {Entity}
 		 * @param {string|number|null} x The horizontal docking propriety.
@@ -468,7 +599,6 @@
 			else this._fillY = y || null;
 		};
 		
-		//Je t'aime aussi, Fred!
 		/**
 		 * Applies filters to element's data
 		 * @this {Entity}
@@ -483,7 +613,9 @@
 			
 			if(Arstider[filter]){
 				var ret = Arstider.saveToCanvas(this.name+"Filter_"+filter, this.data);
-				this.data = Arstider[filter].apply(window, Array.prototype.slice.call(arguments,1));
+				var params = (Array.prototype.slice.call(arguments,1)).concat();
+				params.unshift(ret);
+				this.data = Arstider[filter].apply(window, params);
 			}
 			else{
 				if(Arstider.verbose > 0) console.warn("Arstider.Entity.filter: cannot find filter ", filter);

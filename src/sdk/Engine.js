@@ -195,17 +195,23 @@
 			
 			if(target && target.children && target.children.length > 0){
 				for(i = target.children.length-1; i>=0; i--){
-					if(target && target.children && target.children[i] && !target.children[i].__skip && target.children[i].isTouched(mouseX, mouseY)){
-						if(Mouse.pressed){
-							if(!target.children[i]._pressed) target.children[i]._onpress(e);
+					if(target && target.children && target.children[i] && !target.children[i].__skip){
+						if(target.children[i].isTouched(mouseX, mouseY)){
+							if(Mouse.pressed){
+								if(!target.children[i]._pressed) target.children[i]._onpress(e);
+							}
+							else{
+								if(target.children[i]._pressed) target.children[i]._onrelease(e);
+							}
+							if(Mouse.rightPressed) target.children[i]._rightPressed = true;
+							else{
+								if(target.children[i]._rightPressed) target.children[i]._onrightclick(e);
+							}
 						}
-						else{
-							if(target.children[i]._pressed) target.children[i]._onrelease(e);
-						}
-					}
 					
-					//recursion
-					if(target && target.children && target.children[i] && !target.children[i].__skip && target.children[i].children && target.children[i].children.length > 0) singleton.applyTouch(e, target.children[i]);
+						//recursion
+						if(target && target.children && target.children[i] && !target.children[i].__skip && target.children[i].children && target.children[i].children.length > 0) singleton.applyTouch(e, target.children[i]);
+					}
 				}
 			}
 		};
@@ -267,10 +273,21 @@
 				if(e.isTouched(mouseX, mouseY)){
 					if(!e._hovered) e._onhover();
 					if(!Mouse.pressed) e._preclick = true;
-					//Je t'aime, Jess!
 				}
 				else{
 					if(e._hovered) e._onleave();
+				}
+				
+				if(e._dragged){
+					e.x = mouseX - e._dragOffsetX;
+					e.y = mouseY - e._dragOffsetY;
+						
+					if(e._boundDrag){
+						if(e.x < 0) e.x = 0;
+						if(e.y < 0) e.y = 0;
+						if(e.x > e.parent.width) e.x = e.parent.width;
+						if(e.y > e.parent.height) e.y = e.parent.height;
+					}
 				}
 			}, null, showFrames);
 				

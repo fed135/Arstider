@@ -41,6 +41,14 @@ define("Arstider/Screen", ["Arstider/DisplayObject", "Arstider/Viewport", "Arsti
 		this.width = Viewport.maxWidth;
 		this.height = Viewport.maxHeight;
 		this.scaleX = this.scaleY = Viewport.globalScale;
+		this.global.x = 0;
+		this.global.y = 0;
+		this.global.alpha = 1;
+		this.global.rotation = 0;
+		this.global.scaleX = this.global.scaleX = Viewport.globalScale;
+		this.global.width = Viewport.maxWidth;
+		this.global.height = Viewport.maxHeight;
+		
 		this.onStage = true;
 		
 		if(this.init) this.init();
