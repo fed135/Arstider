@@ -12,6 +12,9 @@
 			if(Arstider.blobCache[url] != undefined){
 				this.loadUrl(Arstider.blobCache[url].url);
 			}
+			else if(url.indexOf("data:image") != -1){
+				this.loadUrl(url);
+			}
 			else{
 				this.req = new Request({
 					url:url,
