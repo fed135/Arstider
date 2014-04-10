@@ -210,6 +210,7 @@
 				if(thisRef.height == 0) thisRef.height = this.height;
 				
 				if(success) success(this);
+				else thisRef.onload();
 			});
 		};
 		

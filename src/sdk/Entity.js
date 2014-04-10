@@ -263,6 +263,20 @@
 			this.onleave = Arstider.checkIn(props.onleave, Arstider.emptyFunction);
 			
 			/**
+			 * User-defined behavior when element is pressed then released
+			 * @override
+			 * @type {function(this:Entity)}
+			 */
+			this.onclick = Arstider.checkIn(props.onclick, Arstider.emptyFunction);
+			
+			/**
+			 * User-defined behavior when element data has finished loading
+			 * @override
+			 * @type {function(this:Entity)}
+			 */
+			this.onload = Arstider.checkIn(props.onload, Arstider.emptyFunction);
+			
+			/**
 			 * User defined behavior for synchronous logic before a draw
 			 * @override
 			 * @type {function(this:Entity)}
@@ -282,6 +296,13 @@
 			 * @type {boolean}
 			 */
 			this._pressed = false;
+			
+			/**
+			 * Whenever an element is entered with mouse up, used to determine click behavior
+			 * @private
+			 * @type {boolean}
+			 */
+			this._preclick = false;
 			
 			/**
 			 * Defines horizontal docking option
@@ -344,6 +365,7 @@
 		 */
 		Entity.prototype._onleave = function(){
 			this._hovered = false;
+			this._preclick = false;
 			
 			this.onleave();
 		};
@@ -367,7 +389,10 @@
 		Entity.prototype._onrelease = function(){
 			this._pressed = false;
 			
+			if(this._preclick) this.onclick();
 			this.onrelease();
+			
+			this._preclick = false;
 		};
 		
 		/**
@@ -441,6 +466,28 @@
 			if(y === "full") this._fillY = 1;
 			else if(y === "half") this._fillY = 0.5;
 			else this._fillY = y || null;
+		};
+		
+		//Je t'aime aussi, Fred!
+		/**
+		 * Applies filters to element's data
+		 * @this {Entity}
+		 * @param {string} filter Filter name
+		 * @param {?} args extra params
+		 */
+		Entity.prototype.filter = function(filter){
+			if(this.data == null){
+				if(Arstider.verbose > 0) console.warn("Arstider.Entity.filter: entity has no data");
+				return;
+			}
+			
+			if(Arstider[filter]){
+				var ret = Arstider.saveToCanvas(this.name+"Filter_"+filter, this.data);
+				this.data = Arstider[filter].apply(window, Array.prototype.slice.call(arguments,1));
+			}
+			else{
+				if(Arstider.verbose > 0) console.warn("Arstider.Entity.filter: cannot find filter ", filter);
+			}
 		};
 		
 		/**

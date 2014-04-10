@@ -266,6 +266,8 @@
 			Renderer.draw(singleton, singleton.currentScreen, function(e){
 				if(e.isTouched(mouseX, mouseY)){
 					if(!e._hovered) e._onhover();
+					if(!Mouse.pressed) e._preclick = true;
+					//Je t'aime, Jess!
 				}
 				else{
 					if(e._hovered) e._onleave();

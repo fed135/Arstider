@@ -22,6 +22,8 @@
 				this.frameWidth = Arstider.checkIn(props.width, 0);
 				this.frameHeight = Arstider.checkIn(props.height, 0);
 				
+				this.onload = Arstider.checkIn(props.onload, Arstider.emptyFunction);
+				
 				var url = Arstider.checkIn(Arstider.checkIn(props.data, props.bitmap), null);
 				
 				if(url) this.loadBitmap(url);
@@ -51,6 +53,8 @@
 					thisRef.data = this.data;
 					if(thisRef.width == 0) thisRef.width = this.width;
 					if(thisRef.height == 0) thisRef.height = this.height;
+					
+					thisRef.onload();
 				});
 			};
 			
