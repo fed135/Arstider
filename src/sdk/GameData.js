@@ -33,8 +33,8 @@
 				});
 			};
 			
-			GameData.prototype.setStorageKey = function(key){
-				Storage.key = key;
+			GameData.prototype.setStoragePrefix = function(key){
+				Storage.prefix = key;
 			};
 			
 			GameData.prototype.get = function(id, seekLocalStorage){

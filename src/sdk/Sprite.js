@@ -27,7 +27,7 @@
 	/**
 	 * AMD Closure
 	 */	
-		define( "Arstider/Sprite", ["Arstider/Buffer", "Arstider/Entity"], function (Buffer, Entity) {
+		define( "Arstider/Sprite", ["Arstider/Entity"], function (Entity) {
 		
 			/**
 			 * Creates an instance of Sprite.
@@ -59,13 +59,13 @@
 			 * @this {Sprite}
 			 */
 			Sprite.prototype.killBuffer = function(){
+				if(this.data.kill) this.data.kill();
+				
 				this.data = null;
-				this.dataCtx = null;
+				
 				if(this.stepTimer != null) clearTimeout(this.stepTimer);
 				
-				Buffer.kill(this.name);
-				
-				if(this.currentAnim && this.currentAnim.sheet.url) Buffer.kill(this.currentAnim.sheet.url);
+				if(this.currentAnim && this.currentAnim.sheet.url && Arstider.bufferPool[this.currentAnim.sheet.url]) Arstider.bufferPool[this.currentAnim.sheet.url].kill();
 			};
 			
 			

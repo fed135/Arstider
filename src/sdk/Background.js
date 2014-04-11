@@ -10,12 +10,14 @@
  */
 ;(function(){
 
-	/*
-	 * Singleton static
-	 * @private
-	 * @type {Background|null}
-	 */
-	var singleton = null;
+	var 
+		/**
+		 * Singleton static
+		 * @private
+		 * @type {Background|null}
+		 */
+		singleton = null
+	;
 	
 	/*
 	 * Defines the Background module

@@ -1,7 +1,14 @@
+/**
+ * Renderrer
+ * 
+ * @version 1.1.2
+ * @author frederic charette <fredericcharette@gmail.com>
+ */
+
 ;(function(){
 	
 	var
-		/*
+		/**
 		 * Singleton static
 	 	 * @private
 	 	 * @type {Renderer|null}
@@ -12,7 +19,7 @@
 	 /**
 	 * Defines performance module
 	 */	
-	define( "Arstider/core/Renderer", ["Arstider/Sprite", "Arstider/DisplayObject", "Arstider/TextField", "Arstider/core/Performance"], function (Sprite, DisplayObject, TextField, Performance){
+	define( "Arstider/core/Renderer", ["Arstider/Sprite", "Arstider/DisplayObject", "Arstider/TextField", "Arstider/core/Performance", "Arstider/Buffer"], function (Sprite, DisplayObject, TextField, Performance, Buffer){
 			
 		if(singleton != null) return singleton;
 			
@@ -173,10 +180,10 @@
 				else{
 					//instanceof is pretty fast,  we want to leverage data offset rather than having an extra buffer for sprites.
 					if(curChild instanceof Sprite || curChild.largeData === true){
-						this._context.drawImage(curChild.data, curChild.xOffset, curChild.yOffset, curChild.dataWidth, curChild.dataHeight, Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
+						this._context.drawImage((curChild.data instanceof Buffer)?curChild.data.tag:curChild.data, curChild.xOffset, curChild.yOffset, curChild.dataWidth, curChild.dataHeight, Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
 					}
 					else{
-						this._context.drawImage(curChild.data, Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
+						this._context.drawImage((curChild.data instanceof Buffer)?curChild.data.tag:curChild.data, Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
 					}
 				}
 			}

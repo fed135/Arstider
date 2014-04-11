@@ -35,11 +35,10 @@
 	 * AMD Closure
 	 */	
 	define( "Arstider/Debugger", [
-		"Arstider/Buffer", 
 		"Arstider/core/Performance",
 		"Arstider/Keyboard",
 		"Arstider/core/Profiler"
-		], function (Buffer, Performance, Keyboard, Profiler){
+		], function (Performance, Keyboard, Profiler){
 
 		function Debugger(eng){
 			this.engine = eng;
@@ -124,10 +123,10 @@
 						
 						var sizeColor;
 						var size;
-						var buffers = Buffer._pool;
+						var buffers = Arstider.bufferPool;
 						var bar;
 						for(var i in buffers){
-							size = Buffer.getMemInfo(buffers[i]);
+							size = buffers[i].getMemory() >> 20;
 							bar = this.createBar(i, size, gradeColor(0.25, 12, size, true));
 							this.profiler.detailsTab.appendChild(bar);
 						}
@@ -142,7 +141,7 @@
  				                           "<span style='color:#FFFF99;'>FPS:",Performance.frames ,"</span>",
  				                           "&nbsp;|&nbsp;",
  				                           //Buffer Memory
- 				                           "<span style='color:#99FF99;'>Memory:",Buffer.getMemInfo(),"</span>",
+ 				                           "<span style='color:#99FF99;'>Memory:",Arstider.getMemory(),"</span>",
  				                           "&nbsp;|&nbsp;",
  				                           //Drawn Objects
  				                           "<span style='color:#FF9999;'>Draws:", Math.ceil(Performance.draws/Performance.frames) ,"/ Entities:",Math.ceil(Performance.elements/Performance.frames),"</span>",
@@ -151,7 +150,7 @@
  				                           "<span style='color:#9999FF;'>Transformations:",Math.ceil(Performance.transforms/Performance.frames),"</span>",
  				                           "&nbsp;|&nbsp;",
  				                           //Num Buffers
- 				                           "<span style='color:#FFFFFF;'>Buffers:",Buffer.count(),"</span>",
+ 				                           "<span style='color:#FFFFFF;'>Buffers:",Arstider.countBuffers(),"</span>",
  				                           "&nbsp;|&nbsp;",
  				                           //Skips
  				                           "<span style='color:#FF0000;'>D-",Performance.skippedDraw,"</span>"].join("");

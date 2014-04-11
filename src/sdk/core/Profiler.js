@@ -1,5 +1,19 @@
+/**
+ * Profiler
+ * TODO: Make it prettier and cleaner
+ * 
+ * @version 1.1
+ * @author frederic charette <fredericcharette@gmail.com>
+ */
+
+/**
+ * Defines the profiler module
+ */
 define("Arstider/core/Profiler", [], function(){
 	
+	/**
+	 * Applies the styles of a profiler button to an element
+	 */
 	function styleAsButton(element){
 		element.style.position = "relative";
 		element.style.display = "block";

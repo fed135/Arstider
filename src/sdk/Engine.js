@@ -59,9 +59,13 @@
 				Arstider.verbose = 0;
 			}
 				
-			this.canvas = Buffer.create("Arstider_main");
-			this.canvas.id = tag+"_canvas";
-			this.context = this.canvas.context2D();
+			this.canvas = new Buffer({
+				name:"Arstider_main",
+				id:tag+"_canvas"
+			});
+			
+			this.context = this.canvas.context;
+			this.canvas = this.canvas.tag;
 			
 			Performance.updateLogic = this.stepLogic;
 			
@@ -203,9 +207,12 @@
 							else{
 								if(target.children[i]._pressed) target.children[i]._onrelease(e);
 							}
-							if(Mouse.rightPressed) target.children[i]._rightPressed = true;
-							else{
-								if(target.children[i]._rightPressed) target.children[i]._onrightclick(e);
+							
+							if(target && target.children && target.children[i] && !target.children[i].__skip){
+								if(Mouse.rightPressed) target.children[i]._rightPressed = true;
+								else{
+									if(target.children[i]._rightPressed) target.children[i]._onrightclick(e);
+								}
 							}
 						}
 					

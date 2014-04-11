@@ -11,7 +11,7 @@
 ;(function(){
 	
 	var 
-		/*
+		/**
 		 * Singleton static
 	 	 * @private
 	 	 * @type {Performance|null}

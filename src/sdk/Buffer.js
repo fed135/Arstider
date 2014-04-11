@@ -1,66 +1,116 @@
+/**
+ * Buffer
+ * 
+ * @version 1.1
+ * @author frederic charette <fredericcharette@gmail.com>
+ */
+
 ;(function(){
-	var 
-		singleton = null, 
-		anonymousBuffers = 0,
-		
-		SHARP = "sharp", 
-		AUTO = "auto"
+	
+	var
+		/**
+		 * Static Anonymous buffer count
+		 * @private
+		 * @type {number}
+		 */
+		anonymousBuffers = 0
 	;
 	
 	/**
-	 * Pixel constructor
-	 * @constructor
-	 * @param {number} x The x position in the Buffer
-	 * @param {number} y The y position in the Buffer
-	 * @param {HTMLCanvasElement} canvas The Buffer reference
-	 * @param {number} r The red value
-	 * @param {number} g The green value
-	 * @param {number} b The blue value
-	 * @param {number} a The alpha value
+	 * Defines the Buffer module
 	 */
-	function Pixel(x,y,canvas,r,g,b,a){
-		this.x = x;
-		this.y = y;
-		this.canvas = canvas;
-		this.r = r;
-		this.g = g;
-		this.b = b;
-		this.a = a;
-	}
-	
-	/**
-	 * Creates the buffer tag and applies the current manager settings.
-	 * Also takes care of adding the context2D method 
-	 *
-	 * @private
-	 * @param {String} name The name that will be associated with the buffer in the manager's list
-	 * @param {modes.SHARP | modes.AUTO} renderMode The render mode for the canvas taken from the manager setting _renderMode
-	 * @returns {HTMLCanvasElement} The new buffer
-	 */
-	function createBuffer(name, renderMode, width, height){
-		var buffer = document.createElement("canvas");
-		buffer.width = width;
-		buffer.height = height;
-		buffer.name = name;
-		buffer._renderMode = renderMode;
+	define("Arstider/Buffer", [], function(){
 		
-		Arstider.setRenderStyle(buffer, renderMode);
+		/**
+		 * Buffer constructor
+		 * @constructor
+		 * @param {Object} props The proprieties of the Buffer
+		 */
+		function Buffer(props){
+			this.tag = document.createElement("canvas");
+			this.context = this.tag.getContext("2d");
+			
+			this.name = props.name || ("buffer"+(anonymousBuffers++));
+			this.tag.id = props.id || this.name;
+			this.renderStyle = Arstider.checkIn(props.renderStyle, Arstider.defaultRenderStyle); 
+			this.width = this.tag.width = Arstider.checkIn(props.width, 1);
+			this.height = this.tag.height = Arstider.checkIn(props.height, 1);
+			
+			this._updateRenderStyle();
+			
+			if(Arstider.bufferPool[this.name] != undefined){
+				if(Arstider.verbose > 1) console.warn("Arstider.Buffer: buffer ", this.name, " already exists, it will be ovewritten");
+				Arstider.bufferPool[this.name].kill();
+			}
+			
+			Arstider.bufferPool[this.name] = this;
+		}
 		
-		//Encouraged method to get context
-		buffer.context2D = function(force){
-			if(singleton._ctxPool[name] != undefined && !force){
-				return singleton._ctxPool[name];
-			}
-			else{
-				singleton._ctxPool[name] = buffer.getContext('2d');
-				setImageSmoothing(singleton._ctxPool[name], buffer._renderMode == AUTO);
-				return singleton._ctxPool[name];
-			}
+		/**
+		 * Destroys the buffer from memory
+		 * @type {function(this:Buffer)}
+		 */
+		Buffer.prototype.kill = function(){
+			this.width = 0;
+			this.height = 0;
+			this.tag = null;
 		};
 		
-		buffer.getPixel = function(x, y){
+		/**
+		 * Returns the memory footprint of the buffer (approx.)
+		 * @type {function(this:Buffer)}
+		 * @return {number} The memory footprint of the buffer
+		 */
+		Buffer.prototype.getMemory = function(){
+			return (this.height * this.width) << 3;
+		};
+		
+		/**
+		 * Updates the size of a buffer
+		 * @type {function(this:Buffer)}
+		 * @param {number} width The desired width to apply
+		 * @param {number} height The desired height to apply
+		 */
+		Buffer.prototype.setSize = function(width, height){
+			this.width = this.tag.width = width;
+			this.height = this.tag.height = height;
+			
+			this._updateRenderStyle();
+		};
+		
+		/**
+		 * Updates the Buffer's rendering mode
+		 * @private
+		 * @type {function(this:Buffer)}
+		 * @param {string|null} style Optional rendering style change
+		 */
+		Buffer.prototype._updateRenderStyle = function(style){
+			if(style) this.renderStyle = style;
+			
+			Arstider.setImageSmoothing(this.context, this.renderStyle == "auto");
+			Arstider.setRenderStyle(this.tag, this.renderStyle);
+		};
+		
+		/**
+		 * Returns a blobURL for the canvas data
+		 * @type {function(this:Buffer)}
+		 * @param {string|null} type Optionnal toDataUrl parameter
+		 * @return {string} The blobUrl
+		 */
+		Buffer.prototype.getURL = function(type){
+			return this.tag.toDataURL(type || "image/png");
+		};
+		
+		/**
+		 * Returns a Pixel object for the desired data
+		 * @type {function(this:Buffer)}
+		 * @param {number} x The x position to look at in the data 
+		 * @param {number} y The y position to look at in the data
+		 * @return {Pixel} The pixel object for the inputed location
+		 */
+		Buffer.prototype.getPixelAt = function(x, y){
 			var 
-				imgd = buffer.context2D().getImageData(x, y, 1, 1),
+				imgd = this.context.getImageData(x, y, 1, 1),
 				pix = imgd.data,
 				r,g,b,a
 			;
@@ -70,21 +120,35 @@
 			b = pix[2]; // blue
 			a = pix[3]; // alpha
 			
-			return new Pixel(x, y, buffer, r, g, b, a);
+			return new Pixel(x, y, this.tag, r, g, b, a);
 		};
 		
-		buffer.getAlpha = function(x, y){
+		/**
+		 * Returns the alpha value for the desired data
+		 * @type {function(this:Buffer)}
+		 * @param {number} x The x position to look at in the data 
+		 * @param {number} y The y position to look at in the data
+		 * @return {number} The pixel alpha for the inputed location
+		 */
+		Buffer.prototype.getAlphaAt = function(x, y){
 			var 
-				imgd = buffer.context2D().getImageData(x, y, 1, 1),
+				imgd = this.context.getImageData(x, y, 1, 1),
 				pix = imgd.data
 			;
 			
 			return pix[3]; // alpha
 		};
 		
-		buffer.setPixel = function(x, y, pixel){
+		/**
+		 * Changes a pixel in the data
+		 * @type {function(this:Buffer)}
+		 * @param {number} x The x position to look at in the data 
+		 * @param {number} y The y position to look at in the data
+		 * @param {Pixel} The pixel object to place at the inputed location
+		 */
+		Buffer.prototype.setPixelAt = function(x, y, pixel){
 			var 
-				imgd = buffer.context2D().getImageData(x, y, 1, 1),
+				imgd = this.context.getImageData(x, y, 1, 1),
 				pix = imgd.data
 			;
 			
@@ -93,177 +157,9 @@
 			pix[2] = pixel.b; // blue
 			pix[3] = pixel.a; // alpha
 			
-			buffer.context2D().putImageData(imgd, x, y);
+			this.context.putImageData(imgd, x, y);
 		};
 		
-		return buffer;
-	}
-	
-	/**
-	 * Sets image smoothing for canvas contexts 
-	 *
-	 * @private
-	 * @param {2DContext} ctx The context to switch the smoothing mode on
-	 * @param {Boolean} val Image smoothing activated
-	 */
-	function setImageSmoothing(ctx, val){
-		var attr = 'imageSmoothingEnabled', uc = attr.charAt(0).toUpperCase() + attr.substr(1);
-		ctx[attr] = ctx['ms'+uc] = ctx['moz'+uc] = ctx['webkit'+uc] = ctx['o'+uc] = val;
-	}
-	
-	define("Arstider/Buffer", [], function(){
-			
-		if(singleton != null) return singleton;
-			
-		/**
-		 * Creates an instance of Buffer manager (singleton).
-		 *
-		 * @constructor
-		 * @this {Buffer}
-		 */
-		function Buffer(){
-			this._renderMode = AUTO;
-			this._pool = {};
-			this._ctxPool = {};
-		}
-			
-		/**
-		 * Returns the number of buffers
-		 *
-		 * @this {Buffer}
-		 * @returns {int} The number of buffers
-		 */
-		Buffer.prototype.count = function(){
-			var ret = 0;
-			for(var b in this._pool){
-				if(this._pool[b] && this._pool[b].context2D){
-					ret++;
-				}
-			}
-			return ret;
-		};
-			
-		/**
-		 * Sets the rendering mode for one or all buffers 
-		 *
-		 * @this {Buffer}
-		 * @param {String} target Can target a specific buffer to change the mode on | {mode.SHARP | mode.AUTO} target -> type Type of rendering, effects all buffers if only type was specified 
-		 */
-		Buffer.prototype.setRenderMode = function(target, type){
-			
-			if(type == undefined){
-				//Apply to all
-				type = target;
-					
-				target = this._pool;
-				//Can safely remove contexts without impacting the buffer content
-				//They will get regenerated on demand
-				if(Arstider.verbose > 1) console.warn("Arstider.Buffer: buffer mode is now ", type);
-				this._renderMode = type; //Only applies to new buffers
-					
-				for(var c in this._ctxPool){
-					setImageSmoothing(this._ctxPool[c], (type === 1));
-				}	
-					
-				for(var b in target){
-					this.setRenderMode(this._pool[b], type);
-				}
-			}
-			else{
-				
-				target._renderMode = type;
-				if(this._ctxPool[target.name]){
-					setImageSmoothing(this._ctxPool[target.name], (type === 1));
-				}
-				Arstider.setRenderStyle(target, type);
-			}
-		};
-			
-		/**
-		 * Returns the desired buffer or the whole list
-		 *
-		 * @this {Buffer}
-		 * @param {String} name Optional. The name of the desired buffer, or leave empty for all buffers
-		 * @returns {HTMLCanvasElement} The selected buffer(s)
-		 */
-		Buffer.prototype.get = function(name){
-			if(name && this._pool[name] != undefined){
-				return this._pool[name];
-			}
-			else if(name && this._pool[name] == undefined){
-				if(Arstider.verbose > 1) console.warn("Arstider.Buffer: buffer ", name, " not found");
-				return null;
-			}
-			else if(!name){
-				return this._pool;
-			}
-			return null;
-		};
-			
-		/**
-		 * Creates a buffer with the manager's configuration and adds it to the list.
-		 *
-		 * @this {Buffer}
-		 * @param {String} name Optional. The name of the desired buffer.
-		 * @returns {HTMLCanvasElement} The newly created buffer.
-		 */
-		Buffer.prototype.create = function(name, w, h){
-			if(name && this._pool[name] != undefined){
-				this._pool[name]._renderMode = this._renderMode;
-				Arstider.setRenderStyle(this._pool[name]);
-				this._pool[name].context2D().clearRect(0,0,this._pool[name].width,this._pool[name].height);
-				return this._pool[name];
-			}
-			else if(name && this._pool[name] == undefined){
-				this._pool[name] = createBuffer(name, this._renderMode, w || 1, h || 1);
-				return this._pool[name];
-			}
-			anonymousBuffers++;
-			this._pool["buffer"+anonymousBuffers] = createBuffer("buffer"+anonymousBuffers, this._renderMode, w || 1, h || 1);
-			return this._pool["buffer"+anonymousBuffers];
-		};
-		
-		/**
-		 * Kills a buffer along with it's Context
-		 *
-		 * @this {Buffer}
-		 * @param {String} name The name of the desired buffer.
-		 */
-		Buffer.prototype.kill = function(name){
-			if(Arstider.verbose > 2) console.warn("Arstider.Buffer: destroying buffer ", name);
-			if(name && this._pool[name] != undefined){
-				delete this._pool[name];
-			}
-			if(name && this._ctxPool[name] != undefined){
-				delete this._ctxPool[name];
-			}
-		};
-			
-		/**
-		 * Gets the approximate memory space occupied by the list of Buffers
-		 *
-		 * @this {Buffer}
-		 * @returns {String} The mem print with unit.
-		 */
-		Buffer.prototype.getMemInfo = function(target){
-			var mem = 0;
-			var hexSize = 8;
-			
-			if(!target){
-				for(var i  in this._pool){
-					if(this._pool[i] && this._pool[i].context2D){
-						mem += this.getMemInfo(this._pool[i]);
-					}
-				}
-			}
-			else{
-				target.memInfo = (((target.height * target.width * hexSize) >> 10) / 1024);
-				mem=target.memInfo;
-			}
-			return mem + Arstider.getTotalBlobSize();
-		};
-			
-		singleton = new Buffer();
-		return singleton;
+		return Buffer;
 	});
 })();

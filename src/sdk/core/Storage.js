@@ -1,27 +1,60 @@
+/**
+ * Storage
+ * 
+ * @version 1.1
+ * @author frederic charette <fredericcharette@gmail.com>
+ */
+
 ;(function(){
 	
-	var singleton = null;
-			
-	function isSafekey(key, safes){
-		for(var i = 0; i<safes.length; i++){
-			if(safes[i] == key) return true;
-		}
-		return false;
-	}
+	var 
+		/**
+		 * Singleton static
+	 	 * @private
+	 	 * @type {Storage|null}
+	 	 */
+		singleton = null
+	;
 	
+	/**
+	 * Defines Storage module
+	 */
 	define("Arstider/core/Storage", [], function(){
 		
 		if(singleton != null) return singleton;
 		
 		function Storage(){
-			this.enabled = false;
-			this.key = "";
-			this.safeKeys = ["sfxVol", "musicVol"];
 			
-			this.test();
+			/**
+			 * Tells if the localStorage is available and functional
+			 * @type {boolean}
+			 */
+			this.enabled = false;
+			
+			/**
+			 * Storage key prefix. Affects all saves, except safeKeys
+			 * @type {string}
+			 */
+			this.prefix = "";
+			
+			/**
+			 * Safe keys list. Unaffected by Storage.reset and not prefixed.
+			 * @private
+			 * @type {Array}
+			 */
+			this._safeKeys = [];
+			
+			//Check localStorage availability
+			this._test();
 		}
 		
-		Storage.prototype.test = function(){
+		/**
+		 * Checks for localStorage availability
+		 * @private
+		 * @type {function(this:Storage)}
+		 * @return {boolean} Whether it is available or not
+		 */
+		Storage.prototype._test = function(){
 			try{
 				localStorage.test = "a";
 				localStorage.removeItem("test");
@@ -29,57 +62,89 @@
 			} catch(e){
 				this.enabled = false;
 				if(Arstider.verbose > 0) console.warn("Arstider.Storage.test: localStorage is unavailable");
+				return false;
 			}
+			return true;
 		};
-						
+		
+		/**
+		 * Defines the list un-deletable keys 
+		 * @type {function(this:Storage)}
+		 * @param {Array} keys The list of keys to use as safeKeys
+		 */
+		Storage.prototype.setSafeKeys = function(keys){
+			this._safeKeys = keys;
+		};
+		
+		/**
+		 * Returns an element from the localStorage
+		 * @type {function(this:Storage)}
+		 * @param {string} key The storage item to return
+		 * @return {?} Storage item
+		 */
 		Storage.prototype.get = function(key){
 			if(this.enabled === false){
 				if(Arstider.verbose > 1) console.warn("Arstider.Storage.get: localStorage is unavailable");
 				return null;
 			} 
 			
-			if(localStorage[this.key+key] == undefined){
-				if(isSafekey(key, this.safeKeys)){
+			if(localStorage[this.prefix+key] == undefined){
+				if(this._safeKeys.indexOf(key) != -1){
 					if(localStorage[key] == undefined){
 						if(Arstider.verbose > 1) console.warn("Arstider.Storage.get: ", key, " not found");
 						return null;
 					}
 					else return localStorage[key];
 				}
-				if(Arstider.verbose > 1) console.warn("Arstider.Storage.get: ", this.key+key, " not found");
+				if(Arstider.verbose > 1) console.warn("Arstider.Storage.get: ", this.prefix+key, " not found");
 				return null;
 			}
-			else return localStorage[this.key+key];
+			else return localStorage[this.prefix+key];
 		};
-					
+		
+		/**
+		 * Saves an entry in the localStorage
+		 * @type {function(this:Storage)}
+		 * @param {string} key The name of the Storage key
+		 * @param {?} value The value to store
+		 * @return {boolean} Whether the operation was successful or not
+		 */	
 		Storage.prototype.set = function(key, value){
 			if(this.enabled === false){
 				if(Arstider.verbose > 1) console.warn("Arstider.Storage.set: localStorage is unavailable");
-				return null;
+				return false;
 			}
 			
-			if(isSafekey(key, this.safeKeys)){
+			if(this._safeKeys.indexOf(key) != -1){
 				localStorage[key]=value;
 				if(Arstider.verbose > 2) console.warn("Arstider.Storage.set: setting safeKey ",key);
 			}
-			else localStorage[this.key+key]=value;
+			else localStorage[this.prefix+key]=value;
+			
+			return true;
 		};
 		
+		/**
+		 * Wipes all non-safeKey entries from localStorage
+		 * @type {function(this:Storage)}
+		 * @return {boolean} Whether the operation was successful or not
+		 */
 		Storage.prototype.reset = function(){
 			var item;
 			
 			if(this.enabled === false){
-				return null;
+				return false;
 				if(Arstider.verbose > 1) console.warn("Arstider.Storage.reset: localStorage is unavailable");
 			} 
 			for(item in localStorage) {
-				if(!isSafekey(item, this.safeKeys) && item.indexOf(this.key) != -1) {
+				if(this._safeKeys.indexOf(item) == -1 && item.indexOf(this.prefix) != -1) {
 					localStorage.removeItem(item);
 				}
 				else{
 					if(Arstider.verbose > 2) console.warn("Arstider.Storage.reset: keeping safeKey ",item);
 				}
 			}
+			return true;
 		};
 		
 		singleton = new Storage();

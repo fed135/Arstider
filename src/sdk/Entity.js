@@ -699,15 +699,9 @@
 		 * @this {Entity}
 		 */
 		Entity.prototype.killBuffer = function(wipe){
+			if(this.data && this.data.kill) this.data.kill();
+			
 			this.data = null;
-			this.dataCtx = null;
-			if(wipe){
-				(function(_name){
-					require(["Arstider/Buffer"],function(Buffer){
-						Buffer.kill(_name);
-					});
-				})(this.name);
-			}
 		};
 			
 		/**

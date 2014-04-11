@@ -1,7 +1,8 @@
 ;(function(){
 
-	var cnv = null;
-	var ctx = null;
+	var 
+		cnv = null
+	;
 
 /**
  * AMD Closure
@@ -9,10 +10,11 @@
 	define( "Arstider/Texture", ['Arstider/Buffer', 'Arstider/Bitmap'], function (Buffer, Bitmap) {
 	
 		if(cnv == null){
-			cnv = Buffer.create('textureLoader');
-			cnv.width = 100;
-			cnv.height = 100;
-			ctx = cnv.context2D();
+			cnv = new Buffer({
+				name:'Arstider_textureLoader',
+				width:100,
+				height:100
+			});
 		}
 		
 		function Texture(url){
@@ -27,23 +29,17 @@
 			var thisRef = this;
 			
 			var req = new Bitmap(url, function(){
-				thisRef.pattern = ctx.createPattern(this.data, 'repeat');
+				thisRef.pattern = cnv.context.createPattern(this.data, 'repeat');
 			});
 		};
 			
 		Texture.prototype.setSize = function(width, height){
-			if(width && width != null){
-				grad.width = width;
-			}
-			
-			if(height && height != null){
-				grad.height = height;
-			}
+			cnv.setSize(width, height);
 			
 			this.loadAsset(this.url);
 		};
 			
-		Texture.prototype.export = function(){
+		Texture.prototype.print = function(){
 			return this.pattern;
 		};
 		

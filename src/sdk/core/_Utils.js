@@ -1,4 +1,11 @@
 /**
+ * Arstider Utilities and namespace wrapper
+ * 
+ * @version 1.1
+ * @author frederic charette <fredericcharette@gmail.com>
+ */
+
+/**
  * Engine Namespace
  * @const
  * @type {Object}
@@ -366,24 +373,6 @@ Arstider.clearBlobUrls = function(){
 };
 
 /**
- * Returns the total size of cached blobs
- * @type {function}
- * @return {number} memory (in MB)
- */
-Arstider.getTotalBlobSize = function(){
-	var 
-		i, 
-		total = 0
-	;
-	
-	for(i in Arstider.blobCache){
-		total += (Arstider.blobCache[i].size || 0);
-	}
-	
-	return total/1024/1024;
-};
-
-/**
  * Image Transformations, requiring Buffer
  */
 require(["Arstider/Buffer"], function(Buffer){
@@ -393,66 +382,130 @@ require(["Arstider/Buffer"], function(Buffer){
 	 *
 	 * @private
 	 * @param {HTMLCanvasElement} cnv Applies the imageRendering style from the tag's _renderMode property
+	 * @param {string} style The rendering style to apply
 	 */
-	Arstider.setRenderStyle = function(element, mode){
-		if(mode) element._renderMode = mode;
-		else element._renderMode = Buffer._renderMode;
+	Arstider.setRenderStyle = function(element, style){
 		
-		if(element._renderMode === "sharp"){
+		if(style === "sharp"){
 			element.style.imageRendering = '-moz-crisp-edges';
 			element.style.imageRendering = '-o-crisp-edges';
 			element.style.imageRendering = '-webkit-optimize-contrast';
 			element.style.imageRendering = 'crisp-edges';
 			element.style.msInterpolationMode = 'nearest-neighbor';
 		}
-		else if(element._renderMode === "auto"){
+		else if(style === "auto"){
 			element.style.imageRendering = 'auto';
 		}
 		else{
-			if(Arstider.verbose > 0) console.warn("Arstider.setRenderStyle: Cannot apply mode '",mode,"'");
+			if(Arstider.verbose > 0) console.warn("Arstider.setRenderStyle: Cannot apply mode '",style,"'");
 		}
 	};
 	
-	Arstider.getBuffers = function(){
-		return Buffer._pool;
+	/**
+	 * Sets image smoothing for canvas contexts 
+	 *
+	 * @private
+	 * @param {CanvasRenderingContext2D} ctx The context to switch the smoothing mode on
+	 * @param {Boolean} val Image smoothing activated
+	 */
+	Arstider.setImageSmoothing = function(ctx, val){
+		var attr = 'imageSmoothingEnabled', uc = attr.charAt(0).toUpperCase() + attr.substr(1);
+		ctx[attr] = ctx['ms'+uc] = ctx['moz'+uc] = ctx['webkit'+uc] = ctx['o'+uc] = val;
+	}
+	
+	/**
+	 * Default rendering style
+	 * @type {string}
+	 */
+	Arstider.defaultRenderStyle = "auto";
+	
+	/**
+	 * Collection of the intantiated buffers
+	 * @type {Object}
+	 */
+	Arstider.bufferPool = {};
+	
+	/**
+	 * Counts the number of buffers in the system
+	 * @type {function}
+	 * @return {number} The number of buffers
+	 */
+	Arstider.countBuffers = function(){
+		var 
+			i, 
+			total = 0
+		;
+		
+		for(i in Arstider.bufferPool){
+			total ++;
+		}
+		
+		return total;
+	};
+	
+	/**
+	 * Returns the total size of assets in memory
+	 * @type {function}
+	 * @return {number} memory (in MB)
+	 */
+	Arstider.getMemory = function(){
+		var 
+			i, 
+			total = 0
+		;
+		
+		for(i in Arstider.blobCache){
+			total += (Arstider.blobCache[i].size || 0);
+		}
+		
+		for(i in Arstider.bufferPool){
+			total += (Arstider.bufferPool[i].getMemory());
+		}
+		
+		return total >> 20;
 	};
 	
 	/**
 	 * Saves graphic data into a new buffer
 	 * @param {string} name The name of the future Buffer
 	 * @param {Image|HTMLCanvasElement} img The graphic resource to draw onto the canvas
-	 * @return {HTMLCanvasElement} The newly created Buffer
+	 * @return {Buffer} The newly created Buffer
 	 */
-	Arstider.saveToCanvas = function(name, img){
+	Arstider.saveToBuffer = function(name, img){
 		
 		var
-			canvas = Buffer.create(name),
-			ctx = canvas.context2D()
+			canvas = new Buffer({
+				name:name,
+				width:img.width,
+				height:img.height
+			})
 		;
-				
-		canvas.width = img.width;
-		canvas.height = img.height;
-		ctx.drawImage(img,0,0,canvas.width,canvas.height);
+		
+		canvas.context.drawImage(img,0,0,canvas.width,canvas.height);
 		
 		return canvas;
 	};
 	
 	/**
-	* Inverts the colors of the Entity.
-	* @param {HTMLCanvasElement} buffer The target data buffer
-	* @param {number=} x Optional zone horizontal offset
-	* @param {number=} y Optional zone vertical offset
-	* @param {number=} w Optional zone width
-	* @param {number=} h Optional zone height
-	* @return {HTMLCanvasElement} The newly created buffer with the inverted colors
-	*/
+	 * Inverts the colors of the Entity.
+	 * @param {Buffer} buffer The target data buffer
+	 * @param {number=} x Optional zone horizontal offset
+	 * @param {number=} y Optional zone vertical offset
+	 * @param {number=} w Optional zone width
+	 * @param {number=} h Optional zone height
+	 * @return {Buffer} The newly created buffer with the inverted colors
+	 */
 	Arstider.invertColors = function(buffer, x, y, w, h){
 		
 		var 
-			imageData = buffer.getContext("2d").getImageData(Arstider.checkIn(x,0),Arstider.checkIn(y,0), Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height)), 
+			imageData = buffer.context.getImageData(Arstider.checkIn(x,0),Arstider.checkIn(y,0), Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height)), 
 			pixels = imageData.data, 
 			i = (Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height))-1,
-			ret = Buffer.create(buffer.name + "_inverted")
+			ret = new Buffer({
+				name:buffer.name + "_inverted_",
+				width:Arstider.checkIn(w, buffer.width),
+				height:Arstider.checkIn(h, buffer.height)
+			})
 		;
 		
 		
@@ -462,29 +515,31 @@ require(["Arstider/Buffer"], function(Buffer){
 	    	pixels[i*4+2] = 255-pixels[i*4+2];  
 		}
 			
-		ret.width = Arstider.checkIn(w, buffer.width);
-		ret.height = Arstider.checkIn(h, buffer.height);
-		ret.getContext("2d").putImageData(imageData, 0, 0);
+		ret.context.putImageData(imageData, 0, 0);
 	
 		return ret;
 	};
 	
 	/**
-	* Grayscales the colors of the Entity.
-	* @param {HTMLCanvasElement} buffer The target data buffer
-	* @param {number=} x Optional zone horizontal offset
-	* @param {number=} y Optional zone vertical offset
-	* @param {number=} w Optional zone width
-	* @param {number=} h Optional zone height
-	* @return {HTMLCanvasElement} The newly created buffer with the grayscaled colors
-	*/
+	 * Grayscales the colors of the Entity.
+	 * @param {Buffer} buffer The target data buffer
+	 * @param {number=} x Optional zone horizontal offset
+	 * @param {number=} y Optional zone vertical offset
+	 * @param {number=} w Optional zone width
+	 * @param {number=} h Optional zone height
+	 * @return {Buffer} The newly created buffer with the grayscaled colors
+	 */
 	Arstider.grayscale = function(buffer, x, y, w, h) {
 		
 		var 
-			imageData = buffer.getContext("2d").getImageData(Arstider.checkIn(x,0),Arstider.checkIn(y,0), Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height)), 
+			imageData = buffer.context.getImageData(Arstider.checkIn(x,0),Arstider.checkIn(y,0), Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height)), 
 			pixels = imageData.data, 
 			i = (Arstider.checkIn(w,buffer.width) * Arstider.checkIn(h,buffer.height))-1,
-			ret = Buffer.create(buffer.name + "_grayscale"),
+			ret = new Buffer({
+				name:buffer.name + "_grayscale",
+				width:Arstider.checkIn(w, buffer.width),
+				height:Arstider.checkIn(h, buffer.height)
+			}),
 			avg = null
 		;
 		
@@ -496,16 +551,14 @@ require(["Arstider/Buffer"], function(Buffer){
 	    	pixels[i*4+2] = avg;
 		}
 		
-		ret.width = Arstider.checkIn(w, buffer.width);
-		ret.height = Arstider.checkIn(h, buffer.height);
-		ret.getContext("2d").putImageData(imageData, 0, 0);
+		ret.context.putImageData(imageData, 0, 0);
 	
 		return ret;
 	};
 	
 	/**
 	 * Tints an element
-	 * @param {HTMLCanvasElement} buffer The target data buffer
+	 * @param {Buffer} buffer The target data buffer
 	 * @param {number} r Red value
 	 * @param {number} g Green value
 	 * @param {number} b Blue value
@@ -513,14 +566,18 @@ require(["Arstider/Buffer"], function(Buffer){
 	 * @param {number=} y Optional zone vertical offset
 	 * @param {number=} w Optional zone width
 	 * @param {number=} h Optional zone height
-	 * @return {HTMLCanvasElement} The newly created buffer with the new colors
+	 * @return {Buffer} The newly created buffer with the new colors
 	 */
 	Arstider.tint = function(buffer, r, g, b, f, x, y, w, h){
 		var 
-			imageData = buffer.getContext("2d").getImageData(Arstider.checkIn(x,0),Arstider.checkIn(y,0), Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height)), 
+			imageData = buffer.context.getImageData(Arstider.checkIn(x,0),Arstider.checkIn(y,0), Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height)), 
 			pixels = imageData.data, 
 			i = (Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height))-1,
-			ret = Buffer.create(buffer.name + "_tint"+r+g+b)
+			ret = new Buffer({
+				name:buffer.name + "_tint"+r+g+b,
+				width:Arstider.checkIn(w, buffer.width),
+				height:Arstider.checkIn(h, buffer.height)
+			})
 		;
 		
 		f = Arstider.checkIn(f, 1);
@@ -530,53 +587,52 @@ require(["Arstider/Buffer"], function(Buffer){
 	    	pixels[i*4+1] = Math.min(r + pixels[i*4+1] * f); 
 	    	pixels[i*4+2] = Math.min(r + pixels[i*4+2] * f); 
 		}
-		
-		ret.width = Arstider.checkIn(w, buffer.width);
-		ret.height = Arstider.checkIn(h, buffer.height);	
-		ret.getContext("2d").putImageData(imageData, 0, 0);
+			
+		ret.context.putImageData(imageData, 0, 0);
 	
 		return ret;
 	};
 	
 	/**
 	 * Blurs an element
-	 * @param {HTMLCanvasElement} buffer The target data buffer
+	 * @param {Buffer} buffer The target data buffer
 	 * @param {number} force The amount of blur to add
 	 * @param {number} quality The amount of passes (more passes for better looking blur, at the cost of a longer process)
 	 * @param {number=} x Optional zone horizontal offset
 	 * @param {number=} y Optional zone vertical offset
 	 * @param {number=} w Optional zone width
 	 * @param {number=} h Optional zone height
-	 * @return {HTMLCanvasElement} The newly created buffer with the blurred content
+	 * @return {Buffer} The newly created buffer with the blurred content
 	 */
 	Arstider.blur = function(buffer, force, quality, x, y, w, h){
+		
 		var 
 			i = 0,
-			copy = Buffer.create(buffer.name+"_blurred_temp"), 
-			copyCtx = copy.getContext("2d"), 
+			copy = new Buffer({
+				name:buffer.name+"_blurred_temp",
+				renderStyle:"auto"
+			}), 
 			ratio = (1/force),
-			ret = Buffer.create(buffer.name+"_blur"),
-			retCtx = ret.getContext("2d")
+			ret = new Buffer({
+				name:buffer.name+"_blur",
+				width:Arstider.checkIn(w, buffer.width),
+				height:Arstider.checkIn(h, buffer.height),
+				renderStyle:"auto"
+			})
 		;
 		
-		Arstider.setRenderStyle(copy.name, "auto");
-		Buffer.setRenderMode(ret.name, "auto");
-		
-		ret.width = Arstider.checkIn(w, buffer.width);
-		ret.height = Arstider.checkIn(h, buffer.height);
-		copy.width *= ratio;
-		copy.height *= ratio;
+		copy.setSize(copy.width*ratio, copy.height*ratio);
 		
 		for(i; i<quality; i++){
 			if(i === 0){
-				copyCtx.drawImage(buffer, Arstider.checkIn(x, 0), Arstider.checkIn(y, 0), copy.width, copy.height);
-				retCtx.drawImage(copy, 0, 0, ret.width, ret.height);
+				copy.context.drawImage(buffer.tag, Arstider.checkIn(x, 0), Arstider.checkIn(y, 0), copy.width, copy.height);
+				ret.context.drawImage(copy.tag, 0, 0, ret.width, ret.height);
 			}
 			else{
-				copyCtx.clearRect(0,0,copy.width, copy.height);
-				copyCtx.drawImage(ret, 0, 0, copy.width, copy.height);
-				retCtx.clearRect(0,0,ret.width, ret.height);
-				retCtx.drawImage(copy, 0, 0, ret.width, ret.height);
+				copy.context.clearRect(0,0,copy.width, copy.height);
+				copy.context.drawImage(ret.tag, 0, 0, copy.width, copy.height);
+				ret.context.clearRect(0,0,ret.width, ret.height);
+				ret.context.drawImage(copy.tag, 0, 0, ret.width, ret.height);
 			}
 		}
 			
