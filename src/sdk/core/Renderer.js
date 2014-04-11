@@ -28,21 +28,7 @@
 			 * @type {CanvasRenderingContext2D|null}
 			 */
 			this._context = null;
-				
-			/**
-			 * Current frame x carret position
-			 * @private
-			 * @type {number}
-			 */
-			this._currentX = 0;
-				
-			/**
-			 * Current frame y carret position
-			 * @private
-			 * @type {number}
-			 */
-			this._currentY = 0;
-				
+			
 			/**
 			 * Optional pre-render method to call on elements
 			 * @private
@@ -71,7 +57,7 @@
 		 * @type {function}
 		 * @param {Object} curChild Entity-type element to draw and call draw upon the children of
 		 */
-		Renderer.prototype.renderChild = function(curChild){
+		Renderer.prototype.renderChild = function(curChild, _currentX, _currentY){
 				
 			if(!curChild || curChild.__skip) return;
 				
@@ -111,13 +97,13 @@
 				this._context.globalAlpha *= curChild.alpha;
 			}
 				
-			this._currentX += curChild.x;
-			this._currentY += curChild.y;
+			_currentX += curChild.x;
+			_currentY += curChild.y;
 				
 			if(isComplex) {
-				this._context.translate(this._currentX+ (curChild.width * curChild.rpX),this._currentY+ (curChild.height * curChild.rpY));
-				this._currentX = -(curChild.width * curChild.rpX);
-				this._currentY = -(curChild.height * curChild.rpY);
+				this._context.translate(_currentX+ (curChild.width * curChild.rpX),_currentY+ (curChild.height * curChild.rpY));
+				_currentX = -(curChild.width * curChild.rpX);
+				_currentY = -(curChild.height * curChild.rpY);
 			}
 				
 			//Scale
@@ -150,8 +136,8 @@
 				
 			//Update globals
 			if(curChild.global && curChild.parent){
-				curChild.global.x = this._currentX;
-				curChild.global.y = this._currentY;
+				curChild.global.x = _currentX;
+				curChild.global.y = _currentY;
 				curChild.global.scaleX = curChild.scaleX * curChild.parent.scaleX;
 				curChild.global.scaleY = curChild.scaleY * curChild.parent.scaleY;
 				curChild.global.width = curChild.width * curChild.global.scaleX;
@@ -181,16 +167,16 @@
 				if(curChild.data.pattern){
 					prevFill = this._context.fillStyle;
 					this._context.fillStyle = curChild.data.pattern;
-					this._context.fillRect(Math.round(this._currentX), Math.round(this._currentY), curChild.width, curChild.height);
+					this._context.fillRect(Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
 					this._context.fillStyle = prevFill;
 				}
 				else{
 					//instanceof is pretty fast,  we want to leverage data offset rather than having an extra buffer for sprites.
 					if(curChild instanceof Sprite || curChild.largeData === true){
-						this._context.drawImage(curChild.data, curChild.xOffset, curChild.yOffset, curChild.dataWidth, curChild.dataHeight, Math.round(this._currentX), Math.round(this._currentY), curChild.width, curChild.height);
+						this._context.drawImage(curChild.data, curChild.xOffset, curChild.yOffset, curChild.dataWidth, curChild.dataHeight, Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
 					}
 					else{
-						this._context.drawImage(curChild.data, Math.round(this._currentX), Math.round(this._currentY), curChild.width, curChild.height);
+						this._context.drawImage(curChild.data, Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
 					}
 				}
 			}
@@ -206,7 +192,7 @@
 				else if(curChild instanceof DisplayObject) this._context.strokeStyle = "red";
 				else this._context.strokeStyle = "yellow";
 					
-				this._context.strokeRect(Math.round(this._currentX), Math.round(this._currentY), curChild.width, curChild.height);
+				this._context.strokeRect(Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
 				this._context.globalAlpha = prevAlpha;
 				this._context.shadowColor = shadowSafe;
 			}
@@ -220,7 +206,7 @@
 					len = curChild.children.length;
 					for(li=0; li<len; li++){
 						if(curChild.children[li]){
-							this.renderChild(curChild.children[li]);
+							this.renderChild(curChild.children[li], _currentX, _currentY);
 						}
 					}
 				}
@@ -250,13 +236,11 @@
 		 */
 		Renderer.prototype.draw = function(eng, rootChild, pre, post, showBoxes){
 			this._context = this._context || eng.context;
-			this._currentX = 0;
-			this._currentY = 0;
 			this._preRender = pre;
 			this._postRender = post;
 			this._showBoxes = showBoxes;
 			
-			this.renderChild(rootChild);
+			this.renderChild(rootChild, 0, 0);
 			Performance.frames++;
 		};
 			
