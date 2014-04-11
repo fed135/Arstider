@@ -1,5 +1,20 @@
+/**
+ * CollisionMap
+ * 
+ * @version 1.1.3
+ * @author frederic charette <fredericcharette@gmail.com>
+ */
+
+/**
+ * Defines the CollisionMap module
+ */
 define("Arstider/CollisionMap", ["Arstider/Bitmap", "Arstider/Entity"], function(Bitmap, Entity){
 	
+	/**
+	 * CollisionMap constructor
+	 * @constructor
+	 * @param {Object} props Strating proprieties for the map.
+	 */
 	function CollisionMap(props){
 		Arstider.Super(this, Entity, props);
 		
@@ -15,10 +30,21 @@ define("Arstider/CollisionMap", ["Arstider/Bitmap", "Arstider/Entity"], function
 	
 	Arstider.Inherit(CollisionMap, Entity);
 	
+	/**
+	 * Changes the scale of the collision mask. 
+	 * For example, your mask could be very smaller, than scaled up to match your game's scale (sharp rendered)
+	 * @type {function(this:CollisionMap)}
+	 * @param {number} val The amount of scale to apply to the collision mask
+	 */
 	CollisionMap.prototype.setScale = function(val){
 		this._collMaskScale = val;
 	};
 	
+	/**
+	 * Loads the data for the collision mask
+	 * @type {function(this:CollisionMap)}
+	 * @param {string|Image|HTMLCanvasElement} url The url/data of the mask
+	 */
 	CollisionMap.prototype.loadMask = function(url){
 		var thisRef = this;
 		
@@ -40,12 +66,22 @@ define("Arstider/CollisionMap", ["Arstider/Bitmap", "Arstider/Entity"], function
 		});
 	};
 	
+	/**
+	 * Draws the debug image for visual queue
+	 * @private
+	 * @type {function(this:CollisionMap)}
+	 */
 	CollisionMap.prototype._drawShape = function(){
 		this.alpha = 0.25;
 		this.data = this._collMask;
 		this.scaleX = this.scaleY = this._collMaskScale;
 	};
 	
+	/**
+	 * Parses the buffer to simply store a map of nulls and 1
+	 * @private
+	 * @type {function(this:CollisionMap)}
+	 */
 	CollisionMap.prototype._parseMap = function(){
 		var 
 			ret = []
@@ -60,19 +96,30 @@ define("Arstider/CollisionMap", ["Arstider/Bitmap", "Arstider/Entity"], function
 		
 		this._maskData = ret;
 		
-		require(["Arstider/Buffer"], function(Buffer){
-			Buffer.kill("CollisionMap_"+thisRef._collMaskUrl);
-		})
+		if(Arstider.bufferPool["CollisionMap_"+thisRef._collMaskUrl]) Arstider.bufferPool["CollisionMap_"+thisRef._collMaskUrl].kill();
 	};
 	
+	/**
+	 * Updates the value for a given position
+	 * @type {function(this:CollisionMap)}
+	 * @param {number} x The x coordinate to update
+	 * @param {number} y The y coordinate to update
+	 * @param {number|null} value The value to apply at the point
+	 */
 	CollisionMap.prototype.updateAt = function(x, y, value){
 		this._maskData[(Arstider.chop(y/this._collMaskScale) * this.width) + (Arstider.chop(x/this._collMaskScale))] = value;
 	};
 	
+	/**
+	 * Detects collision at a given point
+	 * @type {function(this:CollisionMap)}
+	 * @param {number} x The x coordinate to check
+	 * @param {number} y The y coordinate to check
+	 * @return {boolean} True if there is a collision (black zone in the mask)
+	 */
 	CollisionMap.prototype.collisionAt = function(x, y){
 		return this._maskData[(Arstider.chop(y/this._collMaskScale) * this.width) + (Arstider.chop(x/this._collMaskScale))] === 1;
 	};
 	
 	return CollisionMap;
-	
 });

@@ -10,12 +10,14 @@
  */
 ;(function(){
 
-	/*
-	 * Singleton static
-	 * @private
-	 * @type {Dictionary|null}
-	 */
-	var singleton = null;
+	var 
+		/*
+		 * Singleton static
+		 * @private
+		 * @type {Dictionary|null}
+		 */
+		singleton = null
+	;
 	
 	/*
 	 * Defines the Dictionary module
@@ -106,6 +108,12 @@
 			return ret;
 		};
 		
+		/**
+		 * Set the string file to download
+		 * @type {function(this:Dictionary)}
+		 * @param {string} filename The url of the string file
+		 * @param {function} callback The function to trigger once the download is completed
+		 */
 		Dictionary.prototype.load = function(filename, callback){
 			var thisRef = this;
 			
@@ -124,9 +132,6 @@
 			});
 		};
 		
-		/**
-		 * Instantiates the singleton
-		 */
 		singleton = new Dictionary();
 		return singleton;
 	});

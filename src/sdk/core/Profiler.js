@@ -9,7 +9,7 @@
 /**
  * Defines the profiler module
  */
-define("Arstider/core/Profiler", [], function(){
+define("Arstider/core/Profiler", ["Arstider/Browser"], function(Browser){
 	
 	/**
 	 * Applies the styles of a profiler button to an element
@@ -68,63 +68,77 @@ define("Arstider/core/Profiler", [], function(){
 	profiler.currentTab = "draw";
 	profiler.minibar = document.createElement("div");
 	
-	/**
-	 * Close button
-	 */
-	var closeProfiler = document.createElement("div");
-	closeProfiler.id = "_ArstiderProfilerCloseBtn";
-	styleAsButton(closeProfiler);
-	closeProfiler.onclick = function(){profiler.style.display = "none";};
-	closeProfiler.innerHTML = "X";
-	profiler.appendChild(closeProfiler);
+	if(!Browser.isMobile){
+		/**
+		 * Close button
+		 */
+		var closeProfiler = document.createElement("div");
+		closeProfiler.id = "_ArstiderProfilerCloseBtn";
+		styleAsButton(closeProfiler);
+		closeProfiler.onclick = function(){profiler.style.display = "none";};
+		closeProfiler.innerHTML = "X";
+		profiler.appendChild(closeProfiler);
+		
+		/**
+		 * Toggle button
+		 */
+		var toggleProfiler = document.createElement("div");
+		toggleProfiler.id = "_ArstiderProfilerToggleBtn";
+		styleAsButton(toggleProfiler);
+		toggleProfiler.onclick = function(){
+			profiler.collapsed = !profiler.collapsed;
+			if(profiler.collapsed){
+				toggleProfiler.innerHTML = "Expend";
+				details.style.display = "none";
+			}
+			else{
+				toggleProfiler.innerHTML = "Collapse";
+				details.style.display = "block";
+			}
+		};
+		toggleProfiler.innerHTML = "Expend";
+		profiler.appendChild(toggleProfiler);
+		
+		/**
+		 * Drawing tab
+		 */
+		var drawTab = document.createElement("div");
+		drawTab.id = "_ArstiderProfilerDrawTab";
+		styleAsButton(drawTab);
+		drawTab.style.cssFloat = "left";
+		drawTab.onclick = function(){
+			profiler.currentTab = "draw";
+			details.innerHTML = "";
+		};
+		drawTab.innerHTML = "Drawing";
+		profiler.appendChild(drawTab);
+		
+		/**
+		 * Memory tab
+		 */
+		var memTab = document.createElement("div");
+		memTab.id = "_ArstiderProfilerMemoryTab";
+		styleAsButton(memTab);
+		memTab.style.cssFloat = "left";
+		memTab.onclick = function(){
+			profiler.currentTab = "memory";
+			details.innerHTML = "";
+		};
+		memTab.innerHTML = "Memory";
+		profiler.appendChild(memTab);
 	
-	/**
-	 * Toggle button
-	 */
-	var toggleProfiler = document.createElement("div");
-	toggleProfiler.id = "_ArstiderProfilerToggleBtn";
-	styleAsButton(toggleProfiler);
-	toggleProfiler.onclick = function(){
-		profiler.collapsed = !profiler.collapsed;
-		if(profiler.collapsed){
-			toggleProfiler.innerHTML = "Expend";
-			details.style.display = "none";
-		}
-		else{
-			toggleProfiler.innerHTML = "Collapse";
-			details.style.display = "block";
-		}
-	};
-	toggleProfiler.innerHTML = "Expend";
-	profiler.appendChild(toggleProfiler);
-	
-	/**
-	 * Drawing tab
-	 */
-	var drawTab = document.createElement("div");
-	drawTab.id = "_ArstiderProfilerDrawTab";
-	styleAsButton(drawTab);
-	drawTab.style.cssFloat = "left";
-	drawTab.onclick = function(){
-		profiler.currentTab = "draw";
-		details.innerHTML = "";
-	};
-	drawTab.innerHTML = "Drawing";
-	profiler.appendChild(drawTab);
-	
-	/**
-	 * Memory tab
-	 */
-	var memTab = document.createElement("div");
-	memTab.id = "_ArstiderProfilerMemoryTab";
-	styleAsButton(memTab);
-	memTab.style.cssFloat = "left";
-	memTab.onclick = function(){
-		profiler.currentTab = "memory";
-		details.innerHTML = "";
-	};
-	memTab.innerHTML = "Memory";
-	profiler.appendChild(memTab);
+		var details = document.createElement("div");
+		details.style.width = "100%";
+		details.style.height = "300px";
+		details.style.overflowY = "auto";
+		details.style.overflowX = "hidden";
+		details.style.borderTop = "1px solid #333";
+		details.style.display = "none";
+		details.style.position = "relative";
+		
+		profiler.detailsTab = details;
+		profiler.appendChild(details);
+	}
 	
 	profiler.minibar.id = "_ArstiderProfilerMinibar";
 	profiler.minibar.style.position = "relative";
@@ -133,18 +147,6 @@ define("Arstider/core/Profiler", [], function(){
 	profiler.minibar.style.paddingTop = "5px";
 	profiler.minibar.style.fontSize = "12px";
 	profiler.appendChild(profiler.minibar);
-	
-	var details = document.createElement("div");
-	details.style.width = "100%";
-	details.style.height = "300px";
-	details.style.overflowY = "auto";
-	details.style.overflowX = "hidden";
-	details.style.borderTop = "1px solid #333";
-	details.style.display = "none";
-	details.style.position = "relative";
-	
-	profiler.detailsTab = details;
-	profiler.appendChild(details);
 	
 	return profiler;
 });
