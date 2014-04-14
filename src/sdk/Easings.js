@@ -1,3 +1,9 @@
+/**
+ * Easings
+ *
+ * @version 1.1.2
+ * @author frederic charette <fredc@meetfidel.com>
+ */
 ;(function(){
 
 	/**

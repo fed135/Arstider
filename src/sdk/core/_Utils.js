@@ -387,14 +387,15 @@ require(["Arstider/Buffer"], function(Buffer){
 	Arstider.setRenderStyle = function(element, style){
 		
 		if(style === "sharp"){
-			element.style.imageRendering = '-moz-crisp-edges';
-			element.style.imageRendering = '-o-crisp-edges';
-			element.style.imageRendering = '-webkit-optimize-contrast';
-			element.style.imageRendering = 'crisp-edges';
-			element.style.msInterpolationMode = 'nearest-neighbor';
+			if(Browser.name == "firefox") element.style.imageRendering = '-moz-crisp-edges';
+			else if(Browser.name == "opera") element.style.imageRendering = '-o-crisp-edges';
+			else if(Browser.name == "safari") element.style.imageRendering = '-webkit-optimize-contrast';
+			else if(Browser.name == "ie") element.style.msInterpolationMode = 'nearest-neighbor';
+			else element.style.imageRendering = 'crisp-edges';
 		}
 		else if(style === "auto"){
 			element.style.imageRendering = 'auto';
+			element.style.msInterpolationMode = 'auto';
 		}
 		else{
 			if(Arstider.verbose > 0) console.warn("Arstider.setRenderStyle: Cannot apply mode '",style,"'");
