@@ -376,7 +376,7 @@
 			
 			//Check if canvas rendering is on/off
 			if(singleton.handbreak){
-				if(Preloader.queue.length > 0 && !singleton.pausedByRequest){
+				if(Preloader._queue.length > 0 && !singleton.pausedByRequest){
 					singleton.context.clearRect(0,0,Viewport.maxWidth,Viewport.maxHeight);
 					Preloader._screen.cancelBubble();
 					Preloader._screen._update();

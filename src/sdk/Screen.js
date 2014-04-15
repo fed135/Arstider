@@ -1,8 +1,8 @@
 /**
- * Screen 
+ * Screen
  * 
- * @version 1.1
- * @author frederic charette <fredc@meetfidel.com>
+ * @version 1.1.3
+ * @author frederic charette <fredericcharette@gmail.com>
  */
 
 /**
@@ -13,7 +13,6 @@ define("Arstider/Screen", ["Arstider/DisplayObject", "Arstider/Viewport", "Arsti
 	/**
 	 * Screen constructor
 	 * Implements display object to create a stage for the screen
-	 * 
 	 * @constructor
 	 */
 	function Screen(screenObj, stage){
