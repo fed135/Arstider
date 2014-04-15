@@ -95,7 +95,9 @@
 	}
 	
 	/**
-	 * 
+	 * Internal callback stack when font file has finished loading
+	 * @type {function(this:Font)}
+	 * @param {function} callback A callback function to trigger when font has finished loading
 	 */
 	Font.prototype._onFontLoaded = function(callback){
 		if(this.loaded && !this.temp){
@@ -107,7 +109,9 @@
 	};
 	
 	/**
-	 * 
+	 * Runs the list of callbacks when font has finished loading
+	 * @private
+	 * @type {function(this:Font)}
 	 */
 	Font.prototype._runCallbacks = function(){
 		var i = this.loadCallbacks.length-1;
@@ -132,7 +136,6 @@
 		
 		/**
 		 * Creates an instance of Fonts.
-		 *
 		 * @constructor
 		 * @this {Font}
 		 */
@@ -146,8 +149,10 @@
 		};
 		
 		/**
-		 * 
-		 * @param {Object} name
+		 * Gets a font object by name
+		 * @type {function(this:Fonts)}
+		 * @param {string} name The name of the font to find
+		 * @return {Object} The font object, or a new temporary font if the requested one doesn't exist
 		 */
 		Fonts.prototype.get = function(name){
 			if(this.collection[name]) return this.collection[name];
@@ -157,8 +162,10 @@
 		};
 		
 		/**
-		 * 
-		 * @param {Object} props
+		 * Creates a font
+		 * @type {function(this:Fonts)}
+		 * @param {Object} props The font properties
+		 * @return {Object} The newly created font object
 		 */
 		Fonts.prototype.create = function(props){
 			
@@ -176,9 +183,10 @@
 		};
 		
 		/**
-		 * 
-		 * @param {Object} filename
-		 * @param {Object} callback
+		 * Loads a list of font objects from a JSON file
+		 * @type {function(this:Fonts)}
+		 * @param {string} filename The JSON file to load
+		 * @param {function} callback The callback function, once all fonts have been initialized
 		 */
 		Fonts.prototype.load = function(filename, callback){
 			var thisRef = this;

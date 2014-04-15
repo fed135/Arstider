@@ -1,28 +1,40 @@
 /**
- * DisplayList Wrapper. (singleton)
- * 
- * Provides common private variables and methods for the DisplayList as well as
- * AMD Closure and prototypes.
+ * GlobalTimers. 
  *
- * @author frederic charette <fredc@meetfidel.com>
+ * @version 1.1.2
+ * @author frederic charette <fredericcharette@gmail.com>
  */
 ;(function(){
 	
+	var 
+		/**
+		 * Singleton static
+		 * @private
+		 * @type {GlobalTimers|null}
+		 */
+		singleton = null
+	;
+	
 	/**
-	 * Single-instance values for all instances of engines
+	 * Defines the GlobalTimers module
 	 */
-	
-	var singleton = null;
-	
 	define( "Arstider/GlobalTimers", [], function (){
 			
 		if(singleton != null) return singleton;
 			
+		/**
+		 * Global Timers constructor
+		 * @constructor
+		 */
 		function GlobalTimers(){
 			this.list = [];
 		}
 				
-		GlobalTimers.prototype.step = function(realtimeDelay){
+		/**
+		 * Steps the timers in the list
+		 * @type {function(this:GlobalTimers)}
+		 */
+		GlobalTimers.prototype.step = function(){
 			var i = this.list.length-1;
 			for(i; i>=0; i--){
 				if(this.list[i].running){
@@ -39,11 +51,21 @@
 				}
 			}
 		};
-				
+			
+		/**
+		 * Pushes a timer in the timer list
+		 * @type {function(this:GlobalTimers)}
+		 * @param {Object} elem A timer object to call step on every heartbeat
+		 */	
 		GlobalTimers.prototype.push = function(elem){
 			this.list.push(elem);
 		};
-				
+		
+		/**
+		 * Removes a timer from the list
+		 * @type {function(this:GlobalTimers)}
+		 * @param {Object} elem The timer to remove
+		 */
 		GlobalTimers.prototype.remove = function(elem){
 			var i = this.list.length-1;
 			for(i; i>=0; i--){

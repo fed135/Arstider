@@ -1,20 +1,56 @@
 /**
- * Mouse Wrapper. 
- *
- * @author frederic charette <fredc@meetfidel.com>
+ * Mouse
+ * 
+ * @version 1.1.3
+ * @author frederic charette <fredericcharette@gmail.com>
  */
+
 ;(function(){
 	
 	var 
+		/**
+		 * Singleton static
+		 * @private
+		 * @type {Mouse|null}
+		 */
 		singleton = null,
+		/**
+		 * Non-exhaustive list of gestures for "resembles" property
+		 * @private
+		 * @type {Object}
+		 */
 		gestures = {
 			PINCH_IN:"pinch-in",
 			PINCH_OUT:"pinch-out",
 			SWIPE:"swipe"
 		},
-		maxGesturePoints = 6
+		/**
+		 * The maximum number of gesture history states
+		 * @private
+		 * @const
+		 * @type {number}
+		 */
+		maxGesturePoints = 6,
+		/**
+		 * Maximum number of fingers allowed at once
+		 * @private
+		 * @const
+		 * @type {number}
+		 */
+		touchLimit = 5,
+		/**
+		 * Array bank, to prevent creation of arrays every time the input changes
+		 * @private
+		 * @type {Array}
+		 */
+		touchObjBank = []
 	;
 	
+	/**
+	 * Gesture constructor
+	 * @constructor
+	 * @private
+	 */
 	function Gesture(){
 		this.points = [];
 		this.center = null;
@@ -36,6 +72,11 @@
 		this._savedDistanceY = 0;
 	}
 	
+	/**
+	 * Updates the points of a gesture and analyzes them
+	 * @private
+	 * @type {function(this:Gesture)} 
+	 */
 	Gesture.prototype.update = function(){
 		
 		if(this.points.length == 0) return;
@@ -120,6 +161,11 @@
 		}
 	};
 	
+	/**
+	 * Adds a gesture history point
+	 * @private
+	 * @type {function(this:Gesture)} 
+	 */
 	Gesture.prototype.addPoint = function(point){
 		if(point.inputs[0].x === -1 || point.inputs[0].y === -1) return;
 		
@@ -142,227 +188,292 @@
 		this.update();
 	};
 	
+	/**
+	 * Gesture point constructor
+	 * @private
+	 * @constructor
+	 * @param {Array} inputs The list of inputs
+	 * @param {Object} prevDelay Time stamp (to calculate velocity)
+	 */
 	function GesturePoint(inputs, prevDelay){
 		this.inputs = inputs;
-		
 		this.delay = prevDelay;
 	}
 	
-		define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport"], function (Browser, Viewport){
+	/**
+	 * Defines the Mouse module
+	 */
+	define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport"], function (Browser, Viewport){
 			
-			if(singleton != null) return singleton;
+		if(singleton != null) return singleton;
+		
+		/**
+		 * Mouse constructor
+		 * @constructor
+		 */
+		function Mouse(){
+			/**
+			 * Whether the mouse is pressed/finger[0] is down
+			 * @type {boolean}
+			 */
+			this.pressed = false;
+			/**
+			 * Whether the mouse right click button is pressed (desktop only)
+			 * @type {boolean}
+			 */
+			this.rightPressed = false;
+			/**
+			 * The current Gesture object (mobile only)
+			 * @type {Gesture|null}
+			 */
+			this.currentGesture = null;
 			
-			function Mouse(){
-				this.pressed = false;
-				this.rightPressed = false;
+			/**
+			 * Mouse position raw (desktop) ***Use the Mouse.x() and Mouse.y() methods for cross-platform final result***
+			 * @private
+			 * @type {Object}
+			 */
+			this._mouse = {x:0,y:0};
 			
-				this.mouse = {x:0,y:0};
-				
-				this.prevX = 0;
-				this.prevY = 0;
-				
-				this.touch = [];
-				this.touchLimit = 5;
-				this.touchObjBank = [];
-				
-				this._registerGestures = false;
-				this.currentGesture = null;
-				
-				for(var i=0; i<this.touchLimit; i++) this.touchObjBank.push({x:0,y:0});
-				
-				this.releaseTrigger = null;
-				
-				this._input = false;
-				
-				this._touchRelay = Arstider.emptyFunction;
-				
-				if(Browser.isMobile){
-					window.addEventListener('touchmove', this.handleTouchMove);
-					window.addEventListener('touchstart',  this.handleTouchStart, false);			
-					window.addEventListener('touchend',  this.handleTouchEnd,false);
-				}
-				else{
-					window.addEventListener('mouseup', this.handleMouseUp);
-					window.addEventListener('mousedown', this.handleMouseDown);
-					window.addEventListener('mousemove',  this.handleMouseMove);
-					
-					//Prevent arrow scrolling
-					window.addEventListener('keydown',  function(e){
-						if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
-					        e.preventDefault();
-					        return false;
-					    };
-					},false);
-				}
+			/**
+			 * Mouse position raw (mobile) ***Use the Mouse.x() and Mouse.y() methods for cross-platform final result***
+			 * @private
+			 * @type {Array}
+			 */
+			this._touch = [];
+			
+			/**
+			 * Whether or not to register gestures on input
+			 * @private
+			 * @type {boolean}
+			 */
+			this._registerGestures = false;
+			
+			/**
+			 * Overriden by the engine. Called on input to keep the event chain
+			 * @type {function}
+			 */
+			this._touchRelay = Arstider.emptyFunction;
+			
+			/**
+			 * Populate the touch array
+			 */
+			for(var i=0; i<touchLimit; i++) touchObjBank.push({x:0,y:0});
+			
+			/**
+			 * Add event listeners
+			 */
+			if(Browser.isMobile){
+				window.addEventListener('touchmove', this._handleTouchMove);
+				window.addEventListener('touchstart',  this._handleTouchStart, false);			
+				window.addEventListener('touchend',  this._handleTouchEnd,false);
+			}
+			else{
+				window.addEventListener('mouseup', this._handleMouseUp);
+				window.addEventListener('mousedown', this._handleMouseDown);
+				window.addEventListener('mousemove',  this._handleMouseMove);
+			}
+		}
+		
+		/**
+		 * Tells the module to start recording inputs for gesture recognition
+		 * @type {function(this:Mouse)}
+		 */
+		Mouse.prototype.registerGestures = function(){
+			this._registerGestures = true;
+		};
+		
+		/**
+		 * Tells the module to stop recording inputs for gesture recognition
+		 * @type {function(this:Mouse)}
+		 */
+		Mouse.prototype.stopGestures = function(){
+			this._registerGestures = false;
+		};
+		
+		/**
+		 * Returns a new gesture point based on current inputs
+		 * @private
+		 * @type {function(this:Mouse)}
+		 * @return {GesturePoint} The newly created gesture point
+		 */
+		Mouse.prototype._gesturePoint = function(){
+			return new GesturePoint((Browser.isMobile)?singleton.touch:[{x:singleton._mouse.x, y:singleton._mouse.y}], Arstider.timestamp());
+		};
+		
+		/**
+		 * Resets mouse values
+		 * @type {function(this:Mouse)}
+		 */
+		Mouse.prototype.reset = function(){
+			singleton._touch = [];
+			singleton.pressed = false;
+			singleton.rightPressed = false;
+			singleton._mouse.x = 0;
+			singleton._mouse.y = 0;
+		};
+		
+		/**
+		 * Returns the x location of the mouse/current touch input
+		 * @type {function(this:Mouse)}
+		 * @param {number|null} input Optional touch id
+		 * @return {number}
+		 */
+		Mouse.prototype.x = function(input){
+			input = input || 0;
+			
+			if(Browser.isMobile){
+				if(singleton._touch[input]) return singleton._touch[input].x;
+				else return -1;
+			}
+			else return singleton._mouse.x;
+		};
+		
+		/**
+		 * Returns the y location of the mouse/current touch input
+		 * @type {function(this:Mouse)}
+		 * @param {number|null} input Optional touch id
+		 * @return {number}
+		 */
+		Mouse.prototype.y = function(input){
+			input = input || 0;
+		
+			if(Browser.isMobile){
+				if(singleton._touch[input]) return singleton._touch[input].y;
+				else return -1;
+			}
+			else return singleton._mouse.y;
+		};
+		
+		/**
+		 * Internal handler for touch input movement
+		 * @private
+		 * @type {function(this:Mouse)}
+		 * @param {event} event The touch event from the browser
+		 */
+		Mouse.prototype._handleTouchMove = function(event){
+			e = event || window.event;
+			e.stopPropagation();
+			e.preventDefault();
+			
+			singleton._touch.length = 0;
+			var newTouch;
+			for(var i=0; i<e.touches.length && i<touchLimit; i++){
+				newTouch = touchObjBank[i];
+				newTouch.x = ((e.touches[i].clientX - Viewport.xOffset) / Viewport.canvasRatio) / Viewport.globalScale;
+	        	newTouch.y = ((e.touches[i].clientY - Viewport.yOffset) / Viewport.canvasRatio) / Viewport.globalScale;
+				singleton._touch[i] = newTouch;
 			}
 			
-			Mouse.prototype.registerGestures = function(){
-				this._registerGestures = true;
-			};
+			if(singleton._registerGestures && singleton.currentGesture != null) singleton.currentGesture.addPoint(singleton._gesturePoint());
+		};
+		
+		/**
+		 * Internal handler for touch input start
+		 * @private
+		 * @type {function(this:Mouse)}
+		 * @param {event} event The touch event from the browser
+		 */
+		Mouse.prototype._handleTouchStart = function(e){
+			var isFresh = (singleton.pressed == false);
+			singleton.handleTouchMove(e);
+			singleton.pressed = true;
 			
-			Mouse.prototype.stopGestures = function(){
-				this._registerGestures = false;
-			};
+			singleton._handleTouchMove(e);
+			singleton._touchRelay(e);
 			
-			Mouse.prototype.step = function(){
-				singleton.prevX = singleton.x();
-				singleton.prevY = singleton.y();
-			};
+			if(singleton._registerGestures && isFresh){
+				singleton.currentGesture = new Gesture();
+				singleton.currentGesture.addPoint(singleton._gesturePoint(true));
+			}
 			
-			Mouse.prototype.reset = function(){
-				singleton.prevX = 0;
-				singleton.prevY = 0;
-				singleton.touch = [];
-				singleton.pressed = false;
-				singleton.rightPressed = false;
-				singleton._input = false;
-				singleton.mouse.x = 0;
-				singleton.mouse.y = 0;
-			};
+			e = e || window.event;
+			e.stopPropagation();
+			e.preventDefault();
+			return false;
+		};
+		
+		/**
+		 * Internal handler for touch input end
+		 * @private
+		 * @type {function(this:Mouse)}
+		 * @param {event} event The touch event from the browser
+		 */
+		Mouse.prototype._handleTouchEnd = function(e){
+			singleton.currentGesture = null;
 			
-			Mouse.prototype.x = function(input){
-				input = input || 0;
-				
-				if(Browser.isMobile){
-					if(singleton.touch[input]){
-						return singleton.touch[input].x;
-					}
-					else{
-						return -1;
-					}
-				}
-				else{
-					return singleton.mouse.x;
-				}
-			};
+			singleton.pressed = false;  
 			
-			Mouse.prototype.y = function(input){
-				input = input || 0;
+			setTimeout(function(){singleton._handleTouchMove(e);},10);
+			singleton._touchRelay(e);
 			
-				if(Browser.isMobile){
-					if(singleton.touch[input]){
-						return singleton.touch[input].y;
-					}
-					else{
-						return -1;
-					}
-				}
-				else{
-					return singleton.mouse.y;
-				}
-			};
+			e = e || window.event;
+			e.stopPropagation();
+			e.preventDefault();
+			return false;
+		};
+		
+		/**
+		 * Internal handler for mouse input start
+		 * @private
+		 * @type {function(this:Mouse)}
+		 * @param {event} event The mouse event from the browser
+		 */
+		Mouse.prototype._handleMouseDown = function(e){
+			var rightclick;
+			var e = e || window.event;
+			if (e.which) rightclick = (e.which == 3);
+    		else if (e.button) rightclick = (e.button == 2);
+    		
+    		if(rightclick) singleton.rightPressed = true;
+			else singleton.pressed = true;
 			
-			Mouse.prototype.handleTouchMove = function(event){
-				
-				e = event || window.event;
-				e.stopPropagation();
-				e.preventDefault();
-				
-				singleton.touch.length = 0;
-				var newTouch;
-				for(var i=0; i<e.touches.length && i<singleton.touchLimit; i++){
-					newTouch = singleton.touchObjBank[i];
-					newTouch.x = ((e.touches[i].clientX - Viewport.xOffset) / Viewport.canvasRatio) / Viewport.globalScale;
-		        	newTouch.y = ((e.touches[i].clientY - Viewport.yOffset) / Viewport.canvasRatio) / Viewport.globalScale;
-					singleton.touch[i] = newTouch;
-				}
-				
-				if(singleton._registerGestures && singleton.currentGesture != null) singleton.currentGesture.addPoint(singleton._gesturePoint());
-			};
+			singleton._handleMouseMove(e);
+			singleton._touchRelay(e);
 			
-			Mouse.prototype.handleTouchStart = function(e){
-				var isFresh = (singleton.pressed == false);
-				singleton.handleTouchMove(e);
-				singleton.pressed = true;
-				e = e || window.event;
-				
-				singleton.handleTouchMove(e);
-				singleton._touchRelay(e);
-				
-				if(singleton._registerGestures && isFresh){
-					singleton.currentGesture = new Gesture();
-					singleton.currentGesture.addPoint(singleton._gesturePoint(true));
-				}
-				
-				e.stopPropagation();
-				e.preventDefault();
-				return false;
-			};
+			if(singleton._registerGestures){
+				singleton.currentGesture = new Gesture();
+				singleton.currentGesture.addPoint(singleton._gesturePoint());
+			}
+		};
+		
+		/**
+		 * Internal handler for mouse input end
+		 * @private
+		 * @type {function(this:Mouse)}
+		 * @param {event} event The mouse event from the browser
+		 */
+		Mouse.prototype._handleMouseUp = function(e){
+			singleton.currentGesture = null;
 			
-			Mouse.prototype._gesturePoint = function(first){
-				
-				return new GesturePoint((Browser.isMobile)?singleton.touch:[{x:singleton.mouse.x, y:singleton.mouse.y}], Arstider.timestamp());
-			};
+			var rightclick;
+			var e = e || window.event;
+			if (e.which) rightclick = (e.which == 3);
+    		else if (e.button) rightclick = (e.button == 2);
+    		
+    		if(rightclick) singleton.rightPressed = false;
+			else singleton.pressed = false;
 			
-			Mouse.prototype.handleTouchEnd = function(e){
-				singleton.currentGesture = null;
-				
-				singleton.pressed = false;  
-				if(singleton.releaseTrigger !== null){
-					singleton.releaseTrigger();
-					singleton.releaseTrigger = null;
-				}
-				singleton._input = true;
-				
-				setTimeout(function(){singleton.handleTouchMove(e);},10);
-				singleton._touchRelay(e);
-				
-				e = e || window.event;
-				e.stopPropagation();
-				e.preventDefault();
-				return false;
-			};
-			
-			Mouse.prototype.handleMouseDown = function(e){
-				var rightclick;
-				var e = e || window.event;
-				if (e.which) rightclick = (e.which == 3);
-    			else if (e.button) rightclick = (e.button == 2);
-    			
-    			if(rightclick){
-					singleton.rightPressed = true;
-				}
-				else{
-					singleton.pressed = true;
-				}
-				singleton.handleMouseMove(e);
-				singleton._touchRelay(e);
-				
-				if(singleton._registerGestures){
-					singleton.currentGesture = new Gesture();
-					singleton.currentGesture.addPoint(singleton._gesturePoint());
-				}
-			};
-			
-			Mouse.prototype.handleMouseUp = function(e){
-				singleton.currentGesture = null;
-				
-				singleton._input = true;
-				var rightclick;
-				var e = e || window.event;
-				if (e.which) rightclick = (e.which == 3);
-    			else if (e.button) rightclick = (e.button == 2);
-    			
-    			if(rightclick){
-					singleton.rightPressed = false;
-				}
-				else{
-					singleton.pressed = false;
-				}
-				singleton.handleMouseMove(e);
-				singleton._touchRelay(e);
-			};
-			
-			Mouse.prototype.handleMouseMove = function(event) {
-		        event = event || window.event; // IE-ism
-		        singleton.mouse.x = ((event.clientX - Viewport.xOffset) / Viewport.canvasRatio) / Viewport.globalScale;
-		        singleton.mouse.y = ((event.clientY - Viewport.yOffset) / Viewport.canvasRatio) / Viewport.globalScale;
-		        
-		        if(singleton._registerGestures && singleton.currentGesture != null) singleton.currentGesture.addPoint(singleton._gesturePoint());
-		   };
-			
-			singleton = new Mouse();
-			
-			return singleton;
-		});
+			singleton._handleMouseMove(e);
+			singleton._touchRelay(e);
+		};
+		
+		/**
+		 * Internal handler for mouse input movement
+		 * @private
+		 * @type {function(this:Mouse)}
+		 * @param {event} event The mouse event from the browser
+		 */
+		Mouse.prototype._handleMouseMove = function(event){
+	        event = event || window.event; // IE-ism
+	        singleton._mouse.x = ((event.clientX - Viewport.xOffset) / Viewport.canvasRatio) / Viewport.globalScale;
+	        singleton._mouse.y = ((event.clientY - Viewport.yOffset) / Viewport.canvasRatio) / Viewport.globalScale;
+	        
+	        if(singleton._registerGestures && singleton.currentGesture != null) singleton.currentGesture.addPoint(singleton._gesturePoint());
+	   };
+		
+		singleton = new Mouse();
+		
+		return singleton;
+	});
 })();

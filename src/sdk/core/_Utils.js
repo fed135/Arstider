@@ -725,15 +725,4 @@ require(["Arstider/Engine", "Arstider/Events"], function(Engine, Events){
 		
 		Events.broadcast(name, param, target);
 	};
-	
-	/**
-	 * Logs the map of event tables
-	 * @type {function}
-	 * @const
-	 */
-	Arstider.debugEventMap = function(){
-		if(!Engine.debug) return;
-		
-		Events._print();
-	};
 });

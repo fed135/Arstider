@@ -421,8 +421,6 @@
 				}
 			}, null, showFrames);
 				
-			Mouse.step();
-				
 			if(showFrames) singleton.profiler.drawFrames();
 			
 			singleton.removePending(singleton.currentScreen);
