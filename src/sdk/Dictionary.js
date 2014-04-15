@@ -5,9 +5,6 @@
  * @author frederic charette <fredericcharette@gmail.com>
  */
 
-/*
- * Self-invoked singleton wrapper
- */
 ;(function(){
 
 	var 

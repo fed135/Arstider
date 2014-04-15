@@ -6,16 +6,17 @@
  */
 ;(function(){
 	
-	/*
-	 * Singleton static
-	 * @private
-	 * @type {Fonts|null}
-	 */
-	var singleton = null;
+	var 
+		/**
+		 * Singleton static
+		 * @private
+		 * @type {Fonts|null}
+		 */
+		singleton = null
+	;
 	
 	/**
 	 * Font object constructor
-	 * @private
 	 * @constructor
 	 * @param {Object} props The optional build params
 	 */
@@ -93,6 +94,9 @@
 		this.loadCallbacks = Arstider.checkIn(props.loadCallbacks, []);
 	}
 	
+	/**
+	 * 
+	 */
 	Font.prototype._onFontLoaded = function(callback){
 		if(this.loaded && !this.temp){
 			callback();
@@ -102,6 +106,9 @@
 		this.loadCallbacks.push(callback);
 	};
 	
+	/**
+	 * 
+	 */
 	Font.prototype._runCallbacks = function(){
 		var i = this.loadCallbacks.length-1;
 		
@@ -137,14 +144,22 @@
 			 */
 			this.collection = {};
 		};
-			
+		
+		/**
+		 * 
+		 * @param {Object} name
+		 */
 		Fonts.prototype.get = function(name){
 			if(this.collection[name]) return this.collection[name];
 			
 			this.collection[name] = new Font({temp:true, name:name});
 			return this.collection[name];
 		};
-			
+		
+		/**
+		 * 
+		 * @param {Object} props
+		 */
 		Fonts.prototype.create = function(props){
 			
 			if(props.name == undefined){
@@ -160,6 +175,11 @@
 			return this.collection[props.name];
 		};
 		
+		/**
+		 * 
+		 * @param {Object} filename
+		 * @param {Object} callback
+		 */
 		Fonts.prototype.load = function(filename, callback){
 			var thisRef = this;
 			

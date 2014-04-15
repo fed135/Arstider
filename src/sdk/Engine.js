@@ -1,19 +1,26 @@
 /**
- * Engine Wrapper. 
+ * Engine 
  * 
- * Provides common private variables and methods for the Engine as well as
- * AMD Closure and prototypes.
- *
- * @author frederic charette <fredc@meetfidel.com>
+ * @version 1.1.2
+ * @author frederic charette <fredericcharette@gmail.com>
  */
 ;(function(){
 	
-	var singleton = null;
+	var 
+		/*
+		 * Singleton static
+		 * @private
+		 * @type {Engine|null}
+		 */
+		singleton = null
+	;
 	
+	/**
+	 * Defines Engine module
+	 */
 	define( "Arstider/Engine", [
 		"Arstider/Screen",
 		"Arstider/Buffer", 
-		"Arstider/DisplayObject",
 		"Arstider/Events",
 		"Arstider/Background",
 		"Arstider/Preloader",
@@ -21,35 +28,91 @@
 		"Arstider/core/Performance",
 		"Arstider/Debugger",
 		"Arstider/Mouse",
-		"Arstider/Browser",
 		"Arstider/Viewport",
 		"Arstider/core/Renderer"
-	], function (Screen, Buffer, DisplayObject, Events, Background, Preloader, GlobalTimers, Performance, Debugger, Mouse, Browser, Viewport, Renderer){
+	], function (Screen, Buffer, Events, Background, Preloader, GlobalTimers, Performance, Debugger, Mouse, Viewport, Renderer){
 		
 		if(singleton != null) return singleton;
 			
+		/**
+		 * Engine constructor
+		 * @constructor
+		 */
 		function Engine(){
-			this.name = "Arstider";
+			/**
+			 * Engine version
+			 * @type {string}
+			 */
 			this.version = "@version@";
-			
-			this.debug = true;
+			/**
+			 * Engine release target
+			 * @type {string}
+			 */
+			this.release = "@target@";
+			/**
+			 * Engine debug flag
+			 * @type {boolean}
+			 */
+			this.debug = @debug@;
+			/**
+			 * Whether or not the engine should skip the rendering of frames if performances are low
+			 * @type {boolean}
+			 */
 			this.allowSkip = true;
-				
+			
+			/**
+			 * Engine canvas element
+			 * @type {HTMLCanvasElement}
+			 */
 			this.canvas = null;
+			/**
+			 * Engine canvas context
+			 * @type {CanvasRenderingContext2D}
+			 */
 			this.context = null;
 			
+			/**
+			 * Request animation frame timer
+			 * @type {number}
+			 */
 			this.frameRequest = null;
-				
+			
+			/**
+			 * Visual profiler
+			 * @type {Debugger}
+			 */
 			this.profiler = null;
 				
+			/**
+			 * Current screen object
+			 * @type {Screen}
+			 */
 			this.currentScreen = null;
 			
+			/**
+			 * Stops rendering
+			 * @type {boolean}
+			 */
 			this.handbreak = false;
+			/**
+			 * Forces a stopped engine to remain paused until this gets reverted
+			 * @type {boolean}
+			 */
 			this.pausedByRequest = false;
 			
+			/**
+			 * Saved copy of a screen with a popup over it
+			 * @private
+			 * @type {Screen}
+			 */
 			this._savedScreen = null;
 		}
-			
+		
+		/**
+		 * Starts the engine on a defined HTML div tag
+		 * @type {function(this:Engine)}
+		 * @param {HTMLDivElement} tag The div to start the engine in
+		 */
 		Engine.prototype.start = function(tag){
 			if(this.debug){
 				this.profiler = new Debugger(this);
@@ -82,11 +145,20 @@
 			if(!this.pausedByRequest) this.play();
 		};
 		
+		/**
+		 * Sets the screen that will act as a preloader
+		 * @type {function(this:Engine)}
+		 * @param {Screen} preloaderScreen The screen to use
+		 */
 		Engine.prototype.setPreloaderScreen = function(preloaderScreen){
 			Preloader.setScreen(new Screen(preloaderScreen));
 			Preloader._screen.stage = singleton;
 		};
 		
+		/**
+		 * Steps the logic of the game (GlobalTimers)
+		 * @type {function(this:Engine)}
+		 */
 		Engine.prototype.stepLogic = function(){
 			if(singleton === null) return;
 			
@@ -97,10 +169,20 @@
 			if(singleton.currentScreen && singleton.currentScreen._update) singleton.currentScreen._update();
 		};
 		
+		/**
+		 * Private handler for catching script errors
+		 * @private
+		 * @type {function(this:Engine)}
+		 * @type {Error} e The error event
+		 */
 		Engine.prototype._handleError = function(e){
 			Events.broadcast("Engine.error", e);
 		};
-			
+		
+		/**
+		 * Starts the current screen. Called when the preloader completes
+		 * @type {function(this:Engine)}
+		 */
 		Engine.prototype.startScreen = function(){
 			Events.unbind("Preloader.loadingCompleted", singleton.startScreen);
 			
@@ -117,6 +199,11 @@
 			}
 		};
 			
+		/**
+		 * Starts preloading a screen
+		 * @type {function(this:Engine)}
+		 * @param {string} name The url of the screen to load (must match define!)
+		 */
 		Engine.prototype.loadScreen = function(name){
 			Events.unbind("Preloader.loadingCompleted", singleton.startScreen);
 			Events.bind("Preloader.loadingCompleted", singleton.startScreen);
@@ -126,7 +213,7 @@
 			Preloader.progress("__screen__", 0);
 			singleton.killScreen();
 			
-			require(["screens/"+name], function(_menu){
+			require([name], function(_menu){
 				
 				
 				singleton.currentScreen = new Screen(_menu, singleton);
@@ -138,6 +225,10 @@
 			});
 		};
 			
+		/**
+		 * Kills the current screen
+		 * @type {function(this:Engine)}
+		 */
 		Engine.prototype.killScreen = function(){
 			if(singleton.currentScreen != null){
 				singleton.currentScreen._unload();
@@ -147,7 +238,12 @@
 				if(Arstider.verbose > 1) console.warn("Arstider.Engine.killScreen: no current screen");
 			}
 		};
-			
+		
+		/**
+		 * Displays a screen while keeping the previous screen's state intact
+		 * @type {function(this:Engine)}
+		 * @param {string} name The url of the screen to load (must match define!)
+		 */
 		Engine.prototype.showPopup = function(name){
 			singleton.stop();
 				
@@ -156,7 +252,7 @@
 			singleton._savedScreen = singleton.currentScreen;
 			singleton.currentScreen = null;
 				
-			require(["screens/"+name], function(_menu){
+			require([name], function(_menu){
 				singleton.currentScreen = new Screen(_menu, singleton);
 				singleton.currentScreen.stage = singleton;
 				singleton.currentScreen.origin = singleton._savedScreen;
@@ -165,6 +261,10 @@
 			});
 		};
 			
+		/**
+		 * Kills the popup screen and returns to the previous screen in the state it was in
+		 * @type {function(this:Engine)}
+		 */
 		Engine.prototype.hidePopup = function(){
 			singleton.killScreen();
 				
@@ -173,6 +273,10 @@
 			if(singleton.currentScreen.onresume) singleton.currentScreen.onresume();
 		};
 			
+		/**
+		 * Starts rendering
+		 * @type {function(this:Engine)}
+		 */
 		Engine.prototype.play = function(){
 			if(Arstider.verbose > 2) console.warn("Arstider.Engine.play: playing...");
 			singleton.handbreak = false;
@@ -180,6 +284,10 @@
 			Events.broadcast("Engine.play", singleton);
 		};
 			
+		/**
+		 * Stops rendering
+		 * @type {function(this:Engine)}
+		 */
 		Engine.prototype.stop = function(){
 			if(Arstider.verbose > 2) console.warn("Arstider.Engine.stop: stopping...");
 			Mouse.reset();
@@ -187,6 +295,12 @@
 			Events.broadcast("Engine.stop", singleton);
 		};
 		
+		/**
+		 * Applies touch events to the canvas element recursively
+		 * @type {function(this:Engine)}
+		 * @param {Object} e The touch/mouse event
+		 * @param {Object|null} target The target to apply the event to (defaults to current screen) 
+		 */
 		Engine.prototype.applyTouch = function(e, target){
 			
 			target = target || singleton.currentScreen;
@@ -223,6 +337,11 @@
 			}
 		};
 		
+		/**
+		 * Recursively wipes pending deletion item (remove child is an async operation)
+		 * @type {function(this:Engine)}
+		 * @param {Object|null} target The target to check for pending deletion items in (defaults to current screen) 
+		 */
 		Engine.prototype.removePending = function(target){
 			if(target && target.children && target.children.length > 0){
 				for(i = target.children.length-1; i>=0; i--){
@@ -234,7 +353,11 @@
 				}
 			}
 		};
-			
+		
+		/**
+		 * Renders a frame
+		 * @type {function(this:Engine)}
+		 */
 		Engine.prototype.draw = function(){
 			//Declare vars
 			var 

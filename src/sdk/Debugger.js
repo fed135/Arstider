@@ -265,9 +265,9 @@
 		 * @type {function(this:Debugger)}
 		 */
 		Debugger.prototype.init = function(){
-			console.log("New instance of the "+this.engine.name + " Engine.");
-			console.log("Version "+this.engine.version);
-			console.log("DEBUG MODE.");
+			console.log("New instance of the Arstider Engine.");
+			console.log("Build: "+ this.engine.target+" Version: "+this.engine.version);
+			console.log("DEBUG MODE");
 			console.log("##################################################");
 			
 			this.step(this);
