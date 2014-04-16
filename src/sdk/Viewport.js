@@ -122,6 +122,43 @@
 			 * @type {string|null}
 			 */
 			this._cancelFullscreenEvent = null;
+			
+			/**
+			 * Indicates if geolocation feature is enabled or null if untested (displays prompt to user)
+			 * @type {boolean|null}
+			 */
+			this.geolocationEnabled = false;
+			
+			/**
+			 * Cached latest geolocation object
+			 * @private
+			 * @type {Object}
+			 */
+			this._geoloc = null;
+			
+			/**
+			 * Indicates if vibration feature is enabled
+			 * @type {boolean}
+			 */
+			this.vibrationEnabled = false;
+			
+			/**
+			 * Indicates if accelerometer feature is enabled
+			 * @type {boolean}
+			 */
+			this.accelerometerEnabled = false;
+			
+			/**
+			 * Current device tilt Object
+			 * @private
+			 * @type {Object}
+			 */
+			this._tilt = {x:0,y:0,z:0};
+			
+			/**
+			 * Tests features
+			 */
+			setTimeout(this.vibrate,0);
 		}
 		
 		/**
@@ -151,6 +188,17 @@
 				
 				this._requestFullscreenEvent = (this.tag.requestFullScreen)?"requestFullScreen":(this.tag.mozRequestFullScreen)?"mozRequestFullScreen":(this.tag.webkitRequestFullScreenWithKeys)?"webkitRequestFullScreenWithKeys":(this.tag.webkitRequestFullScreen)?"webkitRequestFullScreen":"FullscreenError";
 				this._cancelFullscreenEvent =  (window.document.cancelFullScreen)?"cancelFullScreen":(window.document.mozCancelFullScreen)?"mozCancelFullScreen":(window.document.webkitCancelFullScreen)?"webkitCancelFullScreen":"FullscreenError";
+				
+				var thisRef = this;
+				window.ondevicemotion = function(event) {
+					event = event || window.event;
+					if(event.accelerationIncludingGravity.x == null || event.accelerationIncludingGravity.y == null || event.accelerationIncludingGravity.z == null) return;
+					
+					thisRef.accelerometerEnabled = true;
+				    thisRef._tilt.x = event.accelerationIncludingGravity.x;  
+				    thisRef._tilt.y = event.accelerationIncludingGravity.y;  
+				    thisRef._tilt.z = event.accelerationIncludingGravity.z;  
+				};
 				
 				this._resize();
 				this._rotate();
@@ -283,6 +331,82 @@
 		 */
 		Viewport.prototype._pagehide = function(e){
 			Events.broadcast("Viewport.pagehide", singleton);
+		};
+		
+		/**
+		 * Returns the geolocation object
+		 * @type {function(this:Viewport)}
+		 * @param {function} callback The method to call once the geolocation object has returned
+		 */
+		Viewport.prototype.getGeolocation = function(callback){
+			if(this._geoloc == null){
+				this.updateGeolocation(callback);
+			}
+			else callback(this._geoloc);
+		};
+		
+		/**
+		 * Updates the geolocation object
+		 * @type {function(this:Viewport)}
+		 * @param {function} callback The method to call once the geolocation object has returned
+		 */
+		Viewport.prototype.updateGeolocation = function(callback){
+			var thisRef = this;
+			if(navigator.geolocation){
+				this.geolocationEnabled = true;
+				try{
+					navigator.geolocation.getCurrentPosition(function(p){
+						thisRef._geoloc = p;
+						if(callback) callback(thisRef._geoloc);
+					});
+				}
+				catch(e){
+					this.geolocationEnabled = false;
+					this._geoloc = {};
+					if(Arstider.verbose > 0) console.warn("Arstider.Viewport.updateGeolocation: ", e);
+				}
+			}
+			else{
+				this.geolocationEnabled = false;
+				this._geoloc = {};
+				if(callback) callback(this._geoloc);
+			}
+		};
+		
+		/**
+		 * Attempts to vibrate the device 
+		 * @type {function(this:Viewport)}
+		 * @param {Array} param The vibration pattern, as if calling the API 
+		 */
+		Viewport.prototype.vibrate = function(param){
+			param = param || 0;
+			
+			if(Browser.isMobile){
+				if("vibrate" in navigator){
+					try{
+						navigator.vibrate(0);
+						navigator.vibrate(param);
+					}
+					catch(e){
+						if(Arstider.verbose > 0) console.warn("Arstider.Browser.vibrate: error while trying to vibrate API may be broken");
+					}
+				}
+				else{
+					if(Arstider.verbose > 1) console.warn("Arstider.Browser.vibrate: feature not supported");
+				}
+			}
+			else{
+				if(Arstider.verbose > 2) console.warn("Arstider.Browser.vibrate: feature not supported");
+			}
+		};
+		
+		/**
+		 * Gets the current tilt of the device via the accelerometer
+		 * @type {function(this:Viewport)}
+		 * @return {Object} The current tilt {x:,y:,z:}
+		 */
+		Viewport.prototype.getDeviceTilt = function(){
+			return this._tilt;
 		};
 		
 		/**

@@ -83,7 +83,7 @@
 					track:true
 				}).send();
 			});
-			this.handle = new Howl({
+			this._handle = new Howl({
 				urls:[url+".mp3",url+".ogg"],
 				sprite:sprite
 			});

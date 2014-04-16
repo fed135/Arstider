@@ -152,31 +152,6 @@
 			return false;
 		};
 		
-		/**
-		 * Attempts to vibrate the device 
-		 * @type {function(this:Browser)}
-		 * @param {Array} param The vibration pattern, as if calling the API 
-		 */
-		Browser.prototype.vibrate = function(param){
-			if(this.isMobile){
-				if("vibrate" in navigator){
-					try{
-						navigator.vibrate(0);
-						navigator.vibrate(param);
-					}
-					catch(e){
-						if(Arstider.verbose > 0) console.warn("Arstider.Browser.vibrate: error while trying to vibrate API may be broken");
-					}
-				}
-				else{
-					if(Arstider.verbose > 1) console.warn("Arstider.Browser.vibrate: feature not supported");
-				}
-			}
-			else{
-				if(Arstider.verbose > 2) console.warn("Arstider.Browser.vibrate: feature not supported");
-			}
-		};
-		
 		singleton = new Browser();
 		return singleton;
 	});

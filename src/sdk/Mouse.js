@@ -384,7 +384,6 @@
 		 */
 		Mouse.prototype._handleTouchStart = function(e){
 			var isFresh = (singleton.pressed == false);
-			singleton.handleTouchMove(e);
 			singleton.pressed = true;
 			
 			singleton._handleTouchMove(e);
