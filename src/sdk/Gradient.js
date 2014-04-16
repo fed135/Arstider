@@ -1,5 +1,5 @@
 /**
- * GlobalTimers. 
+ * Gradient. 
  *
  * @version 1.1.2
  * @author frederic charette <fredericcharette@gmail.com>
@@ -43,7 +43,12 @@
 		function Gradient(type, x1, y1, x2, y2){	
 			y2 = (GameContainer.browserInfo.browserName === "Firefox") ? -y2 : y2;
 
-			this._grad = grad.context.createLinearGradient(x1,y1,x2,y2);
+			/**
+			 * Gradient data
+			 * @private
+			 * @type {nsIDOMCanvasGradient}
+			 */
+			this._pattern = grad.context.createLinearGradient(x1,y1,x2,y2);
 		}
 		
 		/**
@@ -56,15 +61,6 @@
 		Gradient.prototype.addColorStop = function(position, color){
 			this._grad.addColorStop(position, color);
 			return this;
-		};
-		
-		/**
-		 * Returns the gradient data
-		 * @type {function(this:Gradient)}
-		 * @return {Object} Returns the Gradient object
-		 */
-		Gradient.prototype.print = function(){
-			return this._grad;
 		};
 		
 		return Gradient;

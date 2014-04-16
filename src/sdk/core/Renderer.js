@@ -171,7 +171,7 @@
 			//Render
 			if(curChild.data){
 				Performance.draws++;
-				if(curChild.data.pattern){
+				if(curChild.data._pattern){
 					prevFill = this._context.fillStyle;
 					this._context.fillStyle = curChild.data.pattern;
 					this._context.fillRect(Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);

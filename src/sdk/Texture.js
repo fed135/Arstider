@@ -1,14 +1,25 @@
+/**
+ * Texture. 
+ *
+ * @version 1.1.2
+ * @author frederic charette <fredericcharette@gmail.com>
+ */
 ;(function(){
 
 	var 
+		/**
+		 * Texture buffer reference
+		 * @private
+		 * @type {Object|null}
+		 */
 		cnv = null
 	;
 
-/**
- * AMD Closure
- */	
+	/**
+	 * Defines the Texture module
+	 */	
 	define( "Arstider/Texture", ['Arstider/Buffer', 'Arstider/Bitmap'], function (Buffer, Bitmap) {
-	
+		
 		if(cnv == null){
 			cnv = new Buffer({
 				name:'Arstider_textureLoader',
@@ -16,34 +27,71 @@
 				height:100
 			});
 		}
-		
-		function Texture(url){
-			this.pattern = null;
-			this.url = url;
 			
-			this.loadAsset(url);
+		/**
+		 * Texture constructor
+		 * @constructor
+		 * @param {string|Image|HTMLCanvasElement} url The url or asset to use as texture
+		 */
+		function Texture(url){
+			/**
+			 * Texture data
+			 * @private
+			 * @type {nsIDOMCanvasPattern}
+			 */
+			this._pattern = null;
+			
+			/**
+			 * Safe copy of the url/data, in case we resize the texture and need to re-render
+			 * @private
+			 * @type {string|Image|HTMLCanvasElement}
+			 */
+			this._url = url;
+				
+			this.loadBitmap(url);
 		}
 		
-		Texture.prototype.loadAsset = function(url){
-			
+		/**
+		 * Loads the data, then calls to create the pattern
+		 * @type {function(this:Texture)}
+		 * @param {string|Image|HTMLCanvasElement} url
+		 */
+		Texture.prototype.loadBitmap = function(url){
+				
+			if(!(typeof url === 'string') && !(url instanceof String)){
+				thisRef._createPattern(url);
+				return;
+			}
+				
 			var thisRef = this;
 			
 			var req = new Bitmap(url, function(){
-				thisRef.pattern = cnv.context.createPattern(this.data, 'repeat');
+				thisRef._createPattern.apply(thisRef, [this.data]);
 			});
 		};
-			
+		
+		/**
+		 * Creates the texture pattern from the data
+		 * @private
+		 * @type {function(this:Texture)}
+		 * @param {Image|HTMLCanvasElement} data The data to create a texture from
+		 */
+		Texture.prototype._createPattern = function(data){
+			this._pattern = cnv.context.createPattern(data, 'repeat');
+		};
+		
+		/**
+		 * Changes the size of the texture
+		 * @type {function(this:Texture)}
+		 * @param {number} width The new width
+		 * @param {number} height The new height
+		 */
 		Texture.prototype.setSize = function(width, height){
 			cnv.setSize(width, height);
 			
-			this.loadAsset(this.url);
+			this.loadBitmap(this._url);
 		};
 			
-		Texture.prototype.print = function(){
-			return this.pattern;
-		};
-		
 		return Texture;
 	});
-
 })();

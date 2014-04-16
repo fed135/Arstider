@@ -58,7 +58,9 @@
 		 * @param {Object} elem A timer object to call step on every heartbeat
 		 */	
 		GlobalTimers.prototype.push = function(elem){
-			this.list.push(elem);
+			if(this.list.indexOf(elem) == -1){
+				this.list.push(elem);
+			}
 		};
 		
 		/**
@@ -67,13 +69,9 @@
 		 * @param {Object} elem The timer to remove
 		 */
 		GlobalTimers.prototype.remove = function(elem){
-			var i = this.list.length-1;
-			for(i; i>=0; i--){
-				if(elem == this.list[i]){
-					this.list.splice(i,1);
-					return;
-				}
-			}
+			var i = this.list.indexOf(elem);
+			if(i !== -1) return this.list.splice(i,1);
+			
 			if(Arstider.verbose > 2) console.warn("Arstider.GlobalTimers.remove: timer not in list, nothing was removed");
 		};
 			

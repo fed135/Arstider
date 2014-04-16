@@ -203,7 +203,7 @@
 	/**
 	 * Defines the Mouse module
 	 */
-	define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport"], function (Browser, Viewport){
+	define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Events"], function (Browser, Viewport, Events){
 			
 		if(singleton != null) return singleton;
 		
@@ -272,6 +272,14 @@
 				window.addEventListener('mouseup', this._handleMouseUp);
 				window.addEventListener('mousedown', this._handleMouseDown);
 				window.addEventListener('mousemove',  this._handleMouseMove);
+				
+				if(Viewport.container){
+					Viewport.container.addEventListener("mousewheel", this._mouseWheel, false);
+					Viewport.container.addEventListener("DOMMouseScroll", this._mouseWheel, false);
+				}
+				else{
+					if(Arstider.verbose > 0) console.warn("Arstider.Mouse: no Viewport container, cannot bind mouse wheel");
+				}
 			}
 		}
 		
@@ -470,7 +478,19 @@
 	        singleton._mouse.y = ((event.clientY - Viewport.yOffset) / Viewport.canvasRatio) / Viewport.globalScale;
 	        
 	        if(singleton._registerGestures && singleton.currentGesture != null) singleton.currentGesture.addPoint(singleton._gesturePoint());
-	   };
+		};
+		
+		/**
+		 * Internal handler for a mouse wheel event
+		 * @private
+		 * @type {function(this:Mouse)}
+		 * @param {event} event The mouse event from the browser
+		 */
+		Mouse.prototype._mouseWheel = function(event){
+			event = event || window.event; // IE-ism
+			var delta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
+			Events.broadcast("Mouse.wheel", delta);
+		};
 		
 		singleton = new Mouse();
 		

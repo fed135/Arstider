@@ -1,40 +1,135 @@
-;(function(){
+/**
+ * Viewport. 
+ *
+ * @version 1.1.2
+ * @author frederic charette <fredericcharette@gmail.com>
+ */
+	
+ ;(function(){
 
 	var 
+		/**
+		 * Singleton static
+		 * @private
+		 * @type {Viewport|null}
+		 */
 		singleton = null,
+		/**
+		 * Portrait orientation static
+		 * @private
+		 * @const
+		 * @type {string}
+		 */
 		PORTRAIT = "portrait",
+		/**
+		 * Landscape orientation static
+		 * @private
+		 * @const
+		 * @type {string}
+		 */
 		LANDSCAPE = "landscape"
 	;
 	
+	/**
+	 * Defines the Viewport module
+	 */	
 	define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], function(Browser, Events){
+		
 		if(singleton != null) return singleton;
 		
+		/**
+		 * Viewport constructor
+		 * @constructor
+		 */
 		function Viewport(){
+			/**
+			 * The main canvas html tag element
+			 * @type {HTMLCanvasElement|null}
+			 */
 			this.tag = null;
-			
+			/**
+			 * Current device orientation
+			 * @type {string|null}
+			 */
 			this.orientation = null;
-				
+			/**
+			 * Current canvas scale ratio (automatically scales on smaller resolution devices)
+			 * @type {number}
+			 */
 			this.canvasRatio = 1;
 			
+			/**
+			 * Canvas left offset in the parent in pixel (automatically centers in the window)
+			 * @type {number}
+			 */
 			this.xOffset = 0;
+			/**
+			 * Canvas left offset in the parent in pixel (automatically centers in the window)
+			 * @type {number}
+			 */
 			this.yOffset = 0;
-				
+			/**
+			 * Canvas visible height (not cut-off by frame's smaller resolution)
+			 * @type {number}
+			 */
 			this.visibleHeight = 0;
+			/**
+			 * Canvas visible width (not cut-off by frame's smaller resolution)
+			 * @type {number}
+			 */
 			this.visibleWidth = 0;
-				
+			
+			/**
+			 * Game global scale (usefull for pixel-art style games) 
+			 * @type {number}
+			 */
 			this.globalScale = 1;	
 			
+			/**
+			 * Maximum visible width
+			 * @type {number}
+			 */
 			this.maxWidth = 1136;
+			/**
+			 * Maximum visible height
+			 * @type {number}
+			 */
 			this.maxHeight = 672;
+			/**
+			 * Minimum visible width
+			 * @type {number}
+			 */
 			this.minWidth = 960;
+			/**
+			 * Minimum visible height
+			 * @type {number}
+			 */
 			this.minHeight = 536;
 			
+			/**
+			 * Main canvas tag parent node
+			 * @type {HTMLDivElement}
+			 */
 			this.container = null;
 			
+			/**
+			 * Vendor prefixed fullscreen event name
+			 * @type {string|null}
+			 */
 			this._requestFullscreenEvent = null;
+			/**
+			 * Vendor prefixed fullscreen event name
+			 * @type {string|null}
+			 */
 			this._cancelFullscreenEvent = null;
 		}
-			
+		
+		/**
+		 * Initializes the main canvas tag, adds the listeners and repositions the game in it's container
+		 * @type {function(this:Viewport)}
+		 * @param {string} tag The tag id in which to initialize the engine
+		 * @param {Buffer} canvas The Buffer object to append to the tag
+		 */
 		Viewport.prototype.init = function(tag, canvas){
 			this.container = document.getElementById(tag);
 			if(this.container){
@@ -54,9 +149,6 @@
 				window.document.addEventListener("unload", this._unload);
 				window.addEventListener('pagehide', this._pagehide);
 				
-				this.container.addEventListener("mousewheel", this._mouseWheel, false);
-				this.container.addEventListener("DOMMouseScroll", this._mouseWheel, false);
-				
 				this._requestFullscreenEvent = (this.tag.requestFullScreen)?"requestFullScreen":(this.tag.mozRequestFullScreen)?"mozRequestFullScreen":(this.tag.webkitRequestFullScreenWithKeys)?"webkitRequestFullScreenWithKeys":(this.tag.webkitRequestFullScreen)?"webkitRequestFullScreen":"FullscreenError";
 				this._cancelFullscreenEvent =  (window.document.cancelFullScreen)?"cancelFullScreen":(window.document.mozCancelFullScreen)?"mozCancelFullScreen":(window.document.webkitCancelFullScreen)?"webkitCancelFullScreen":"FullscreenError";
 				
@@ -68,6 +160,12 @@
 			}
 		};
 		
+		/**
+		 * Enters the fullscreen mode
+		 * @type {function(this:Viewport)}
+		 * @param {boolean|null} scale Whether to scale the game or not
+		 * @return {?=} The result of the fullscreen request
+		 */
 		Viewport.prototype.enterFullScreen = function(scale){
 			
 			scale = Arstider.checkIn(scale, false);
@@ -82,6 +180,11 @@
 			return res;
 		};
 		
+		/**
+		 * Leaves the fullscreen mode
+		 * @type {function(this:Viewport)}
+		 * @return {?=} The result of the fullscreen request
+		 */
 		Viewport.prototype.quitFullScreen = function(){
 			var res = window.document[this._cancelFullscreenEvent]();
 			
@@ -90,11 +193,12 @@
 			return res;
 		};
 		
-		Viewport.prototype._mouseWheel = function(e){
-			var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
-			Events.broadcast("Mouse.wheel", delta);
-		};
-			
+		/**
+		 * Internal handler for container resize
+		 * @private
+		 * @type {function(this:Viewport)}
+		 * @param {event} e Event from the browser
+		 */
 		Viewport.prototype._resize = function(e){
 			var windowW = window.innerWidth;
 			var windowH = window.innerHeight;
@@ -145,6 +249,12 @@
 			Events.broadcast("Viewport.resize", singleton);
 		};
 		
+		/**
+		 * Internal handler for container orientation change
+		 * @private
+		 * @type {function(this:Viewport)}
+		 * @param {event} e Event from the browser
+		 */
 		Viewport.prototype._rotate = function(e){
 			if(window.orientation){
 				if (window.orientation === -90 || window.orientation === 90) singleton.orientation = LANDSCAPE;
@@ -155,14 +265,31 @@
 			Events.broadcast("Viewport.rotate", singleton);
 		};
 		
+		/**
+		 * Internal handler for container unload
+		 * @private
+		 * @type {function(this:Viewport)}
+		 * @param {event} e Event from the browser
+		 */
 		Viewport.prototype._unload = function(e){
 			Events.broadcast("Viewport.unload", singleton);
 		};
 		
+		/**
+		 * Internal handler for container pagehide (mobile process kill or put in idle mode)
+		 * @private
+		 * @type {function(this:Viewport)}
+		 * @param {event} e Event from the browser
+		 */
 		Viewport.prototype._pagehide = function(e){
 			Events.broadcast("Viewport.pagehide", singleton);
 		};
 		
+		/**
+		 * Removes browser decorations and extra tabs ***see platform limitations***
+		 * @type {function(this:Viewport)}
+		 * @param {?=} target Optional window type element to remove browser decorations from 
+		 */
 		Viewport.prototype.removeDecorations = function(target){
 			target = target || window;
 			if(target.locationbar) target.locationbar.visible=false;
@@ -173,6 +300,11 @@
 			if(target.toolbar) target.toolbar.visible=false;
 		};
 		
+		/**
+		 * Updates the game's global scale
+		 * @type {function(this:Viewport)}
+		 * @param {number} num The new global scale of the game
+		 */
 		Viewport.prototype.setGlobalScale = function(num){		
 			var numRevert = 1/this.globalScale;
 			this.maxWidth = this.maxWidth / numRevert;

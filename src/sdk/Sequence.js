@@ -41,32 +41,33 @@ define( "Arstider/Sequence", [], function () {
 	/**
 	 * Draws the current Sprite onto the canvas
 	 * @this {Sequence}
+	 * @type {function(this:Sequence)}
 	 * @param {number} time The amount of time in seconds between frames
 	 * @param {Array} frames The frame indexes in the order they will be displayed
 	 * @param {boolean|number} stop The number of loops before the animation stops (accepts boolean for backwards compatibility)
-	 * @return 
+	 * @return {Sequence} The instance of Sequence, for chaining purpose
 	 */
-			Sequence.prototype.then = function(parA, frames, stop){
-				if(parA instanceof Function || typeof parA === "function") this.callbacks.push(parA);
-				else if(parA instanceof String || typeof parA === "string") this.callbacks.push(function(){
-					this.currentAnim = this.currentAnim.sheet[parA];
-					this.rewind();
-				});
-				else this.chainedAnim = new Sequence(this.sheet, parA, frames, stop);
-				return this.chainedAnim;
-			};
+	Sequence.prototype.then = function(parA, frames, stop){
+		if(parA instanceof Function || typeof parA === "function") this.callbacks.push(parA);
+		else if(parA instanceof String || typeof parA === "string") this.callbacks.push(function(){
+			this.currentAnim = this.currentAnim.sheet[parA];
+			this.rewind();
+		});
+		else this.chainedAnim = new Sequence(this.sheet, parA, frames, stop);
+		return this.chainedAnim;
+	};
 			
-			/**
-			 * Adds a function to the list of callbacks
-			 *
-			 * @this {Sequence}
-			 * @param {Function} fct The function to add to the list of callbacks that run after every sequence.
-			 * @return @this
-			 */
-			Sequence.prototype.callback = function(fct){
-				this.callbacks.push(fct);
-				return this;
-			};
+	/**
+	 * Adds a function to the list of callbacks
+	 * @this {Sequence}
+	 * @type {function(this:Sequence)}
+	 * @param {function} fct The function to add to the list of callbacks that run after every sequence.
+	 * @return {Sequence} The instance of Sequence, for chaining purpose
+	 */
+	Sequence.prototype.callback = function(fct){
+		this.callbacks.push(fct);
+		return this;
+	};
 			
-			return Sequence;
-	});
+	return Sequence;
+});

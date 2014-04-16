@@ -1,7 +1,6 @@
 /**
  * Text Field. 
- *
- * @version 1.1
+ * @version 1.1.3
  * @author frederic charette <fredericcharette@gmail.com>
  */
 
@@ -27,7 +26,6 @@
 	
 	/**
 	 * Utility method to calculate the size in pixel of some text rendered with a set font
-	 * 
 	 * @private
 	 * @param {CanvasRenderingContext2D} context The Context to use for testing
 	 * @param {Obejct} font The font object
@@ -48,7 +46,6 @@
 	
 	/**
 	 * Method for text-wrap and multiline TEXT, not sequences
-	 * 
 	 * @private
 	 * @param {CanvasRenderingContext2D} context The Textfield's context
 	 * @param {string} myText The full string to wrap/multiline
@@ -103,9 +100,7 @@
 					y += context.lineSpacing;
 					lineNum++;
 		       	}
-		       	else {
-		       		line = testLine;
-		       	}
+		       	else line = testLine;
 			}
 		    if(strokeText){
 		 		context.strokeText(line, ((lineNum === 0)?x:(otherLineX == undefined)?x:otherLineX), y + (inc*context.lineSpacing));
@@ -137,8 +132,7 @@
 		if(entityRef == null) entityRef = new Entity();
 		
 		/**
-		 * Creates an instance of TextField.
-		 *
+		 * TextField constructor.
 		 * @constructor
 		 * @this {TextField}
 		 * @param {Object=} props Can optionally overwrite build properties of the entity    
@@ -211,16 +205,13 @@
 			Arstider.Super(this, Entity, props);
 		};
 		
-		/**
-		 * Defines parent module
-		 */
 		Arstider.Inherit(TextField, Entity);
 			
 		/**
 		 * Kills the TextField's Buffer(s).
-		 *
 		 * @override
 		 * @this {TextField}
+		 * @type {function(this:TextField)}
 		 */
 		TextField.prototype.killBuffer = function(){
 			if(this.data.kill) this.data.kill();
@@ -231,6 +222,7 @@
 		/**
 		 * Sets the text of the TextField and re-renders it's data.
 		 * @this {TextField}
+		 * @type {function(this:TextField)}
 		 * @param {string} name The desired text.
 		 */
 		TextField.prototype.setText = function(txt, parse){
@@ -251,6 +243,7 @@
 		/**
 		 * Sets the font of the TextField and re-renders it's data.
 		 * @this {TextField}
+		 * @type {function(this:TextField)}
 		 * @param {Font|Object} name The desired text.
 		 */
 		TextField.prototype.setFont = function(font){
@@ -281,6 +274,7 @@
 		 * Makes the buffer to draw the text in
 		 * @this {TextField}
 		 * @private
+		 * @type {function(this:TextField)}
 		 */
 		TextField.prototype._makeBuffer = function(){
 			
@@ -312,6 +306,13 @@
 			this.data.setSize(this.width, this.height);
 		};
 		
+		/**
+		 * Organizes the list of string segments so they are properly positioned
+		 * @this {TextField}
+		 * @private
+		 * @type {function(this:TextField)}
+		 * @param {number} maxWidth The maximum width allowed
+		 */
 		TextField.prototype._renderSegmentList = function(maxWidth){
 			var startX = this._font.fontOffsetX + this.padding;
 			var startY = this._font.fontOffsetY + this.padding + this._font.lineSpacing * 0.5;
@@ -335,6 +336,15 @@
 		
 		/**
 		 * Renders a single segment of text with over-ruling styles
+		 * @this {TextField}
+		 * @private
+		 * @type {function(this:TextField)}
+		 * @param {Object} segment The segment object to render
+		 * @param {number} startX The starting x offset for typing
+		 * @param {number} startY The starting y offset for typing
+		 * @param {number|null} iniX New line x position
+		 * @param {boolean|null} wrapped Is text wrapped or not (multi-lined)
+		 * @return {Object} The rendered segment with it's visible width and height, so to position the next segments
 		 */
 		TextField.prototype._renderSegment = function(segment, startX, startY, iniX, wrapped){
 			
@@ -381,12 +391,8 @@
 				return wrapPos;
 			}
 			else{
-				//render segment
-				if(this.strokeText){
-					this.data.context.strokeText(segment.text, startX, startY);
-				}
+				if(this.strokeText) this.data.context.strokeText(segment.text, startX, startY);
 				if(this.fillText){
-					//Prevent shadow from being applied twice- and over the already placed stroke
 					if(this.strokeText && fontCopy.shadowColor){
 						oldShadow = this.data.context.shadowColor;
 						this.data.context.shadowColor = "transparent";
@@ -413,12 +419,11 @@
 		
 		/**
 		 * Renders the text and it's style into a buffer. Saves on context transformation. 
-		 *
 		 * @this {TextField}
 		 * @private
-		 * @param {CanvasContext} buff The context to use as buffer.
+		 * @type {function(this:TextField)}
 		 */
-		TextField.prototype.render = function(buff){
+		TextField.prototype.render = function(){
 			
 			var 
 				i,
@@ -452,21 +457,13 @@
 			else if(this._font.textAlign === "right") xShift = this.width - this.padding;
 			
 			if(this.textWrap === true && !this._textWrappingError){
-				if(this._BBparsed){
-					this._renderSegmentList(this.width);
-				}
-				else{
-					wrapText(this.data.context, this._textValue, this.strokeText, this.fillText, xShift + this._font.fontOffsetX, this.padding + this._font.fontOffsetY, this.width - (this.padding*2));
-				}
+				if(this._BBparsed) this._renderSegmentList(this.width);
+				else wrapText(this.data.context, this._textValue, this.strokeText, this.fillText, xShift + this._font.fontOffsetX, this.padding + this._font.fontOffsetY, this.width - (this.padding*2));
 			}
 			else{
-				if(this._BBparsed){
-					this._renderSegmentList();
-				}
+				if(this._BBparsed) this._renderSegmentList();
 				else{
-					if(this.strokeText){
-						this.data.context.strokeText(this._textValue, xShift  + this._font.fontOffsetX, this.padding + this._font.fontOffsetY + this._font.lineSpacing * 0.5);
-					}
+					if(this.strokeText) this.data.context.strokeText(this._textValue, xShift  + this._font.fontOffsetX, this.padding + this._font.fontOffsetY + this._font.lineSpacing * 0.5);
 					if(this.fillText){
 						//Prevent shadow from being applied twice- and over the already placed stroke
 						if(this.strokeText && this._font.shadowColor){
