@@ -51,6 +51,7 @@
 		 * @type {function(this:Buffer)}
 		 */
 		Buffer.prototype.kill = function(){
+			delete Arstider.bufferPool[this.name];
 			this.width = 0;
 			this.height = 0;
 			this.tag = null;
