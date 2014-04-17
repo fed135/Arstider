@@ -244,6 +244,16 @@ define( "Arstider/Tween", ["Arstider/Easings", "Arstider/GlobalTimers"], functio
 	};
 	
 	/**
+	 * Resumes the tween
+	 * @type {function(this:Tween)}
+	 * @return {Tween} Returns self for chaining
+	 */
+	Tween.prototype.resume = function(){
+		if(!this.completed) this.running = true;
+		return this;
+	};
+	
+	/**
 	 * Adds an idle step
 	 * @type {function(this:Tween)}
 	 * @param {number} time The idle time in MS
