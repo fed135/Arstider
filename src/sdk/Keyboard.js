@@ -36,6 +36,7 @@
 	 * @return {string} The readable character name
 	 */
 	function keyCodeToCharName(code){
+		if(code == 16) return "shift";
 		if(code == 18) return "alt";
 		if(code == 13) return "enter";
 		if(code == 27) return "esc";
@@ -56,6 +57,11 @@
 		keyMap[key] = 1;
 		
 		runCallbacks(key, "down");
+		
+		var e = event || window.event;
+		e.stopPropagation();
+		e.preventDefault();
+		return false;
 	});
 	
 	/**
@@ -67,17 +73,12 @@
 		keyMap[key] = 1;
 		
 		runCallbacks(key, "up");
+		
+		var e = event || window.event;
+		e.stopPropagation();
+		e.preventDefault();
+		return false;
 	});
-	
-	/**
-	 * Prevent arrow scrolling
-	 */
-	window.addEventListener('keydown',  function(e){
-		if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) {
-			e.preventDefault();
-			return false;
-		};
-	},false);
 	
 	/**
 	 * Runs the list of callbacks associated with the keyboard event processed
