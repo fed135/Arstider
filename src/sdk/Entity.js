@@ -636,8 +636,8 @@
 		 * @return {boolean} Are the coordinates within the zone of the Entity
 		 */
 		Entity.prototype.isTouched = function(x,y){
-			if(x > this.global.x && x < this.global.x + (this.global.width/this.global.scaleX)){
-				if(y > this.global.y && y < this.global.y + (this.global.height/this.global.scaleY)) return true;
+			if(x > this.global.x && x < this.global.x + (this.width * this.global.scaleX)){
+				if(y > this.global.y && y < this.global.y + (this.height * this.global.scaleY)) return true;
 			}
 			return false;
 		};	

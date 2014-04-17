@@ -119,19 +119,18 @@
 				this.name = 'unknown';
 			}
 			
-			this.isSupported = this._checkSupport();
+			this.isSupported = this.checkSupport();
 		}
 			
 		/**
 		 * Checks if the browser if supported
-		 * @private
 		 * @type {function(this:Browser)}
 		 */
-		Browser.prototype._checkSupport = function(){
+		Browser.prototype.checkSupport = function(list){
 		
 			var 
 				i = 0,
-				requirements = [
+				requirements = list || [
 					{"name":"ie","minVersion":8},
 					{"name":"firefox","minVersion":3.5},
 					{"name":"safari","minVersion":5},

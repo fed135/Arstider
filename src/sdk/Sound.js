@@ -139,6 +139,11 @@
 		 * @param {function|null} callback Optional callback function
 		 */
 		Sound.prototype.play = function(id, callback){
+			if(!singleton.sounds[id]){
+				if(Arstider.verbose > 1) console.warn("Arstider.Sound.play: sound '", id, "' does not exist");
+				return;
+			}
+			
 			if(singleton._fileInPipe){
 				singleton._handle.play(id);
 				if(singleton.sounds[id].loop === true){

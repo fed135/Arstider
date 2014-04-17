@@ -143,8 +143,8 @@
 				
 			//Update globals
 			if(curChild.global && curChild.parent){
-				curChild.global.x = _currentX;
-				curChild.global.y = _currentY;
+				curChild.global.x = (isComplex)?(curChild.parent.global.x + curChild.x):_currentX;
+				curChild.global.y = (isComplex)?(curChild.parent.global.y + curChild.y):_currentY;
 				curChild.global.scaleX = curChild.scaleX * curChild.parent.scaleX;
 				curChild.global.scaleY = curChild.scaleY * curChild.parent.scaleY;
 				curChild.global.width = curChild.width * curChild.global.scaleX;

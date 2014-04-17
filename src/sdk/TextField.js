@@ -214,7 +214,7 @@
 		 * @type {function(this:TextField)}
 		 */
 		TextField.prototype.killBuffer = function(){
-			if(this.data.kill) this.data.kill();
+			if(this.data && this.data.kill) this.data.kill();
 			
 			this.data = null;
 		};

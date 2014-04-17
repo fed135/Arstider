@@ -380,12 +380,13 @@
 		 */
 		Viewport.prototype.vibrate = function(param){
 			param = param || 0;
+			var vibrate = window.navigator.vibrate || window.navigator.webkitVibrate || window.navigator.mozVibrate || window.navigator.msVibrate;
 			
 			if(Browser.isMobile){
-				if("vibrate" in navigator){
+				if(vibrate){
 					try{
-						navigator.vibrate(0);
-						navigator.vibrate(param);
+						vibrate(0);
+						vibrate(param);
 					}
 					catch(e){
 						if(Arstider.verbose > 0) console.warn("Arstider.Browser.vibrate: error while trying to vibrate API may be broken");

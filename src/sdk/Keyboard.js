@@ -109,7 +109,9 @@
 		 * Keyboard constructor
 		 * @constructor
 		 */
-		function Keyboard(){}
+		function Keyboard(){
+			this.enabled = true;
+		}
 		
 		/**
 		 * Binds an event to a callback
@@ -119,6 +121,8 @@
 		 * @param {Object} callback The callback function
 		 */
 		Keyboard.prototype.bind = function(key, action, callback){
+			if(!this.enabled) return;
+			
 			if(binds[key.toLowerCase()] == undefined){
 				binds[key.toLowerCase()] = [];
 			}
