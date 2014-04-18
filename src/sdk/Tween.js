@@ -100,7 +100,7 @@ define( "Arstider/Tween", ["Arstider/Easings", "Arstider/GlobalTimers"], functio
 		this.startTime = 1;
 		this.time = this.startTime;
 		this.callback = callback;
-		this.callbackOption = Arstider.checkIn(option, []);
+		this.callbackOption = [Arstider.checkIn(option, null)];
 	}
 	
 	/**
@@ -292,7 +292,7 @@ define( "Arstider/Tween", ["Arstider/Easings", "Arstider/GlobalTimers"], functio
 	Tween.prototype.rewind = function(){
 		this._repeat++;
 		if(this.maxLoop && this._repeat > this.maxLoop){
-			this.completed = true;
+			this.stop();
 			//TODO:Make loop a normal step that can have a following set of tweens, multiple loop sections in a single tween
 			return;
 		} 
@@ -301,7 +301,7 @@ define( "Arstider/Tween", ["Arstider/Easings", "Arstider/GlobalTimers"], functio
 		for(var i = this._stack.length-1; i>=0; i--){
 			this._stack[i].rewind();
 		}
-				
+		this.step();	
 		return this;
 	};
 	

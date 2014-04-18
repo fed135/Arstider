@@ -74,6 +74,10 @@
 			
 			if(Arstider.verbose > 2) console.warn("Arstider.GlobalTimers.remove: timer not in list, nothing was removed");
 		};
+		
+		GlobalTimers.prototype.clean = function(){
+			this.list = [];
+		};
 			
 		singleton = new GlobalTimers();
 		return singleton;	
