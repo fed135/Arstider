@@ -59,6 +59,7 @@
 		</antcall>
 			
 		<delete file="${dest}/_temp.js" />
+		<echo># Build completed</echo>
 	</target>
 	
 	<target name="-build.minify.offline">
@@ -66,11 +67,13 @@
 	</target>
 	
 	<target name="-build.minify.online">
+		<echo> - running compile request...</echo>
 		<exec executable="python" failonerror="true">
 			<arg line="./tools/closureMinifier.py ${dest}/_temp.parsed.js ${dest}/Arstider.${target}.js ${compiler.level}" />
 		</exec>
 		
 		<delete file="${dest}/_temp.parsed.js" />
+		<echo> - done</echo>
 	</target>
 	
 	<target name="build.documentation" description="documentation builder">
