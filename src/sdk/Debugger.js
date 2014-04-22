@@ -183,8 +183,8 @@
 		 * @type {function(this:Debugger)}
 		 */
 		Debugger.prototype.drawFrames = function(){
-			if(this.engine.debug && this.showFrames){
-				this.engine.context.drawImage(this.framesImg,0,0,1136,672);
+			if(this.engine.debug && this.showFrames && this.framesImg){
+				this.engine.context.drawImage(this.framesImg,0,0);
 			}
 		};
 		
@@ -266,7 +266,7 @@
 		 */
 		Debugger.prototype.init = function(){
 			console.log("New instance of the Arstider Engine.");
-			console.log("Build: "+ this.engine.target+" Version: "+this.engine.version);
+			console.log("Build: "+ this.engine.release+" Version: "+this.engine.version);
 			console.log("DEBUG MODE");
 			console.log("##################################################");
 			

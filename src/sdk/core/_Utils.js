@@ -375,7 +375,7 @@ Arstider.clearBlobUrls = function(){
 /**
  * Image Transformations, requiring Buffer
  */
-require(["Arstider/Buffer"], function(Buffer){
+require(["Arstider/Buffer", "Arstider/Browser"], function(Buffer, Browser){
 	
 	/**
 	 * Set render style for canvas tags 
