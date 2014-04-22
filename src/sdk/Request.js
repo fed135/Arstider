@@ -50,6 +50,8 @@
 		]
 	;
 	
+	window.URL = window.URL || window.webkitURL || error;
+	
 	/**
 	 * Look for a call in the list of pending calls
 	 * @private

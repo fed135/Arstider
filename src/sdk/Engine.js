@@ -312,6 +312,8 @@
 				i
 			;
 			
+			if(mouseX == -1 && mouseY == -1) return;
+			
 			if(target && target.children && target.children.length > 0){
 				for(i = target.children.length-1; i>=0; i--){
 					if(target && target.children && target.children[i] && !target.children[i].__skip){
@@ -401,6 +403,7 @@
 			
 			//Run through the elements and draw them at their global x and y with their global width and height
 			Renderer.draw(singleton, singleton.currentScreen, function(e){
+				if(mouseX == -1 && mouseY == -1) return;
 				if(e.isTouched(mouseX, mouseY)){
 					if(!e._hovered) e._onhover();
 					if(!Mouse.pressed) e._preclick = true;
