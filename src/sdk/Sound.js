@@ -19,7 +19,7 @@
 	/**
 	 * Defines the Sound module
 	 */
-	define( "Arstider/Sound", ["howler", "Arstider/Browser", "Arstider/Viewport"], function (howlerreq, Browser,Viewport) {
+	define( "Arstider/Sound", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Request"], function (Browser,Viewport, Request) {
 		
 		if(singleton != null) return singleton;
 		
@@ -59,6 +59,14 @@
 		 * @param {string} url The url of the 
 		 */
 		Sound.prototype._init = function(url){
+			/**
+			 * Check Howler presence
+			 */
+			if(!Howl){
+				if(Arstider.verbose > 0) console.warn("Arstider.Sound._init: sounds disabled, Howler not loaded");
+				return;
+			}
+			
 			var 
 				i,
 				sprite = {empty:[0,1]}
@@ -73,16 +81,15 @@
 			/**
 			 * Preload the sound sprite
 			 */
-			require(["Arstider/Request"], function(Request){
-				var ext = ".mp3";
-				if(Browser.name == "firefox") ext = ".ogg";
-				
-				var r = new Request({
-					url:url+ext,
-					caller:this,
-					track:true
-				}).send();
-			});
+			var ext = ".mp3";
+			if(Browser.name == "firefox") ext = ".ogg";
+			
+			var r = new Request({
+				url:url+ext,
+				caller:this,
+				track:true
+			}).send();
+			
 			this._handle = new Howl({
 				urls:[url+".mp3",url+".ogg"],
 				sprite:sprite
@@ -119,12 +126,17 @@
 		 */
 		Sound.prototype.load = function(url, obj, callback){
 			if(obj instanceof String || typeof obj == "string"){
-				var thisRef = this;
-				require(["textLib!./"+obj],function(file){
-					thisRef.sounds = JSON.parse(file);
-					if(callback) callback();
-					thisRef._init(url);
-				});
+				var req = new Request({
+					url:obj,
+					caller:this,
+					track:true,
+					type:"json",
+					callback:function(file){
+						this.sounds = file;
+						if(callback) callback();
+						this._init(url);
+					}
+				}).send();
 			}
 			else{
 				this.sounds = obj;
@@ -139,6 +151,11 @@
 		 * @param {function|null} callback Optional callback function
 		 */
 		Sound.prototype.play = function(id, callback){
+			if(!singleton._handle){
+				if(Arstider.verbose > 0) console.warn("Arstider.Sound.play: sounds disabled, Howler not loaded");
+				return;
+			}
+			
 			if(!singleton.sounds[id]){
 				if(Arstider.verbose > 1) console.warn("Arstider.Sound.play: sound '", id, "' does not exist");
 				return;

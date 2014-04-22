@@ -18,9 +18,9 @@
 	/**
 	 * Defines the GameData Module
 	 */	
-	define( "Arstider/GameData", ["Arstider/core/Storage"], function (Storage){
+	define( "Arstider/GameData", ["Arstider/core/Storage", "Arstider/Request"], function (Storage, Request){
 		
-		if(singleton != null){return singleton;}
+		if(singleton != null) return singleton;
 			
 		function GameData(){
 			
@@ -46,13 +46,17 @@
 		 * @param {Object} callback The callback function to call once the file has been parsed
 		 */
 		GameData.prototype.load = function(filename, callback){
-			var thisRef = this;
-		
-			require(["textLib!./"+filename],function(file){
-				thisRef._defaultSet = JSON.parse(file);
+			var req = new Request({
+				url:filename,
+				caller:this,
+				track:true,
+				type:"json",
+				callback:function(file){
+					this._defaultSet = file;
 				
-				if(callback) callback();
-			});
+					if(callback) callback();
+				}
+			}).send();
 		};
 			
 		/**

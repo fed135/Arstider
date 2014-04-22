@@ -19,7 +19,7 @@
 	/*
 	 * Defines the Dictionary module
 	 */
-	define("Arstider/Dictionary", [], function(){
+	define("Arstider/Dictionary", ["Arstider/Request"], function(Request){
 		
 		/**
 		 * Returns singleton if it has been instantiated
@@ -112,21 +112,26 @@
 		 * @param {function} callback The function to trigger once the download is completed
 		 */
 		Dictionary.prototype.load = function(filename, callback){
-			var thisRef = this;
 			
 			this._isLoading = true;
 			
-			require(["textLib!./"+filename],function(file){
-				thisRef.strList = JSON.parse(file);
-				thisRef._isLoading = false;
-				if(thisRef._pendingStrings.length > 0){
-					for(var i = 0; i < thisRef._pendingStrings.length; i++){
-						thisRef.translate(thisRef._pendingStrings[i][0], thisRef._pendingStrings[i][1], thisRef._pendingStrings[i][2]);
+			var req = new Request({
+				url:filename,
+				caller:this,
+				track:true,
+				type:"json",
+				callback:function(file){
+					this.strList = file;
+					this._isLoading = false;
+					if(this._pendingStrings.length > 0){
+						for(var i = 0; i < this._pendingStrings.length; i++){
+							this.translate(this._pendingStrings[i][0], this._pendingStrings[i][1], this._pendingStrings[i][2]);
+						}
+						this._pendingStrings = [];
 					}
-					thisRef._pendingStrings = [];
+					if(callback) callback();
 				}
-				if(callback) callback();
-			});
+			}).send();
 		};
 		
 		singleton = new Dictionary();

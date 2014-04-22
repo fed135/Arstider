@@ -127,7 +127,7 @@
 	/**
 	 * Defines the Fonts module
 	 */	
-	define( "Arstider/Fonts", [], function () {
+	define( "Arstider/Fonts", ["Arstider/Request"], function (Request) {
 		
 		/**
 		 * Returns singleton if it has been instantiated
@@ -189,17 +189,21 @@
 		 * @param {function} callback The callback function, once all fonts have been initialized
 		 */
 		Fonts.prototype.load = function(filename, callback){
-			var thisRef = this;
-			
-			require(["textLib!./"+filename],function(file){
-				var fontList = JSON.parse(file);
-				for(var i in fontList){
-					fontList[i].name = i;
-					thisRef.create.apply(thisRef, [fontList[i]]);
+			var req = new Request({
+				url:filename,
+				caller:this,
+				track:true,
+				type:"json",
+				callback:function(file){
+					var fontList = file;
+					for(var i in fontList){
+						fontList[i].name = i;
+						this.create(fontList[i]);
+					}
+					
+					if(callback) callback();
 				}
-				
-				if(callback) callback();
-			});
+			}).send();
 		};
 			
 		singleton = new Fonts();

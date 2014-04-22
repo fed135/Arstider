@@ -13,56 +13,6 @@
 window.Arstider = {};
 
 /**
- * Define libs folder for sdk-libs
- */
-;(function(scripts){
-	var stack, offpos;
-    
-	window.onerror = function(e){
-		e = e || window.event;
-		e.preventDefault();
-		return false;
-	};
-	
-    try {
-         getRunningFolder
-    } catch(e) {
-    	stack = e.stack;
-    };
-    
-	var e = stack.indexOf(' at ') !== -1 ? ' at ' : '@';
-    	while (stack.indexOf(e) !== -1)
-        	stack = stack.substring(stack.indexOf(e) + e.length);
-            //stack = stack.substring(0, stack.indexOf(':', stack.indexOf(':')+1));
- 
-    offpos = stack.indexOf(" (");
-    if(offpos != -1){
-    	offpos += 2;
-    }
-    else{
-    	offpos = 0;
-    }
-	stack = stack.substring(offpos, stack.lastIndexOf("/"));
-	
-	requirejs.config({
-		packages:[{
-			name: "textLib",
-			location: stack + "/libs",
-			main: "text"
-		},
-		{
-			name: "howler",
-			location: stack + "/libs",
-			main: "howler.min"
-		}]
-	});
-	
-	window.onerror = null;
-	
-	Arstider.currentFolder = stack;
-})();
-
-/**
 * RandomGenerator
 * @constructor
 * @param {number=} seed The generator seed.

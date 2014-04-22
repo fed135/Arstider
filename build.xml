@@ -2,78 +2,80 @@
 	
 	<property environment="env."/>
 	
+	<property name="src" location="src"/>
+	<property name="tools" location="tools"/>
+	<property name="dest" location="${env.BUILD_DEST}/sdk"/>
+	
 	<property name="jsdoc.home" location="tools/jsdoc"/>
 	<property name="jsdoc3-task-jar" value="${jsdoc.home}/jsdoc3-ant-task-1.0.jar"/>
 	<property name="rhino-jar" value="${jsdoc.home}/rhino/js.jar"/>
 		
 	<taskdef name="jsdoc3" classname="net.jannon.ant.tasks.JsDoc3" classpath="${jsdoc3-task-jar}:${rhino-jar}"/>
 	
-	<property name="src" location="src"/>
-	<property name="tools" location="tools"/>
-	<property name="dest" location="${env.BUILD_DEST}/sdk"/>
-	
-	<target name="build.dev" description="dev build">
+	<target name="build.all" description="Builds the debug, minified and turbo releases">
+		<filter filtersfile="version.properties"/>
+		
+		<echo># Preparing files...</echo>
+		
 		<concat destfile="${dest}/_temp.js" fixlastline="true" ignoreempty="true">
 			<fileset dir="${src}/sdk" includes="**/*.js" />
 		</concat>
 		
+		<echo># Checking network...</echo>
+		<exec executable="python" failonerror="false" outputproperty="network">
+			<arg line="./tools/ping.py" />
+		</exec>
+		<echo> : ${network}</echo>
+		
+		<echo># Building debug release (${dest}/sdk/Arstider.js)</echo>
+		
 		<filter token="target" value="dev"/>
 		<filter token="debug" value="true"/>
-		<filter token="version" value="1.1"/>
 		
 		<copy toFile="${dest}/Arstider.js" file="${dest}/_temp.js" filtering="true" />
-		<copy todir="${dest}/libs" filtering="false">
-			<fileset dir="${src}/libs"></fileset>
-		</copy>
 		
-		<delete file="${dest}/_temp.js" />
-	</target>
-	
-	<target name="build.release" description="release build">
-		<concat destfile="${dest}/_temp.js">
-			<fileset dir="${src}/sdk" includes="**/*.js" />
-		</concat>
-				
-		<filter token="target" value="release"/>
+		<echo># Building minified release (${dest}/sdk/Arstider.min.js)</echo>
+						
+		<filter token="target" value="min"/>
 		<filter token="debug" value="false"/>
-		<filter token="version" value="1.1"/>
-				
-		<copy toFile="${dest}/Arstider.js" file="${dest}/_temp.js" filtering="true" />
-		<copy todir="${dest}/libs" filtering="false">
-			<fileset dir="${src}/libs"></fileset>
-		</copy>
+						
+		<copy toFile="${dest}/_temp.parsed.js" file="${dest}/_temp.js" filtering="true" />
 		
-		<delete file="${dest}/_temp.js" />
+		<antcall target="-build.minify.${network}">
+			<param name="target" value="min"/>
+		    <param name="compiler.level" value="SIMPLE_OPTIMIZATIONS"/>
+		</antcall>
 		
-		<exec executable="python" failonerror="true">
-			<arg line="./tools/closureMinifier.py ${dest}/Arstider.js SIMPLE_OPTIMIZATIONS" />
-		</exec>
-	</target>
-	
-	<target name="build.turbo" description="turbo build">
-		<concat destfile="${dest}/_temp.js">
-			<fileset dir="${src}/sdk" includes="**/*.js" />
-		</concat>
-					
+		<echo># Building turbo release (${dest}/sdk/Arstider.turbo.js)</echo>
+							
 		<filter token="target" value="turbo"/>
 		<filter token="debug" value="false"/>
-		<filter token="version" value="1.1"/>
-					
-		<copy toFile="${dest}/Arstider.js" file="${dest}/_temp.js" filtering="true" />
-		<copy todir="${dest}/libs" filtering="false">
-			<fileset dir="${src}/libs"></fileset>
-		</copy>
+							
+		<copy toFile="${dest}/_temp.parsed.js" file="${dest}/_temp.js" filtering="true" />
+		
+		<antcall target="-build.minify.${network}">
+			<param name="target" value="turbo"/>
+		    <param name="compiler.level" value="ADVANCED_OPTIMIZATIONS"/>
+		</antcall>
 			
 		<delete file="${dest}/_temp.js" />
-			
+	</target>
+	
+	<target name="-build.minify.offline">
+		<echo>ERROR: Offline compiling not available. </echo>
+	</target>
+	
+	<target name="-build.minify.online">
 		<exec executable="python" failonerror="true">
-			<arg line="./tools/closureMinifier.py ${dest}/Arstider.js ADVANCED_OPTIMIZATIONS" />
+			<arg line="./tools/closureMinifier.py ${dest}/_temp.parsed.js ${dest}/Arstider.${target}.js ${compiler.level}" />
 		</exec>
+		
+		<delete file="${dest}/_temp.parsed.js" />
 	</target>
 	
 	<target name="build.documentation" description="documentation builder">
 		<jsdoc3 jsdochome="${jsdoc.home}" 
-		    to="${dest}/SDK-Documentation" 
+		    to="${dest}/Arstider-Documentation" 
 		    file="${dest}/Arstider.js" 
 		    template="spartan" />
 	</target>
