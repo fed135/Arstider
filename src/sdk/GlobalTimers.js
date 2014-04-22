@@ -38,16 +38,14 @@
 			var i = this.list.length-1;
 			for(i; i>=0; i--){
 				if(this.list[i].running){
-					
-					this.list[i].delay -= Arstider._fullFPS;
-					
-					if(this.list[i].step){
-						this.list[i].step.apply(this.list[i]);
-					}
-					
-					if(this.list[i].delay <= 0 && this.list[i].completed == false){
-						this.list[i].finish();
-					}
+					(function(t){
+						setTimeout(function(){
+							t.delay -= Arstider._fullFPS;
+							
+							if(t.step) t.step.apply(t);
+							if(t.delay <= 0 && t.completed == false) t.finish();
+						},0);
+					})(this.list[i]);
 				}
 			}
 		};

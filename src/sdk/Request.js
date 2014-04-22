@@ -233,9 +233,9 @@
 					if(thisRef.track) Preloader.progress(thisRef.id, Math.round((e.loaded/e.total)*100));
 				};
 						
-				xhr.onload = function () { 
-					if (this.status == 200) {
-						if (thisRef.callback) {
+				xhr.onload = function(){
+					if(this.status == 200){
+						if(thisRef.callback) {
 							thisRef.callback.apply(thisRef.caller, [this.response]);
 							if(thisRef.cache){
 								cache[thisRef.url] = this.response;

@@ -518,7 +518,8 @@
 				for(var i = 0; i<this.children.length; i++){
 					if(this.children[i] && this.children[i]._update){
 						if(this._skipUpdateBubble && this.children[i].cancelBubble) this.children[i].cancelBubble();
-						this.children[i]._update();
+						(function(t){setTimeout(function(){t._update.apply(t);},0);})(this.children[i]);
+						//this.children[i]._update();
 					}
 				}
 			}
