@@ -24,7 +24,7 @@
 		
 		props = props || Arstider.emptyObject;
 		
-		if(props.url && !document.getElementById("Arstider_font_loader_"+props.name)){
+		if(props.url && !document.getElementById("Arstider_font_loader_"+props.url.split(".").join(""))){
 			var xhr = new XMLHttpRequest();
 			var thisRef = this;
 			xhr.open('GET', props.url, true); 
