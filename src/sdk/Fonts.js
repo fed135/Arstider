@@ -37,7 +37,7 @@
 						thisRef._runCallbacks();
 						var div = document.getElementById("Arstider_font_loader_"+props.url.split(".").join(""));
 						if(div) div.parentNode.removeChild(div);
-					}, Arstider._fullFPS);
+					}, 100);
 				}
 			};
 			xhr.send(null);
