@@ -50,7 +50,7 @@
 		]
 	;
 	
-	window.URL = window.URL || window.webkitURL || error;
+	window.URL = window.URL || window.webkitURL || null;
 	
 	/**
 	 * Look for a call in the list of pending calls
@@ -195,6 +195,13 @@
 			
 			require(["Arstider/Preloader"], function(Preloader){
 			
+				function handleError(e){
+					if(thisRef.error){
+						thisRef.error.apply(thisRef.caller, [e]);
+					}
+					if(thisRef.track) Preloader.progress(thisRef.id, 100);
+				};
+			
 				if(thisRef.track) Preloader.progress(thisRef.id, 0);
 				
 				if(thisRef.cache){
@@ -214,48 +221,69 @@
 					}
 				}
 				
-				xhr = new XMLHttpRequest();
-					
-				xhr.open(thisRef.method, thisRef.url, thisRef.async, thisRef.user, thisRef.password); 
-				xhr.responseType = thisRef.type;
-				
-				for(header in thisRef.headers){
-					if(refusedHeaders.indexOf(header) === -1){
-						xhr.setRequestHeader(header, thisRef.headers[header]);
+				if(window.URL == null && thisRef.type == "blob"){
+					var tag;
+					if(thisRef.url.indexOf(".jpg") || thisRef.url.indexOf(".png") || thisRef.url.indexOf(".gif")){
+						tag = new Image();
+					}
+					else if(thisRef.url.indexOf(".mp3") || thisRef.url.indexOf(".ogg")){
+						tag = new Audio();
 					}
 					else{
-						if(Arstider.verbose > 1) console.warn("Arstider.Request.send: header ",header," is not accepted and will be ignored");
+						if(Arstider.verbose > 0) console.warn("Arstider.Request.send: unsupported format, call aborted");
+						return;
 					}
-				}
-				
-				xhr.onprogress = function(e) {
-					if(thisRef.progress) {
-						thisRef.progress.apply(thisRef.caller, [e]);
-					}
-					if(thisRef.track) Preloader.progress(thisRef.id, Math.round((e.loaded/e.total)*100));
-				};
+					tag.onload = function(){
+						if(thisRef.cache){
+							cache[thisRef.url] = tag;
+							updateInPending(thisRef.url, Preloader);
+						}
 						
-				xhr.onload = function(){
-					if(this.status == 200){
-						if(thisRef.callback) {
-							thisRef.callback.apply(thisRef.caller, [this.response]);
+						if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [tag]);
+						if(thisRef.track) Preloader.progress(thisRef.id, 100);
+					};
+					
+					tag.onerror = handleError;
+					tag.src = thisRef.url;
+				}
+				else{
+					xhr = new XMLHttpRequest();
+						
+					xhr.open(thisRef.method, thisRef.url, thisRef.async, thisRef.user, thisRef.password); 
+					xhr.responseType = thisRef.type;
+					
+					for(header in thisRef.headers){
+						if(refusedHeaders.indexOf(header) === -1){
+							xhr.setRequestHeader(header, thisRef.headers[header]);
+						}
+						else{
+							if(Arstider.verbose > 1) console.warn("Arstider.Request.send: header ",header," is not accepted and will be ignored");
+						}
+					}
+					
+					xhr.onprogress = function(e) {
+						if(thisRef.progress) {
+							thisRef.progress.apply(thisRef.caller, [e]);
+						}
+						if(thisRef.track) Preloader.progress(thisRef.id, Math.round((e.loaded/e.total)*100));
+					};
+							
+					xhr.onload = function(){
+						if(this.status == 200){
 							if(thisRef.cache){
 								cache[thisRef.url] = this.response;
 								updateInPending(thisRef.url, Preloader);
 							}
-						}
-						if(thisRef.track) Preloader.progress(thisRef.id, 100);
-					}
-				};
-						
-				xhr.onerror = function(e){
-					if(thisRef.error){
-						thisRef.error.apply(thisRef.caller, [e]);
-					}
-					if(thisRef.track) Preloader.progress(thisRef.id, 100);
-				};
 							
-				xhr.send(thisRef.postData);
+							if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [this.response]);
+							if(thisRef.track) Preloader.progress(thisRef.id, 100);
+						}
+					};
+							
+					xhr.onerror = handleError;
+								
+					xhr.send(thisRef.postData);
+				}
 			});
 		};
 		

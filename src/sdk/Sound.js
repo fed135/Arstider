@@ -115,12 +115,13 @@
 		 */
 		Sound.prototype._queueFile = function(){
 			singleton._fileInPipe = true;
-			singleton.play('empty', true);
+			
 			if(singleton._queue.length > 0){
 				for(var i = 0; i<singleton._queue.length; i++){
 					singleton.play(singleton._queue[i].id, singleton._queue[i].startCallback, singleton._queue[i].endCallback);
 				}
 			}
+			else singleton.play('empty');
 			singleton._queue = [];
 			
 			Viewport.tag.removeEventListener("touchstart", singleton._queueFile);
