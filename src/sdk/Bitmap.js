@@ -30,6 +30,7 @@ define("Arstider/Bitmap", ["Arstider/Request"], function(Request){
 				url:url,
 				caller:this,
 				callback:this._parse,
+				cache:false,
 				track:true
 			});
 			

@@ -24,7 +24,7 @@
 		
 		props = props || Arstider.emptyObject;
 		
-		if(props.url){
+		if(props.url && !document.getElementById("Arstider_font_loader_"+props.name)){
 			var xhr = new XMLHttpRequest();
 			var thisRef = this;
 			xhr.open('GET', props.url, true); 
@@ -35,32 +35,30 @@
 					setTimeout(function(){
 						thisRef.loaded = true;
 						thisRef._runCallbacks();
+						var div = document.getElementById("Arstider_font_loader_"+props.url.split(".").join(""));
+						if(div) div.parentNode.removeChild(div);
 					}, Arstider._fullFPS);
 				}
 			};
 			xhr.send(null);
 			
-			var style = document.getElementById("Arstider_css_font_loader");
-			var fontLoaderDiv;
+			var style = document.getElementById("Arstider_font_loader");
+			var fontLoaderDiv = document.createElement("div");
 			if(style == null){
 				style = document.createElement('style');
 				style.type = 'text/css';
 				style.id = "Arstider_font_loader";
 				document.getElementsByTagName('head')[0].appendChild(style);
-				
-				fontLoaderDiv = document.createElement("div");
-				fontLoaderDiv.id = "Arstider_font_loader_div";
-				fontLoaderDiv.style.position = "absolute";
-				fontLoaderDiv.style.overflow = "hidden";
-				fontLoaderDiv.style.marginLeft = "-9999px";
-				fontLoaderDiv.innerHTML = "Loading font... ";
-				document.body.appendChild(fontLoaderDiv);
 			}
-			else{
-				fontLoaderDiv = document.getElementById("Arstider_font_loader_div");
-			}
+
+			fontLoaderDiv.id = "Arstider_font_loader_"+props.url.split(".").join("");
+			fontLoaderDiv.style.position = "absolute";
+			fontLoaderDiv.style.overflow = "hidden";
+			fontLoaderDiv.style.marginLeft = "-9999px";
+			fontLoaderDiv.innerHTML = "Loading font "+props.name;
+			document.body.appendChild(fontLoaderDiv);
 				
-			style.innerHTML = '@font-face{font-family: '+props.name+'; src: url('+props.url+');} .'+props.name+'_fontLoader{font-family:'+props.name+', sans-serif;}';
+			style.innerHTML += '@font-face{font-family: '+props.name+'; src: url('+props.url+');} .'+props.name+'_fontLoader{font-family:'+props.name+', sans-serif;}';
 			fontLoaderDiv.className = props.name+'_fontLoader';
 			this.family = props.name;
 			this.loaded = false;
@@ -194,6 +192,7 @@
 				caller:this,
 				track:true,
 				type:"json",
+				cache:false,
 				callback:function(file){
 					var fontList = file;
 					for(var i in fontList){

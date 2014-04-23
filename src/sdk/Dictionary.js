@@ -118,6 +118,7 @@
 			var req = new Request({
 				url:filename,
 				caller:this,
+				cache:false,
 				track:true,
 				type:"json",
 				callback:function(file){

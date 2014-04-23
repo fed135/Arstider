@@ -19,7 +19,7 @@
 	/**
 	 * Defines the Sound module
 	 */
-	define( "Arstider/Sound", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Request", "Arstider/Timer", "Arstider/GlobalTimers"], function (Browser, Viewport, Request, Timer, GlobalTimers) {
+	define( "Arstider/Sound", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Request"], function (Browser, Viewport, Request) {
 		
 		if(singleton != null) return singleton;
 		
@@ -94,6 +94,7 @@
 			var r = new Request({
 				url:url+ext,
 				caller:this,
+				cache:false,
 				track:true
 			}).send();
 			
@@ -137,6 +138,7 @@
 				var req = new Request({
 					url:obj,
 					caller:this,
+					cache:false,
 					track:true,
 					type:"json",
 					callback:function(file){
@@ -177,15 +179,11 @@
 					if(startCallback) startCallback(howlId);
 					
 					if(singleton.sounds[id].loop === true){
-						singleton._callbacks[howlId].push(new Timer(function(){
+						singleton._callbacks[howlId].push(function(){
 							singleton.play(id, startCallback, endCallback);
-						},singleton.sounds[id].duration));
-						GlobalTimers.push(singleton._callbacks[howlId].length-1);
+						});
 					}
-					if(endCallback){
-						singleton._callbacks[howlId].push(new Timer(endCallback, singleton.sounds[id].duration));
-						GlobalTimers.push(singleton._callbacks[howlId].length-1);
-					}
+					if(endCallback) singleton._callbacks[howlId].push(endCallback);
 				});
 			}
 			else{
@@ -227,6 +225,11 @@
 		 * @param {string|number} howlId The howlId for the Howler sound instance
 		 */
 		Sound.prototype._removeInstance = function(howlId){
+			var cbList = singleton._callbacks[howlId];
+			for(var i = 0; i<cbList.length; i++){
+				cbList[i]();
+			}
+			
 			singleton._killCallbacks(howlId);
 			var i, s;
 			
@@ -242,39 +245,6 @@
 			}
 		};
 		
-		/**
-		 * Pauses the callbacks for a sound instance
-		 * @private
-		 * @type {function(this:Sound)}
-		 * @param {string|number} howlId The howlId for the Howler sound instance
-		 */
-		Sound.prototype._pauseCallbacks = function(howlId){
-			if(singleton._callbacks[howlId]){
-				for(var i = 0; i<singleton._callbacks[howlId].length; i++){
-					singleton._callbacks[howlId][i].pause();
-				}
-			}
-			else{
-				if(Arstider.verbose > 1) console.warn("Arstider.Sound.pauseCallbacks: sound instance id unavailable");
-			}
-		};
-		
-		/**
-		 * Resumes the callbacks for a sound instance
-		 * @private
-		 * @type {function(this:Sound)}
-		 * @param {string|number} howlId The howlId for the Howler sound instance
-		 */
-		Sound.prototype._resumeCallbacks = function(howlId){
-			if(singleton._callbacks[howlId]){
-				for(var i = 0; i<singleton._callbacks[howlId].length; i++){
-					singleton._callbacks[howlId][i].resume();
-				}
-			}
-			else{
-				if(Arstider.verbose > 1) console.warn("Arstider.Sound.resumeCallbacks: sound instance id unavailable");
-			}
-		};
 		
 		/**
 		 * Kills the callbacks for a sound instance
@@ -283,13 +253,7 @@
 		 * @param {string|number} howlId The howlId for the Howler sound instance
 		 */
 		Sound.prototype._killCallbacks = function(howlId){
-			if(singleton._callbacks[howlId]){
-				for(var i = 0; i<singleton._callbacks[howlId].length; i++){
-					singleton._callbacks[howlId][i].pause();
-					GlobalTimers.remove(singleton._callbacks[howlId][i]);
-				}
-				singleton._callbacks[howlId] = [];
-			}
+			if(singleton._callbacks[howlId]) singleton._callbacks[howlId] = [];
 			else{
 				if(Arstider.verbose > 1) console.warn("Arstider.Sound.killCallbacks: sound instance id unavailable");
 			}

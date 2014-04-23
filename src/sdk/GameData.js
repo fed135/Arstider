@@ -50,6 +50,7 @@
 				url:filename,
 				caller:this,
 				track:true,
+				cache:false,
 				type:"json",
 				callback:function(file){
 					this._defaultSet = file;
