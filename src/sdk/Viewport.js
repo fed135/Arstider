@@ -310,6 +310,8 @@
 			}
 			else singleton.orientation = (window.innerHeight>window.innerWidth)?PORTRAIT:LANDSCAPE;
 			
+			singleton._resize();
+			
 			Events.broadcast("Viewport.rotate", singleton);
 		};
 		
