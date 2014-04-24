@@ -249,10 +249,10 @@
 		 */
 		Engine.prototype.killScreen = function(){
 			if(singleton.currentScreen != null){
+				Telemetry.log("system", "screenstop", {screen:singleton.currentScreen.name});
 				singleton.currentScreen._unload();
 				delete singleton.currentScreen;
 				GlobalTimers.clean();
-				Telemetry.log("system", "screenstop", {screen:singleton.currentScreen.name});
 			}
 			else{
 				if(Arstider.verbose > 1) console.warn("Arstider.Engine.killScreen: no current screen");
@@ -275,9 +275,11 @@
 			require([name], function(_menu){
 				singleton.currentScreen = new Screen(_menu, singleton);
 				singleton.currentScreen.stage = singleton;
+				singleton.currentScreen.name = name;
 				singleton.currentScreen.origin = singleton._savedScreen;
 				if(!singleton.pausedByRequest) singleton.play();
 				if(singleton.currentScreen.onload) singleton.currentScreen.onload();
+				Telemetry.log("system", "screenstart", {screen:singleton.currentScreen.name, originscreen:singleton._savedScreen.name});
 			});
 		};
 			
