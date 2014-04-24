@@ -252,7 +252,7 @@
 				Telemetry.log("system", "screenstop", {screen:singleton.currentScreen.name});
 				singleton.currentScreen._unload();
 				delete singleton.currentScreen;
-				GlobalTimers.clean();
+				//GlobalTimers.clean();
 			}
 			else{
 				if(Arstider.verbose > 1) console.warn("Arstider.Engine.killScreen: no current screen");
