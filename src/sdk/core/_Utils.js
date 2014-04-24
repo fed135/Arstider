@@ -36,11 +36,24 @@ Arstider.RandomGenerator = function(seed) {
 
 /**
  * Gets a number timestamp, usefull for id-ing or cache busting
+ * @type {function}
  * @return {number} the timestamp
  */
 Arstider.timestamp = function(){
 	return (new Date()).getTime();
 };
+
+/**
+ * Generates a Unique UID string
+ * @type {function}
+ * @return {String} the resulting unique ID
+ */
+Arstider.guid = function() {
+  function s4(){
+    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+  }
+  return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
+}
 
 /**
 * Get a random number
@@ -205,16 +218,16 @@ Arstider.chop = function(i){
  * @param {boolean} includeMethods Whether or not to include functions, defaults to false
  * @return {Object} Returns the updated objA
  */
-Arstider.mixin = function(objA, objB, force, includeMethods){
+Arstider.mixin = function(objA, objB, force, includeMethods, prefix){
 	
 	for(var i in objB){
 		if(objA[i] == undefined || force){
 			if(objB[i] instanceof Function || typeof objB[i] === 'function'){
 				if(includeMethods){
-					objA[i] = objB[i];
+					objA[(prefix || "") + i] = objB[i];
 				}
 			}
-			else objA[i] = objB[i];
+			else objA[(prefix || "") + i] = objB[i];
 		}
 	}
 	
@@ -228,8 +241,8 @@ Arstider.mixin = function(objA, objB, force, includeMethods){
  * @param {boolean} includeMethods Whether or not to include functions, defaults to false 
  * @return {Object} The newly created object
  */
-Arstider.clone = function(obj, includeMethods){
-	return Arstider.mixin({}, obj, includeMethods);
+Arstider.clone = function(obj, includeMethods, prefix){
+	return Arstider.mixin({}, obj, true, includeMethods, prefix);
 };
 
 /**

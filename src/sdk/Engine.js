@@ -19,6 +19,7 @@
 	 * Defines Engine module
 	 */
 	define( "Arstider/Engine", [
+		"Arstider/Browser",
 		"Arstider/Screen",
 		"Arstider/Buffer", 
 		"Arstider/Events",
@@ -29,8 +30,9 @@
 		"Arstider/Debugger",
 		"Arstider/Mouse",
 		"Arstider/Viewport",
-		"Arstider/core/Renderer"
-	], function (Screen, Buffer, Events, Background, Preloader, GlobalTimers, Performance, Debugger, Mouse, Viewport, Renderer){
+		"Arstider/core/Renderer",
+		"Arstider/core/Telemetry"
+	], function (Browser, Screen, Buffer, Events, Background, Preloader, GlobalTimers, Performance, Debugger, Mouse, Viewport, Renderer, Telemetry){
 		
 		if(singleton != null) return singleton;
 			
@@ -146,6 +148,16 @@
 			Events.bind("Viewport.pageshow", this.play);
 			
 			if(!this.pausedByRequest) this.play();
+			
+			//Platform info
+			var data = Arstider.clone(Browser, false, "browser_");
+			data._viewportWidth = window.innerWidth;
+			data._viewportHeight = window.innerHeight;
+			data._pixelRatio = Viewport.canvasRatio;
+			data._vibration = Viewport.vibrationEnabled;
+			data._accelerometer = Viewport.accelerometerEnabled;
+			
+			Telemetry.log("system", "gamestart", data);
 		};
 		
 		/**
@@ -180,6 +192,7 @@
 		 */
 		Engine.prototype._handleError = function(e){
 			Events.broadcast("Engine.error", e);
+			Telemetry.log("system", "error", e);
 		};
 		
 		/**
@@ -196,6 +209,7 @@
 				}
 				singleton.canvas.focus();
 				if(!singleton.pausedByRequest) singleton.play();
+				Telemetry.log("system", "screenstart", {screen:singleton.currentScreen.name});
 			}
 			else{
 				if(Arstider.verbose > 0) console.warn("Arstider.Engine.startScreen: no current screen");
@@ -222,6 +236,7 @@
 				singleton.currentScreen = new Screen(_menu, singleton);
 				
 				singleton.currentScreen.stage = singleton;
+				singleton.currentScreen.name = name;
 				setTimeout(function(){
 					Preloader.progress("__screen__", 100);
 				},100);
@@ -237,6 +252,7 @@
 				singleton.currentScreen._unload();
 				delete singleton.currentScreen;
 				GlobalTimers.clean();
+				Telemetry.log("system", "screenstop", {screen:singleton.currentScreen.name});
 			}
 			else{
 				if(Arstider.verbose > 1) console.warn("Arstider.Engine.killScreen: no current screen");
@@ -384,7 +400,7 @@
 			if(singleton.handbreak){
 				if(Preloader._queue.length > 0 && !singleton.pausedByRequest){
 					singleton.context.clearRect(0,0,Viewport.maxWidth,Viewport.maxHeight);
-					Preloader._screen.cancelBubble();
+					//Preloader._screen.cancelBubble();
 					Preloader._screen._update();
 					Renderer.draw(singleton, Preloader._screen, null, null, false);
 				}
