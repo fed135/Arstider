@@ -168,6 +168,8 @@
 		 * @param {Buffer} canvas The Buffer object to append to the tag
 		 */
 		Viewport.prototype.init = function(tag, canvas){
+			var thisRef = this;
+			
 			this.container = document.getElementById(tag);
 			if(this.container){
 				this.container.appendChild(canvas);
@@ -185,11 +187,31 @@
 				
 				window.document.addEventListener("unload", this._unload);
 				window.addEventListener('pagehide', this._pagehide);
+
+				var hidden, visibilityChange;
+				if (typeof document.hidden !== "undefined"){
+					hidden = "hidden";
+					visibilityChange = "visibilitychange";
+				} else if (typeof document.mozHidden !== "undefined"){
+					hidden = "mozHidden";
+					visibilityChange = "mozvisibilitychange";
+				} else if (typeof document.msHidden !== "undefined"){
+					hidden = "msHidden";
+					visibilityChange = "msvisibilitychange";
+				} else if (typeof document.webkitHidden !== "undefined"){
+					hidden = "webkitHidden";
+					visibilityChange = "webkitvisibilitychange";
+				}
+
+				document.addEventListener(visibilityChange, function(){
+					if(document[hidden]) thisRef._pagehide();
+					else thisRef._pageshow();
+				}, false);
 				
 				this._requestFullscreenEvent = (this.tag.requestFullScreen)?"requestFullScreen":(this.tag.mozRequestFullScreen)?"mozRequestFullScreen":(this.tag.webkitRequestFullScreenWithKeys)?"webkitRequestFullScreenWithKeys":(this.tag.webkitRequestFullScreen)?"webkitRequestFullScreen":"FullscreenError";
 				this._cancelFullscreenEvent =  (window.document.cancelFullScreen)?"cancelFullScreen":(window.document.mozCancelFullScreen)?"mozCancelFullScreen":(window.document.webkitCancelFullScreen)?"webkitCancelFullScreen":"FullscreenError";
 				
-				var thisRef = this;
+				
 				window.ondevicemotion = function(event) {
 					event = event || window.event;
 					if(event.accelerationIncludingGravity.x == null || event.accelerationIncludingGravity.y == null || event.accelerationIncludingGravity.z == null) return;
@@ -326,13 +348,23 @@
 		};
 		
 		/**
-		 * Internal handler for container pagehide (mobile process kill or put in idle mode)
+		 * Internal handler for container pagehide (process kill or put in idle mode)
 		 * @private
 		 * @type {function(this:Viewport)}
 		 * @param {event} e Event from the browser
 		 */
 		Viewport.prototype._pagehide = function(e){
 			Events.broadcast("Viewport.pagehide", singleton);
+		};
+
+		/**
+		 * Internal handler for container pageshow (process resume)
+		 * @private
+		 * @type {function(this:Viewport)}
+		 * @param {event} e Event from the browser
+		 */
+		Viewport.prototype._pageshow = function(e){
+			Events.broadcast("Viewport.pageshow", singleton);
 		};
 		
 		/**

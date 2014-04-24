@@ -142,6 +142,9 @@
 			Events.bind("Engine.showPopup", this.showPopup);
 			Events.bind("Engine.hidePopup", this.hidePopup);
 			
+			Events.bind("Viewport.pagehide", this.stop);
+			Events.bind("Viewport.pageshow", this.play);
+			
 			if(!this.pausedByRequest) this.play();
 		};
 		
