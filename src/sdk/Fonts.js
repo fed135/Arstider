@@ -22,50 +22,54 @@
 	 */
 	function Font(props){
 		
+		var thisRef = this;
+		
 		props = props || Arstider.emptyObject;
 		
-		if(props.url && !document.getElementById("Arstider_font_loader_"+props.url.split(".").join(""))){
-			var xhr = new XMLHttpRequest();
-			var thisRef = this;
-			xhr.open('GET', props.url, true); 
-			xhr.responseType = 'blob';
-					
-			xhr.onload = function (){
-				if (this.status == 200){
-					setTimeout(function(){
-						thisRef.loaded = true;
-						thisRef._runCallbacks();
-						var div = document.getElementById("Arstider_font_loader_"+props.url.split(".").join(""));
-						if(div) div.parentNode.removeChild(div);
-					}, 100);
-				}
-			};
-			xhr.send(null);
+		if(props.url){
+			this.url = props.url.split(".").join("");
+			this.family = props.name;
+			this.loaded = false;
 			
 			var style = document.getElementById("Arstider_font_loader");
-			var fontLoaderDiv = document.createElement("div");
 			if(style == null){
 				style = document.createElement('style');
 				style.type = 'text/css';
 				style.id = "Arstider_font_loader";
 				document.getElementsByTagName('head')[0].appendChild(style);
 			}
-
-			fontLoaderDiv.id = "Arstider_font_loader_"+props.url.split(".").join("");
-			fontLoaderDiv.style.position = "absolute";
+			style.innerHTML += '@font-face{font-family: '+props.name+'; src: url('+props.url+');} .'+props.name+'_fontLoader{font-family:'+props.name+', sans-serif;} \n';
+			
+			var fontLoaderDiv = document.createElement("div");
+			fontLoaderDiv.id = "Arstider_font_loader_"+props.name;
+			fontLoaderDiv.style.position = "fixed";
 			fontLoaderDiv.style.overflow = "hidden";
-			fontLoaderDiv.style.marginLeft = "-9999px";
-			fontLoaderDiv.innerHTML = "Loading font "+props.name;
+			fontLoaderDiv.innerHTML = ".";
 			document.body.appendChild(fontLoaderDiv);
 				
-			style.innerHTML += '@font-face{font-family: '+props.name+'; src: url('+props.url+');} .'+props.name+'_fontLoader{font-family:'+props.name+', sans-serif;}';
 			fontLoaderDiv.className = props.name+'_fontLoader';
-			this.family = props.name;
-			this.loaded = false;
+			
+			require(["Arstider/Request"], function(Request){
+				var req = new Request({
+					url:props.url,
+					type:"blob",
+					caller:thisRef,
+					callback:function(){
+						var div = document.getElementById("Arstider_font_loader_"+this.name);
+						if(div) div.innerHTML += ".";
+						setTimeout(function(){
+							thisRef.loaded = true;
+							thisRef._runCallbacks.apply(thisRef);
+							if(div) div.parentNode.removeChild(div);
+						}, 250);
+					}
+				}).send();
+			});
 		}
 		else{
 			this.family = Arstider.checkIn(props.family, "Arial");
 			this.loaded = true;
+			this.url = "null";
 		}
 		
 		this.name = props.name;
@@ -75,6 +79,7 @@
 		
 		this.padding = Arstider.checkIn(props.padding, 0);
 		this.lineSpacing = Arstider.checkIn(props.lineSpacing, null);
+		this.lineHeight = Arstider.checkIn(props.lineHeight, "1em");
 		this.textWrap = Arstider.checkIn(props.textWrap, false);
 		this.size = Arstider.checkIn(props.size, "12px");
 		this.style = Arstider.checkIn(props.style, "");
@@ -88,6 +93,7 @@
 		this.fontOffsetX = Arstider.checkIn(props.fontOffsetX, 0);
 		this.fontOffsetY = Arstider.checkIn(props.fontOffsetY, 0);
 		this.textAlign = Arstider.checkIn(props.textAlign, "left");
+		this.textBaseline = Arstider.checkIn(props.textBaseline, "middle");
 		
 		this.loadCallbacks = Arstider.checkIn(props.loadCallbacks, []);
 	}
@@ -117,7 +123,6 @@
 		for(i; i>=0;i--){
 			this.loadCallbacks[i]();
 		}
-		
 		this.loadCallbacks = [];
 	};
 	

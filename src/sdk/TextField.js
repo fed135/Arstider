@@ -202,6 +202,13 @@
 			 */
 			this._font = null;
 			
+			/**
+			 * Custom unique mods
+			 * @private
+			 * @type {Object}
+			 */
+			this._custom = {};
+			
 			Arstider.Super(this, Entity, props);
 		};
 		
@@ -246,7 +253,8 @@
 		 * @type {function(this:TextField)}
 		 * @param {Font|Object} name The desired text.
 		 */
-		TextField.prototype.setFont = function(font){
+		TextField.prototype.setFont = function(font, specials){
+			this._custom = specials || {};
 			this._font = font;
 			
 			if(this._autogrow === true){
@@ -254,15 +262,8 @@
 				this.width = 0;
 			}
 			
-			this._font.size = Arstider.checkIn(font.size, "12px");
-			this._font.family = Arstider.checkIn(font.family,"arial");
-			this._font.textBaseline = Arstider.checkIn(font.textBaseline,"middle");
-			this._font.lineHeight = Arstider.checkIn(font.lineHeight, "1em");
-			this._font.textAlign = Arstider.checkIn(font.textAlign, "left");
 			
-			if(this.padding == null){
-				this.padding = Arstider.checkIn(font.padding, 0);
-			}
+			if(this.padding == null) this.padding = Arstider.checkIn(this._custom.padding, Arstider.checkIn(font.padding, 0));
 			
 			var thisRef = this;
 			this._font._onFontLoaded(function(){
@@ -311,23 +312,24 @@
 		 * @this {TextField}
 		 * @private
 		 * @type {function(this:TextField)}
+		 * @param {Object} fontRef Final transformation options
 		 * @param {number} maxWidth The maximum width allowed
 		 */
-		TextField.prototype._renderSegmentList = function(maxWidth){
-			var startX = this._font.fontOffsetX + this.padding;
-			var startY = this._font.fontOffsetY + this.padding + this._font.lineSpacing * 0.5;
+		TextField.prototype._renderSegmentList = function(fontRef, maxWidth){
+			var startX = fontRef.fontOffsetX + this.padding;
+			var startY = fontRef.fontOffsetY + this.padding + fontRef.lineSpacing * 0.5;
 			var segRes = null;
 			
 			if(maxWidth == undefined){
 				for(var i = 0; i<this._textValue.length; i++){
-					segRes = this._renderSegment(this._textValue[i], startX, startY);
+					segRes = this._renderSegment(this._textValue[i], fontRef, startX, startY);
 					startX += segRes.width;
 					//startY += segRes.height;//in the cas of wrapped text
 				}
 			}
 			else{
 				for(var i = 0; i<this._textValue.length; i++){
-					segRes = this._renderSegment(this._textValue[i], startX, startY, this._font.fontOffsetX + this.padding, true);
+					segRes = this._renderSegment(this._textValue[i], fontRef, startX, startY, fontRef.fontOffsetX + this.padding, true);
 					startX = segRes[0];
 					startY = segRes[1];
 				}
@@ -340,17 +342,18 @@
 		 * @private
 		 * @type {function(this:TextField)}
 		 * @param {Object} segment The segment object to render
+		 * @param {Object} fontRef Final transformation options
 		 * @param {number} startX The starting x offset for typing
 		 * @param {number} startY The starting y offset for typing
 		 * @param {number|null} iniX New line x position
 		 * @param {boolean|null} wrapped Is text wrapped or not (multi-lined)
 		 * @return {Object} The rendered segment with it's visible width and height, so to position the next segments
 		 */
-		TextField.prototype._renderSegment = function(segment, startX, startY, iniX, wrapped){
+		TextField.prototype._renderSegment = function(segment, fontRef, startX, startY, iniX, wrapped){
 			
 			var 
 				i = 0,
-				fontCopy = Arstider.clone(this._font),	//For safe revert
+				fontCopy = Arstider.clone(fontRef),	//For safe revert
 				wasStroke = this.strokeText,
 				wasFill = this.fillText,
 				oldShadow = null,
@@ -446,32 +449,34 @@
 			
 			this._makeBuffer();
 			
-			for(i in this._font){
-				if(this[i] != undefined && !(i in entityRef)) this.data.context[i] = [i];
-				else this.data.context[i] = this._font[i];
-			}
-			this.data.context.font = ((this._font.style == "")?"":(this._font.style + " ")) + this._font.size + " " + this._font.family;
+			var _final = Arstider.mixin(Arstider.clone(this._font), this._custom, true);
 			
-			if(this._font.textAlign === "left") xShift = this.padding;
-			else if(this._font.textAlign === "center") xShift = this.width*0.5;
-			else if(this._font.textAlign === "right") xShift = this.width - this.padding;
+			for(i in _final){
+				if(this[i] != undefined && !(i in entityRef)) this.data.context[i] = [i];
+				else this.data.context[i] = _final[i];
+			}
+			this.data.context.font = ((_final.style == "")?"":(_final.style + " ")) + _final.size + " " + _final.family;
+			
+			if(_final.textAlign === "left") xShift = this.padding;
+			else if(_final.textAlign === "center") xShift = this.width*0.5;
+			else if(_final.textAlign === "right") xShift = this.width - this.padding;
 			
 			if(this.textWrap === true && !this._textWrappingError){
-				if(this._BBparsed) this._renderSegmentList(this.width);
-				else wrapText(this.data.context, this._textValue, this.strokeText, this.fillText, xShift + this._font.fontOffsetX, this.padding + this._font.fontOffsetY, this.width - (this.padding*2));
+				if(this._BBparsed) this._renderSegmentList(_final, this.width);
+				else wrapText(this.data.context, this._textValue, this.strokeText, this.fillText, xShift + _final.fontOffsetX, this.padding + _final.fontOffsetY, this.width - (this.padding*2));
 			}
 			else{
-				if(this._BBparsed) this._renderSegmentList();
+				if(this._BBparsed) this._renderSegmentList(_final);
 				else{
-					if(this.strokeText) this.data.context.strokeText(this._textValue, xShift  + this._font.fontOffsetX, this.padding + this._font.fontOffsetY + this._font.lineSpacing * 0.5);
+					if(this.strokeText) this.data.context.strokeText(this._textValue, xShift  + _final.fontOffsetX, this.padding + _final.fontOffsetY + _final.lineSpacing * 0.5);
 					if(this.fillText){
 						//Prevent shadow from being applied twice- and over the already placed stroke
-						if(this.strokeText && this._font.shadowColor){
+						if(this.strokeText && _final.shadowColor){
 							oldShadow = this.data.context.shadowColor;
 							this.data.context.shadowColor = "transparent";
 						}
 						
-						this.data.context.fillText(this._textValue, xShift + this._font.fontOffsetX, this.padding + this._font.fontOffsetY + this._font.lineSpacing * 0.5);
+						this.data.context.fillText(this._textValue, xShift + _final.fontOffsetX, this.padding + _final.fontOffsetY + _final.lineSpacing * 0.5);
 						
 						if(oldShadow != null){
 							this.data.context.shadowColor = oldShadow;

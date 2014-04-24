@@ -229,6 +229,9 @@
 					else if(thisRef.url.indexOf(".mp3") || thisRef.url.indexOf(".ogg")){
 						tag = new Audio();
 					}
+					else if(thisRef.url.indexOf(".ttf") || thisRef.url.indexOf(".woff") || thisRef.url.indexOf(".otf") || thisRef.url.indexOf(".fon")|| thisRef.url.indexOf(".fnt")){
+						tag = new Image(); //What would be best for simply loading a font file ?
+					}
 					else{
 						if(Arstider.verbose > 0) console.warn("Arstider.Request.send: unsupported format, call aborted");
 						return;
