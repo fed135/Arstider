@@ -177,8 +177,16 @@
 			
 			/**
 			 * Defines a unique call id
+			 * @type {string}
 			 */
 			this.id = this.url+"_"+Arstider.timestamp();
+			
+			/**
+			 * If response requires parsing
+			 * @private
+			 * @type {boolean}
+			 */
+			this._parseRequired = false;
 		}
 		
 		/**
@@ -193,7 +201,7 @@
 				header
 			;
 			
-			require(["Arstider/Preloader"], function(Preloader){
+			require(["Arstider/Preloader", "Arstider/Browser"], function(Preloader, Browser){
 			
 				function handleError(e){
 					if(thisRef.error){
@@ -253,7 +261,8 @@
 					xhr = new XMLHttpRequest();
 						
 					xhr.open(thisRef.method, thisRef.url, thisRef.async, thisRef.user, thisRef.password); 
-					xhr.responseType = thisRef.type;
+					if((Browser.name == "safari" || Browser.name == "unknown") && thisRef.type == "json") thisRef._parseRequired = true;
+					else xhr.responseType = thisRef.type;
 					
 					for(header in thisRef.headers){
 						if(refusedHeaders.indexOf(header) === -1){
@@ -273,12 +282,16 @@
 							
 					xhr.onload = function(){
 						if(this.status == 200){
+							var res;
+							if(thisRef._parseRequired) res = JSON.parse(this.responseText);
+							else res = this.response;
+							
 							if(thisRef.cache){
-								cache[thisRef.url] = this.response;
+								cache[thisRef.url] = res;
 								updateInPending(thisRef.url, Preloader);
 							}
 							
-							if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [this.response]);
+							if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [res]);
 							if(thisRef.track) Preloader.progress(thisRef.id, 100);
 						}
 					};

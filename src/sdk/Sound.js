@@ -202,6 +202,11 @@
 		 * @param {function|null} callback Optional callback function
 		 */
 		Sound.prototype.fade = function(id, from, to, duration, callback){
+			if(!singleton._handle){
+				if(Arstider.verbose > 0) console.warn("Arstider.Sound.fade: sounds disabled, Howler not loaded");
+				return;
+			}
+			
 			singleton._handle.fade(from, to, duration, callback || Arstider.emptyFunction, id);
 		};
 		
@@ -281,6 +286,11 @@
 		 * @param {string} id The name of the sound to stop
 		 */
 		Sound.prototype.stop = function(id){
+			if(!singleton._handle){
+				if(Arstider.verbose > 0) console.warn("Arstider.Sound.stop: sounds disabled, Howler not loaded");
+				return;
+			}
+			
 			this._handle.pause(id);
 		};
 		
@@ -290,6 +300,11 @@
 		 * @param {string} id The name of the sound to pause
 		 */
 		Sound.prototype.pause = function(id){
+			if(!singleton._handle){
+				if(Arstider.verbose > 0) console.warn("Arstider.Sound.pause: sounds disabled, Howler not loaded");
+				return;
+			}
+			
 			this._handle.pause(id);
 		};
 		
@@ -299,6 +314,11 @@
 		 * @param {string} id The name of the sound to pause
 		 */
 		Sound.prototype.resume = function(id){
+			if(!singleton._handle){
+				if(Arstider.verbose > 0) console.warn("Arstider.Sound.resume: sounds disabled, Howler not loaded");
+				return;
+			}
+			
 			this._handle.play(id);
 		};
 		
@@ -309,6 +329,11 @@
 		 * @param {number} val The volume (0 to 1)
 		 */
 		Sound.prototype.setVolume = function(id, val){
+			if(!singleton._handle){
+				if(Arstider.verbose > 0) console.warn("Arstider.Sound.setVolume: sounds disabled, Howler not loaded");
+				return;
+			}
+			
 			this._handle.volume(val, id);
 		};
 	

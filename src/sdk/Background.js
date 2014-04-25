@@ -66,18 +66,22 @@
 		/**
 		 * Renders the background
 		 * @this {Background}
+		 * @type {function(this:Background)}
 		 * @param {CanvasRenderingContext2D} ctx The Engine's canvas context
+		 * @param {number} w The width to draw the background (only if scale is not 1)
+		 * @param {number} h The height to draw the background (only if scale is not 1)
+		 * @param {number} s The scale of the background
 		 */
 		Background.prototype.render = function(ctx, w, h,s){
+			s = Arstider.checkIn(s, 1);
 			if(singleton.data == null) ctx.clearRect(0, 0, w, h);
 			else{
 				if(s != 1){
 					ctx.scale(s, s);
-				}
-				ctx.drawImage(singleton.data, 0, 0, w*s, h*s);
-				if(s != 1){
+					ctx.drawImage(singleton.data, 0, 0, w*s, h*s);
 					ctx.scale(1/s, 1/s);
-				}
+				} 
+				else ctx.drawImage(singleton.data, 0, 0);
 			}
 		};
 		

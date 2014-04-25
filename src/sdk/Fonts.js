@@ -57,11 +57,12 @@
 					callback:function(){
 						var div = document.getElementById("Arstider_font_loader_"+this.name);
 						if(div) div.innerHTML += ".";
+						thisRef.loaded = true;
+						thisRef._runCallbacks.apply(thisRef);
 						setTimeout(function(){
-							thisRef.loaded = true;
-							thisRef._runCallbacks.apply(thisRef);
+							thisRef._runCallbacks.apply(thisRef, [true]);
 							if(div) div.parentNode.removeChild(div);
-						}, 250);
+						}, 300);
 					}
 				}).send();
 			});
@@ -117,13 +118,13 @@
 	 * @private
 	 * @type {function(this:Font)}
 	 */
-	Font.prototype._runCallbacks = function(){
+	Font.prototype._runCallbacks = function(remove){
 		var i = this.loadCallbacks.length-1;
 		
 		for(i; i>=0;i--){
 			this.loadCallbacks[i]();
 		}
-		this.loadCallbacks = [];
+		if(remove) this.loadCallbacks = [];
 	};
 	
 	

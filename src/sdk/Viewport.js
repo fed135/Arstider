@@ -156,6 +156,12 @@
 			this._tilt = {x:0,y:0,z:0};
 			
 			/**
+			 * If current orientation is valid
+			 * @type {boolean}
+			 */
+			this.unsupportedOrientation = false;
+			
+			/**
 			 * Tests features
 			 */
 			setTimeout(this.vibrate,0);
@@ -222,7 +228,6 @@
 				    thisRef._tilt.z = event.accelerationIncludingGravity.z;  
 				};
 				
-				this._resize();
 				this._rotate();
 			}
 			else{
@@ -270,51 +275,59 @@
 		 * @param {event} e Event from the browser
 		 */
 		Viewport.prototype._resize = function(e){
-			var windowW = window.innerWidth;
-			var windowH = window.innerHeight;
+			var windowW;
+			var windowH;
 			var ratio = 1;
 			var scaleX, scaleY;
 			var posX, posY;
 			
-			if(singleton.orientation != PORTRAIT){
-				//Retina detection
-				if( Browser.isMobile &&
-				    windowW*2 >= singleton.minWidth &&
-				    windowW*2 <= singleton.maxWidth &&
-				    windowH*2 >= singleton.minHeight &&
-				    windowH*2 <= singleton.maxHeight
-				){
-					ratio = 0.5;
-				} else {	
-					scaleX = windowW / singleton.minWidth;
-					scaleY = windowH / singleton.minHeight;
-					ratio = Math.min(scaleX,scaleY);
-					ratio = Math.min(1,ratio);
-				}
-					
-				scaleX = Math.round(singleton.maxWidth*ratio);
-				scaleY = Math.round(singleton.maxHeight*ratio);
-				
-				posX = Math.round( (windowW - scaleX) * 0.5 );
-				posY = Math.round( (windowH - scaleY) * 0.5 );
-				
-				singleton.xOffset = posX;
-				singleton.yOffset = posY;
-				
-				singleton.tag.style.left = posX+"px";
-				singleton.tag.style.top = posY+"px";
-				singleton.tag.style.width = scaleX+"px";
-				singleton.tag.style.height = scaleY+"px";
-				singleton.tag.style.position = "absolute";
-				singleton.tag.width = singleton.maxWidth;
-				singleton.tag.height = singleton.maxHeight;
-				
-				singleton.canvasRatio = ratio;
-				singleton.visibleWidth = Math.round(windowW / ratio);
-				singleton.visibleHeight = Math.round(windowH / ratio);
-				singleton.visibleWidth = Math.min(singleton.visibleWidth, singleton.maxWidth);
-				singleton.visibleHeight = Math.min(singleton.visibleHeight, singleton.maxHeight);
+			if(singleton.orientation == LANDSCAPE){
+				windowW = window.innerWidth;
+				windowH = window.innerHeight;
 			}
+			else if(singleton.orientation == PORTRAIT){
+				windowW = window.innerHeight;
+				windowH = window.innerWidth;
+			}
+			else return;
+			
+			//Retina detection
+			if( Browser.isMobile &&
+			    windowW*2 >= singleton.minWidth &&
+			    windowW*2 <= singleton.maxWidth &&
+			    windowH*2 >= singleton.minHeight &&
+			    windowH*2 <= singleton.maxHeight
+			){
+				ratio = 0.5;
+			} else {	
+				scaleX = windowW / singleton.minWidth;
+				scaleY = windowH / singleton.minHeight;
+				ratio = Math.min(scaleX,scaleY);
+				ratio = Math.min(1,ratio);
+			}
+					
+			scaleX = Math.round(singleton.maxWidth*ratio);
+			scaleY = Math.round(singleton.maxHeight*ratio);
+				
+			posX = Math.round( (windowW - scaleX) * 0.5 );
+			posY = Math.round( (windowH - scaleY) * 0.5 );
+				
+			singleton.xOffset = posX;
+			singleton.yOffset = posY;
+				
+			singleton.tag.style.left = posX+"px";
+			singleton.tag.style.top = posY+"px";
+			singleton.tag.style.width = scaleX+"px";
+			singleton.tag.style.height = scaleY+"px";
+			singleton.tag.style.position = "absolute";
+			singleton.tag.width = singleton.maxWidth;
+			singleton.tag.height = singleton.maxHeight;
+			
+			singleton.canvasRatio = ratio;
+			singleton.visibleWidth = Math.round(windowW / ratio);
+			singleton.visibleHeight = Math.round(windowH / ratio);
+			singleton.visibleWidth = Math.min(singleton.visibleWidth, singleton.maxWidth);
+			singleton.visibleHeight = Math.min(singleton.visibleHeight, singleton.maxHeight);
 			
 			Events.broadcast("Viewport.resize", singleton);
 		};
@@ -333,6 +346,8 @@
 			else singleton.orientation = (window.innerHeight>window.innerWidth)?PORTRAIT:LANDSCAPE;
 			
 			singleton._resize();
+						
+			singleton.tag.style.backgroundColor = (singleton.orientation == PORTRAIT)?"red":"green";
 			
 			Events.broadcast("Viewport.rotate", singleton);
 		};

@@ -108,6 +108,12 @@
 			 * @type {Screen}
 			 */
 			this._savedScreen = null;
+			
+			/**
+			 * Tells if engine is in the preloading process
+			 * @type {boolean}
+			 */
+			this.isPreloading = false;
 		}
 		
 		/**
@@ -208,7 +214,8 @@
 					singleton.currentScreen.onload();
 				}
 				singleton.canvas.focus();
-				if(!singleton.pausedByRequest) singleton.play();
+				singleton.isPreloading = false;
+				singleton.play();
 				Telemetry.log("system", "screenstart", {screen:singleton.currentScreen.name});
 			}
 			else{
@@ -226,6 +233,7 @@
 			Events.bind("Preloader.loadingCompleted", singleton.startScreen);
 			
 			singleton.stop();
+			singleton.isPreloading = true;
 			Preloader.set(name);
 			Preloader.progress("__screen__", 0);
 			singleton.killScreen();
@@ -266,7 +274,8 @@
 		 */
 		Engine.prototype.showPopup = function(name){
 			singleton.stop();
-				
+			//singleton.isPreloading = true;
+			
 			if(singleton.currentScreen.onpopup) singleton.currentScreen.onpopup(name);
 					
 			singleton._savedScreen = singleton.currentScreen;
@@ -277,7 +286,8 @@
 				singleton.currentScreen.stage = singleton;
 				singleton.currentScreen.name = name;
 				singleton.currentScreen.origin = singleton._savedScreen;
-				if(!singleton.pausedByRequest) singleton.play();
+				//singleton.isPreloading = false;
+				singleton.play();
 				if(singleton.currentScreen.onload) singleton.currentScreen.onload();
 				Telemetry.log("system", "screenstart", {screen:singleton.currentScreen.name, originscreen:singleton._savedScreen.name});
 			});
@@ -300,8 +310,11 @@
 		 * @type {function(this:Engine)}
 		 */
 		Engine.prototype.play = function(){
+			if(Viewport.unsupportedOrientation) return;
+			
 			if(Arstider.verbose > 2) console.warn("Arstider.Engine.play: playing...");
-			singleton.handbreak = false;
+			if(!singleton.isPreloading) singleton.handbreak = false;
+			if(singleton.frameRequest) Arstider.cancelAnimFrame.apply(window, [singleton.frameRequest]);
 			singleton.draw();
 			Events.broadcast("Engine.play", singleton);
 		};
@@ -393,18 +406,20 @@
 			if(!singleton.debug && Arstider.verbose > 0) Arstider.verbose = 0;
 			
 			//Immediately request the next frame
-			if(singleton.frameRequest) Arstider.cancelAnimFrame.apply(window, [singleton.frameRequest]);
 			singleton.frameRequest = Arstider.requestAnimFrame.apply(window, [singleton.draw]);
 			
-			if(Viewport.globalScale != 1) Arstider.setRenderStyle(singleton.canvas, Arstider.defaultRenderStyle);
+			if(Viewport.globalScale != 1 && Arstider.defaultRenderStyle == "sharp") Arstider.setRenderStyle(singleton.canvas, Arstider.defaultRenderStyle);
 			
 			//Check if canvas rendering is on/off
 			if(singleton.handbreak){
-				if(Preloader._queue.length > 0 && !singleton.pausedByRequest){
+				if(Preloader._queue.length > 0){
 					singleton.context.clearRect(0,0,Viewport.maxWidth,Viewport.maxHeight);
-					//Preloader._screen.cancelBubble();
+					Preloader._screen.cancelBubble();
 					Preloader._screen._update();
 					Renderer.draw(singleton, Preloader._screen, null, null, false);
+				}
+				else{
+					console.log("Nope", singleton.pausedByRequest);
 				}
 				return;
 			}
