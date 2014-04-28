@@ -98,6 +98,8 @@ define( "Arstider/Tween", ["Arstider/Easings", "Arstider/GlobalTimers"], functio
 	 */
 	function Action(callback, option){
 		this.startTime = 1;
+		this.timesToRun = Arstider.checkIn(option, 1);
+		this.timesRan = 0;
 		this.time = this.startTime;
 		this.callback = callback;
 		this.callbackOption = [Arstider.checkIn(option, null)];
@@ -110,6 +112,7 @@ define( "Arstider/Tween", ["Arstider/Easings", "Arstider/GlobalTimers"], functio
 	 */
 	Action.prototype.rewind = function(){
 		this.time = this.startTime;
+		this.timesRan = 0;
 	};
 	
 	/**
@@ -119,7 +122,10 @@ define( "Arstider/Tween", ["Arstider/Easings", "Arstider/GlobalTimers"], functio
 	 * @param {Tween} target The tween chain holding the animation
 	 */	
 	Action.prototype.step = function(target){
-		this.callback.apply(target, this.callbackOption);
+		if(this.timesToRun > this.timesRan || this.timesToRun == -1){
+			this.callback.apply(target, this.callbackOption);
+			this.timesRan++;
+		}
 	};
 	
 	/**
@@ -138,8 +144,6 @@ define( "Arstider/Tween", ["Arstider/Easings", "Arstider/GlobalTimers"], functio
 			
 		this._stack = [];
 		this._currentStep = 0;
-		this._repeat = 0;
-		this.maxLoop = null;
 				
 		this.delay = 512;
 				
@@ -290,13 +294,6 @@ define( "Arstider/Tween", ["Arstider/Easings", "Arstider/GlobalTimers"], functio
 	 * @return {Tween} Returns self for chaining
 	 */
 	Tween.prototype.rewind = function(){
-		this._repeat++;
-		if(this.maxLoop && this._repeat > this.maxLoop){
-			this.stop();
-			//TODO:Make loop a normal step that can have a following set of tweens, multiple loop sections in a single tween
-			return;
-		} 
-				
 		this._currentStep = 0;
 		for(var i = this._stack.length-1; i>=0; i--){
 			this._stack[i].rewind();
@@ -350,9 +347,7 @@ define( "Arstider/Tween", ["Arstider/Easings", "Arstider/GlobalTimers"], functio
 	 * @return {Tween} Returns self for chaining
 	 */
 	Tween.prototype.loop = function(val){
-		if(val) this.maxLoop = val;
-		
-		this._addAction(this.rewind, val);
+		this._addAction(this.rewind, Arstider.checkIn(val, -1));
 		return this;
 	};
 	
