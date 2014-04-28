@@ -114,14 +114,22 @@
 			 * @type {boolean}
 			 */
 			this.isPreloading = false;
+			
+			/**
+			 * Tells is logic and render are synchronous 
+			 * @private
+			 * @type {boolean} 
+			 */
+			this._isSynchronous = false;
 		}
 		
 		/**
 		 * Starts the engine on a defined HTML div tag
 		 * @type {function(this:Engine)}
 		 * @param {HTMLDivElement} tag The div to start the engine in
+		 * @param {boolean} synchronous Makes the logic run at the same speed as render
 		 */
-		Engine.prototype.start = function(tag){
+		Engine.prototype.start = function(tag, synchronous){
 			if(this.debug){
 				this.profiler = new Debugger(this);
 				this.profiler.init();
@@ -138,7 +146,9 @@
 			this.context = this.canvas.context;
 			this.canvas = this.canvas.tag;
 			
-			Performance.updateLogic = this.stepLogic;
+			this._isSynchronous = synchronous || false;
+			
+			Performance.updateLogic = (this._isSynchronous)?null:this.stepLogic;
 			
 			window.addEventListener("error", this._handleError);
 				
@@ -472,7 +482,9 @@
 			if(showFrames) singleton.profiler.drawFrames();
 			
 			singleton.removePending(singleton.currentScreen);
-				
+			
+			if(singleton._isSynchronous) singleton.stepLogic();
+			
 			Performance.endStep();
 		};
 		

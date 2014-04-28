@@ -124,6 +124,8 @@
 		 * @private
 		 */
 		Performance.prototype._stepLogic = function(){
+			if(singleton.updateLogic == null) return;
+			
 			setTimeout(singleton._stepLogic, Arstider._fullFPS);
 			
 			singleton.updateLogic();
