@@ -40,11 +40,13 @@
 			}
 			style.innerHTML += '@font-face{font-family: '+props.name+'; src: url('+props.url+');} .'+props.name+'_fontLoader{font-family:'+props.name+', sans-serif;} \n';
 			
-			var fontLoaderDiv = document.createElement("div");
+			var fontLoaderDiv = document.createElement("input");
 			fontLoaderDiv.id = "Arstider_font_loader_"+props.name;
 			fontLoaderDiv.style.position = "fixed";
-			fontLoaderDiv.style.overflow = "hidden";
-			fontLoaderDiv.innerHTML = ".";
+			fontLoaderDiv.style.border = "0px";
+			fontLoaderDiv.style.backgroundColor = "transparent";
+			fontLoaderDiv.style.zIndex = -1;
+			fontLoaderDiv.value = ".";
 			document.body.appendChild(fontLoaderDiv);
 				
 			fontLoaderDiv.className = props.name+'_fontLoader';
@@ -56,13 +58,16 @@
 					caller:thisRef,
 					callback:function(){
 						var div = document.getElementById("Arstider_font_loader_"+this.name);
-						if(div) div.innerHTML += ".";
-						thisRef.loaded = true;
-						thisRef._runCallbacks.apply(thisRef);
+						div.value += ".";
 						setTimeout(function(){
-							thisRef._runCallbacks.apply(thisRef, [true]);
-							if(div) div.parentNode.removeChild(div);
-						}, 300);
+							console.log("div onload son!");
+							thisRef.loaded = true;
+							thisRef._runCallbacks.apply(thisRef);
+							setTimeout(function(){
+								thisRef._runCallbacks.apply(thisRef, [true]);
+								if(div) div.parentNode.removeChild(div);
+							}, 150);
+						}, 150);
 					}
 				}).send();
 			});

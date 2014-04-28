@@ -72,8 +72,6 @@
 			if(!this._events[category][name]) this._events[category][name] = [];
 			this._events[category][name].push(data);
 			
-			console.log(this._events[category][name][this._events[category][name].length-1]);
-			
 			if(name == "screenstart") this._orderId++;
 			
 			this._send();

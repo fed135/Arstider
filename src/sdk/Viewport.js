@@ -346,8 +346,6 @@
 			else singleton.orientation = (window.innerHeight>window.innerWidth)?PORTRAIT:LANDSCAPE;
 			
 			singleton._resize();
-						
-			singleton.tag.style.backgroundColor = (singleton.orientation == PORTRAIT)?"red":"green";
 			
 			Events.broadcast("Viewport.rotate", singleton);
 		};
