@@ -19,7 +19,7 @@
 	/**
 	 * Defines the Sound module
 	 */
-	define( "Arstider/Sound", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Request"], function (Browser, Viewport, Request) {
+	define( "Arstider/Sound", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Request", "Arstider/Timer"], function (Browser, Viewport, Request, Timer) {
 		
 		if(singleton != null) return singleton;
 		
@@ -30,16 +30,15 @@
 		 */
 		function Sound(){
 			/**
-			 * Sounds list
+			 * Individual tracks Sounds list
+			 * @type {Object}
+			 */
+			this.tracks = {};
+			/**
+			 * Sprited sfx sound list
 			 * @type {Object}
 			 */
 			this.sounds = {};
-			/**
-			 * Howler instance
-			 * @private
-			 * @type {Object}
-			 */
-			this._handle = null;
 			/**
 			 * Sound queue (while waiting for sound file to enter the buffer)
 			 * @private
@@ -98,7 +97,7 @@
 				track:true
 			}).send();
 			
-			this._handle = new Howl({
+			this.sounds._handle = new Howl({
 				urls:[url+".mp3",url+".ogg"],
 				sprite:sprite,
 				onend:singleton._removeInstance
@@ -118,7 +117,7 @@
 			
 			if(singleton._queue.length > 0){
 				for(var i = 0; i<singleton._queue.length; i++){
-					singleton.play(singleton._queue[i].id, singleton._queue[i].startCallback, singleton._queue[i].endCallback);
+					singleton.play(singleton._queue[i].id, singleton._queue[i].props);
 				}
 			}
 			else singleton.play('empty');
@@ -143,52 +142,94 @@
 					track:true,
 					type:"json",
 					callback:function(file){
-						this.sounds = file;
+						this.sounds = file.sounds || {};
+						this.tracks = file.tracks || {};
 						if(callback) callback();
 						this._init(url);
 					}
 				}).send();
 			}
 			else{
-				this.sounds = obj;
+				this.sounds = obj.sounds || {};
+				this.tracks = obj.tracks || {};
 				this._init(url);
 			}
+		};
+		
+		/**
+		 * Downloads a sound and defines handle
+		 * @type {function(this:Sound)}
+		 * @param {string} id The name of the sound to download
+		 * @param {boolean} playOnLoaded Whether to play the sound when it finishes loading
+		 * @param {Object} props The play properties of the sound
+		 */
+		Sound.prototype.preload = function(id, playOnLoaded, props){
+			var req = new Request({
+				url:this.tracks[id].files[0],
+				caller:this,
+				cache:false,
+				track:true,
+				callback:function(){
+					this.tracks[id]._handle = new Howl({
+						urls:this.tracks[id].files,
+						loop:this.tracks[id].loop || false
+					});
+					if(playOnLoaded) singleton.play(id, props);
+				}
+			}).send();
 		};
 		
 		/**
 		 * Plays a sound
 		 * @type {function(this:Sound)}
 		 * @param {string} id The name of the sound to play
-		 * @param {function|null} startCallback Optional on sound start callback function
-		 * @param {function|null} endCallback Optional on sound end callback function
+		 * @param {Object} props The play properties of the sound
 		 */
-		Sound.prototype.play = function(id, startCallback, endCallback){
-			if(!singleton._handle){
-				if(Arstider.verbose > 0) console.warn("Arstider.Sound.play: sounds disabled, Howler not loaded");
-				return;
-			}
+		Sound.prototype.play = function(id, props){
+			props = props || {};
 			
-			if(!singleton.sounds[id]){
-				if(Arstider.verbose > 1) console.warn("Arstider.Sound.play: sound '", id, "' does not exist");
-				return;
-			}
+			if(!singleton._fileInPipe) return singleton._queue.push({id:id, props:props});
 			
-			if(singleton._fileInPipe){
-				singleton._handle.play(id, function(howlId){
-					howlId = parseInt(howlId+"");
-					singleton._addInstance(id, howlId); 
-					if(startCallback) startCallback(howlId);
-					
-					if(singleton.sounds[id].loop === true){
-						singleton._callbacks[howlId].push(function(){
-							singleton.play(id, startCallback, endCallback);
-						});
+			if(id in singleton.tracks){
+				//Sound not loaded, need to preload
+				if(!singleton.tracks[id]._handle) return singleton.preload(id, true, props);
+				
+				singleton.tracks[id]._handle.volume(Arstider.checkIn(props.volume, 1)); 
+				singleton.tracks[id]._handle.play();
+				if(singleton.tracks[id].fadeIn) singleton.fade(id, 0, Arstider.checkIn(props.volume, 1), singleton.tracks[id].fadeIn);
+				
+				if(singleton.tracks[id].fadeOutTimer){
+					singleton.tracks[id].fadeOutTimer.pause();
+					singleton.tracks[id].fadeOutTimer = null;
+				}
+				
+				if(props.startCallback) singleton.tracks[id]._handle._onplay = [function(){
+					singleton.tracks[id].duration = singleton.tracks[id]._handle._duration;
+					if(singleton.tracks[id].fadeOut){
+						singleton.tracks[id].fadeOutTimer = new Timer(function(){
+							singleton.fade(id, singleton.tracks[id]._handle._volume, 0, singleton.tracks[id].fadeOut);
+						}, singleton.tracks[id].duration*1000, true);
 					}
-					if(endCallback) singleton._callbacks[howlId].push(endCallback);
+				}, props.startCallback];
+					
+				if(props.endCallback) singleton.tracks[id]._handle._onend = [props.endCallback];
+			}
+			else if(id in singleton.sounds){
+				if(!singleton.sounds._handle){
+					if(Arstider.verbose > 0) console.warn("Arstider.Sound.play: sounds disabled, Howler not loaded");
+					return;
+				}
+				singleton.sounds._handle.play(id, function(howlId){
+					howlId = parseInt(howlId+"");
+					singleton._addInstance(id, howlId);
+					singleton.sounds._handle.volume(Arstider.checkIn(props.volume, 1), howlId);
+					if(props.startCallback) props.startCallback(howlId);
+					if(props.endCallback) singleton._callbacks[howlId].push(props.endCallback);
 				});
 			}
 			else{
-				singleton._queue.push({id:id, startCallback:startCallback, endCallback:endCallback});
+				if(Arstider.verbose > 1) console.warn("Arstider.Sound.play: sound '", id, "' does not exist");
+				return;
 			}
 		};
 		
@@ -202,12 +243,17 @@
 		 * @param {function|null} callback Optional callback function
 		 */
 		Sound.prototype.fade = function(id, from, to, duration, callback){
-			if(!singleton._handle){
+			if(id in singleton.tracks){
+				if(singleton.tracks[id]._handle) singleton.tracks[id]._handle.fade(from, to, duration, callback || Arstider.emptyFunction);
+				return;
+			}
+			
+			if(!singleton.sounds._handle){
 				if(Arstider.verbose > 0) console.warn("Arstider.Sound.fade: sounds disabled, Howler not loaded");
 				return;
 			}
 			
-			singleton._handle.fade(from, to, duration, callback || Arstider.emptyFunction, id);
+			singleton.sounds._handle.fade(from, to, duration, callback || Arstider.emptyFunction, id);
 		};
 		
 		/**
@@ -274,6 +320,8 @@
 		 * @return {string|number} The howlId
 		 */
 		Sound.prototype.getPlaying = function(id, index){
+			if(id in singleton.tracks) return singleton.tracks[id]._handle;
+			
 			if(!singleton.sounds[id].instances) singleton.sounds[id].instances = [];
 			
 			if(index != undefined) return singleton.sounds[id].instances[index];
@@ -286,12 +334,19 @@
 		 * @param {string} id The name of the sound to stop
 		 */
 		Sound.prototype.stop = function(id){
-			if(!singleton._handle){
+			if(id in singleton.tracks){
+				if(singleton.tracks[id]._handle) singleton.tracks[id]._handle.stop();
+				
+				if(singleton.tracks[id].fadeOutTimer) singleton.tracks[id].fadeOutTimer.pause();
+				return;
+			}
+			
+			if(!singleton.sounds._handle){
 				if(Arstider.verbose > 0) console.warn("Arstider.Sound.stop: sounds disabled, Howler not loaded");
 				return;
 			}
 			
-			this._handle.pause(id);
+			singleton.sounds._handle.stop(id);
 		};
 		
 		/**
@@ -300,12 +355,19 @@
 		 * @param {string} id The name of the sound to pause
 		 */
 		Sound.prototype.pause = function(id){
-			if(!singleton._handle){
+			if(id in singleton.tracks){
+				if(singleton.tracks[id]._handle) singleton.tracks[id]._handle.pause();
+				
+				if(singleton.tracks[id].fadeOutTimer) singleton.tracks[id].fadeOutTimer.pause();
+				return;
+			}
+			
+			if(!singleton.sounds._handle){
 				if(Arstider.verbose > 0) console.warn("Arstider.Sound.pause: sounds disabled, Howler not loaded");
 				return;
 			}
 			
-			this._handle.pause(id);
+			singleton.sounds._handle.pause(id);
 		};
 		
 		/**
@@ -314,12 +376,19 @@
 		 * @param {string} id The name of the sound to pause
 		 */
 		Sound.prototype.resume = function(id){
-			if(!singleton._handle){
+			if(id in singleton.tracks){
+				if(singleton.tracks[id]._handle) singleton.tracks[id]._handle.play();
+				
+				if(singleton.tracks[id].fadeOutTimer) singleton.tracks[id].fadeOutTimer.resume();
+				return;
+			}
+			
+			if(!singleton.sounds._handle){
 				if(Arstider.verbose > 0) console.warn("Arstider.Sound.resume: sounds disabled, Howler not loaded");
 				return;
 			}
 			
-			this._handle.play(id);
+			singleton.sounds._handle.play(id);
 		};
 		
 		/**
@@ -329,12 +398,17 @@
 		 * @param {number} val The volume (0 to 1)
 		 */
 		Sound.prototype.setVolume = function(id, val){
-			if(!singleton._handle){
+			if(id in singleton.tracks){
+				if(singleton.tracks[id]._handle) singleton.tracks[id]._handle.volume(val);
+				return;
+			}
+			
+			if(!singleton.sounds._handle){
 				if(Arstider.verbose > 0) console.warn("Arstider.Sound.setVolume: sounds disabled, Howler not loaded");
 				return;
 			}
 			
-			this._handle.volume(val, id);
+			singleton.sounds._handle.volume(val, id);
 		};
 	
 		singleton = new Sound();

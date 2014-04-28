@@ -255,6 +255,32 @@ Arstider.Super = function(child, parent){
 };
 
 /**
+ * Parse a string for safe server storage
+ * http://ajaxref.com/
+ * @type {function}
+ * @param {string} val The string to make uri-safe
+ * @return {string} The uri-safe string
+ */
+Arstider.URIEncode = function(val){
+	var encodedVal;
+	if(!encodeURIComponent){
+		encodedVal = escape(val);
+		encodedVal = encodedVal.replace(/@/g, '%40');
+		encodedVal = encodedVal.replace(/\//g, '%2F');
+		encodedVal = encodedVal.replace(/\+/g, '%2B');
+	}else{
+   		encodedVal = encodeURIComponent(val);
+		encodedVal = encodedVal.replace(/~/g, '%7E');
+		encodedVal = encodedVal.replace(/!/g, '%21');
+		encodedVal = encodedVal.replace(/\(/g, '%28');
+		encodedVal = encodedVal.replace(/\)/g, '%29');
+		encodedVal = encodedVal.replace(/'/g, '%27');
+	}
+	/* clean up the spaces and return */
+	return encodedVal.replace(/\%20/g,'+'); 
+};
+
+/**
  * Creates Inheritance for a module
  * @param {?} child The child module
  * @param {?} parent The module that will gives it's properties to the child

@@ -22,7 +22,7 @@
     /**
 	 * Defines performance module
 	 */	
-	define( "Arstider/core/Telemetry", [], function (){
+	define( "Arstider/Telemetry", ["Arstider/Request"], function (Request){
 			
 		if(singleton != null) return singleton;
 		
@@ -51,6 +51,13 @@
 			 * @type {number}
 			 */
 			this._orderId = 0;
+			
+			/**
+			 * Target server urls
+			 * @private
+			 * @type {Object}
+			 */
+			this._targetURLs = {};
 		}
 		
 		Telemetry.prototype.log = function(category, name, data){
@@ -68,6 +75,36 @@
 			console.log(this._events[category][name][this._events[category][name].length-1]);
 			
 			if(name == "screenstart") this._orderId++;
+			
+			this._send();
+		};
+		
+		Telemetry.prototype.sendTo = function(req, category){
+			this._targetURLs[Arstider.checkIn(category, "*")] = req;
+			
+			this._send();
+		};
+		
+		Telemetry.prototype._send = function(){
+			var i, o, u, thisRef = this;
+			
+			for(i in this._events){
+				if(i in this._targetURLs || "*" in this._targetURLs){
+					for(o in this._events[i]){
+						for(u = 0; u<this._events[i][o].length; u++){
+							if(!this._events[i][o][u].__sent){
+								this._events[i][o][u].__sent = Arstider.timestamp();
+								
+								var req = new Request(Arstider.clone((this._targetURLs[i] || this._targetURLs["*"] || {}), true));
+								
+								req.url = req.url.split("[category]").join(i).split("[name]").join(o);
+								req.postData = JSON.stringify(this._events[i][o][u]);
+								req.send();
+							}
+						}
+					}
+				}
+			}
 		};
 		
 		singleton = new Telemetry();

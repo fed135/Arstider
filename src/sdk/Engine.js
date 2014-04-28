@@ -31,7 +31,7 @@
 		"Arstider/Mouse",
 		"Arstider/Viewport",
 		"Arstider/core/Renderer",
-		"Arstider/core/Telemetry"
+		"Arstider/Telemetry"
 	], function (Browser, Screen, Buffer, Events, Background, Preloader, GlobalTimers, Performance, Debugger, Mouse, Viewport, Renderer, Telemetry){
 		
 		if(singleton != null) return singleton;
@@ -157,6 +157,14 @@
 			
 			//Platform info
 			var data = Arstider.clone(Browser, false, "browser_");
+			if(window.screen){
+				data._screenWidth = window.screen.width;
+				data._screenHeight = window.screen.height;
+			}
+			else{
+				data._screenWidth = window.innerWidth;
+				data._screenHeight = window.innerHeight;
+			}
 			data._viewportWidth = window.innerWidth;
 			data._viewportHeight = window.innerHeight;
 			data._pixelRatio = Viewport.canvasRatio;
@@ -198,7 +206,7 @@
 		 */
 		Engine.prototype._handleError = function(e){
 			Events.broadcast("Engine.error", e);
-			Telemetry.log("system", "error", e);
+			Telemetry.log("error", "error", e);
 		};
 		
 		/**

@@ -18,12 +18,12 @@ define( "Arstider/Timer", [], function () {
 	 * @param {number} delay Number of millisecond before {callback} is triggered. 
 	 * @param {boolean|null} autoRun whether to start the timer immediately or not. default : true
 	 */
-	function Timer(callback, delay, autoRun){
+	function Timer(callback, delay, clockBased){
 		/**
 		 * Tells if the timer is running
 		 * @type {boolean}
 		 */
-	    this.running = (autoRun == undefined)?true:autoRun;
+	    this.running = true;
 	    /**
 	     * Tells if the timer has finished
 	     * @type {boolean}
@@ -44,6 +44,30 @@ define( "Arstider/Timer", [], function () {
 	     * @type {function}
 	     */
 	    this.callback = callback;
+	    
+	    /**
+		 * Is timer clock based
+		 * @private
+		 * @type {boolean}
+		 */
+	    this._clockBased = clockBased;
+	    /**
+	     * Timeout reference (if clock based)
+	     * @private
+	     * @type {number}
+	     */
+	    this._internalTimer = null;
+	    
+	    /**
+	     * Start time reference (if clock based)
+	     * @private
+	     * @type {number}
+	     */
+	    this._startTime = null;
+	    
+	    if(this._clockBased){
+	    	this.resume();
+	    }
 	}
 	
 	/**
@@ -53,6 +77,12 @@ define( "Arstider/Timer", [], function () {
 	 */
 	Timer.prototype.pause = function() {
 	    this.running = false;
+	    
+	    if(this._clockBased){
+	    	clearTimeout(this._internalTimer);
+	    	this._internalTimer = null;
+	    	this.delay -= (Arstider.timestamp() - this._startTime);
+	    }
 	    return this;
 	};
 	
@@ -63,6 +93,12 @@ define( "Arstider/Timer", [], function () {
 	 */
 	Timer.prototype.resume = function() {
 	    this.running = true;
+	    
+	    if(this._clockBased && this._internalTimer == null){
+	    	var thisRef = this;
+	    	this._startTime = Arstider.timestamp();
+	    	this._internalTimer = setTimeout(function(){thisRef.finish.apply(thisRef);}, this.delay);
+	    }
 	    return this; 
 	};
 	
@@ -72,9 +108,10 @@ define( "Arstider/Timer", [], function () {
 	 * @return {Timer} Returns self, for chaining
 	 */
 	Timer.prototype.restart = function(){
-		this.running = true;
 	  	this.completed = false;
 	  	this.delay = this.initialDelay;
+	  	
+	  	this.resume();
 	   	return this;
 	};
 	   
