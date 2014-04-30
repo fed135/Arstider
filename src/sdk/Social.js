@@ -92,7 +92,7 @@
 		 * @param {string} network
 		 * @param {} props
 		 */
-		Social.prototype.login = function(network, props, callback){
+		Social.prototype.login = function(network, props, callback, error){
 			var thisRef = this;
 			
 			if(network == FACEBOOK){
@@ -114,6 +114,7 @@
   						if(response.status === 'connected'){
   							if(response.authResponse){
 								thisRef._token = response.authResponse.accessToken;
+								clearTimeout(thisRef._sessionTimeout);
 								thisRef._sessionTimeout = setTimeout(function(){thisRef.login.apply(thisRef, [FACEBOOK]);}, response.authResponse.expiresIn*1000);
 							}
   							FB.api('/me', function(response){
@@ -132,12 +133,9 @@
 							
 							FB.login(function(response){
 								if(response.authResponse){
-									thisRef._token = response.authResponse.accessToken;
-									thisRef._sessionTimeout = setTimeout(function(){thisRef.login.apply(thisRef, [FACEBOOK]);}, response.authResponse.expiresIn*1000);
-									
-									thisRef.login.apply(thisRef, [FACEBOOK, {}, callback]);
+									thisRef.login.apply(thisRef, [FACEBOOK, {}, callback, error]);
 								}else{
-									console.log('User cancelled login or did not fully authorize.');
+									if(error) error(response);
 								}
 							}, {scope:props.permissions.join()});
 						}
