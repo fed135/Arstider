@@ -144,6 +144,108 @@
 			}
 		};
 		
+		/**
+		 * Gets information about a person
+		 * @type {function(this:Social)}
+		 * @param {string} uid The id of the person
+		 * @param {Array} The list of fields to collect
+		 * @param {function|null} callback The function to call once the url is fetched
+		 * @param {function|null} error The callback in case of an error
+		 */
+		Social.prototype.getInfo = function(uid, fields, callback, error){
+			var 
+				friendObj = this.getUser(uid),
+				i = 0
+			;
+			
+			fields = fields || [];
+			
+			for(i; i<fields.length; i++){
+				if(!(fields[i] in friendObj)){
+					if(this.currentNetwork == FACEBOOK){
+						FB.api("/"+uid, {"access_token":this._token, "fields":fields.join()}, function(response){
+							if(response.data){
+								Arstider.mixin(friendObj, response.data, true);
+								if(callback) callback(friendObj);
+							}
+							else{
+								if(error) error(response);
+							}	
+						});
+					}
+					return;
+				}
+			}
+			
+			if(callback) callback(friendObj);
+		};
+		
+		/**
+		 * Gets the picture for a user
+		 * @type {function(this:Social)}
+		 * @param {string} uid The id of the user 
+		 * @param {number|null} width The desired width of the picture
+		 * @param {number|null} height The desired height of the picture
+		 * @param {function|null} callback The function to call once the url is fetched
+		 * @param {function|null} error The callback in case of an error
+		 */
+		Social.prototype.getPictureUrl = function(uid, width, height, callback, error){
+			var 
+				friendObj = this.getUser(uid),
+				storageName = "picture_" + Arstider.checkIn(width, 100) + "x" + Arstider.checkIn(height, 100)
+			;
+			
+			if(friendObj[storageName]){
+				if(callback) callback(friendObj[storageName]);
+				return;
+			}
+			
+			if(this.currentNetwork == FACEBOOK){
+				FB.api("/"+uid+"/picture?width="+Arstider.checkIn(width, 100)+"&height="+Arstider.checkIn(height, 100), {"access_token":this._token}, function(response){
+					if(response.data && response.data.url){
+						friendObj[storageName] = response.data.url;
+						if(callback) callback(friendObj[storageName]);
+					}
+					else{
+						if(error) error(response);
+					}	
+				});
+			}
+		};
+		
+		/**
+		 * Gets the picture for a user
+		 * @type {function(this:Social)}
+		 * @param {string} uid The id of the user 
+		 * @return {Object} The user object
+		 */
+		Social.prototype.getUser = function(uid){
+			var 
+				friendObj = null,
+				i = 0
+			;
+			
+			//check if current player
+			if(uid == "me" || uid == this.user.id) friendObj = this.user;
+			else{
+				//check current list
+				for(i; i<this.friends.length; i++){
+					if(this.friends[i].id == uid){
+						friendObj = this.friends[i];
+						break;
+					}
+				}
+				
+				//create user if it doesn't exist
+				if(friendObj == null){
+					friendObj = {id:uid};
+					this.friends.push(friendObj);
+				}
+			}
+			
+			return friendObj;
+		};
+		
 		singleton = new Social();
 		return singleton;
 	});
