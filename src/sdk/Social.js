@@ -98,7 +98,7 @@
 			if(network == FACEBOOK){
 				this.currentNetwork = FACEBOOK;
 				require(["facebook"], function(){
-					if(!this._facebookSetupped){
+					if(!thisRef._facebookSetupped){
 						var fbBase = document.createElement("div");
 						fbBase.id = "fb-root";
 						document.body.appendChild(fbBase);
@@ -107,22 +107,41 @@
 							cookie:props.cookie,
 							frictionlessRequests:true
 						});
-						this._facebookSetupped = true;
+						thisRef._facebookSetupped = true;
 					}	
 					
-					FB.login(function(response){
-						if(response.authResponse){
-							FB.api('/me', function(response){
+					FB.getLoginStatus(function(response){
+  						if(response.status === 'connected'){
+  							if(response.authResponse){
+								thisRef._token = response.authResponse.accessToken;
+								thisRef._sessionTimeout = setTimeout(function(){thisRef.login.apply(thisRef, [FACEBOOK]);}, response.authResponse.expiresIn*1000);
+							}
+  							FB.api('/me', function(response){
 								thisRef.user = response;
-								FB.api('/friends', function(response){
-									thisRef.friends = response;
+								FB.api('/me/friends', {"access_token":thisRef._token}, function(response){
+									thisRef.friends = response.data;
 									if(callback) callback();
 								});
 							});
-						}else{
-							console.log('User cancelled login or did not fully authorize.');
 						}
-					}, {scope:(props.permissions || []).join()});
+						else{
+							props = props || {};
+							props.permissions = props.permissions || [];
+							if(props.permissions.indexOf("user_friends") == -1) props.permissions.push("user_friends");
+							if(props.permissions.indexOf("user_location") == -1) props.permissions.push("user_location");
+							
+							FB.login(function(response){
+								if(response.authResponse){
+									thisRef._token = response.authResponse.accessToken;
+									thisRef._sessionTimeout = setTimeout(function(){thisRef.login.apply(thisRef, [FACEBOOK]);}, response.authResponse.expiresIn*1000);
+									
+									thisRef.login.apply(thisRef, [FACEBOOK, {}, callback]);
+								}else{
+									console.log('User cancelled login or did not fully authorize.');
+								}
+							}, {scope:props.permissions.join()});
+						}
+					});
 				});
 			}
 		};
