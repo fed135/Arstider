@@ -330,6 +330,8 @@
 			singleton.visibleHeight = Math.min(singleton.visibleHeight, singleton.maxHeight);
 			
 			Events.broadcast("Viewport.resize", singleton);
+			
+			if(Browser.isMobile) document.body.scrollTop=0;
 		};
 		
 		/**

@@ -19,7 +19,7 @@ define("Arstider/Screen", ["Arstider/DisplayObject", "Arstider/Viewport", "Arsti
 		
 		Arstider.Super(this, DisplayObject);
 		
-		Arstider.mixin(this, screenObj, true, true);
+		Arstider.mixin(this, Arstider.clone(screenObj, true), true, true);
 		
 		/**
 		 * Whether the screen is loaded or not
