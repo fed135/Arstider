@@ -32,12 +32,14 @@
 		"Arstider/Viewport",
 		"Arstider/core/Renderer",
 		"Arstider/Telemetry"
-	], function (Browser, Screen, Buffer, Events, Background, Preloader, GlobalTimers, Performance, Debugger, Mouse, Viewport, Renderer, Telemetry){
+	], /** @lends Engine */ function (Browser, Screen, Buffer, Events, Background, Preloader, GlobalTimers, Performance, Debugger, Mouse, Viewport, Renderer, Telemetry){
 		
 		if(singleton != null) return singleton;
 			
 		/**
 		 * Engine constructor
+		 * Core Engine, handles screen logic
+		 * @class Engine
 		 * @constructor
 		 */
 		function Engine(){

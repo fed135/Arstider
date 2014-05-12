@@ -19,14 +19,15 @@
 	/**
 	 * Defines the Sound module
 	 */
-	define( "Arstider/Sound", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Request", "Arstider/Timer"], function (Browser, Viewport, Request, Timer) {
+	define( "Arstider/Sound", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Request", "Arstider/Timer"], /** @lends Sound */ function (Browser, Viewport, Request, Timer) {
 		
 		if(singleton != null) return singleton;
 		
 		/**
-		 * Sound constructor.
+		 * Sound constructor
+		 * Used to play sound tracks
+		 * @class Sound
 		 * @constructor
-		 * @this {Sound}
 		 */
 		function Sound(){
 			/**

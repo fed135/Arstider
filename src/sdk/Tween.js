@@ -8,7 +8,7 @@
 /**
  * Defines the Tween module
  */	
-define( "Arstider/Tween", ["Arstider/Easings", "Arstider/GlobalTimers"], function (Easings, GlobalTimers){
+define( "Arstider/Tween", ["Arstider/Easings", "Arstider/GlobalTimers"], /** @lends Tween */ function (Easings, GlobalTimers){
 	
 	/**
 	 * Transformation Object constructor
@@ -129,7 +129,9 @@ define( "Arstider/Tween", ["Arstider/Easings", "Arstider/GlobalTimers"], functio
 	};
 	
 	/**
-	 * Tween chain constructor
+	 * Tween constructor
+	 * Used to create smooth animations
+	 * @class Tween
 	 * @constructor
 	 * @param {Object} target The object to apply the tween on
 	 * @param {Object} changes The list of changes to apply

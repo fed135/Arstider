@@ -18,10 +18,16 @@
 	/**
 	 * Defines the GameData Module
 	 */	
-	define( "Arstider/GameData", ["Arstider/core/Storage", "Arstider/Request"], function (Storage, Request){
+	define( "Arstider/GameData", ["Arstider/core/Storage", "Arstider/Request"], /** @lends GameData */ function (Storage, Request){
 		
 		if(singleton != null) return singleton;
-			
+		
+		/**
+		 * GameData constructor
+		 * A centralized data-store, joining config files, localstorage and runtime variables
+		 * @class GameData
+		 * @constructor 
+		 */
 		function GameData(){
 			
 			/**

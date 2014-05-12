@@ -7,12 +7,13 @@
 /**
  * Defines the SpriteSheet module
  */
-define( "Arstider/SpriteSheet", ["Arstider/Bitmap", "Arstider/Sequence"], function (Bitmap, Sequence) {
+define( "Arstider/SpriteSheet", ["Arstider/Bitmap", "Arstider/Sequence"], /** @lends SpriteSheet */ function (Bitmap, Sequence) {
 		
 	/**
-	 * SpriteSheet constructor.
+	 * SpriteSheet constructor
+	 * A bitmap representing a collection of frames
+	 * @class SpriteSheet
 	 * @constructor
-	 * @this {SpriteSheet}
 	 * @param {Object} props The properties for the spriteSheet
 	 */		 	
 	var SpriteSheet = function(props){

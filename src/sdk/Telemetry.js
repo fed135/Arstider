@@ -22,12 +22,14 @@
     /**
 	 * Defines performance module
 	 */	
-	define( "Arstider/Telemetry", ["Arstider/Request"], function (Request){
+	define( "Arstider/Telemetry", ["Arstider/Request"], /** @lends Telemetry */ function (Request){
 			
 		if(singleton != null) return singleton;
 		
 		/**
-		 * Telemetry module constructor
+		 * Telemetry constructor
+		 * Stores and sends internal/custom events for tracking purposes
+		 * @class Telemetry
 		 * @constructor
 		 */	
 		function Telemetry(){

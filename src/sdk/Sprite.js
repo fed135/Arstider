@@ -30,12 +30,13 @@
 	/**
 	 * Defines the Sprite module
 	 */	
-	define( "Arstider/Sprite", ["Arstider/Entity"], function (Entity) {
+	define( "Arstider/Sprite", ["Arstider/Entity"], /** @lends Sprite */ function (Entity) {
 		
 		/**
-		 * Sprite constructor.
+		 * Sprite constructor
+		 * Animated sprite stage object
+		 * @class Sprite
 		 * @constructor
-		 * @this {Sprite}
 		 * @param {Object} props The list of properties
 		 */
 		function Sprite(props) { 
@@ -66,7 +67,6 @@
 		
 		/**
 		 * Kills the Sprite's Buffer(s).
-		 * @this {Sprite}
 		 * @type {function(this:Sprite)}
 		 */
 		Sprite.prototype.killBuffer = function(){
@@ -81,7 +81,6 @@
 		
 		/**
 		 * Draws the current Sprite onto the canvas
-		 * @this {Sprite}
 		 * @private
 		 * @type {function(this:Sprite)}
 		 */
@@ -150,7 +149,6 @@
 		
 		/**
 		 * Stops the stepping.
-		 * @this {Sprite}
 		 * @type {function(this:Sprite)}
 		 * @return {Sprite} Returns self reference for chaining
 		 */
@@ -162,7 +160,6 @@
 		
 		/**
 		 * Rewinds the current Animation sheet
-		 * @this {Sprite}
 		 * @type {function(this:Sprite)}
 		 * @return {Sprite} Returns self reference for chaining
 		 */

@@ -8,11 +8,12 @@
 /**
  * Defines the screen module
  */
-define("Arstider/Screen", ["Arstider/DisplayObject", "Arstider/Viewport", "Arstider/Events", "Arstider/Bitmap"], function(DisplayObject, Viewport, Events, Bitmap){
+define("Arstider/Screen", ["Arstider/DisplayObject", "Arstider/Viewport", "Arstider/Events", "Arstider/Bitmap"], /** @lends Screen */ function(DisplayObject, Viewport, Events, Bitmap){
 	
 	/**
 	 * Screen constructor
 	 * Implements display object to create a stage for the screen
+	 * @class Screen
 	 * @constructor
 	 */
 	function Screen(screenObj, stage){

@@ -35,14 +35,15 @@
 	/**
 	 * Defines the Preloader module
 	 */	
-	define( "Arstider/Preloader", ["Arstider/Events"], function(Events) {
+	define( "Arstider/Preloader", ["Arstider/Events"], /** @lends Preloader */ function(Events) {
 	
 		if(singleton != null) return singleton;
 			
 		/**
-		 * Preloader constructor.
+		 * Preloader constructor
+		 * The screen preloading logic
+		 * @class Preloader
 		 * @constructor
-		 * @this {Preloader}
 		 */
 		function Preloader(){
 			/**

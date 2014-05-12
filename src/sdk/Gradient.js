@@ -18,7 +18,7 @@
 	/**
 	 * Defines the Gradient module
 	 */	
-	define( "Arstider/Gradient", ["Arstider/Buffer", ], function (Buffer) {
+	define( "Arstider/Gradient", ["Arstider/Buffer", ], /** @lends Gradient */ function (Buffer) {
 		
 		/**
 		 * If the gradient buffer wasn't initialized, do it here
@@ -32,7 +32,9 @@
 		}
 		
 		/**
-		 * Gradient constructor, creates a linear gradient
+		 * Gradient constructor
+		 * Creates a linear gradient data object
+		 * @class Gradient
 		 * @constructor
 		 * @param {string} The gradient type (linear or radial)
 		 * @param {number} x1 The x value of the first gradient line point (0 to 100)

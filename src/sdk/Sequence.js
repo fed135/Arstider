@@ -8,11 +8,13 @@
 /**
  * Defines the Sequence module
  */
-define( "Arstider/Sequence", [], function () {
+define( "Arstider/Sequence", [], /** @lends Sequence */ function () {
 		
 	/**
+	 * Sequence constructor
+	 * An animation object for a Sprite sheet
+	 * @class Sequence
 	 * @constructor
-	 * @this {Sequence}
 	 * @param {Object} sheet The Sheet class to pool frames from 
 	 * @param {number} time The amount of time between frames
 	 * @param {array} frames The frames in order for the sequence
@@ -40,7 +42,6 @@ define( "Arstider/Sequence", [], function () {
 			
 	/**
 	 * Draws the current Sprite onto the canvas
-	 * @this {Sequence}
 	 * @type {function(this:Sequence)}
 	 * @param {number} time The amount of time in seconds between frames
 	 * @param {Array} frames The frame indexes in the order they will be displayed
@@ -59,7 +60,6 @@ define( "Arstider/Sequence", [], function () {
 			
 	/**
 	 * Adds a function to the list of callbacks
-	 * @this {Sequence}
 	 * @type {function(this:Sequence)}
 	 * @param {function} fct The function to add to the list of callbacks that run after every sequence.
 	 * @return {Sequence} The instance of Sequence, for chaining purpose

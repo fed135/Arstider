@@ -8,10 +8,12 @@
 /**
  * Defines the Bitmap module
  */
-define("Arstider/Bitmap", ["Arstider/Request"], function(Request){
+define("Arstider/Bitmap", ["Arstider/Request"], /** @lends Bitmap */ function(Request){
 	
 	/**
 	 * Bitmap constructor
+	 * Image bitmap data object
+	 * @class Bitmap
 	 * @constructor
 	 * @param {string|Image|HTMLCanvasElement|null} url The data to load/download
 	 * @param {Object} success The callback method

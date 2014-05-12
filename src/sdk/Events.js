@@ -128,12 +128,14 @@
 	/**
 	 * Defines the Events Module
 	 */	
-	define( "Arstider/Events", [], function (){
+	define( "Arstider/Events", [], /** @lends Events */ function (){
 	
 		if(singleton != null) return singleton;
 		
 		/**
 		 * Events constructor
+		 * A flexible custom events dispatcher
+		 * @class Events
 		 * @constructor
 		 */
 		function Events(){}

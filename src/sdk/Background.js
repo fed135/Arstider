@@ -22,7 +22,7 @@
 	/*
 	 * Defines the Background module
 	 */
-	define( "Arstider/Background", ["Arstider/Bitmap"], function (Bitmap) {
+	define( "Arstider/Background", ["Arstider/Bitmap"], /** @lends Background */ function (Bitmap) {
 		
 		/**
 		 * Returns singleton if it has been instantiated
@@ -31,9 +31,9 @@
 			
 		/**
 		 * Background constructor
-		 * 
+		 * Updates the frame redraw data
+		 * @class Background
 		 * @constructor
-		 * @this {Background}
 		 */
 		function Background(){
 			
@@ -46,7 +46,7 @@
 		
 		/**
 		 * Downloads the asset and updates frame redraw data
-		 * @this {Background}
+		 * @type {function(this:Background)}
 		 * @param {string} url The url of the image/ resource to load
 		 */
 		Background.prototype.set = function(url){
@@ -57,7 +57,7 @@
 		
 		/**
 		 * Nullifies the data so that clearRect is called each frame instead
-		 * @this {Background}
+		 * @type {function(this:Background)}
 		 */
 		Background.prototype.reset = function(){
 			singleton.data = null;
@@ -65,7 +65,6 @@
 		
 		/**
 		 * Renders the background
-		 * @this {Background}
 		 * @type {function(this:Background)}
 		 * @param {CanvasRenderingContext2D} ctx The Engine's canvas context
 		 * @param {number} w The width to draw the background (only if scale is not 1)

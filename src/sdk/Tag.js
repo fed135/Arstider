@@ -8,10 +8,12 @@
 /**
  * Defines the Tag module
  */
-define("Arstider/Tag", ["Arstider/Entity", "Arstider/Viewport"], function(Entity, Viewport){
+define("Arstider/Tag", ["Arstider/Entity", "Arstider/Viewport"], /** @lends Tag */ function(Entity, Viewport){
 	
 	/**
+	 * Tag constructor
 	 * Creates a new tag and adds it over the canvas
+	 * @class Tag
 	 * @constructor
 	 * @param {Object|null} props Optional properties
 	 */

@@ -31,12 +31,14 @@
 	/**
 	 * Defines the Pool module
 	 */	
-	define( "Arstider/Pool", [], function (){
+	define( "Arstider/Pool", [], /** @lends Pool */ function (){
 			
 		if(singleton != null) return singleton;
 		
 		/**
 		 * Pool constructor
+		 * A memory pool manager (limits instantiation of a certain constructor)
+		 * @class Pool
 		 * @constructor
 		 */
 		function Pool(){

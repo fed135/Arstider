@@ -203,12 +203,14 @@
 	/**
 	 * Defines the Mouse module
 	 */
-	define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Events"], function (Browser, Viewport, Events){
+	define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Events"], /** @lends Mouse */ function (Browser, Viewport, Events){
 			
 		if(singleton != null) return singleton;
 		
 		/**
 		 * Mouse constructor
+		 * A mouse events mapper
+		 * @class Mouse 
 		 * @constructor
 		 */
 		function Mouse(){

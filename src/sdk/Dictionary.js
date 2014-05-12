@@ -19,7 +19,7 @@
 	/*
 	 * Defines the Dictionary module
 	 */
-	define("Arstider/Dictionary", ["Arstider/Request"], function(Request){
+	define("Arstider/Dictionary", ["Arstider/Request"], /** @lends Dictionary */ function(Request){
 		
 		/**
 		 * Returns singleton if it has been instantiated
@@ -28,9 +28,9 @@
 		
 		/**
 		 * Dictionary constructor
-		 * 
+		 * Utility class to translate pieces of string in a specific language
+		 * @class Dictionary
 		 * @constructor
-		 * @this {Dictionary}
 		 */
 		function Dictionary(){
 			

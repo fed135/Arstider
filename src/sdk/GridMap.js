@@ -8,12 +8,13 @@
 /**
  * Defines the GridMap module
  */
-define( "Arstider/GridMap", ["Arstider/GridLayer", "Arstider/DisplayObject", "Arstider/Viewport"], function (GridLayer, DisplayObject, Viewport) {
+define( "Arstider/GridMap", ["Arstider/GridLayer", "Arstider/DisplayObject", "Arstider/Viewport"], /** @lends GridMap */ function (GridLayer, DisplayObject, Viewport) {
 		
 	/**
-	 * Creates an instance of GridMap.
+	 * GridMap constructor
+	 * Grid based map system (works with maps generated from the Arstider Editor)
+	 * @class GridMap
 	 * @constructor
-	 * @this {GridMap}
 	 * @param {Object} name The JSON loaded object of the map
 	 */
 	function GridMap(map) {

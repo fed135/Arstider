@@ -18,7 +18,7 @@
 	/**
 	 * Defines the Texture module
 	 */	
-	define( "Arstider/Texture", ['Arstider/Buffer', 'Arstider/Bitmap'], function (Buffer, Bitmap) {
+	define( "Arstider/Texture", ['Arstider/Buffer', 'Arstider/Bitmap'], /** @lends Texture */ function (Buffer, Bitmap) {
 		
 		if(cnv == null){
 			cnv = new Buffer({
@@ -30,6 +30,8 @@
 			
 		/**
 		 * Texture constructor
+		 * Creates a texture data object
+		 * @class Texture
 		 * @constructor
 		 * @param {string|Image|HTMLCanvasElement} url The url or asset to use as texture
 		 */

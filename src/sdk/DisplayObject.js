@@ -24,14 +24,14 @@
 	/**
 	 * Defines the DisplayObject Module
 	 */	
-	define( "Arstider/DisplayObject", ["Arstider/Entity", "Arstider/Bitmap"], function (Entity, Bitmap) {
+	define( "Arstider/DisplayObject", ["Arstider/Entity", "Arstider/Bitmap"], /** @lends DisplayObject */ function (Entity, Bitmap) {
 		
 		/**
-		 * Creates an instance of DisplayObject.
-		 *
+		 * DisplayObject constructor
+		 * The basic display element
+		 * @class DisplayObject
 		 * @constructor
 		 * @extends {Entity}
-		 * @this {DisplayObject}
 		 * @param {Object|null} props Optional properties for the element.
 		 */
 		function DisplayObject(props) {
@@ -62,7 +62,7 @@
 		
 		/**
 		 * Adds an Entity-type to the list of children.
-		 * @this {DisplayObject}
+		 * @type {function(this:DisplayObject)}
 		 * @param {Entity} clip The Entity to be added to the DisplayObject's list of children
 		 * @return {number} Index of the newly added child
 		 */
@@ -81,7 +81,7 @@
 		
 		/**
 		 * Removes an Entity-type from the list of children.
-		 * @this {DisplayObject}
+		 * @type {function(this:DisplayObject)}
 		 * @param {string} name The name of the Entity to be removed from the DisplayObject's list of children
 		 * @return {boolean} Was a child removed or not.
 		 */
@@ -108,7 +108,7 @@
 		
 		/**
 		 * Removes an Entity from the list of children.
-		 * @this {DisplayObject}
+		 * @type {function(this:DisplayObject)}
 		 * @param {Entity} ref The reference of the Entity to be removed from the DisplayObject's list of children
 		 * @return {boolean} Was a child removed or not.
 		 */
@@ -135,8 +135,7 @@
 		
 		/**
 		 * Get an Entity from the list of children by name.
-		 *
-		 * @this {DisplayObject}
+		 * @type {function(this:DisplayObject)}
 		 * @param {string} name The name of the desired Entity.
 		 * @return {Entity|null} The desired Entity or null if not found.
 		 */
@@ -149,7 +148,7 @@
 		
 		/**
 		 * Get the list of children.
-		 * @this {DisplayObject}
+		 * @type {function(this:DisplayObject)}
 		 * @return {Array} The list of children.
 		 */
 		DisplayObject.prototype.getChildren = function(){
@@ -159,7 +158,7 @@
 		
 		/**
 		 * Removes all children from stage and destroys their buffers.
-		 * @this {DisplayObject}
+		 * @type {function(this:DisplayObject)}
 		 */
 		DisplayObject.prototype.removeChildren = function(force){
 			var someKept = false;
@@ -188,7 +187,7 @@
 		
 		/**
 		 * Loads a Bitmap into the DisplayObject
-		 * @this {DisplayObject}
+		 * @type {function(this:DisplayObject)}
 		 * @param {string|Image|HTMLCanvasElement} url Loads an image to be used as data
 		 * @param {function(this:DisplayObject)} callback Optional function to be triggered upon successful loading.
 		 */
@@ -216,7 +215,7 @@
 		
 		/**
 		 * Loads a Bitmap into the DisplayObject from an atlas
-		 * @this {DisplayObject}
+		 * @type {function(this:DisplayObject)}
 		 * @param {string|Image|HTMLCanvasElement} url Loads an image to be used as D.O. data
 		 * @param {number} x X slicing offset
 		 * @param {number} y Y slicing offset

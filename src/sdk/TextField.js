@@ -126,14 +126,18 @@
 	/**
 	 * Defines the TextField module
 	 */	
-	define( "Arstider/TextField", ["Arstider/Buffer", "Arstider/Entity", "Arstider/core/BBParser", "Arstider/Fonts"], function (Buffer, Entity, Parser, Fonts) {
+	define( "Arstider/TextField", ["Arstider/Buffer", "Arstider/Entity", "Arstider/core/BBParser", "Arstider/Fonts"], /** @lends TextField */ function (Buffer, Entity, Parser, Fonts) {
 		
+		/**
+		 * Defines a reference entity, for property lookup
+		 */
 		if(entityRef == null) entityRef = new Entity();
 		
 		/**
-		 * TextField constructor.
+		 * TextField constructor
+		 * Stage element for text display
+		 * @class TextField
 		 * @constructor
-		 * @this {TextField}
 		 * @param {Object=} props Can optionally overwrite build properties of the entity    
 		 */
 		function TextField(props) {
@@ -216,7 +220,6 @@
 		/**
 		 * Kills the TextField's Buffer(s).
 		 * @override
-		 * @this {TextField}
 		 * @type {function(this:TextField)}
 		 */
 		TextField.prototype.killBuffer = function(){
@@ -227,7 +230,6 @@
 			
 		/**
 		 * Sets the text of the TextField and re-renders it's data.
-		 * @this {TextField}
 		 * @type {function(this:TextField)}
 		 * @param {string} name The desired text.
 		 */
@@ -248,7 +250,6 @@
 		
 		/**
 		 * Sets the font of the TextField and re-renders it's data.
-		 * @this {TextField}
 		 * @type {function(this:TextField)}
 		 * @param {Font|Object} name The desired text.
 		 */
@@ -272,7 +273,6 @@
 			
 		/**
 		 * Makes the buffer to draw the text in
-		 * @this {TextField}
 		 * @private
 		 * @type {function(this:TextField)}
 		 */
@@ -308,7 +308,6 @@
 		
 		/**
 		 * Organizes the list of string segments so they are properly positioned
-		 * @this {TextField}
 		 * @private
 		 * @type {function(this:TextField)}
 		 * @param {Object} fontRef Final transformation options
@@ -337,7 +336,6 @@
 		
 		/**
 		 * Renders a single segment of text with over-ruling styles
-		 * @this {TextField}
 		 * @private
 		 * @type {function(this:TextField)}
 		 * @param {Object} segment The segment object to render
@@ -421,7 +419,6 @@
 		
 		/**
 		 * Renders the text and it's style into a buffer. Saves on context transformation. 
-		 * @this {TextField}
 		 * @private
 		 * @type {function(this:TextField)}
 		 */

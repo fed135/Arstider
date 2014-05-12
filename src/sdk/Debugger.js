@@ -44,10 +44,12 @@
 	/**
 	 * Defines the Debugger module
 	 */	
-	define( "Arstider/Debugger", ["Arstider/core/Performance","Arstider/Keyboard","Arstider/core/Profiler"], function (Performance, Keyboard, Profiler){
+	define( "Arstider/Debugger", ["Arstider/core/Performance","Arstider/Keyboard","Arstider/core/Profiler"], function /** @lends Debugger */ (Performance, Keyboard, Profiler){
 
 		/**
 		 * Debugger constructor
+		 * Visual profiler backend
+		 * @class Debugger
 		 * @constructor
 		 * @param {Object} eng Engine Reference
 		 */

@@ -41,10 +41,12 @@
 	/**
 	 * Defines the Social module
 	 */
-	define("Arstider/Social", ["Arstider/Request"], function(Request){
+	define("Arstider/Social", ["Arstider/Request"], /** @lends Social */ function(Request){
 		
 		/**
 		 * Social constructor
+		 * An entry point for social network integration
+		 * @class Social
 		 * @constructor
 		 */
 		function Social(){

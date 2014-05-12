@@ -19,10 +19,12 @@
 	/**
 	 * Defines the Buffer module
 	 */
-	define("Arstider/Buffer", [], function(){
+	define("Arstider/Buffer", [], /** @lends Buffer */ function(){
 		
 		/**
 		 * Buffer constructor
+		 * Displayable data container (offscreen canvas)
+		 * @class Buffer
 		 * @constructor
 		 * @param {Object} props The proprieties of the Buffer
 		 */

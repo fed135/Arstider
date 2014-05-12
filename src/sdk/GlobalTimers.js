@@ -18,12 +18,14 @@
 	/**
 	 * Defines the GlobalTimers module
 	 */
-	define( "Arstider/GlobalTimers", [], function (){
+	define( "Arstider/GlobalTimers", [], /** @lends GlobalTimers */ function (){
 			
 		if(singleton != null) return singleton;
 			
 		/**
-		 * Global Timers constructor
+		 * GlobalTimers constructor
+		 * A list of timers to update every frame (to match display in synchronous mode)
+		 * @class GlobalTimers
 		 * @constructor
 		 */
 		function GlobalTimers(){

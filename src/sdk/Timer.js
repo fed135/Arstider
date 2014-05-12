@@ -8,12 +8,13 @@
 /**
  * Defines the Timer module
  */
-define( "Arstider/Timer", [], function () {
+define( "Arstider/Timer", [], /** @lends Timer */ function () {
 		
 	/**
-	 * Timer constructor.
+	 * Timer constructor
+	 * A robust timer class that can progress at real-time or draw-time
+	 * @class Timer
 	 * @constructor
-	 * @this {Timer}
 	 * @param {function} callback Function to be ran after the delay.
 	 * @param {number} delay Number of millisecond before {callback} is triggered. 
 	 * @param {boolean|null} autoRun whether to start the timer immediately or not. default : true

@@ -102,12 +102,14 @@
 	/**
 	 * Defines the Keyboard module
 	 */
-	define("Arstider/Keyboard", [], function(){
+	define("Arstider/Keyboard", [], /** @lends Keyboard */ function(){
 		
 		if(singleton != null) return singleton;
 		
 		/**
 		 * Keyboard constructor
+		 * A keyboard event mapper
+		 * @class Keyboard
 		 * @constructor
 		 */
 		function Keyboard(){

@@ -91,10 +91,12 @@
 	/**
 	 * Defines the Request module
 	 */
-	define("Arstider/Request", [], function(Preloader){
+	define("Arstider/Request", [], /** @lends Request */ function(Preloader){
 		
 		/**
 		 * Request constructor
+		 * A cover-all-situations network call class
+		 * @class Request
 		 * @constructor
 		 * @param {Object} props Request properties
 		 */

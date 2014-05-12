@@ -136,7 +136,7 @@
 	/**
 	 * Defines the Fonts module
 	 */	
-	define( "Arstider/Fonts", ["Arstider/Request"], function (Request) {
+	define( "Arstider/Fonts", ["Arstider/Request"], /** @lends Fonts */ function (Request) {
 		
 		/**
 		 * Returns singleton if it has been instantiated
@@ -144,9 +144,10 @@
 		if(singleton != null) return singleton;
 		
 		/**
-		 * Creates an instance of Fonts.
+		 * Fonts constructor
+		 * A font loading and defining module
+		 * @class Fonts
 		 * @constructor
-		 * @this {Font}
 		 */
 		function Fonts(){
 		 

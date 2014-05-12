@@ -43,14 +43,14 @@
 	/**
 	 * Defines the Entity module
 	 */
-	define("Arstider/Entity", [], function(){
+	define("Arstider/Entity", [], /** @lends Entity */ function(){
 			
 		/**
-		 * Creates an instance of Entity.
-		 *
+		 * Entity constructor
+		 * Most basic form of stage element, core class
+		 * @class Entity
 		 * @constructor
-		 * @this {Entity}
-		 * @param {Object=} props Can optionally overwrite build properties of the entity    
+		 * @param {Object|null} props Can optionally overwrite build properties of the entity    
 		 */
 		function Entity(props){
 			
@@ -417,7 +417,6 @@
 		
 		/**
 		 * Private logic when element is hovered
-		 * @this {Entity}
 		 * @protected
 		 * @type {function(this:Entity)}
 		 */
@@ -429,7 +428,6 @@
 		
 		/**
 		 * Private logic when element is left
-		 * @this {Entity}
 		 * @protected
 		 * @type {function(this:Entity)}
 		 */
@@ -443,7 +441,6 @@
 		
 		/**
 		 * Private logic when element is pressed
-		 * @this {Entity}
 		 * @protected
 		 * @type {function(this:Entity)}
 		 */
@@ -455,7 +452,6 @@
 		
 		/**
 		 * Private logic when element is released
-		 * @this {Entity}
 		 * @protected
 		 * @type {function(this:Entity)}
 		 */
@@ -477,7 +473,6 @@
 		
 		/**
 		 * Private logic when element is clicked with the right mouse button
-		 * @this {Entity}
 		 * @protected
 		 * @type {function(this:Entity)}
 		 */
@@ -488,7 +483,6 @@
 		
 		/**
 		 * Private logic with each frame updates (see core/Performance for draw vs update skips)
-		 * @this {Entity}
 		 * @protected
 		 * @type {function(this:Entity)}
 		 */
@@ -529,7 +523,7 @@
 		
 		/**
 		 * Starts dragging the element, following the mouse
-		 * @this {Entity}
+		 * @type {function(this:Entity)}
 		 * @param {boolean|null} snapToCenter Whether to snap the dragged object centered with the pointer.
 		 * @param {boolean|null} bound Whether to bound the dragging to the confines of the parent
 		 */
@@ -560,7 +554,7 @@
 		
 		/**
 		 * Stops dragging the element
-		 * @this {Entity}
+		 * @type {function(this:Entity)}
 		 */
 		Entity.prototype.stopDrag = function(){
 			var thisRef = this;
@@ -574,7 +568,7 @@
 		
 		/**
 		 * Sets the value for horizontal and vertical docking of the Entity
-		 * @this {Entity}
+		 * @type {function(this:Entity)}
 		 * @param {string|number|null} x The horizontal docking propriety.
 		 * @param {string|number|null} y The vertical docking propriety.
 		 */
@@ -592,7 +586,7 @@
 		
 		/**
 		 * Sets the value for horizontal and vertical filling of the Entity
-		 * @this {Entity}
+		 * @type {function(this:Entity)}
 		 * @param {string|number|null} x The horizontal filling propriety.
 		 * @param {string|number|null} y The vertical filling propriety.
 		 */
@@ -608,7 +602,7 @@
 		
 		/**
 		 * Applies filters to element's data
-		 * @this {Entity}
+		 * @type {function(this:Entity)}
 		 * @param {string} filter Filter name
 		 * @param {*} args extra params
 		 */
@@ -631,7 +625,7 @@
 		
 		/**
 		 * Checks if coordinates fit in the global location of the Entity
-		 * @this {Entity}
+		 * @type {function(this:Entity)}
 		 * @param {number} x The x coordinate to check against.
 		 * @param {number} y The y coordinate to check against.
 		 * @return {boolean} Are the coordinates within the zone of the Entity
@@ -645,7 +639,7 @@
 			
 		/**
 		 * Sets the index of the Entity inside it's parent's array - must be parented
-		 * @this {Entity}
+		 * @type {function(this:Entity)}
 		 * @param {number} index
 		 * @returns {Entity} Returns the element for chaining
 		 */
@@ -674,7 +668,7 @@
 			
 		/**
 		 * Gets the index of the Entity inside it's parent's array - must be parented
-		 * @this {Entity}
+		 * @type {function(this:Entity)}
 		 * @returns {number} Returns the element index
 		 */
 		Entity.prototype.getIndex = function(index){
@@ -690,6 +684,7 @@
 		
 		/**
 		 * Stops update propagation during that frame
+		 * @type {function(this:Entity)}
 		 */
 		Entity.prototype.cancelBubble = function(){
 			this._skipUpdateBubble = true;
@@ -697,7 +692,7 @@
 		
 		/**
 		 * Kills the Entity's Buffer(s).
-		 * @this {Entity}
+		 * @type {function(this:Entity)}
 		 */
 		Entity.prototype.killBuffer = function(wipe){
 			if(this.data && this.data.kill) this.data.kill();
@@ -707,8 +702,7 @@
 			
 		/**
 		 * Getter for the global 'id' attribute. (Includes parents' value)
-		 *
-		 * @this {Entity}
+		 * @type {function(this:Entity)}
 		 * @return {string} final value for 'id'
 		 */
 		Entity.prototype.id = function(){

@@ -28,12 +28,13 @@
 	/**
 	 * Defines the GridLayer module
 	 */	
-	define( "Arstider/GridLayer", ["Arstider/DisplayObject", "Arstider/Bitmap"], function (DisplayObject, Bitmap) {
+	define( "Arstider/GridLayer", ["Arstider/DisplayObject", "Arstider/Bitmap"], /** @lends GridLayer */ function (DisplayObject, Bitmap) {
 	
 		/**
-		 * Creates an instance of a GridLayer.
+		 * GridLayer constructor
+		 * A single layer of tiles in a grid map
+		 * @class GridLayer
 		 * @constructor
-		 * @this {GridLayer}
 		 * @param {string} name The name of the layer
 		 * @param {Object} data The tile data from the JSON map file
 		 * @param {number} tileSizeX The width of each tiles

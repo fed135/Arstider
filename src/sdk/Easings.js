@@ -6,6 +6,15 @@
  */
 ;(function(){
 
+	var 
+		/*
+		 * Singleton static
+		 * @private
+		 * @type {Easings|null}
+		 */
+		singleton = null
+	;
+	
 	/**
 	 * Linear progress curve
 	 * @const
@@ -113,29 +122,95 @@
 	/**
 	 * Defines the Easings module
 	 */
-	define( "Arstider/Easings", [], function () {
+	define( "Arstider/Easings", [], /** @lends Easings */ function () {
 		
 		/**
-		 * Collection of Easing
+		 * Returns singleton if it has been instantiated
 		 */
-		return {
-			LINEAR:linear,
+		if(singleton != null) return singleton;
+		
+		/**
+		 * Easings constructor
+		 * Collection of Easing
+		 * @class Easings
+		 * @constructor
+		 */
+		function Easings(){
+			/**
+			 * Basic linear transition, no easing.
+			 * @type {function()}
+			 */
+			this.LINEAR = linear;
 			
-			QUAD_IN:quad,
-			QUAD_OUT:easeOut(quad),
-			QUAD_IN_OUT:easeInOut(quad),
+			/**
+			 * Quad easing start, linear end.
+			 * @type {function()}
+			 */
+			this.QUAD_IN = quad;
+			/**
+			 * Quad easing end, linear start.
+			 * @type {function()}
+			 */
+			this.QUAD_OUT = easeOut(quad);
+			/**
+			 * Quad easing start, quad easing end.
+			 * @type {function()}
+			 */
+			this.QUAD_IN_OUT = easeInOut(quad);
 			
-			CIRC:circ,
+			/**
+			 * Circular easing pattern.
+			 * @type {function()}
+			 */
+			this.CIRC = circ,
 			
-			BACKSWING:back,
+			/**
+			 * Swing backwards before linear completion.
+			 * Requires force extra parameter 
+			 * @type {function()}
+			 */
+			this.BACKSWING = back,
 			
-			BOUNCE_IN:bounce,
-			BOUNCE_OUT:easeOut(bounce),
-			BOUNCE_IN_OUT:easeInOut(bounce),
+			/**
+			 * Bounce before linear completion.
+			 * Requires force extra parameter 
+			 * @type {function()}
+			 */
+			this.BOUNCE_IN = bounce,
+			/**
+			 * Linear progression, then bounces out.
+			 * Requires force extra parameter 
+			 * @type {function()}
+			 */
+			this.BOUNCE_OUT = easeOut(bounce),
+			/**
+			 * Bounce before linear completion, then bounces out.
+			 * Requires force extra parameter 
+			 * @type {function()}
+			 */
+			this.BOUNCE_IN_OUT = easeInOut(bounce),
 			
-			ELASTIC_IN:elastic,
-			ELASTIC_OUT:easeOut(elastic),
-			ELASTIC_IN_OUT:easeInOut(elastic)
-		};
+			/**
+			 * Elastic swing, then linear completion.
+			 * Requires force extra parameter 
+			 * @type {function()}
+			 */
+			this.ELASTIC_IN = elastic,
+			/**
+			 * Linear progression, then Elastic swing out.
+			 * Requires force extra parameter 
+			 * @type {function()}
+			 */
+			this.ELASTIC_OUT = easeOut(elastic),
+			/**
+			 * Elastic swing, Linear progression, then Elastic swing out.
+			 * Requires force extra parameter 
+			 * @type {function()}
+			 */
+			this.ELASTIC_IN_OUT = easeInOut(elastic)
+		}
+		
+		singleton = new Easings();
+		return singleton;
 	});
 })();

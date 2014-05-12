@@ -33,12 +33,14 @@
 	/**
 	 * Defines the Viewport module
 	 */	
-	define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], function(Browser, Events){
+	define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], /** @lends Viewport */ function(Browser, Events){
 		
 		if(singleton != null) return singleton;
 		
 		/**
 		 * Viewport constructor
+		 * Handles screen size, orientation and features
+		 * @class Viewport
 		 * @constructor
 		 */
 		function Viewport(){

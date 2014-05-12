@@ -38,21 +38,47 @@
 	/**
 	 * Defines the Browser module
 	 */
-	define( "Arstider/Browser", [],	function(){
+	define( "Arstider/Browser", [], /** @lends Browser */	function(){
 		
 		if(singleton != null) return singleton;
 	
 		/**
 		 * Browser module constructor
+		 * Analyses browser and platform info, provides basic feature detection
+		 * @class Browser
 		 * @constructor
 		 */
 		function Browser(){	
-	
+			
+			/**
+			 * Current platform (iphone, ipad, ipod, android, windows, mac, ...)
+			 * @type {string}
+			 */
 			this.platform = navigator.platform;
+			/**
+			 * Current platform version
+			 * @type {number}
+			 */
 			this.platformVersion = 0;
+			/**
+			 * Current app name (firefox, chrome, safari, ie, unknown)
+			 * @type {string}
+			 */
 			this.name = navigator.appName;
+			/**
+			 * Current app version
+			 * @type {number}
+			 */
 			this.version = parseFloat(navigator.appVersion);
+			/**
+			 * Is current platform a mobile device
+			 * @type {boolean}
+			 */
 			this.isMobile = false;
+			/**
+			 * Is current app supported
+			 * @type {boolean}
+			 */
 			this.isSupported = true;
 	
 			/**
