@@ -17,7 +17,6 @@
 		
 		/**
 		 * Static entity reference
-		 * @const
 		 * @private
 		 * @type {Object|null}
 		 */
