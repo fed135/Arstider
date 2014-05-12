@@ -32,7 +32,7 @@
 		 * @constructor
 		 * @extends {Entity}
 		 * @this {DisplayObject}
-		 * @param {Object=} props Optional properties for the element.
+		 * @param {Object|null} props Optional properties for the element.
 		 */
 		function DisplayObject(props) {
 			Arstider.Super(this, Entity, props);
@@ -190,7 +190,7 @@
 		 * Loads a Bitmap into the DisplayObject
 		 * @this {DisplayObject}
 		 * @param {string|Image|HTMLCanvasElement} url Loads an image to be used as data
-		 * @param {function(this:DisplayObject, ?)} callback Optional function to be triggered upon successful loading.
+		 * @param {function(this:DisplayObject)} callback Optional function to be triggered upon successful loading.
 		 */
 		DisplayObject.prototype.loadBitmap = function(url, success) {
 			var thisRef = this;

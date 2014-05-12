@@ -18,16 +18,16 @@ var parserNames = {
      *
      * @deprecated Replaced by "marked," as markdown-js does not support inline HTML.
      */
-    evilstreak: "marked",
+    evilstreak: 'marked',
     /**
      * The "GitHub-flavored Markdown" parser.
      * @deprecated Replaced by "marked."
      */
-    gfm: "marked",
+    gfm: 'marked',
     /**
      * The "[Marked](https://github.com/chjj/marked)" parser.
      */
-    marked: "marked"
+    marked: 'marked'
 };
 
 /**
@@ -56,7 +56,7 @@ function escapeUrls(source) {
 
 /**
  * Unescape HTTP/HTTPS URLs after Markdown parsing is complete.
- * 
+ *
  * @param {string} source - The source text to unescape.
  * @return {string} The source text with escape characters removed from HTTP/HTTPS URLs.
  */
@@ -90,6 +90,10 @@ function getParseFunction(parserName, conf) {
             var util = require('util');
 
             return util.format('<h%s>%s</h%s>', level, text, level);
+        };
+        // Allow prettyprint to work on inline code samples
+        markedRenderer.code = function(code, language) {
+          return '<pre class="prettyprint source"><code>' + code + '</code></pre>';
         };
 
         parserFunction = function(source) {

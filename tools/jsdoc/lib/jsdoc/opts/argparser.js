@@ -224,7 +224,7 @@ ArgParser.prototype.parse = function(args, defaults) {
     result._ = [];
     for (var i = 0, leni = args.length; i < leni; i++) {
         var arg = '' + args[i],
-            next = (i < leni-1)? '' + args[i+1] : null,
+            next = (i < leni - 1) ? '' + args[i + 1] : null,
             option,
             shortName = null,
             longName,
@@ -272,11 +272,11 @@ ArgParser.prototype.parse = function(args, defaults) {
             if (typeof option.coercer === 'function') {
                 value = option.coercer(value);
             }
-                
+
             // Allow for multiple options of the same type to be present
             if (option.canHaveMultiple && hasOwnProp.call(result, name)) {
                 var val = result[name];
-                
+
                 if (val instanceof Array) {
                     val.push(value);
                 } else {

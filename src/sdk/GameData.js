@@ -75,7 +75,7 @@
 		 * @type {function(this:GameData)}
 		 * @param {Object} id The data key
 		 * @param {Object} seekLocalStorage Whether to look into the localStorage 
-		 * @return {?} The data
+		 * @return {*} The data
 		 */
 		GameData.prototype.get = function(id, seekLocalStorage){
 			var ls = null;
@@ -110,7 +110,7 @@
 		 * Saves an entry in the runtime data set (and in localStorage if save is true)
 		 * @type {function(this:GameData)}
 		 * @param {string} id The data key
-		 * @param {?} val The data to save
+		 * @param {*} val The data to save
 		 * @param {boolean|null} save Whether to save in the localStorage as well or not
 		 */
 		GameData.prototype.set = function(id, val, save){

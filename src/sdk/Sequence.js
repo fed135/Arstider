@@ -13,7 +13,7 @@ define( "Arstider/Sequence", [], function () {
 	/**
 	 * @constructor
 	 * @this {Sequence}
-	 * @param {Sheet Class} sheet The Sheet class to pool frames from 
+	 * @param {Object} sheet The Sheet class to pool frames from 
 	 * @param {number} time The amount of time between frames
 	 * @param {array} frames The frames in order for the sequence
 	 * @param {boolean|number} stop Whether the animation should stop at the end or loop - if int the amount of loops (TODO).

@@ -610,7 +610,7 @@
 		 * Applies filters to element's data
 		 * @this {Entity}
 		 * @param {string} filter Filter name
-		 * @param {?} args extra params
+		 * @param {*} args extra params
 		 */
 		Entity.prototype.filter = function(filter){
 			if(this.data == null){

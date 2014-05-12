@@ -77,9 +77,26 @@
 	</target>
 	
 	<target name="build.documentation" description="documentation builder">
-		<jsdoc3 jsdochome="${jsdoc.home}" 
-		    to="${dest}/Arstider-Documentation" 
-		    file="${dest}/Arstider.js" 
-		    template="spartan" />
+		
+		<echo> - cleaning doc folder</echo>
+		<delete dir="${dest}/Arstider-Documentation"/>
+		<mkdir dir="${dest}/Arstider-Documentation" />
+		
+		<filter filtersfile="version.properties"/>
+		<filter token="target" value="dev"/>
+		<filter token="debug" value="true"/>
+		
+		<copy todir="${dest}/Arstider-Documentation/sources" filtering="true">
+			<fileset dir="${src}/sdk"></fileset>
+		</copy>
+		
+		<echo> - running jsdoc...</echo>
+		<exec executable="${jsdoc.home}/jsdoc.cmd">
+			<arg line="--destination ${dest}/Arstider-Documentation" />
+			<arg line="--recurse" />
+			<arg line="--verbose" />
+			<arg line="${dest}/Arstider-Documentation/sources" />
+			
+		</exec>
 	</target>
 </project>

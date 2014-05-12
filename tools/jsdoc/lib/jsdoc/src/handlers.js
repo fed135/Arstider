@@ -33,34 +33,51 @@ function setCurrentModule(doclet) {
     }
 }
 
+function setDefaultScopeMemberOf(doclet) {
+    // add @inner and @memberof tags unless the current module exports only this symbol
+    if (currentModule && currentModule !== doclet.name) {
+        // add @inner unless the current module exports only this symbol
+        if (!doclet.scope) {
+            doclet.addTag('inner');
+        }
+
+        if (!doclet.memberof && doclet.scope !== 'global') {
+            doclet.addTag('memberof', currentModule);
+        }
+    }
+}
+
 /**
  * Attach these event handlers to a particular instance of a parser.
  * @param parser
  */
 exports.attachTo = function(parser) {
-    var jsdoc = {doclet: require('jsdoc/doclet'), name: require('jsdoc/name')};
-    
-    // handles JSDoc comments that include a @name tag -- the code is ignored in such a case
-    parser.on('jsdocCommentFound', function(e) {
-        var newDoclet = getNewDoclet(e.comment, e);
+    var jsdoc = {
+        doclet: require('jsdoc/doclet'),
+        name: require('jsdoc/name')
+    };
 
-        if (!newDoclet.name) {
-            return false; // only interested in virtual comments (with a @name) here
+    function filter(doclet) {
+        // you can't document prototypes
+        if ( /#$/.test(doclet.longname) ) {
+            return true;
         }
 
-        addDoclet.call(parser, newDoclet);
+        return false;
+    }
 
-        e.doclet = newDoclet;
-    });
+    function addDoclet(newDoclet) {
+        var e;
+        if (newDoclet) {
+            setCurrentModule(newDoclet);
+            e = { doclet: newDoclet };
+            parser.emit('newDoclet', e);
 
-    // handles named symbols in the code, may or may not have a JSDoc comment attached
-    parser.on('symbolFound', function(e) {
-        var subDoclets = e.comment.split(/@also\b/g);
-
-        for (var i = 0, l = subDoclets.length; i < l; i++) {
-            newSymbolDoclet.call(parser, subDoclets[i], e);
+            if ( !e.defaultPrevented && !filter(e.doclet) ) {
+                parser.addResult(e.doclet);
+            }
         }
-    });
+    }
 
     // TODO: for clarity, decompose into smaller functions
     function newSymbolDoclet(docletSrc, e) {
@@ -117,7 +134,7 @@ exports.attachTo = function(parser) {
                         // like /** @module foo */ exports = {bar: 1};
                         // or /** blah */ this.foo = 1;
                         memberofName = parser.resolveThis(e.astnode);
-                        scope = nameStartsWith === 'exports'? 'static' : 'instance';
+                        scope = nameStartsWith === 'exports' ? 'static' : 'instance';
 
                         // like /** @module foo */ this.bar = 1;
                         if (nameStartsWith === 'this' && currentModule && !memberofName) {
@@ -128,7 +145,8 @@ exports.attachTo = function(parser) {
 
                     if (memberofName) {
                         if (newDoclet.name) {
-                            newDoclet.name = memberofName + (scope === 'instance'? '#' : '.') + newDoclet.name;
+                            newDoclet.name = memberofName + (scope === 'instance' ? '#' : '.') +
+                                newDoclet.name;
                         }
                         else { newDoclet.name = memberofName; }
                     }
@@ -149,17 +167,7 @@ exports.attachTo = function(parser) {
                     }
                 }
                 else {
-                    // add @inner and @memberof tags unless the current module exports only this symbol
-                    if (currentModule && currentModule !== newDoclet.name) {
-                        // add @inner unless the current module exports only this symbol
-                        if (!newDoclet.scope) {
-                            newDoclet.addTag('inner');
-                        }
-
-                        if (!newDoclet.memberof && newDoclet.scope !== 'global') {
-                            newDoclet.addTag('memberof', currentModule);
-                        }
-                    }
+                    setDefaultScopeMemberOf(newDoclet);
                 }
             }
 
@@ -179,33 +187,31 @@ exports.attachTo = function(parser) {
         e.doclet = newDoclet;
     }
 
+    // handles JSDoc comments that include a @name tag -- the code is ignored in such a case
+    parser.on('jsdocCommentFound', function(e) {
+        var newDoclet = getNewDoclet(e.comment, e);
+
+        if (!newDoclet.name) {
+            return false; // only interested in virtual comments (with a @name) here
+        }
+
+        setDefaultScopeMemberOf(newDoclet);
+        newDoclet.postProcess();
+        addDoclet.call(parser, newDoclet);
+
+        e.doclet = newDoclet;
+    });
+
+    // handles named symbols in the code, may or may not have a JSDoc comment attached
+    parser.on('symbolFound', function(e) {
+        var subDoclets = e.comment.split(/@also\b/g);
+
+        for (var i = 0, l = subDoclets.length; i < l; i++) {
+            newSymbolDoclet.call(parser, subDoclets[i], e);
+        }
+    });
+
     parser.on('fileComplete', function(e) {
         currentModule = null;
     });
-
-    function addDoclet(newDoclet) {
-        var e;
-        if (newDoclet) {
-            setCurrentModule(newDoclet);
-            e = { doclet: newDoclet };
-            parser.emit('newDoclet', e);
-
-            if ( !e.defaultPrevented && !filter(newDoclet) ) {                
-                parser.addResult(newDoclet);
-            }
-        }
-    }
-
-    function filter(doclet) {
-        // you can't document prototypes
-        if ( /#$/.test(doclet.longname) ) {
-            return true;
-        }
-        // you can't document symbols added by the parser with a dummy name
-        if (doclet.meta.code && doclet.meta.code.name === '____') {
-            return true;
-        }
-
-        return false;
-    }
 };

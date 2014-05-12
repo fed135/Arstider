@@ -94,7 +94,7 @@ define( "Arstider/Tween", ["Arstider/Easings", "Arstider/GlobalTimers"], functio
 	 * @constructor
 	 * @private
 	 * @param {function} callback The method to call at that step
-	 * @param {?=} option Optional data to provide the callback with
+	 * @param {*} option Optional data to provide the callback with
 	 */
 	function Action(callback, option){
 		this.startTime = 1;
@@ -168,7 +168,7 @@ define( "Arstider/Tween", ["Arstider/Easings", "Arstider/GlobalTimers"], functio
 	 * @private
 	 * @type {function(this:Tween)}
 	 * @param {function} callback The function to call on that step
-	 * @param {?=} option Optional data to provide the callback with
+	 * @param {*} option Optional data to provide the callback with
 	 */
 	Tween.prototype._addAction = function(callback, option){
 		this._stack.push(new Action(callback, option));
@@ -276,7 +276,7 @@ define( "Arstider/Tween", ["Arstider/Easings", "Arstider/GlobalTimers"], functio
 	 * Adds a step to the Tween
 	 * @type {function(this:Tween)}
 	 * @param {function|Object} parA If the element is a function, add an action step, else, add an animation step
-	 * @param {Object|?=} parB If it's an action step, use as option. else, use as transformations list
+	 * @param {*} parB If it's an action step, use as option. else, use as transformations list
 	 * @param {function|null} easing If it's an animation step, use as easing function
 	 * @param {number|null} easeOpt If it's an animation step, use as easing option
 	 * @return {Tween} Returns self for chaining

@@ -8,10 +8,12 @@
 /**
  * Defines the pixel module
  */
-define("Arstider/Pixel", [], function(){
+define("Arstider/Pixel", [], /** @lends Pixel */ function(){
 	
 	/**
 	 * Pixel constructor
+	 * A simple buffer pixel model
+	 * @class Pixel
 	 * @constructor
 	 * @param {number} x The x position in the Buffer
 	 * @param {number} y The y position in the Buffer

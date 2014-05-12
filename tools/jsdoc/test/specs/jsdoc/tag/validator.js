@@ -1,9 +1,9 @@
 /*global afterEach, beforeEach, describe, env, expect, it, spyOn */
 describe('jsdoc/tag/validator', function() {
-    var validator = require('jsdoc/tag/validator'),
-        doop = require('jsdoc/util/doop'),
-        logger = require('jsdoc/util/logger'),
-        tag = require('jsdoc/tag');
+    var doop = require('jsdoc/util/doop');
+    var logger = require('jsdoc/util/logger');
+    var tag = require('jsdoc/tag');
+    var validator = require('jsdoc/tag/validator');
 
     it('should exist', function() {
         expect(validator).toBeDefined();
@@ -16,19 +16,22 @@ describe('jsdoc/tag/validator', function() {
     });
 
     describe('validate', function() {
-        var dictionary = require('jsdoc/tag/dictionary'),
-            allowUnknown = !!env.conf.tags.allowUnknownTags,
-            badTag = {title: 'lkjasdlkjfb'},
-            meta = {filename: 'asdf.js', lineno: 1},
-            goodTag = new tag.Tag('name', 'MyDocletName', meta), // mustHaveValue
-            goodTag2 = new tag.Tag('ignore', '', meta); // mustNotHaveValue
-       
+        var dictionary = require('jsdoc/tag/dictionary');
+
+        var allowUnknown = !!env.conf.tags.allowUnknownTags;
+        var badTag = { title: 'lkjasdlkjfb' };
+        var badTag2 = new tag.Tag('type', '{string} I am a string!');
+        var meta = { filename: 'asdf.js', lineno: 1 };
+        var goodTag = new tag.Tag('name', 'MyDocletName', meta); // mustHaveValue
+        var goodTag2 = new tag.Tag('ignore', '', meta); // mustNotHaveValue
+
         function validateTag(tag) {
             validator.validate(tag, dictionary.lookUp(tag.title), meta);
         }
 
         beforeEach(function() {
             spyOn(logger, 'error');
+            spyOn(logger, 'warn');
         });
 
         afterEach(function() {
@@ -64,13 +67,19 @@ describe('jsdoc/tag/validator', function() {
             expect(logger.error).toHaveBeenCalled();
         });
 
-        it("logs an error if the tag has text but .mustNotHaveValue is true", function() {
+        it("logs a warning if the tag has text but .mustNotHaveValue is true", function() {
             var missingText = doop(goodTag2);
             missingText.mustNotHaveValue = true;
             missingText.text = missingText.text || 'asdf';
             validateTag(missingText);
 
-            expect(logger.error).toHaveBeenCalled();
+            expect(logger.warn).toHaveBeenCalled();
+        });
+
+        it("logs a warning if the tag has a description but .mustNotHaveDescription is true", function() {
+            validateTag(badTag2);
+
+            expect(logger.warn).toHaveBeenCalled();
         });
     });
 });

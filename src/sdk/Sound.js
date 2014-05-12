@@ -62,7 +62,8 @@
 		
 		/**
 		 * Starts howler and parses the sound object
-		 * @param {string} url The url of the 
+		 * @type {function(this:Sound)}
+		 * @param {string} url The url of the sound sprite
 		 */
 		Sound.prototype._init = function(url){
 			/**

@@ -19,12 +19,15 @@
 	 /**
 	 * Defines performance module
 	 */	
-	define( "Arstider/core/Renderer", ["Arstider/Sprite", "Arstider/DisplayObject", "Arstider/TextField", "Arstider/core/Performance", "Arstider/Buffer"], function (Sprite, DisplayObject, TextField, Performance, Buffer){
-			
+	define( "Arstider/core/Renderer", ["Arstider/Sprite", "Arstider/DisplayObject", "Arstider/TextField", "Arstider/core/Performance", "Arstider/Buffer"], /** @lends core/Renderer */ function (Sprite, DisplayObject, TextField, Performance, Buffer){
+		
 		if(singleton != null) return singleton;
 			
 		/**
-		 * Renderer module constructor
+		 * Renderer class
+	     * Every draw frame, this module is called upon to render every child of every container
+	     * @class core/Renderer
+	     * @name core/Renderer
 		 * @constructor 
 		 */
 		function Renderer(){

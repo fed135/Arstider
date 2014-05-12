@@ -1,7 +1,7 @@
 /**
  * Traversal utilities for ASTs that are compatible with the Mozilla Parser API. Adapted from
  * [Acorn](http://marijnhaverbeke.nl/acorn/).
- * 
+ *
  * @module jsdoc/src/walker
  * @license MIT
  */
@@ -39,7 +39,6 @@ function moveComments(source, target) {
 
 function leafNode(node, parent, state, cb) {}
 
-
 // TODO: docs
 var walkers = exports.walkers = {};
 
@@ -60,6 +59,31 @@ walkers[Syntax.ArrayPattern] = function arrayPattern(node, parent, state, cb) {
         if (e && e.type !== Syntax.Identifier) {
             cb(e, node, state);
         }
+    }
+};
+
+walkers[Syntax.ArrowFunctionExpression] =
+    function arrowFunctionExpression(node, parent, state, cb) {
+    var i;
+    var l;
+
+    // used for function declarations, so we include it here
+    if (node.id) {
+        cb(node.id, node, state);
+    }
+
+    for (i = 0, l = node.params.length; i < l; i++) {
+        cb(node.params[i], node, state);
+    }
+
+    for (i = 0, l = node.defaults.length; i < l; i++) {
+        cb(node.defaults[i], node, state);
+    }
+
+    cb(node.body, node, state);
+
+    if (node.rest) {
+        cb(node.rest, node, state);
     }
 };
 
@@ -95,6 +119,24 @@ walkers[Syntax.CallExpression] = function callExpression(node, parent, state, cb
 
 walkers[Syntax.CatchClause] = leafNode;
 
+walkers[Syntax.ClassBody] = walkers[Syntax.BlockStatement];
+
+walkers[Syntax.ClassDeclaration] = function classDeclaration(node, parent, state, cb) {
+    if (node.id) {
+        cb(node.id, node, state);
+    }
+
+    if (node.superClass) {
+        cb(node.superClass, node, state);
+    }
+
+    if (node.body) {
+        cb(node.body, node, state);
+    }
+};
+
+walkers[Syntax.ClassExpression] = walkers[Syntax.ClassDeclaration];
+
 // TODO: verify correctness
 walkers[Syntax.ComprehensionBlock] = walkers[Syntax.AssignmentExpression];
 
@@ -129,6 +171,39 @@ walkers[Syntax.DoWhileStatement] = function doWhileStatement(node, parent, state
 
 walkers[Syntax.EmptyStatement] = leafNode;
 
+walkers[Syntax.ExportBatchSpecifier] = leafNode;
+
+walkers[Syntax.ExportDeclaration] = function exportDeclaration(node, parent, state, cb) {
+    var i;
+    var l;
+
+    if (node.declaration) {
+        for (i = 0, l = node.declaration.length; i < l; i++) {
+            cb(node.declaration[i], node, state);
+        }
+    }
+
+    if (node.specifiers) {
+        for (i = 0, l = node.specifiers.length; i < l; i++) {
+            cb(node.specifiers[i], node, state);
+        }
+    }
+
+    if (node.source) {
+        cb(node.source, node, state);
+    }
+};
+
+walkers[Syntax.ExportSpecifier] = function exportSpecifier(node, parent, state, cb) {
+    if (node.id) {
+        cb(node.id, node, state);
+    }
+
+    if (node.name) {
+        cb(node.name, node, state);
+    }
+};
+
 walkers[Syntax.ExpressionStatement] = function expressionStatement(node, parent, state, cb) {
     cb(node.expression, node, state);
 };
@@ -157,27 +232,9 @@ walkers[Syntax.ForStatement] = function forStatement(node, parent, state, cb) {
     cb(node.body, node, state);
 };
 
-walkers[Syntax.FunctionDeclaration] = function functionDeclaration(node, parent, state, cb) {
-    var i;
-    var l;
+walkers[Syntax.FunctionDeclaration] = walkers[Syntax.ArrowFunctionExpression];
 
-    // can be null for function expressions
-    if (node.id) {
-        cb(node.id, node, state);
-    }
-
-    if (node.params && node.params.length) {
-        for (i = 0, l = node.params.length; i < l; i++) {
-            cb(node.params[i], node, state);
-        }
-    }
-
-    // ignore node.defaults and node.rest for now; always empty
-
-    cb(node.body, node, state);
-};
-
-walkers[Syntax.FunctionExpression] = walkers[Syntax.FunctionDeclaration];
+walkers[Syntax.FunctionExpression] = walkers[Syntax.ArrowFunctionExpression];
 
 walkers[Syntax.Identifier] = leafNode;
 
@@ -188,6 +245,23 @@ walkers[Syntax.IfStatement] = function ifStatement(node, parent, state, cb) {
         cb(node.alternate, node, state);
     }
 };
+
+walkers[Syntax.ImportDeclaration] = function importDeclaration(node, parent, state, cb) {
+    var i;
+    var l;
+
+    if (node.specifiers) {
+        for (i = 0, l = node.specifiers.length; i < l; i++) {
+            cb(node.specifiers[i], node, state);
+        }
+    }
+
+    if (node.source) {
+        cb(node.source, node, state);
+    }
+};
+
+walkers[Syntax.ImportSpecifier] = walkers[Syntax.ExportSpecifier];
 
 walkers[Syntax.LabeledStatement] = function labeledStatement(node, parent, state, cb) {
     cb(node.body, node, state);
@@ -211,10 +285,34 @@ walkers[Syntax.Literal] = leafNode;
 walkers[Syntax.LogicalExpression] = walkers[Syntax.BinaryExpression];
 
 walkers[Syntax.MemberExpression] = function memberExpression(node, parent, state, cb) {
+    cb(node.object, node, state);
     if (node.property) {
         cb(node.property, node, state);
     }
-    cb(node.object, node, state);
+};
+
+walkers[Syntax.MethodDefinition] = function methodDefinition(node, parent, state, cb) {
+    if (node.key) {
+        cb(node.key, node, state);
+    }
+
+    if (node.value) {
+        cb(node.value, node, state);
+    }
+};
+
+walkers[Syntax.ModuleDeclaration] = function moduleDeclaration(node, parent, state, cb) {
+    if (node.id) {
+        cb(node.id, node, state);
+    }
+
+    if (node.source) {
+        cb(node.source, node, state);
+    }
+
+    if (node.body) {
+        cb(node.body, node, state);
+    }
 };
 
 walkers[Syntax.NewExpression] = walkers[Syntax.CallExpression];
@@ -248,6 +346,12 @@ walkers[Syntax.SequenceExpression] = function sequenceExpression(node, parent, s
     }
 };
 
+walkers[Syntax.SpreadElement] = function spreadElement(node, parent, state, cb) {
+    if (node.argument) {
+        cb(node.argument, node, state);
+    }
+};
+
 walkers[Syntax.SwitchCase] = function switchCase(node, parent, state, cb) {
     if (node.test) {
         cb(node.test, node, state);
@@ -263,6 +367,35 @@ walkers[Syntax.SwitchStatement] = function switchStatement(node, parent, state, 
 
     for (var i = 0, l = node.cases.length; i < l; i++) {
         cb(node.cases[i], node, state);
+    }
+};
+
+walkers[Syntax.TaggedTemplateExpression] =
+    function taggedTemplateExpression(node, parent, state, cb) {
+    if (node.tag) {
+        cb(node.tag, node, state);
+    }
+    if (node.quasi) {
+        cb(node.quasi, node, state);
+    }
+};
+
+walkers[Syntax.TemplateElement] = leafNode;
+
+walkers[Syntax.TemplateLiteral] = function templateLiteral(node, parent, state, cb) {
+    var i;
+    var l;
+
+    if (node.quasis && node.quasis.length) {
+        for (i = 0, l = node.quasis.length; i < l; i++) {
+            cb(node.quasis[i], node, state);
+        }
+    }
+
+    if (node.expressions && node.expressions.length) {
+        for (i = 0, l = node.expressions.length; i < l; i++) {
+            cb(node.expressions[i], node, state);
+        }
     }
 };
 
@@ -333,7 +466,6 @@ walkers[Syntax.YieldExpression] = function(node, parent, state, cb) {
     }
 };
 
-
 /**
  * Create a walker that can traverse an AST that is consistent with the Mozilla Parser API.
  *
@@ -345,9 +477,10 @@ var Walker = exports.Walker = function(walkerFuncs) {
 };
 
 // TODO: docs
-Walker.prototype._recurse = function(ast) {
+Walker.prototype._recurse = function(filename, ast) {
     // TODO: track variables/aliases during the walk
     var state = {
+        filename: filename,
         nodes: [],
         scopes: []
     };
@@ -392,13 +525,13 @@ Walker.prototype._recurse = function(ast) {
 // TODO: allow visitor.visit to prevent traversal of child nodes
 // TODO: skip the AST root node to be consistent with Rhino?
 Walker.prototype.recurse = function(filename, ast, visitor) {
-    var state = this._recurse(ast);
+    var state = this._recurse(filename, ast);
 
     if (visitor) {
         for (var i = 0, l = state.nodes.length; i < l; i++) {
             visitor.visit.call(visitor, state.nodes[i], filename);
         }
     }
-    
+
     return ast;
 };

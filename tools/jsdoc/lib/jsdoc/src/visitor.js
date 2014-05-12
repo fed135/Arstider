@@ -39,6 +39,67 @@ function makeVarsFinisher(scopeDoclet) {
     };
 }
 
+/**
+ * For function parameters that have inline documentation, create a function that will merge the
+ * inline documentation into the function's doclet. If the parameter is already documented in the
+ * function's doclet, the inline documentation will be ignored.
+ *
+ * @private
+ * @param {module:jsdoc/src/parser.Parser} parser - The JSDoc parser.
+ * @return {function} A function that merges a parameter's inline documentation into the function's
+ * doclet.
+ */
+function makeInlineParamsFinisher(parser) {
+    return function(e) {
+        var documentedParams;
+        var knownParams;
+        var param;
+        var parentDoclet;
+
+        var i = 0;
+
+        if (e.doclet && e.doclet.meta && e.doclet.meta.code && e.doclet.meta.code.node &&
+            e.doclet.meta.code.node.parent) {
+            parentDoclet = parser._getDoclet(e.doclet.meta.code.node.parent.nodeId);
+        }
+        if (!parentDoclet) {
+            return;
+        }
+
+        parentDoclet.params = parentDoclet.params || [];
+        documentedParams = parentDoclet.params;
+        knownParams = parentDoclet.meta.code.paramnames;
+
+        while (true) {
+            param = documentedParams[i];
+
+            // is the param already documented? if so, we're done
+            if (param && param.name === e.doclet.name) {
+                // the doclet is no longer needed
+                e.doclet.undocumented = true;
+                break;
+            }
+
+            // if we ran out of documented params, or we're at the parameter's actual position,
+            // splice in the param at the current index
+            if ( !param || i === knownParams.indexOf(e.doclet.name) ) {
+                documentedParams.splice(i, 0, {
+                    type: e.doclet.type,
+                    description: '',
+                    name: e.doclet.name
+                });
+
+                // the doclet is no longer needed
+                e.doclet.undocumented = true;
+
+                break;
+            }
+
+            i++;
+        }
+    };
+}
+
 // TODO: docs
 function SymbolFound(node, filename, extras) {
     var self = this;
@@ -71,7 +132,6 @@ function JsdocCommentFound(comment, filename) {
         value: 'jsdocCommentFound'
     });
 }
-
 
 // TODO: docs
 var Visitor = exports.Visitor = function(parser) {
@@ -127,7 +187,7 @@ Visitor.prototype.visit = function(node, filename) {
 /**
  * Verify that a block comment exists and that its leading delimiter does not contain three or more
  * asterisks.
- * 
+ *
  * @private
  * @memberof module:jsdoc/src/parser.Parser
  */
@@ -168,7 +228,7 @@ Visitor.prototype.visitNodeComments = function(node, parser, filename) {
     if (node.type === BLOCK_COMMENT) {
         comments.push(node);
     }
-    
+
     if (node.leadingComments && node.leadingComments.length) {
         comments = node.leadingComments.slice(0);
     }
@@ -230,6 +290,7 @@ Visitor.prototype.visitNode = function(node, parser, filename) {
 };
 
 // TODO: docs
+// TODO: note that it's essential to call this function before you try to resolve names!
 // TODO: may be able to get rid of this using knownAliases
 function trackVars(parser, node, e) {
     var enclosingScopeId = node.enclosingScope ? node.enclosingScope.nodeId :
@@ -245,10 +306,13 @@ function trackVars(parser, node, e) {
 
 // TODO: docs
 Visitor.prototype.makeSymbolFoundEvent = function(node, parser, filename) {
+    var logger = require('jsdoc/util/logger');
+
     var e;
     var basename;
     var i;
     var l;
+    var parent;
 
     var extras = {
         code: jsdoc.src.astnode.getInfo(node)
@@ -257,26 +321,21 @@ Visitor.prototype.makeSymbolFoundEvent = function(node, parser, filename) {
     switch (node.type) {
         // like: i = 0;
         case Syntax.AssignmentExpression:
-            // falls through
-        
-        // like: var i = 0;
-        case Syntax.VariableDeclarator:
             e = new SymbolFound(node, filename, extras);
 
+            trackVars(parser, node, e);
+
             basename = parser.getBasename(e.code.name);
-            // TODO: handle code that does things like 'var self = this';
             if (basename !== 'this') {
                 e.code.funcscope = parser.resolveVar(node, basename);
             }
-
-            trackVars(parser, node, e);
 
             break;
 
         // like: function foo() {}
         case Syntax.FunctionDeclaration:
             // falls through
-        
+
         // like: var foo = function() {};
         case Syntax.FunctionExpression:
             e = new SymbolFound(node, filename, extras);
@@ -285,6 +344,18 @@ Visitor.prototype.makeSymbolFoundEvent = function(node, parser, filename) {
 
             basename = parser.getBasename(e.code.name);
             e.code.funcscope = parser.resolveVar(node, basename);
+
+            break;
+
+        // like "bar" in: function foo(/** @type {string} */ bar) {}
+        // This is an extremely common type of node; we only care about function parameters with
+        // inline type annotations. No need to fire events unless they're already commented.
+        case Syntax.Identifier:
+            parent = node.parent;
+            if ( node.leadingComments && parent && jsdoc.src.astnode.isFunction(parent) ) {
+                extras.finishers = [makeInlineParamsFinisher(parser)];
+                e = new SymbolFound(node, filename, extras);
+            }
 
             break;
 
@@ -298,6 +369,12 @@ Visitor.prototype.makeSymbolFoundEvent = function(node, parser, filename) {
 
             break;
 
+        // like the object literal in: function Foo = Class.create(/** @lends Foo */ {});
+        case Syntax.ObjectExpression:
+            e = new SymbolFound(node, filename, extras);
+
+            break;
+
         // like "bar: true" in: var foo = { bar: true };
         // like "get bar() {}" in: var foo = { get bar() {} };
         case Syntax.Property:
@@ -306,6 +383,37 @@ Visitor.prototype.makeSymbolFoundEvent = function(node, parser, filename) {
             }
 
             e = new SymbolFound(node, filename, extras);
+
+            break;
+
+        // like: var i = 0;
+        case Syntax.VariableDeclarator:
+            e = new SymbolFound(node, filename, extras);
+
+            trackVars(parser, node, e);
+
+            basename = parser.getBasename(e.code.name);
+
+            break;
+
+        // for now, log a warning for all ES6 nodes, since we don't do anything useful with them
+        case Syntax.ArrowFunctionExpression:
+        case Syntax.ClassBody:
+        case Syntax.ClassDeclaration:
+        case Syntax.ClassExpression:
+        case Syntax.ExportBatchSpecifier:
+        case Syntax.ExportDeclaration:
+        case Syntax.ExportSpecifier:
+        case Syntax.ImportDeclaration:
+        case Syntax.ImportSpecifier:
+        case Syntax.MethodDefinition:
+        case Syntax.ModuleDeclaration:
+        case Syntax.SpreadElement:
+        case Syntax.TaggedTemplateExpression:
+        case Syntax.TemplateElement:
+        case Syntax.TemplateLiteral:
+            logger.warn('JSDoc does not currently handle %s nodes. Source file: %s, line %s',
+                node.type, filename, (node.loc && node.loc.start) ? node.loc.start.line : '??');
 
             break;
 

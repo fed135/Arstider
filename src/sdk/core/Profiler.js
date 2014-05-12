@@ -9,7 +9,12 @@
 /**
  * Defines the profiler module
  */
-define("Arstider/core/Profiler", ["Arstider/Browser"], function(Browser){
+define("Arstider/core/Profiler", ["Arstider/Browser"], /** @lends core/Profiler */ function(Browser){
+	/** 
+     * Profiler class
+     * The visual profiler UI
+     * @class core/Profiler
+     */
 	
 	/**
 	 * Applies the styles of a profiler button to an element

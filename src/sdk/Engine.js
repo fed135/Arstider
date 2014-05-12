@@ -212,7 +212,7 @@
 		 * Private handler for catching script errors
 		 * @private
 		 * @type {function(this:Engine)}
-		 * @type {Error} e The error event
+		 * @param {Error} e The error event
 		 */
 		Engine.prototype._handleError = function(e){
 			Events.broadcast("Engine.error", e);

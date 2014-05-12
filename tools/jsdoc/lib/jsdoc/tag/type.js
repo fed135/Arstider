@@ -1,6 +1,6 @@
 /**
  * @module jsdoc/tag/type
- * 
+ *
  * @author Michael Mathews <micmath@gmail.com>
  * @author Jeff Williams <jeffrey.l.williams@gmail.com>
  * @license Apache License 2.0 - See file 'LICENSE.md' in this project.
@@ -99,7 +99,7 @@ function getTagInfo(tagValue, canHaveName, canHaveType) {
         typeExpression = expressionAndText.expression;
         text = expressionAndText.newString;
     }
-    
+
     if (canHaveName) {
         nameAndDescription = jsdoc.name.splitName(text);
         name = nameAndDescription.name;
@@ -114,7 +114,7 @@ function getTagInfo(tagValue, canHaveName, canHaveType) {
         }
         text = typeOverride.newString;
     }
-    
+
     return {
         name: name,
         typeExpression: typeExpression,
@@ -146,7 +146,7 @@ function getTagInfo(tagValue, canHaveName, canHaveType) {
 /**
  * Extract JSDoc-style type information from the name specified in the tag info, including the
  * member name; whether the member is optional; and the default value of the member.
- * 
+ *
  * @private
  * @param {module:jsdoc/tag/type.TagInfo} tagInfo - Information contained in the tag.
  * @return {module:jsdoc/tag/type.TagInfo} Updated information from the tag.
@@ -156,19 +156,22 @@ function parseName(tagInfo) {
     if ( /^\[\s*(.+?)\s*\]$/.test(tagInfo.name) ) {
         tagInfo.name = RegExp.$1;
         tagInfo.optional = true;
-        
+
         // like 'foo=bar' or 'foo = bar'
         if ( /^(.+?)\s*=\s*(.+)$/.test(tagInfo.name) ) {
             tagInfo.name = RegExp.$1;
             tagInfo.defaultvalue = RegExp.$2;
         }
     }
-    
+
     return tagInfo;
 }
 
 /** @private */
-function getTypeStrings(parsedType) {
+function getTypeStrings(parsedType, isOutermostType) {
+    var applications;
+    var typeString;
+
     var types = [];
 
     var catharsis = require('catharsis');
@@ -192,7 +195,19 @@ function getTypeStrings(parsedType) {
             types.push('Object');
             break;
         case TYPES.TypeApplication:
-            types.push( catharsis.stringify(parsedType) );
+            // if this is the outermost type, we strip the modifiers; otherwise, we keep them
+            if (isOutermostType) {
+                applications = parsedType.applications.map(function(application) {
+                    return getTypeStrings(application);
+                }).join(', ');
+                typeString = util.format( '%s.<%s>', getTypeStrings(parsedType.expression),
+                    applications );
+
+                types.push(typeString);
+            }
+            else {
+                types.push( catharsis.stringify(parsedType) );
+            }
             break;
         case TYPES.TypeUnion:
             parsedType.elements.forEach(function(element) {
@@ -233,7 +248,7 @@ function parseTypeExpression(tagInfo) {
     if (!tagInfo.typeExpression) {
         return tagInfo;
     }
-    
+
     try {
         parsedType = catharsis.parse(tagInfo.typeExpression, {jsdoc: true});
     }
@@ -244,7 +259,7 @@ function parseTypeExpression(tagInfo) {
     }
 
     if (parsedType) {
-        tagInfo.type = tagInfo.type.concat( getTypeStrings(parsedType) );
+        tagInfo.type = tagInfo.type.concat( getTypeStrings(parsedType, true) );
 
         // Catharsis and JSDoc use the same names for 'optional' and 'nullable'...
         ['optional', 'nullable'].forEach(function(key) {
@@ -278,10 +293,10 @@ var typeParsers = [parseName, parseTypeExpression];
  */
 exports.parse = function(tagValue, canHaveName, canHaveType) {
     if (typeof tagValue !== 'string') { tagValue = ''; }
-    
+
     var tagInfo = getTagInfo(tagValue, canHaveName, canHaveType);
     tagInfo.type = tagInfo.type || [];
-    
+
     typeParsers.forEach(function(parser) {
         tagInfo = parser.call(this, tagInfo);
     });

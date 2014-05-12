@@ -6,9 +6,11 @@ var Syntax = require('jsdoc/src/syntax').Syntax;
 var VISITOR_CONTINUE = true;
 var VISITOR_STOP = false;
 
-// TODO: docs
-var acceptsLeadingComments = exports.acceptsLeadingComments = (function() {
+// TODO: docs; empty array means any node type, otherwise only the node types in the array
+var acceptsLeadingComments = (function() {
     var accepts = {};
+
+    // these nodes always accept leading comments
     var commentable = [
         Syntax.AssignmentExpression,
         Syntax.CallExpression,
@@ -21,27 +23,45 @@ var acceptsLeadingComments = exports.acceptsLeadingComments = (function() {
         Syntax.VariableDeclarator,
         Syntax.WithStatement
     ];
-
     for (var i = 0, l = commentable.length; i < l; i++) {
-        accepts[commentable[i]] = true;
+        accepts[commentable[i]] = [];
     }
+
+    // these nodes accept leading comments if they have specific types of parent nodes
+    // like: function foo(/** @type {string} */ bar) {}
+    accepts[Syntax.Identifier] = [
+        Syntax.CatchClause,
+        Syntax.FunctionDeclaration,
+        Syntax.FunctionExpression
+    ];
+    // like: var Foo = Class.create(/** @lends Foo */{ // ... })
+    accepts[Syntax.ObjectExpression] = [
+        Syntax.CallExpression,
+        Syntax.Property,
+        Syntax.ReturnStatement
+    ];
 
     return accepts;
 })();
 
 // TODO: docs
-var searchChildNodes = (function() {
-    var search = {};
-    var shouldSearch = [
-        // TODO: add to this as needed
-    ];
+function canAcceptComment(node) {
+    var canAccept = false;
+    var spec = acceptsLeadingComments[node.type];
 
-    for (var i = 0, l = shouldSearch.length; i < l; i++) {
-        search[shouldSearch[i]] = true;
+    if (spec) {
+        // empty array means we don't care about the parent type
+        if (spec.length === 0) {
+            canAccept = true;
+        }
+        // we can accept the comment if the spec contains the type of the node's parent
+        else if (node.parent) {
+            canAccept = spec.indexOf(node.parent.type) !== -1;
+        }
     }
 
-    return search;
-})();
+    return canAccept;
+}
 
 // TODO: docs
 // check whether node1 is before node2
@@ -62,7 +82,7 @@ function isWithin(innerRange, outerRange) {
 
 // TODO: docs
 function isLeadingComment(comment, before, after) {
-    return !!before && !!after && !!acceptsLeadingComments[after.type] &&
+    return !!before && !!after && !!canAcceptComment(after) &&
         isBefore(before.range, after.range) && isBetween(comment.range, before.range, after.range);
 }
 
@@ -101,6 +121,22 @@ function scrubComments(comments) {
 // TODO: docs
 var AstBuilder = exports.AstBuilder = function() {};
 
+function parse(source, filename, esprimaOpts) {
+    var esprima = require('esprima');
+    var logger = require('jsdoc/util/logger');
+
+    var ast;
+
+    try {
+        ast = esprima.parse(source, esprimaOpts);
+    }
+    catch (e) {
+        logger.error('Unable to parse %s: %s', filename, e.message);
+    }
+
+    return ast;
+}
+
 // TODO: docs
 AstBuilder.prototype.build = function(source, filename) {
     var ast;
@@ -109,13 +145,14 @@ AstBuilder.prototype.build = function(source, filename) {
         comment: true,
         loc: true,
         range: true,
-        // can probably remove when 1.1.0 is released
-        raw: true,
         tokens: true
     };
 
-    ast = require('esprima').parse(source, esprimaOpts);
-    this._postProcess(filename, ast);
+    ast = parse(source, filename, esprimaOpts);
+
+    if (ast) {
+        this._postProcess(filename, ast);
+    }
 
     return ast;
 };
@@ -147,6 +184,7 @@ function atomSorter(a, b) {
 }
 
 // TODO: docs
+// TODO: export?
 function CommentAttacher(comments, tokens) {
     this._comments = comments || [];
     this._tokens = tokens || [];
@@ -155,7 +193,7 @@ function CommentAttacher(comments, tokens) {
     this._previousNodeEnd = 0;
     this._astRoot = null;
     this._strayComments = [];
-    
+
     this._resetPendingComment()
         ._resetCandidates();
 }
@@ -186,11 +224,6 @@ CommentAttacher.prototype._nextToken = function() {
 };
 
 // TODO: docs
-CommentAttacher.prototype._extractComments = function(index, count) {
-    return this._comments.splice(index, count);
-};
-
-// TODO: docs
 // find the index of the atom whose end position is closest to (but not after) the specified
 // position
 CommentAttacher.prototype._nextIndexBefore = function(startIndex, atoms, position) {
@@ -208,7 +241,7 @@ CommentAttacher.prototype._nextIndexBefore = function(startIndex, atoms, positio
             newIndex = i;
         }
     }
-    
+
     return newIndex;
 };
 
@@ -237,15 +270,17 @@ CommentAttacher.prototype._fastForwardComments = function(node) {
 CommentAttacher.prototype._attachPendingComment = function() {
     var target;
 
-    if (this._pendingComment) {
-        if (this._candidates.length > 0) {
-            target = this._candidates[this._candidates.length - 1];
-            target.leadingComments = target.leadingComments || [];
-            target.leadingComments.push(this._pendingComment);
-        }
-        else {
-            this._strayComments.push(this._pendingComment);
-        }
+    if (!this._pendingComment) {
+        return this;
+    }
+
+    if (this._candidates.length > 0) {
+        target = this._candidates[this._candidates.length - 1];
+        target.leadingComments = target.leadingComments || [];
+        target.leadingComments.push(this._pendingComment);
+    }
+    else {
+        this._strayComments.push(this._pendingComment);
     }
 
     this._resetPendingComment()
@@ -282,12 +317,11 @@ CommentAttacher.prototype._isEligible = function(node) {
 
 // TODO: docs
 CommentAttacher.prototype._shouldSkipNode = function(node) {
-    return !isWithin(node.range, this._pendingCommentRange) && !searchChildNodes[node.type];
+    return !isWithin(node.range, this._pendingCommentRange);
 };
 
 // TODO: docs
-// TODO: this is overdesigned. should be able to ditch searchChildNodes. how often do we get
-// multiple candidate nodes?
+// TODO: do we ever get multiple candidate nodes?
 CommentAttacher.prototype.visit = function(node) {
     var isEligible;
 
@@ -303,18 +337,14 @@ CommentAttacher.prototype.visit = function(node) {
     this._advanceTokenIndex(node);
     this._fastForwardComments(node);
     // now we can check whether the current node is in the right position to accept the next comment
-    isEligible = this._isEligible(node);    
+    isEligible = this._isEligible(node);
 
-    // if we already had a pending comment, and the current node is in the wrong place to be a
-    // comment target, try attaching the comment
-    if ( (this._pendingComment && !isWithin(node.range, this._pendingCommentRange)) ||
-        !searchChildNodes[node.type] ) {
-        this._attachPendingComment();
-    }
+    // attach the pending comment, if there is one
+    this._attachPendingComment();
 
     // okay, now that we've done all that bookkeeping, we can check whether the current node accepts
     // leading comments and add it to the candidate list if needed
-    if (isEligible && acceptsLeadingComments[node.type]) {
+    if ( isEligible && canAcceptComment(node) ) {
         // make sure we don't go past the end of the outermost target node
         if (!this._pendingCommentRange) {
             this._pendingCommentRange = node.range.slice(0);

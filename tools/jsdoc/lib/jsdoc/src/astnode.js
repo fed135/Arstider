@@ -12,6 +12,16 @@ var uid = 100000000;
 var GLOBAL_NODE_ID = exports.GLOBAL_NODE_ID = require('jsdoc/doclet').GLOBAL_LONGNAME;
 
 /**
+ * Check whether an AST node represents a function.
+ *
+ * @param {Object} node - The AST node to check.
+ * @return {boolean} Set to `true` if the node is a function or `false` in all other cases.
+ */
+var isFunction = exports.isFunction = function(node) {
+    return node.type === Syntax.FunctionDeclaration || node.type === Syntax.FunctionExpression;
+};
+
+/**
  * Check whether an AST node creates a new scope.
  *
  * @param {Object} node - The AST node to check.
@@ -19,13 +29,15 @@ var GLOBAL_NODE_ID = exports.GLOBAL_NODE_ID = require('jsdoc/doclet').GLOBAL_LON
  */
 var isScope = exports.isScope = function(node) {
     // TODO: handle blocks with "let" declarations
-    return !!node && typeof node === 'object' && (node.type === Syntax.CatchClause ||
-        node.type === Syntax.FunctionDeclaration || node.type === Syntax.FunctionExpression);
+    return !!node && typeof node === 'object' && ( node.type === Syntax.CatchClause ||
+        isFunction(node) );
 };
 
 // TODO: docs
 var addNodeProperties = exports.addNodeProperties = function(node) {
     var doop = require('jsdoc/util/doop');
+
+    var debugEnabled = !!global.env.opts.debug;
 
     if (!node || typeof node !== 'object') {
         return null;
@@ -33,7 +45,8 @@ var addNodeProperties = exports.addNodeProperties = function(node) {
 
     if (!node.nodeId) {
         Object.defineProperty(node, 'nodeId', {
-            value: 'astnode' + uid++
+            value: 'astnode' + uid++,
+            enumerable: debugEnabled
         });
     }
 
@@ -77,6 +90,24 @@ var addNodeProperties = exports.addNodeProperties = function(node) {
         });
     }
 
+    if (debugEnabled && !node.parentId) {
+        Object.defineProperty(node, 'parentId', {
+            enumerable: true,
+            get: function() {
+                return this.parent ? this.parent.nodeId : null;
+            }
+        });
+    }
+
+    if (debugEnabled && !node.enclosingScopeId) {
+        Object.defineProperty(node, 'enclosingScopeId', {
+            enumerable: true,
+            get: function() {
+                return this.enclosingScope ? this.enclosingScope.nodeId : null;
+            }
+        });
+    }
+
     return node;
 };
 
@@ -97,16 +128,33 @@ exports.makeGlobalNode = function() {
 
 // TODO: docs
 var nodeToString = exports.nodeToString = function(node) {
+    var tempObject;
+
     var str = '';
 
     switch (node.type) {
+        case Syntax.ArrayExpression:
+            tempObject = [];
+            node.elements.forEach(function(el, i) {
+                // preserve literal values so that the JSON form shows the correct type
+                if (el.type === Syntax.Literal) {
+                    tempObject[i] = el.value;
+                }
+                else {
+                    tempObject[i] = nodeToString(el);
+                }
+            });
+
+            str = JSON.stringify(tempObject);
+            break;
+
         case Syntax.AssignmentExpression:
             str = nodeToString(node.left);
             break;
 
         case Syntax.FunctionDeclaration:
             // falls through
-        
+
         case Syntax.FunctionExpression:
             str = 'function';
             break;
@@ -130,6 +178,22 @@ var nodeToString = exports.nodeToString = function(node) {
             }
             break;
 
+        case Syntax.ObjectExpression:
+            tempObject = {};
+            node.properties.forEach(function(prop) {
+                var key = prop.key.name;
+                // preserve literal values so that the JSON form shows the correct type
+                if (prop.value.type === Syntax.Literal) {
+                    tempObject[key] = prop.value.value;
+                }
+                else {
+                    tempObject[key] = nodeToString(prop);
+                }
+            });
+
+            str = JSON.stringify(tempObject);
+            break;
+
         case Syntax.ThisExpression:
             str = 'this';
             break;
@@ -139,12 +203,14 @@ var nodeToString = exports.nodeToString = function(node) {
             // valid postfix operator (such as -- or ++) is not a UnaryExpression.
             str = nodeToString(node.argument);
 
-            if (node.prefix) {
+            // workaround for https://code.google.com/p/esprima/issues/detail?id=526
+            if (node.prefix === true || node.prefix === undefined) {
                 str = node.operator + str;
             }
             else {
                 // this shouldn't happen
-                throw new Error('Found a UnaryExpression with a postfix operator: %j', node);
+                throw new Error( util.format('Found a UnaryExpression with a postfix operator: %j',
+                    node) );
             }
             break;
 
@@ -205,7 +271,7 @@ var getInfo = exports.getInfo = function(node) {
             info.type = info.node.type;
             info.paramnames = getParamNames(node);
             break;
-        
+
         // like the function in: "var foo = function() {}"
         case Syntax.FunctionExpression:
             info.node = node;
@@ -213,6 +279,13 @@ var getInfo = exports.getInfo = function(node) {
             info.name = '';
             info.type = info.node.type;
             info.paramnames = getParamNames(node);
+            break;
+
+        // like the param "bar" in: "function foo(bar) {}"
+        case Syntax.Identifier:
+            info.node = node;
+            info.name = nodeToString(info.node);
+            info.type = info.node.type;
             break;
 
         // like "a.b.c"
@@ -288,7 +361,7 @@ var addAllVariables = exports.addAllVariables = function(node, declaration) {
 var addFunction = exports.addFunction = function(node, declaration) {
     // TODO: should we store these separately, since they're hoisted above variable declarations?
     // right now we appear to give functions and variables equal precedence, which is wrong
-    
+
     // don't add anonymous functions
     if (declaration.id) {
         _addVariable(node, declaration.id.name, null);

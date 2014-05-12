@@ -49,8 +49,13 @@
 	/**
 	 * defines BBParser
 	 */
-	define("Arstider/core/BBParser", [], function(){
-	
+	define("Arstider/core/BBParser", [], /** @lends core/BBParser */ function(){
+		/** 
+	     * BBParser class
+	     * This module splits strings into Segment objects for enriched text drawing
+	     * @class core/BBParser
+	     */
+		
 		/**
 		 * BB Syntax parser constructor
  		 * @param {string} text Translated or not piece of text to split into style-ruled segments

@@ -19,10 +19,17 @@
 	/**
 	 * Defines Storage module
 	 */
-	define("Arstider/core/Storage", [], function(){
+	define("Arstider/core/Storage", [], /** @lends core/Storage */ function(){
 		
 		if(singleton != null) return singleton;
 		
+		/** 
+	     * Storage class
+	     * Local Storage Interface
+	     * @class core/Storage
+	     * @name core/Storage
+	     * @constructor
+	     */
 		function Storage(){
 			
 			/**

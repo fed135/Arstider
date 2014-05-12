@@ -1,4 +1,5 @@
-/*global env: true, Packages: true */
+/*global env, Packages */
+/*eslint no-script-url:0 */
 /**
  * @module jsdoc/src/parser
  */
@@ -67,7 +68,6 @@ exports.createParser = function(type) {
         logger.fatal('Unable to create the parser type "' + type + '": ' + e);
     }
 };
-
 
 // TODO: docs
 /**
@@ -216,13 +216,7 @@ function pretreat(code) {
         // to support code minifiers that preserve /*! comments, treat /*!* as equivalent to /**
         .replace(/\/\*\!\*/g, '/**')
         // merge adjacent doclets
-        .replace(/\*\/\/\*\*+/g, '@also')
-        // add a dummy name to object literals that are lent to a function prototype
-        //   like: return @lends {
-        .replace(/(\/\*\*[^\*\/]*?[\*\s]*@lends\s(?:[^\*]|\*(?!\/))*\*\/\s*)\{/g, '$1 ____ = {')
-        //   like: @lends return {
-        .replace(/(\/\*\*[^\*\/]*?@lends\b[^\*\/]*?\*\/)(\s*)return(\s*)\{/g,
-            '$2$3 return $1 ____ = {');
+        .replace(/\*\/\/\*\*+/g, '@also');
 }
 
 /** @private */
@@ -249,7 +243,10 @@ Parser.prototype._parseSourceCode = function(sourceCode, sourceName) {
         sourceCode = pretreat(e.source);
 
         ast = this._astBuilder.build(sourceCode, sourceName);
-        this._walker.recurse(sourceName, ast, this._visitor);
+        if (ast) {
+            this._walker.recurse(sourceName, ast, this._visitor);
+        }
+
     }
 
     this.emit('fileComplete', e);
@@ -323,7 +320,7 @@ Parser.prototype.astnodeToMemberof = function(node) {
     if ( (type === Syntax.FunctionDeclaration || type === Syntax.FunctionExpression ||
         type === Syntax.VariableDeclarator) && node.enclosingScope ) {
         doclet = this._getDoclet(node.enclosingScope.nodeId);
-        
+
         if (!doclet) {
             result = jsdoc.doclet.ANONYMOUS_LONGNAME + jsdoc.name.INNER;
        }
@@ -335,7 +332,7 @@ Parser.prototype.astnodeToMemberof = function(node) {
         // check local references for aliases
         scope = node;
         basename = this.getBasename( jsdoc.src.astnode.nodeToString(node) );
-        
+
         // walk up the scope chain until we find the scope in which the node is defined
         while (scope.enclosingScope) {
             doclet = this._getDoclet(scope.enclosingScope.nodeId);
@@ -359,10 +356,9 @@ Parser.prototype.astnodeToMemberof = function(node) {
         else if (node.parent) {
             doclet = this._getDoclet(node.parent.nodeId);
 
-            if (!doclet) {
-                // global?
-            }
-            else {
+            // set the result if we found a doclet. (if we didn't, the AST node may describe a
+            // global symbol.)
+            if (doclet) {
                 result = doclet.longname || doclet.name;
             }
         }
@@ -381,7 +377,10 @@ Parser.prototype.resolveThis = function(node) {
     var doclet;
     var result;
 
-    if (node.enclosingScope) {
+    // In general, if there's an enclosing scope, we use the enclosing scope to resolve `this`.
+    // For object properties, we use the node's parent (the object) instead. This is a consequence
+    // of the source-rewriting hackery that we use to support the `@lends` tag.
+    if (node.type !== Syntax.Property && node.enclosingScope) {
         doclet = this._getDoclet(node.enclosingScope.nodeId);
 
         if (!doclet) {

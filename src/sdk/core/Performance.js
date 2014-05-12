@@ -22,12 +22,15 @@
     /**
 	 * Defines performance module
 	 */	
-	define( "Arstider/core/Performance", [], function (){
-			
+	define( "Arstider/core/Performance", [], /** @lends core/Performance */ function (){
+		
 		if(singleton != null) return singleton;
 		
 		/**
-		 * Performance module constructor
+		 * Performance class
+		 * This module tracks current performance and adjusts logic and draw timing accordingly
+	     * @class core/Performance
+	     * @name core/Performance
 		 * @constructor
 		 */	
 		function Performance(){

@@ -239,7 +239,7 @@
 		 * Enters the fullscreen mode
 		 * @type {function(this:Viewport)}
 		 * @param {boolean|null} scale Whether to scale the game or not
-		 * @return {?=} The result of the fullscreen request
+		 * @return {*} The result of the fullscreen request
 		 */
 		Viewport.prototype.enterFullScreen = function(scale){
 			
@@ -258,7 +258,7 @@
 		/**
 		 * Leaves the fullscreen mode
 		 * @type {function(this:Viewport)}
-		 * @return {?=} The result of the fullscreen request
+		 * @return {*} The result of the fullscreen request
 		 */
 		Viewport.prototype.quitFullScreen = function(){
 			var res = window.document[this._cancelFullscreenEvent]();
@@ -462,7 +462,7 @@
 		/**
 		 * Removes browser decorations and extra tabs ***see platform limitations***
 		 * @type {function(this:Viewport)}
-		 * @param {?=} target Optional window type element to remove browser decorations from 
+		 * @param {*} target Optional window type element to remove browser decorations from 
 		 */
 		Viewport.prototype.removeDecorations = function(target){
 			target = target || window;

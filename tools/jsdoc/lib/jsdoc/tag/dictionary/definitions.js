@@ -1,4 +1,4 @@
-/*global app: true, env: true */
+/*global app, env */
 /**
     Define tags that are known in JSDoc.
     @module jsdoc/tag/dictionary/definitions
@@ -12,9 +12,24 @@ var logger = require('jsdoc/util/logger');
 var path = require('jsdoc/path');
 var Syntax = require('jsdoc/src/syntax').Syntax;
 
+function getSourcePaths() {
+    var sourcePaths = env.sourceFiles.slice(0) || [];
+
+    if (env.opts._) {
+        env.opts._.forEach(function(sourcePath) {
+            var resolved = path.resolve(env.pwd, sourcePath);
+            if (sourcePaths.indexOf(resolved) === -1) {
+                sourcePaths.push(resolved);
+            }
+        });
+    }
+
+    return sourcePaths;
+}
+
 function filepathMinusPrefix(filepath) {
-    var sourceFiles = env.sourceFiles || [];
-    var commonPrefix = path.commonPrefix( sourceFiles.concat(env.opts._ || []) );
+    var sourcePaths = getSourcePaths();
+    var commonPrefix = path.commonPrefix(sourcePaths);
     var result = '';
 
     if (filepath) {
@@ -67,7 +82,10 @@ function setDocletDescriptionToValue(doclet, tag) {
 
 function setDocletTypeToValueType(doclet, tag) {
     if (tag.value && tag.value.type) {
-        doclet.type = tag.value.type;
+        // add the type names and other type properties (such as `optional`)
+        Object.keys(tag.value).forEach(function(prop) {
+            doclet[prop] = tag.value[prop];
+        });
     }
 }
 
@@ -94,7 +112,7 @@ function applyNamespace(docletOrNs, tag) {
         if (!docletOrNs.name) {
             return; // error?
         }
-        
+
         //doclet.displayname = doclet.name;
         docletOrNs.longname = app.jsdoc.name.applyNamespace(docletOrNs.name, tag.title);
     }
@@ -135,7 +153,7 @@ function firstWordOf(string) {
     @param {module:jsdoc/tag/dictionary} dictionary
 */
 exports.defineTags = function(dictionary) {
-    
+
     dictionary.defineTag('abstract', {
         mustNotHaveValue: true,
         onTagged: function(doclet, tag) {
@@ -144,7 +162,7 @@ exports.defineTags = function(dictionary) {
         }
     })
     .synonym('virtual');
-    
+
     dictionary.defineTag('access', {
         mustHaveValue: true,
         onTagged: function(doclet, tag) {
@@ -157,7 +175,7 @@ exports.defineTags = function(dictionary) {
             }
         }
     });
-    
+
     dictionary.defineTag('alias', {
         mustHaveValue: true,
         onTagged: function(doclet, tag) {
@@ -182,14 +200,14 @@ exports.defineTags = function(dictionary) {
             // let the parser handle it; we define the tag here to avoid "not a known tag" errors
         }
     });
-    
+
     // this symbol inherits from the specified symbol
     dictionary.defineTag('augments', {
         mustHaveValue: true,
         // Allow augments value to be specified as a normal type, e.g. {Type}
         onTagText: function(text) {
-            var type = require('jsdoc/tag/type'),
-                tagType = type.parse(text, false, true);
+            var type = require('jsdoc/tag/type');
+            var tagType = type.parse(text, false, true);
             return tagType.typeExpression || text;
         },
         onTagged: function(doclet, tag) {
@@ -197,7 +215,7 @@ exports.defineTags = function(dictionary) {
         }
     })
     .synonym('extends');
-    
+
     dictionary.defineTag('author', {
         mustHaveValue: true,
         onTagged: function(doclet, tag) {
@@ -205,7 +223,7 @@ exports.defineTags = function(dictionary) {
             doclet.author.push(tag.value);
         }
     });
-    
+
     // this symbol has a member that should use the same docs as another symbol
     dictionary.defineTag('borrows', {
         mustHaveValue: true,
@@ -214,11 +232,11 @@ exports.defineTags = function(dictionary) {
             doclet.borrow(borrows.target, borrows.source);
         }
     });
-    
+
     dictionary.defineTag('class', {
         onTagged: function(doclet, tag) {
             doclet.addTag('kind', 'class');
-            
+
             // handle special case where both @class and @constructor tags exist in same doclet
             if (tag.originalTitle === 'class') {
                 var looksLikeDesc = (tag.value || '').match(/\S+\s+\S+/); // multiple words after @class?
@@ -227,18 +245,18 @@ exports.defineTags = function(dictionary) {
                     return;
                 }
             }
-            
+
             setDocletNameToValue(doclet, tag);
         }
     })
     .synonym('constructor');
-    
+
     dictionary.defineTag('classdesc', {
         onTagged: function(doclet, tag) {
             doclet.classdesc = tag.value;
         }
     });
-    
+
     dictionary.defineTag('constant', {
         canHaveType: true,
         canHaveName: true,
@@ -249,7 +267,7 @@ exports.defineTags = function(dictionary) {
         }
     })
     .synonym('const');
-    
+
     dictionary.defineTag('constructs', {
         onTagged: function(doclet, tag) {
             var ownerClassName;
@@ -273,6 +291,8 @@ exports.defineTags = function(dictionary) {
 
     dictionary.defineTag('default', {
         onTagged: function(doclet, tag) {
+            var astnode = require('jsdoc/src/astnode');
+
             var type;
             var value;
 
@@ -283,33 +303,42 @@ exports.defineTags = function(dictionary) {
                 type = doclet.meta.code.type;
                 value = doclet.meta.code.value;
 
-                if (type === Syntax.Literal) {
-                    doclet.defaultvalue = String(value);
+                switch(type) {
+                    case Syntax.ArrayExpression:
+                        doclet.defaultvalue = astnode.nodeToString(doclet.meta.code.node);
+                        doclet.defaultvaluetype = 'array';
+                        break;
+
+                    case Syntax.Literal:
+                        doclet.defaultvalue = String(value);
+                        break;
+
+                    case Syntax.ObjectExpression:
+                        doclet.defaultvalue = astnode.nodeToString(doclet.meta.code.node);
+                        doclet.defaultvaluetype = 'object';
+                        break;
+
+                    default:
+                        // do nothing
+                        break;
                 }
-                // TODO: reenable the changes for https://github.com/jsdoc3/jsdoc/pull/419
-                /*
-                else if (doclet.meta.code.type === 'OBJECTLIT') {
-                    doclet.defaultvalue = String(doclet.meta.code.node.toSource());
-                    doclet.defaultvaluetype = 'object';
-                }
-                */
             }
         }
     })
     .synonym('defaultvalue');
-    
+
     dictionary.defineTag('deprecated', {
         // value is optional
         onTagged: function(doclet, tag) {
             doclet.deprecated = tag.value || true;
         }
     });
-    
+
     dictionary.defineTag('description', {
         mustHaveValue: true
     })
     .synonym('desc');
-    
+
     dictionary.defineTag('enum', {
         canHaveType: true,
         onTagged: function(doclet, tag) {
@@ -318,7 +347,7 @@ exports.defineTags = function(dictionary) {
             setDocletTypeToValueType(doclet, tag);
         }
     });
-    
+
     dictionary.defineTag('event', {
         isNamespace: true,
         onTagged: function(doclet, tag) {
@@ -326,7 +355,7 @@ exports.defineTags = function(dictionary) {
             setDocletNameToValue(doclet, tag);
         }
     });
-    
+
     dictionary.defineTag('example', {
         keepsWhitespace: true,
         removesIndent: true,
@@ -336,7 +365,7 @@ exports.defineTags = function(dictionary) {
             doclet.examples.push(tag.value);
         }
     });
-    
+
     dictionary.defineTag('exception', {
         mustHaveValue: true,
         canHaveType: true,
@@ -347,7 +376,7 @@ exports.defineTags = function(dictionary) {
         }
     })
     .synonym('throws');
-    
+
     dictionary.defineTag('exports', {
         mustHaveValue: true,
         onTagged: function(doclet, tag) {
@@ -370,19 +399,19 @@ exports.defineTags = function(dictionary) {
         }
     })
     .synonym('host');
-    
+
     dictionary.defineTag('file', {
         onTagged: function(doclet, tag) {
             setNameToFile(doclet, tag);
             setDocletKindToTitle(doclet, tag);
             setDocletDescriptionToValue(doclet, tag);
-            
+
             doclet.preserveName = true;
         }
     })
     .synonym('fileoverview')
     .synonym('overview');
-    
+
     dictionary.defineTag('fires', {
         mustHaveValue: true,
         onTagged: function(doclet, tag) {
@@ -392,7 +421,7 @@ exports.defineTags = function(dictionary) {
         }
     })
     .synonym('emits');
-    
+
     dictionary.defineTag('function', {
         onTagged: function(doclet, tag) {
             setDocletKindToTitle(doclet, tag);
@@ -401,7 +430,7 @@ exports.defineTags = function(dictionary) {
     })
     .synonym('func')
     .synonym('method');
-    
+
     dictionary.defineTag('global', {
         mustNotHaveValue: true,
         onTagged: function(doclet, tag) {
@@ -409,30 +438,30 @@ exports.defineTags = function(dictionary) {
             delete doclet.memberof;
         }
     });
-    
+
     dictionary.defineTag('ignore', {
         mustNotHaveValue: true,
         onTagged: function(doclet, tag) {
             doclet.ignore = true;
         }
     });
-    
+
     dictionary.defineTag('inner', {
         onTagged: function(doclet, tag) {
             setDocletScopeToTitle(doclet, tag);
          }
     });
-    
+
     dictionary.defineTag('instance', {
         onTagged: function(doclet, tag) {
             setDocletScopeToTitle(doclet, tag);
         }
     });
-    
+
     dictionary.defineTag('kind', {
         mustHaveValue: true
     });
-    
+
     dictionary.defineTag('lends', {
         onTagged: function(doclet, tag) {
             var GLOBAL_LONGNAME = require('jsdoc/doclet').GLOBAL_LONGNAME;
@@ -441,7 +470,7 @@ exports.defineTags = function(dictionary) {
             doclet.addTag('undocumented');
         }
     });
-    
+
     dictionary.defineTag('license', {
         mustHaveValue: true,
         onTagged: function(doclet, tag) {
@@ -458,7 +487,7 @@ exports.defineTags = function(dictionary) {
             // TODO: verify that parameters match the event parameters?
         }
     });
-    
+
     dictionary.defineTag('member', {
         canHaveType: true,
         canHaveName: true,
@@ -469,7 +498,7 @@ exports.defineTags = function(dictionary) {
         }
     })
     .synonym('var');
-    
+
     dictionary.defineTag('memberof', {
         mustHaveValue: true,
         onTagged: function(doclet, tag) {
@@ -486,7 +515,7 @@ exports.defineTags = function(dictionary) {
          }
     })
     .synonym('memberof!');
-    
+
     // this symbol mixes in all of the specified object's members
     dictionary.defineTag('mixes', {
         mustHaveValue: true,
@@ -502,7 +531,7 @@ exports.defineTags = function(dictionary) {
             setDocletNameToValue(doclet, tag);
         }
     });
-    
+
     dictionary.defineTag('module', {
         canHaveType: true,
         isNamespace: true,
@@ -515,11 +544,11 @@ exports.defineTags = function(dictionary) {
             setDocletTypeToValueType(doclet, tag);
          }
     });
-    
+
     dictionary.defineTag('name', {
         mustHaveValue: true
     });
-    
+
     dictionary.defineTag('namespace', {
         canHaveType: true,
         onTagged: function(doclet, tag) {
@@ -528,26 +557,26 @@ exports.defineTags = function(dictionary) {
             setDocletTypeToValueType(doclet, tag);
         }
     });
-    
+
     dictionary.defineTag('param', {
         //mustHaveValue: true, // param name can be found in the source code if not provided
         canHaveType: true,
         canHaveName: true,
         onTagged: function(doclet, tag) {
             if (!doclet.params) { doclet.params = []; }
-            doclet.params.push(tag.value||{});
+            doclet.params.push(tag.value || {});
         }
     })
     .synonym('argument')
     .synonym('arg');
-    
+
     dictionary.defineTag('private', {
         mustNotHaveValue: true,
         onTagged: function(doclet, tag) {
             doclet.access = 'private';
         }
     });
-    
+
     dictionary.defineTag('property', {
         mustHaveValue: true,
         canHaveType: true,
@@ -558,21 +587,21 @@ exports.defineTags = function(dictionary) {
         }
     })
     .synonym('prop');
-    
+
     dictionary.defineTag('protected', {
         mustNotHaveValue: true,
         onTagged: function(doclet, tag) {
             doclet.access = 'protected';
         }
     });
-    
+
     dictionary.defineTag('public', {
         mustNotHaveValue: true,
         onTagged: function(doclet, tag) {
             delete doclet.access; // public is default
         }
     });
-    
+
     // use this instead of old deprecated @final tag
     dictionary.defineTag('readonly', {
         mustNotHaveValue: true,
@@ -580,7 +609,7 @@ exports.defineTags = function(dictionary) {
             doclet.readonly = true;
         }
     });
-    
+
     dictionary.defineTag('requires', {
         mustHaveValue: true,
         onTagged: function(doclet, tag) {
@@ -588,7 +617,7 @@ exports.defineTags = function(dictionary) {
 
             var MODULE_PREFIX = require('jsdoc/name').MODULE_PREFIX;
 
-            // inline link tags are passed through as-is so that `@requires {@link foo}` works 
+            // inline link tags are passed through as-is so that `@requires {@link foo}` works
             if ( require('jsdoc/tag/inline').isInlineTag(tag.value, 'link\\S*') ) {
                 requiresName = tag.value;
             }
@@ -604,7 +633,7 @@ exports.defineTags = function(dictionary) {
             doclet.requires.push(requiresName);
         }
     });
-    
+
     dictionary.defineTag('returns', {
         mustHaveValue: true,
         canHaveType: true,
@@ -614,7 +643,7 @@ exports.defineTags = function(dictionary) {
         }
     })
     .synonym('return');
-    
+
     dictionary.defineTag('see', {
         mustHaveValue: true,
         onTagged: function(doclet, tag) {
@@ -622,34 +651,34 @@ exports.defineTags = function(dictionary) {
             doclet.see.push(tag.value);
         }
     });
-    
+
     dictionary.defineTag('since', {
         mustHaveValue: true,
         onTagged: function(doclet, tag) {
             doclet.since = tag.value;
         }
     });
-    
+
     dictionary.defineTag('static', {
         onTagged: function(doclet, tag) {
             setDocletScopeToTitle(doclet, tag);
         }
     });
-    
+
     dictionary.defineTag('summary', {
         mustHaveValue: true,
         onTagged: function(doclet, tag) {
             doclet.summary = tag.value;
         }
     });
-    
+
     dictionary.defineTag('this', {
         mustHaveValue: true,
         onTagged: function(doclet, tag) {
             doclet['this'] = firstWordOf(tag.value);
         }
     });
-    
+
     dictionary.defineTag('todo', {
         mustHaveValue: true,
         onTagged: function(doclet, tag) {
@@ -657,7 +686,7 @@ exports.defineTags = function(dictionary) {
             doclet.todo.push(tag.value);
         }
     });
-    
+
     dictionary.defineTag('tutorial', {
         mustHaveValue: true,
         onTagged: function(doclet, tag) {
@@ -665,17 +694,31 @@ exports.defineTags = function(dictionary) {
             doclet.tutorials.push(tag.value);
         }
     });
-    
+
     dictionary.defineTag('type', {
         mustHaveValue: true,
+        mustNotHaveDescription: true,
         canHaveType: true,
         onTagText: function(text) {
-            // remove line breaks so we can parse the type expression correctly
-            text = text.replace(/[\n\r]/g, '');
-            // any text must be formatted as a type, but for back compat braces are optional
-            if ( !/^\{[\s\S]+\}$/.test(text) ) {
-                text = '{' + text + '}';
+            var closeIdx;
+            var openIdx;
+
+            var OPEN_BRACE = '{';
+            var CLOSE_BRACE = '}';
+
+            // remove line breaks
+            text = text.replace(/[\f\n\r]/g, '');
+
+            // Text must be a type expression; for backwards compatibility, we add braces if they're
+            // missing. But do NOT add braces to things like `@type {string} some pointless text`.
+            openIdx = text.indexOf(OPEN_BRACE);
+            closeIdx = text.indexOf(CLOSE_BRACE);
+
+            // a type expression is at least one character long
+            if ( openIdx !== 0 || closeIdx <= openIdx + 1) {
+                text = OPEN_BRACE + text + CLOSE_BRACE;
             }
+
             return text;
         },
         onTagged: function(doclet, tag) {
@@ -689,13 +732,13 @@ exports.defineTags = function(dictionary) {
             }
         }
     });
-    
+
     dictionary.defineTag('typedef', {
         canHaveType: true,
         canHaveName: true,
         onTagged: function(doclet, tag) {
             setDocletKindToTitle(doclet, tag);
-            
+
             if (tag.value) {
                 setDocletNameToValueName(doclet, tag);
 
@@ -714,7 +757,7 @@ exports.defineTags = function(dictionary) {
         }
     })
     .synonym('callback');
-    
+
     dictionary.defineTag('undocumented', {
         mustNotHaveValue: true,
         onTagged: function(doclet, tag) {
@@ -722,14 +765,14 @@ exports.defineTags = function(dictionary) {
             doclet.comment = '';
         }
     });
-    
+
     dictionary.defineTag('variation', {
         mustHaveValue: true,
         onTagged: function(doclet, tag) {
             doclet.variation = tag.value;
         }
     });
-    
+
     dictionary.defineTag('version', {
         mustHaveValue: true,
         onTagged: function(doclet, tag) {

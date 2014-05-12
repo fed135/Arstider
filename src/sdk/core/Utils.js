@@ -7,28 +7,42 @@
 
 /**
  * Engine Namespace
- * @const
+ * @namespace Arstider
  * @type {Object}
  */
 window.Arstider = {};
 
 /**
 * RandomGenerator
+* @memberof Arstider
+* @name Arstider.RandomGenerator
 * @constructor
 * @param {number=} seed The generator seed.
 */
 Arstider.RandomGenerator = function(seed) {
 
-    /** @type {number} */
+    /**
+     * @private 
+     * @type {number} 
+     */
     this.seed = seed && !isNaN(seed) ? seed : Arstider.timestamp();
 
-    /** @type {number} @private */
+    /**
+     * @private 
+     * @type {number} 
+     */
     this.i_ = 0;
 
-    /** @type {number} @private */
+    /**
+     * @private 
+     * @type {number} 
+     */
     this.j_ = 0;
 
-    /** @type {Array.<number>} @private */
+    /**
+     * @private 
+     * @type {Array.<number>}
+     */
     this.S_ = [];
 
     this.init(('' + seed).split(''));
@@ -36,6 +50,7 @@ Arstider.RandomGenerator = function(seed) {
 
 /**
  * Gets a number timestamp, usefull for id-ing or cache busting
+ * @memberof Arstider
  * @type {function}
  * @return {number} the timestamp
  */
@@ -45,6 +60,7 @@ Arstider.timestamp = function(){
 
 /**
  * Generates a Unique UID string
+ * @memberof Arstider
  * @type {function}
  * @return {String} the resulting unique ID
  */
@@ -91,6 +107,7 @@ Arstider.RandomGenerator.prototype.next = function() {
 
 /**
  * Re-usable empty object
+ * @memberof Arstider
  * @const
  * @type {Object}
  */
@@ -98,6 +115,7 @@ Arstider.emptyObject = {};
 
 /**
  * Re-usable empty function
+ * @memberof Arstider
  * @const
  * @type {function()}
  */
@@ -105,6 +123,7 @@ Arstider.emptyFunction = function(){};
 
 /**
  * Re-usable empty string
+ * @memberof Arstider
  * @const
  * @type {string}
  */
@@ -112,6 +131,7 @@ Arstider.emptyString = "";
 
 /**
  * Re-usable empty images url
+ * @memberof Arstider
  * @const
  * @type {string}
  */
@@ -119,6 +139,7 @@ Arstider.emptyImgSrc = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACAD
 
 /**
  * Min/Max FPS value
+ * @memberof Arstider
  * @const
  * @type {number}
  */
@@ -126,6 +147,7 @@ Arstider._fullFPS = 1000/60;
 
 /**
  * Degrees-to-radians constant
+ * @memberof Arstider
  * @const
  * @type {number}
  */
@@ -133,6 +155,7 @@ Arstider.degToRad = Math.PI/180;
 
 /**
  * Default composition mode constant
+ * @memberof Arstider
  * @const
  * @type {string}
  */
@@ -140,6 +163,7 @@ Arstider.defaultComposition = "source-over";
 
 /**
  * Default color constant
+ * @memberof Arstider
  * @const
  * @type {string}
  */
@@ -147,11 +171,12 @@ Arstider.defaultColor = "transparent";
 
 /**
  * Utility function to apply a method through a desired scope
+ * @memberof Arstider
  * @const
- * @param {function(this:selfObj, [?])} fn Method to call
- * @param {?} selfObj The scope
- * @param {Array=} var_args Arguments
- * @return {function([?])} The function with the proper scope
+ * @param {function(this:selfObj)} fn Method to call
+ * @param {*} selfObj The scope
+ * @param {Array|null} var_args Arguments
+ * @return {function()} The function with the proper scope
  */
 Arstider.delegate = function(fn, selfObj, var_args){
 	return (fn.call.apply(fn.bind, arguments));
@@ -159,10 +184,11 @@ Arstider.delegate = function(fn, selfObj, var_args){
 
 /**
  * Quick if-exist method 
+ * @memberof Arstider
  * @const
- * @param {?} val The value to check against undefined
- * @param {?} def The default value to provide is val is undefined
- * @return {?} The final value
+ * @param {*} val The value to check against undefined
+ * @param {*} def The default value to provide is val is undefined
+ * @return {*} The final value
  */
 Arstider.checkIn = function(val, def){
 	if(val === undefined) return def;
@@ -176,13 +202,14 @@ Arstider.checkIn = function(val, def){
  * 1 = important warnings
  * 2 = notices
  * 3+ = EVERYTHING!
- * 
+ * @memberof Arstider
  * @type {number}
  */
 Arstider.verbose = 0;
 
 /**
  * Fisher-Yates array shuffling method
+ * @memberof Arstider
  * @const
  * @param {Array} arr The array to shuffle
  * @return {Array} The shuffled array
@@ -201,6 +228,7 @@ Arstider.randomSort = function(arr){
 
 /**
  * Quick number rounding method (see jsperf)
+ * @memberof Arstider
  * @const
  * @param {number} i The number to round
  * @return {number} The rounded number
@@ -211,6 +239,7 @@ Arstider.chop = function(i){
 
 /**
  * Generic, simple mixin function. Replaces undefined elements in obj A with properties of obj B 
+ * @memberof Arstider
  * @const
  * @param {Object} objA The object that will receive the new properties
  * @param {Object} objB The object to transfer the properties from
@@ -236,6 +265,7 @@ Arstider.mixin = function(objA, objB, force, includeMethods, prefix){
 
 /**
  * Utility function to copy the simple direct properties of an object
+ * @memberof Arstider
  * @const
  * @param {Object} obj The object to copy
  * @param {boolean} includeMethods Whether or not to include functions, defaults to false 
@@ -247,7 +277,8 @@ Arstider.clone = function(obj, includeMethods, prefix){
 
 /**
  * Supers the values of a module to it's parent module
- * @param {?} child The child that will super to a defined inherited parent - requires the constructor to have been Inherited at least once
+ * @memberof Arstider
+ * @param {*} child The child that will super to a defined inherited parent - requires the constructor to have been Inherited at least once
  */
 Arstider.Super = function(child, parent){
 	if(arguments.length > 2) parent.apply(child, Array.prototype.slice.call(arguments,2));
@@ -257,6 +288,7 @@ Arstider.Super = function(child, parent){
 /**
  * Parse a string for safe server storage
  * http://ajaxref.com/
+ * @memberof Arstider
  * @type {function}
  * @param {string} val The string to make uri-safe
  * @return {string} The uri-safe string
@@ -282,8 +314,9 @@ Arstider.URIEncode = function(val){
 
 /**
  * Creates Inheritance for a module
- * @param {?} child The child module
- * @param {?} parent The module that will gives it's properties to the child
+ * @memberof Arstider
+ * @param {*} child The child module
+ * @param {*} parent The module that will gives it's properties to the child
  */
 Arstider.Inherit = function(child, parent){
 	if(parent instanceof Function || typeof parent === 'function'){
@@ -295,6 +328,7 @@ Arstider.Inherit = function(child, parent){
 
 /**
  * Fixed drawing rate, when vendor-prefixed is unavailable or because of platform restrictions
+ * @memberof Arstider
  * @const
  * @param {function()} callback The called method for rendering
  */
@@ -304,8 +338,9 @@ Arstider.fixedAnimationFrame = function(callback){
 
 /**
  * Cancels the fixed drawing rate, when vendor-prefixed is unavailable or because of platform restrictions
+ * @memberof Arstider
  * @const
- * @param {?=} ref The requestAnimationFrame method
+ * @param {*} ref The requestAnimationFrame method
  */
 Arstider.fixedCancelAnimationFrame = function(ref){
 	window.clearTimeout(ref);
@@ -313,6 +348,7 @@ Arstider.fixedCancelAnimationFrame = function(ref){
 	
 /**
  * Parses vendor-prefixed values for requesting an animation frame
+ * @memberof Arstider
  * @const
  */
 Arstider.requestAnimFrame = (function(){
@@ -326,6 +362,7 @@ Arstider.requestAnimFrame = (function(){
 
 /**
  * Parses vendor-prefixed values for canceling request animation frame
+ * @memberof Arstider
  * @const
  */
 Arstider.cancelAnimFrame = (function(){
@@ -339,6 +376,7 @@ Arstider.cancelAnimFrame = (function(){
 
 /**
  * Global blobURL cache
+ * @memberof Arstider
  * @private
  * @type {Object}
  */
@@ -346,6 +384,7 @@ Arstider.blobCache = {empty:{url:Arstider.emptyImgSrc, size:0}};
 
 /**
  * Clears cached blobURLs
+ * @memberof Arstider
  * @type {function}
  */
 Arstider.clearBlobUrls = function(){
@@ -368,7 +407,7 @@ require(["Arstider/Buffer", "Arstider/Browser"], function(Buffer, Browser){
 	
 	/**
 	 * Set render style for canvas tags 
-	 *
+	 * @memberof Arstider
 	 * @private
 	 * @param {HTMLCanvasElement} cnv Applies the imageRendering style from the tag's _renderMode property
 	 * @param {string} style The rendering style to apply
@@ -393,7 +432,7 @@ require(["Arstider/Buffer", "Arstider/Browser"], function(Buffer, Browser){
 	
 	/**
 	 * Sets image smoothing for canvas contexts 
-	 *
+	 * @memberof Arstider
 	 * @private
 	 * @param {CanvasRenderingContext2D} ctx The context to switch the smoothing mode on
 	 * @param {Boolean} val Image smoothing activated
@@ -405,18 +444,21 @@ require(["Arstider/Buffer", "Arstider/Browser"], function(Buffer, Browser){
 	
 	/**
 	 * Default rendering style
+	 * @memberof Arstider
 	 * @type {string}
 	 */
 	Arstider.defaultRenderStyle = "auto";
 	
 	/**
 	 * Collection of the intantiated buffers
+	 * @memberof Arstider
 	 * @type {Object}
 	 */
 	Arstider.bufferPool = {};
 	
 	/**
 	 * Counts the number of buffers in the system
+	 * @memberof Arstider
 	 * @type {function}
 	 * @return {number} The number of buffers
 	 */
@@ -435,6 +477,7 @@ require(["Arstider/Buffer", "Arstider/Browser"], function(Buffer, Browser){
 	
 	/**
 	 * Returns the total size of assets in memory
+	 * @memberof Arstider
 	 * @type {function}
 	 * @return {number} memory (in MB)
 	 */
@@ -457,6 +500,7 @@ require(["Arstider/Buffer", "Arstider/Browser"], function(Buffer, Browser){
 	
 	/**
 	 * Saves graphic data into a new buffer
+	 * @memberof Arstider
 	 * @param {string} name The name of the future Buffer
 	 * @param {Image|HTMLCanvasElement} img The graphic resource to draw onto the canvas
 	 * @return {Buffer} The newly created Buffer
@@ -478,6 +522,7 @@ require(["Arstider/Buffer", "Arstider/Browser"], function(Buffer, Browser){
 	
 	/**
 	 * Inverts the colors of the Entity.
+	 * @memberof Arstider
 	 * @param {Buffer} buffer The target data buffer
 	 * @param {number=} x Optional zone horizontal offset
 	 * @param {number=} y Optional zone vertical offset
@@ -512,6 +557,7 @@ require(["Arstider/Buffer", "Arstider/Browser"], function(Buffer, Browser){
 	
 	/**
 	 * Grayscales the colors of the Entity.
+	 * @memberof Arstider
 	 * @param {Buffer} buffer The target data buffer
 	 * @param {number=} x Optional zone horizontal offset
 	 * @param {number=} y Optional zone vertical offset
@@ -548,6 +594,7 @@ require(["Arstider/Buffer", "Arstider/Browser"], function(Buffer, Browser){
 	
 	/**
 	 * Tints an element
+	 * @memberof Arstider
 	 * @param {Buffer} buffer The target data buffer
 	 * @param {number} r Red value
 	 * @param {number} g Green value
@@ -585,6 +632,7 @@ require(["Arstider/Buffer", "Arstider/Browser"], function(Buffer, Browser){
 	
 	/**
 	 * Blurs an element
+	 * @memberof Arstider
 	 * @param {Buffer} buffer The target data buffer
 	 * @param {number} force The amount of blur to add
 	 * @param {number} quality The amount of passes (more passes for better looking blur, at the cost of a longer process)
@@ -637,6 +685,7 @@ require(["Arstider/Engine", "Arstider/Events"], function(Engine, Events){
 	
 	/**
 	 * Returns an element or a list of elements that match the search criterias for inspection
+	 * @memberof Arstider
 	 * @type {function}
 	 * @const
 	 * @param {string|null} name The name of the element to search for. If none is provided, returns all elements
@@ -669,6 +718,7 @@ require(["Arstider/Engine", "Arstider/Events"], function(Engine, Events){
 	
 	/**
 	 * Draws the desired data object into a separate buffer for inspection
+	 * @memberof Arstider
 	 * @type {function}
 	 * @const
 	 * @param {Image|HTMLCanvasElement} targetData The data to draw on the debug canvas
@@ -703,11 +753,12 @@ require(["Arstider/Engine", "Arstider/Events"], function(Engine, Events){
 	
 	/**
 	 * Broadcasts an event for debugging
+	 * @memberof Arstider
 	 * @type {function}
 	 * @const
 	 * @param {string} name The name of the event to call
-	 * @param {?} param The parameters to provide the broadcast
-	 * @param {?} target The target for broadcast
+	 * @param {*} param The parameters to provide the broadcast
+	 * @param {*} target The target for broadcast
 	 */
 	Arstider.debugBroadcast = function(name, param, target){
 		if(!Engine.debug) return;

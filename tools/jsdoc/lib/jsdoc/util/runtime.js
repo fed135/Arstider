@@ -1,7 +1,7 @@
-/*global env: true */
+/*global env, java */
 /**
  * Helper functions to enable JSDoc to run on multiple JavaScript runtimes.
- * 
+ *
  * @module jsdoc/util/runtime
  * @private
  */

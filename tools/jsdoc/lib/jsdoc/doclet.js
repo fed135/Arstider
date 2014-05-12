@@ -24,8 +24,8 @@ var jsdoc = {
     }
 };
 var path = require('jsdoc/path');
+var Syntax = jsdoc.src.Syntax;
 var util = require('util');
-
 
 // Longname used for doclets whose actual longname cannot be identified.
 exports.ANONYMOUS_LONGNAME = '<anonymous>';
@@ -33,7 +33,6 @@ exports.ANONYMOUS_LONGNAME = '<anonymous>';
 exports.GLOBAL_LONGNAME = '<global>';
 // Special tag identifying undocumented symbols; not to be used in actual JSDoc comments.
 exports.UNDOCUMENTED_TAG = '@undocumented';
-
 
 function applyTag(doclet, tag) {
     if (tag.title === 'name') {
@@ -50,13 +49,25 @@ function applyTag(doclet, tag) {
 }
 
 // use the meta info about the source code to guess what the doclet kind should be
-function codetypeToKind(type) {
-    var Syntax = jsdoc.src.Syntax;
-    if (type === Syntax.FunctionDeclaration || type === Syntax.FunctionExpression) {
-        return 'function';
+function codeToKind(code) {
+    var parent;
+
+    var astnode = require('jsdoc/src/astnode');
+
+    // default
+    var kind = 'member';
+
+    if (code.type === Syntax.FunctionDeclaration || code.type === Syntax.FunctionExpression) {
+        kind = 'function';
+    }
+    else if (code.node && code.node.parent) {
+        parent = code.node.parent;
+        if ( astnode.isFunction(parent) ) {
+            kind = 'param';
+        }
     }
 
-    return 'member';
+    return kind;
 }
 
 function unwrap(docletSrc) {
@@ -68,7 +79,7 @@ function unwrap(docletSrc) {
     // use the /m flag on regex to avoid having to guess what this platform's newline is
     docletSrc =
         docletSrc.replace(/^\/\*\*+/, '') // remove opening slash+stars
-        .replace(/\**\*\/$/, "\\Z")       // replace closing star slash with end-marker
+        .replace(/\**\*\/$/, '\\Z')       // replace closing star slash with end-marker
         .replace(/^\s*(\* ?|\\Z)/gm, '')  // remove left margin like: spaces+star or spaces+end-marker
         .replace(/\s*\\Z$/g, '');         // remove end-marker
 
@@ -77,7 +88,7 @@ function unwrap(docletSrc) {
 
 function split(docletSrc) {
     var tagSrcs = [];
-          
+
     // split out the basic tags, keep surrounding whitespace
     // like: @tagTitle tagBody
     docletSrc
@@ -90,7 +101,7 @@ function split(docletSrc) {
 
             if ($) {
                 parsedTag = $.match(/^(\S+)(:?\s+(\S[\s\S]*))?/);
-                
+
                 if (parsedTag) {
                     // we don't need parsedTag[0]
                     tagTitle = parsedTag[1];
@@ -105,7 +116,7 @@ function split(docletSrc) {
                 }
             }
     });
-    
+
     return tagSrcs;
 }
 
@@ -116,11 +127,11 @@ function split(docletSrc) {
 function toTags(docletSrc) {
     var tags = [];
     var tagSrcs = split(docletSrc);
-    
+
     for (var i = 0, l = tagSrcs.length; i < l; i++) {
         tags.push({ title: tagSrcs[i].title, text: tagSrcs[i].text });
     }
-    
+
     return tags;
 }
 
@@ -143,7 +154,7 @@ var Doclet = exports.Doclet = function(docletSrc, meta) {
     /** The original text of the comment from the source code. */
     this.comment = docletSrc;
     this.setMeta(meta);
-    
+
     docletSrc = unwrap(docletSrc);
     docletSrc = fixDescription(docletSrc);
 
@@ -152,7 +163,7 @@ var Doclet = exports.Doclet = function(docletSrc, meta) {
     for (var i = 0, l = newTags.length; i < l; i++) {
         this.addTag(newTags[i].title, newTags[i].text);
     }
-    
+
     this.postProcess();
 };
 
@@ -168,17 +179,17 @@ Doclet.prototype.postProcess = function() {
         this.setLongname(this.name);
     }
     if (this.memberof === '') {
-        delete(this.memberof);
+        delete this.memberof;
     }
-    
+
     if (!this.kind && this.meta && this.meta.code) {
-        this.addTag( 'kind', codetypeToKind(this.meta.code.type) );
+        this.addTag( 'kind', codeToKind(this.meta.code) );
     }
-    
+
     if (this.variation && this.longname && !/\)$/.test(this.longname) ) {
         this.longname += '(' + this.variation + ')';
     }
-    
+
     // add in any missing param names
     if (this.params && this.meta && this.meta.code && this.meta.code.paramnames) {
         for (i = 0, l = this.params.length; i < l; i++) {
@@ -191,7 +202,7 @@ Doclet.prototype.postProcess = function() {
 
 /**
  * Add a tag to the doclet.
- * 
+ *
  * @param {string} title - The title of the tag being added.
  * @param {string} [text] - The text of the tag being added.
  */
@@ -202,12 +213,12 @@ Doclet.prototype.addTag = function(title, text) {
     if (tagDef && tagDef.onTagged) {
        tagDef.onTagged(this, newTag);
     }
-    
+
     if (!tagDef) {
         this.tags = this.tags || [];
         this.tags.push(newTag);
     }
-    
+
     applyTag(this, newTag);
 };
 
@@ -233,7 +244,7 @@ Doclet.prototype.setMemberof = function(sid) {
 
 /**
  * Set the doclet's `longname` property.
- * 
+ *
  * @param {string} name - The longname for the doclet.
  */
 Doclet.prototype.setLongname = function(name) {
@@ -291,9 +302,9 @@ Doclet.prototype.setScope = function(scope) {
     this.scope = scope;
 };
 
-/** 
+/**
  * Add a symbol to this doclet's `borrowed` array.
- * 
+ *
  * @param {string} source - The longname of the symbol that is the source.
  * @param {string} target - The name the symbol is being assigned to.
  */
@@ -302,7 +313,7 @@ Doclet.prototype.borrow = function(source, target) {
     if (target) {
         about.as = target;
     }
-    
+
     if (!this.borrowed) {
         /**
          * A list of symbols that are borrowed by this one, if any.
@@ -338,7 +349,7 @@ Doclet.prototype.augment = function(base) {
 
 /**
  * Set the `meta` property of this doclet.
- * 
+ *
  * @param {object} meta
  */
 Doclet.prototype.setMeta = function(meta) {
@@ -347,7 +358,7 @@ Doclet.prototype.setMeta = function(meta) {
      * @namespace
      */
     this.meta = this.meta || {};
-    
+
     if (meta.range) {
         /**
          * The positions of the first and last characters of the code associated with this doclet.

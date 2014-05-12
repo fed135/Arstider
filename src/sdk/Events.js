@@ -9,21 +9,21 @@
 	var 
 		/**
 		 * Index of the target object
-		 * @constant
+		 * @const
 		 * @private
 		 * @type {number}
 		 */
 		TARGET = 0,
 		/**
 		 * Index of the event string
-		 * @constant
+		 * @const
 		 * @private
 		 * @type {number}
 		 */
 		EVENT = 1,
 		/**
 		 * Index of the callback function
-		 * @constant
+		 * @const
 		 * @private
 		 * @type {number}
 		 */
@@ -31,14 +31,14 @@
 		
 		/**
 		 * No target flag
-		 * @constant
+		 * @const
 		 * @private
 		 * @type {number}
 		 */
 		NO_TARGET = 0,
 		/**
 		 * Index not found flag
-		 * @constant
+		 * @const
 		 * @private
 		 * @type {number}
 		 */
@@ -105,7 +105,7 @@
 	 * @private
 	 * @type {function}
 	 * @param {Array} arr The array to look into
-	 * @param {?} key The key to look for
+	 * @param {*} key The key to look for
 	 * @return {number} The number of spliced elements
 	 */
 	function cleanup(arr, key){
@@ -194,7 +194,7 @@
 		 * Broadcasts an event with optional data and target
 		 * @type {function(this:Events)}
 		 * @param {string} event
-		 * @param {?=} data
+		 * @param {*} data
 		 * @param {Object|null} target
 		 */	
 		Events.prototype.broadcast = function(event, data, target){

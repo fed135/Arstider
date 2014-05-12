@@ -1,21 +1,24 @@
 /*global env: true */
 'use strict';
 
-var template = require('jsdoc/template'),
-    fs = require('jsdoc/fs'),
-    path = require('jsdoc/path'),
-    taffy = require('taffydb').taffy,
-    logger = require('jsdoc/util/logger'),
-    helper = require('jsdoc/util/templateHelper'),
-    htmlsafe = helper.htmlsafe,
-    linkto = helper.linkto,
-    resolveAuthorLinks = helper.resolveAuthorLinks,
-    scopeToPunc = helper.scopeToPunc,
-    hasOwnProp = Object.prototype.hasOwnProperty,
-    data,
-    view,
-    outdir = env.opts.destination;
+var fs = require('jsdoc/fs');
+var helper = require('jsdoc/util/templateHelper');
+var logger = require('jsdoc/util/logger');
+var path = require('jsdoc/path');
+var taffy = require('taffydb').taffy;
+var template = require('jsdoc/template');
+var util = require('util');
 
+var htmlsafe = helper.htmlsafe;
+var linkto = helper.linkto;
+var resolveAuthorLinks = helper.resolveAuthorLinks;
+var scopeToPunc = helper.scopeToPunc;
+var hasOwnProp = Object.prototype.hasOwnProperty;
+
+var data;
+var view;
+
+var outdir = env.opts.destination;
 
 function find(spec) {
     return helper.find(data, spec);
@@ -31,9 +34,9 @@ function getAncestorLinks(doclet) {
 
 function hashToLink(doclet, hash) {
     if ( !/^(#.+)/.test(hash) ) { return hash; }
-    
+
     var url = helper.createLink(doclet);
-    
+
     url = url.replace(/(#.+|$)/, hash);
     return '<a href="' + url + '">' + hash + '</a>';
 }
@@ -59,33 +62,125 @@ function needsSignature(doclet) {
     return needsSig;
 }
 
+function getSignatureAttributes(item) {
+    var attributes = [];
+
+    if (item.optional) {
+        attributes.push('opt');
+    }
+
+    if (item.nullable === true) {
+        attributes.push('nullable');
+    }
+    else if (item.nullable === false) {
+        attributes.push('non-null');
+    }
+
+    return attributes;
+}
+
+function updateItemName(item) {
+    var attributes = getSignatureAttributes(item);
+    var itemName = item.name || '';
+
+    if (item.variable) {
+        itemName = '&hellip;' + itemName;
+    }
+
+    if (attributes && attributes.length) {
+        itemName = util.format( '%s<span class="signature-attributes">%s</span>', itemName,
+            attributes.join(', ') );
+    }
+
+    return itemName;
+}
+
+function addParamAttributes(params) {
+    return params.map(updateItemName);
+}
+
+function buildItemTypeStrings(item) {
+    var types = [];
+
+    if (item.type && item.type.names) {
+        item.type.names.forEach(function(name) {
+            types.push( linkto(name, htmlsafe(name)) );
+        });
+    }
+
+    return types;
+}
+
+function buildAttribsString(attribs) {
+    var attribsString = '';
+
+    if (attribs && attribs.length) {
+        attribsString = htmlsafe( util.format('(%s) ', attribs.join(', ')) );
+    }
+
+    return attribsString;
+}
+
+function addNonParamAttributes(items) {
+    var types = [];
+
+    items.forEach(function(item) {
+        types = types.concat( buildItemTypeStrings(item) );
+    });
+
+    return types;
+}
+
 function addSignatureParams(f) {
-    var params = helper.getSignatureParams(f, 'optional');
-    
-    f.signature = (f.signature || '') + '('+params.join(', ')+')';
+    var params = f.params ? addParamAttributes(f.params) : [];
+
+    f.signature = util.format( '%s(%s)', (f.signature || ''), params.join(', ') );
 }
 
 function addSignatureReturns(f) {
-    var returnTypes = helper.getSignatureReturns(f);
-    
+    var attribs = [];
+    var attribsString = '';
+    var returnTypes = [];
+    var returnTypesString = '';
+
+    // jam all the return-type attributes into an array. this could create odd results (for example,
+    // if there are both nullable and non-nullable return types), but let's assume that most people
+    // who use multiple @return tags aren't using Closure Compiler type annotations, and vice-versa.
+    if (f.returns) {
+        f.returns.forEach(function(item) {
+            helper.getAttribs(item).forEach(function(attrib) {
+                if (attribs.indexOf(attrib) === -1) {
+                    attribs.push(attrib);
+                }
+            });
+        });
+
+        attribsString = buildAttribsString(attribs);
+    }
+
+    if (f.returns) {
+        returnTypes = addNonParamAttributes(f.returns);
+    }
+    if (returnTypes.length) {
+        returnTypesString = util.format( ' &rarr; %s{%s}', attribsString, returnTypes.join('|') );
+    }
+
     f.signature = '<span class="signature">' + (f.signature || '') + '</span>' +
-        '<span class="type-signature">' +
-        (returnTypes && returnTypes.length ? ' &rarr; {' + returnTypes.join('|') + '}' : '') +
-        '</span>';
+        '<span class="type-signature">' + returnTypesString + '</span>';
 }
 
 function addSignatureTypes(f) {
-    var types = helper.getSignatureTypes(f);
-    
-    f.signature = (f.signature || '') + '<span class="type-signature">'+(types.length? ' :'+types.join('|') : '')+'</span>';
+    var types = f.type ? buildItemTypeStrings(f) : [];
+
+    f.signature = (f.signature || '') + '<span class="type-signature">' +
+        (types.length ? ' :' + types.join('|') : '') + '</span>';
 }
 
 function addAttribs(f) {
     var attribs = helper.getAttribs(f);
-    
-    f.attribs = '<span class="type-signature">' + htmlsafe(attribs.length ?
-        // we want the template output to say 'abstract', not 'virtual'
-        '<' + attribs.join(', ').replace('virtual', 'abstract') + '> ' : '') + '</span>';
+    var attribsString = buildAttribsString(attribs);
+
+    f.attribs = util.format('<span class="type-signature">%s</span>', attribsString);
 }
 
 function shortenPaths(files, commonPrefix) {
@@ -100,31 +195,29 @@ function shortenPaths(files, commonPrefix) {
 
 function getPathFromDoclet(doclet) {
     if (!doclet.meta) {
-        return;
+        return null;
     }
 
     return doclet.meta.path && doclet.meta.path !== 'null' ?
         path.join(doclet.meta.path, doclet.meta.filename) :
         doclet.meta.filename;
 }
-    
-function generate(title, docs, filename, opts) {
-    opts = opts || {};
+
+function generate(title, docs, filename, resolveLinks) {
+    resolveLinks = resolveLinks === false ? false : true;
 
     var docData = {
         title: title,
-        docs: docs,
-        opts: opts
+        docs: docs
     };
-    var resolveLinks = (opts.resolveLinks === false) ? false : true;
-    
+
     var outpath = path.join(outdir, filename),
         html = view.render('container.tmpl', docData);
-    
+
     if (resolveLinks) {
         html = helper.resolveLinks(html); // turn {@link foo} into <a href="foodoc.html">foo</a>
     }
-    
+
     fs.writeFileSync(outpath, html, 'utf8');
 }
 
@@ -147,7 +240,7 @@ function generateSourceFiles(sourceFiles, encoding) {
         }
 
         generate('Source: ' + sourceFiles[file].shortened, [source], sourceOutfile,
-            { resolveLinks: false });
+            false);
     });
 }
 
@@ -156,7 +249,7 @@ function generateSourceFiles(sourceFiles, encoding) {
  * exports only that class or function), then attach the classes or functions to the `module`
  * property of the appropriate module doclets. The name of each class or function is also updated
  * for display purposes. This function mutates the original arrays.
- * 
+ *
  * @private
  * @param {Array.<module:jsdoc/doclet.Doclet>} doclets - The array of classes and functions to
  * check.
@@ -202,34 +295,34 @@ function buildNav(members) {
         nav += '<h3>Modules</h3><ul>';
         members.modules.forEach(function(m) {
             if ( !hasOwnProp.call(seen, m.longname) ) {
-                nav += '<li>'+linkto(m.longname, m.name)+'</li>';
+                nav += '<li>' + linkto(m.longname, m.name) + '</li>';
             }
             seen[m.longname] = true;
         });
-        
+
         nav += '</ul>';
     }
-    
+
     if (members.externals.length) {
         nav += '<h3>Externals</h3><ul>';
         members.externals.forEach(function(e) {
             if ( !hasOwnProp.call(seen, e.longname) ) {
-                nav += '<li>'+linkto( e.longname, e.name.replace(/(^"|"$)/g, '') )+'</li>';
+                nav += '<li>' + linkto( e.longname, e.name.replace(/(^"|"$)/g, '') ) + '</li>';
             }
             seen[e.longname] = true;
         });
-        
+
         nav += '</ul>';
     }
 
     if (members.classes.length) {
         members.classes.forEach(function(c) {
             if ( !hasOwnProp.call(seen, c.longname) ) {
-                classNav += '<li>'+linkto(c.longname, c.name)+'</li>';
+                classNav += '<li>' + linkto(c.longname, c.name) + '</li>';
             }
             seen[c.longname] = true;
         });
-        
+
         if (classNav !== '') {
             nav += '<h3>Classes</h3><ul>';
             nav += classNav;
@@ -241,47 +334,47 @@ function buildNav(members) {
         nav += '<h3>Events</h3><ul>';
         members.events.forEach(function(e) {
             if ( !hasOwnProp.call(seen, e.longname) ) {
-                nav += '<li>'+linkto(e.longname, e.name)+'</li>';
+                nav += '<li>' + linkto(e.longname, e.name) + '</li>';
             }
             seen[e.longname] = true;
         });
-        
+
         nav += '</ul>';
     }
-    
+
     if (members.namespaces.length) {
         nav += '<h3>Namespaces</h3><ul>';
         members.namespaces.forEach(function(n) {
             if ( !hasOwnProp.call(seen, n.longname) ) {
-                nav += '<li>'+linkto(n.longname, n.name)+'</li>';
+                nav += '<li>' + linkto(n.longname, n.name) + '</li>';
             }
             seen[n.longname] = true;
         });
-        
+
         nav += '</ul>';
     }
-    
+
     if (members.mixins.length) {
         nav += '<h3>Mixins</h3><ul>';
         members.mixins.forEach(function(m) {
             if ( !hasOwnProp.call(seen, m.longname) ) {
-                nav += '<li>'+linkto(m.longname, m.name)+'</li>';
+                nav += '<li>' + linkto(m.longname, m.name) + '</li>';
             }
             seen[m.longname] = true;
         });
-        
+
         nav += '</ul>';
     }
 
     if (members.tutorials.length) {
         nav += '<h3>Tutorials</h3><ul>';
         members.tutorials.forEach(function(t) {
-            nav += '<li>'+tutoriallink(t.name)+'</li>';
+            nav += '<li>' + tutoriallink(t.name) + '</li>';
         });
-        
+
         nav += '</ul>';
     }
-    
+
     if (members.globals.length) {
         members.globals.forEach(function(g) {
             if ( g.kind !== 'typedef' && !hasOwnProp.call(seen, g.longname) ) {
@@ -289,7 +382,7 @@ function buildNav(members) {
             }
             seen[g.longname] = true;
         });
-        
+
         if (!globalNav) {
             // turn the heading into a link so you can actually get to the global page
             nav += '<h3>' + linkto('global', 'Global') + '</h3>';
@@ -301,7 +394,6 @@ function buildNav(members) {
 
     return nav;
 }
-
 
 /**
     @param {TAFFY} taffyData See <http://taffydb.com/>.
@@ -316,7 +408,7 @@ exports.publish = function(taffyData, opts, tutorials) {
 
     var templatePath = opts.template;
     view = new template.Template(templatePath + '/tmpl');
-    
+
     // claim some special filenames in advance, so the All-Powerful Overseer of Filename Uniqueness
     // doesn't try to hand them out later
     var indexUrl = helper.getUniqueFilename('index');
@@ -342,16 +434,16 @@ exports.publish = function(taffyData, opts, tutorials) {
     var sourceFilePaths = [];
     data().each(function(doclet) {
          doclet.attribs = '';
-        
+
         if (doclet.examples) {
             doclet.examples = doclet.examples.map(function(example) {
                 var caption, code;
-                
+
                 if (example.match(/^\s*<caption>([\s\S]+?)<\/caption>(\s*[\n\r])([\s\S]+)$/i)) {
                     caption = RegExp.$1;
                     code    = RegExp.$3;
                 }
-                
+
                 return {
                     caption: caption || '',
                     code: code || example
@@ -377,7 +469,7 @@ exports.publish = function(taffyData, opts, tutorials) {
             }
         }
     });
-    
+
     // update outdir if necessary, then create outdir
     var packageInfo = ( find({kind: 'package'}) || [] ) [0];
     if (packageInfo && packageInfo.name) {
@@ -415,7 +507,7 @@ exports.publish = function(taffyData, opts, tutorials) {
             });
         });
     }
-    
+
     if (sourceFilePaths.length) {
         sourceFiles = shortenPaths( sourceFiles, path.commonPrefix(sourceFilePaths) );
     }
@@ -433,7 +525,7 @@ exports.publish = function(taffyData, opts, tutorials) {
             }
         }
     });
-    
+
     data().each(function(doclet) {
         var url = helper.longnameToUrl[doclet.longname];
 
@@ -443,14 +535,14 @@ exports.publish = function(taffyData, opts, tutorials) {
         else {
             doclet.id = doclet.name;
         }
-        
+
         if ( needsSignature(doclet) ) {
             addSignatureParams(doclet);
             addSignatureReturns(doclet);
             addAttribs(doclet);
         }
     });
-    
+
     // do this after the urls have all been generated
     data().each(function(doclet) {
         doclet.ancestors = getAncestorLinks(doclet);
@@ -459,16 +551,20 @@ exports.publish = function(taffyData, opts, tutorials) {
             addSignatureTypes(doclet);
             addAttribs(doclet);
         }
-        
+
         if (doclet.kind === 'constant') {
             addSignatureTypes(doclet);
             addAttribs(doclet);
             doclet.kind = 'member';
         }
     });
-    
+
     var members = helper.getMembers(data);
     members.tutorials = tutorials.children;
+
+    // output pretty-printed source files by default
+    var outputSourceFiles = conf['default'] && conf['default'].outputSourceFiles !== false ? true :
+        false;
 
     // add template helpers
     view.find = find;
@@ -476,32 +572,20 @@ exports.publish = function(taffyData, opts, tutorials) {
     view.resolveAuthorLinks = resolveAuthorLinks;
     view.tutoriallink = tutoriallink;
     view.htmlsafe = htmlsafe;
+    view.outputSourceFiles = outputSourceFiles;
 
     // once for all
     view.nav = buildNav(members);
     attachModuleSymbols( find({ kind: ['class', 'function'], longname: {left: 'module:'} }),
         members.modules );
 
-    var generateOpts = {
-        // output pretty-printed source files by default
-        outputSourceFiles: (function(c) {
-            if (!c || c.outputSourceFiles !== false) {
-                return true;
-            }
-
-            return false;
-        })(conf['default'])
-    };
-
-    // generate pretty-printed source files first so other pages can link to them
-    if (generateOpts.outputSourceFiles) {
+    // generate the pretty-printed source files first so other pages can link to them
+    if (outputSourceFiles) {
         generateSourceFiles(sourceFiles, opts.encoding);
     }
 
-    if (members.globals.length) {
-        generate('Global', [{kind: 'globalobj'}], globalUrl, generateOpts);
-    }
-    
+    if (members.globals.length) { generate('Global', [{kind: 'globalobj'}], globalUrl); }
+
     // index page displays information from package.json and lists files
     var files = find({kind: 'file'}),
         packages = find({kind: 'package'});
@@ -510,7 +594,7 @@ exports.publish = function(taffyData, opts, tutorials) {
         packages.concat(
             [{kind: 'mainpage', readme: opts.readme, longname: (opts.mainpagetitle) ? opts.mainpagetitle : 'Main Page'}]
         ).concat(files),
-    indexUrl, generateOpts);
+    indexUrl);
 
     // set up the lists that we'll use to generate pages
     var classes = taffy(members.classes);
@@ -518,36 +602,31 @@ exports.publish = function(taffyData, opts, tutorials) {
     var namespaces = taffy(members.namespaces);
     var mixins = taffy(members.mixins);
     var externals = taffy(members.externals);
-    
+
     Object.keys(helper.longnameToUrl).forEach(function(longname) {
         var myClasses = helper.find(classes, {longname: longname});
         if (myClasses.length) {
-            generate('Class: ' + myClasses[0].name, myClasses, helper.longnameToUrl[longname],
-                generateOpts);
+            generate('Class: ' + myClasses[0].name, myClasses, helper.longnameToUrl[longname]);
         }
-        
+
         var myModules = helper.find(modules, {longname: longname});
         if (myModules.length) {
-            generate('Module: ' + myModules[0].name, myModules, helper.longnameToUrl[longname],
-                generateOpts);
+            generate('Module: ' + myModules[0].name, myModules, helper.longnameToUrl[longname]);
         }
 
         var myNamespaces = helper.find(namespaces, {longname: longname});
         if (myNamespaces.length) {
-            generate('Namespace: ' + myNamespaces[0].name, myNamespaces,
-                helper.longnameToUrl[longname], generateOpts);
+            generate('Namespace: ' + myNamespaces[0].name, myNamespaces, helper.longnameToUrl[longname]);
         }
-        
+
         var myMixins = helper.find(mixins, {longname: longname});
         if (myMixins.length) {
-            generate('Mixin: ' + myMixins[0].name, myMixins, helper.longnameToUrl[longname],
-                generateOpts);
+            generate('Mixin: ' + myMixins[0].name, myMixins, helper.longnameToUrl[longname]);
         }
 
         var myExternals = helper.find(externals, {longname: longname});
         if (myExternals.length) {
-            generate('External: ' + myExternals[0].name, myExternals,
-                helper.longnameToUrl[longname], generateOpts);
+            generate('External: ' + myExternals[0].name, myExternals, helper.longnameToUrl[longname]);
         }
     });
 
@@ -559,16 +638,16 @@ exports.publish = function(taffyData, opts, tutorials) {
             content: tutorial.parse(),
             children: tutorial.children
         };
-        
+
         var tutorialPath = path.join(outdir, filename),
             html = view.render('tutorial.tmpl', tutorialData);
-        
+
         // yes, you can use {@link} in tutorials too!
         html = helper.resolveLinks(html); // turn {@link foo} into <a href="foodoc.html">foo</a>
-        
+
         fs.writeFileSync(tutorialPath, html, 'utf8');
     }
-    
+
     // tutorials can have only one parent so there is no risk for loops
     function saveChildren(node) {
         node.children.forEach(function(child) {

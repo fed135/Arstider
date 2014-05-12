@@ -85,7 +85,7 @@ var htmlsafe = exports.htmlsafe = function(str) {
 var getUniqueFilename = exports.getUniqueFilename = function(str) {
     // allow for namespace prefix
     var basename = cleanseFilename(str);
-    
+
     // if the basename includes characters that we can't use in a filepath, remove everything up to
     // and including the last bad character
     var regexp = /[^$a-z0-9._\-](?=[$a-z0-9._\-]*$)/i;
@@ -286,7 +286,7 @@ var tutorialToUrl = exports.tutorialToUrl = function(tutorial) {
     // no such tutorial
     if (!node) {
         require('jsdoc/util/logger').error( new Error('No such tutorial: ' + tutorial) );
-        return;
+        return null;
     }
 
     var url;
@@ -318,7 +318,7 @@ var tutorialToUrl = exports.tutorialToUrl = function(tutorial) {
 var toTutorial = exports.toTutorial = function(tutorial, content, missingOpts) {
     if (!tutorial) {
         require('jsdoc/util/logger').error( new Error('Missing required parameter: tutorial') );
-        return;
+        return null;
     }
 
     var node = tutorials.getByName(tutorial);
@@ -327,7 +327,7 @@ var toTutorial = exports.toTutorial = function(tutorial, content, missingOpts) {
         missingOpts = missingOpts || {};
         var tag = missingOpts.tag;
         var classname = missingOpts.classname;
-        
+
         var link = tutorial;
         if (missingOpts.prefix) {
             link = missingOpts.prefix + link;
@@ -482,7 +482,7 @@ exports.getMembers = function(data) {
     members.globals = members.globals.filter(function(doclet) {
         return !isModuleFunction(doclet);
     });
- 
+
     return members;
 };
 
@@ -494,29 +494,36 @@ exports.getMembers = function(data) {
  */
 exports.getAttribs = function(d) {
     var attribs = [];
-    
+
     if (d.virtual) {
-        attribs.push('virtual');
+        attribs.push('abstract');
     }
-    
+
     if (d.access && d.access !== 'public') {
         attribs.push(d.access);
     }
-    
+
     if (d.scope && d.scope !== 'instance' && d.scope !== 'global') {
-        if (d.kind == 'function' || d.kind == 'member' || d.kind == 'constant') {
+        if (d.kind === 'function' || d.kind === 'member' || d.kind === 'constant') {
             attribs.push(d.scope);
         }
     }
-    
+
     if (d.readonly === true) {
-        if (d.kind == 'member') {
+        if (d.kind === 'member') {
             attribs.push('readonly');
         }
     }
-    
+
     if (d.kind === 'constant') {
         attribs.push('constant');
+    }
+
+    if (d.nullable === true) {
+        attribs.push('nullable');
+    }
+    else if (d.nullable === false) {
+        attribs.push('non-null');
     }
 
     return attribs;
@@ -531,11 +538,11 @@ exports.getAttribs = function(d) {
  */
 exports.getSignatureTypes = function(d, cssClass) {
     var types = [];
-    
+
     if (d.type && d.type.names) {
         types = d.type.names;
     }
-    
+
     if (types && types.length) {
         types = types.map(function(t) {
             return linkto(t, htmlsafe(t), cssClass);
@@ -583,7 +590,7 @@ exports.getSignatureParams = function(d, optClass) {
  */
 exports.getSignatureReturns = function(d, cssClass) {
     var returnTypes = [];
-    
+
     if (d.returns) {
         d.returns.forEach(function(r) {
             if (r && r.type && r.type.names) {
@@ -593,7 +600,7 @@ exports.getSignatureReturns = function(d, cssClass) {
             }
         });
     }
-    
+
     if (returnTypes && returnTypes.length) {
         returnTypes = returnTypes.map(function(r) {
             return linkto(r, htmlsafe(r), cssClass);
@@ -717,7 +724,7 @@ exports.createLink = function(doclet) {
     var url = '';
     var INSTANCE = exports.scopeToPunc.instance;
     var longname = doclet.longname;
-    
+
     // handle doclets in which doclet.longname implies that the doclet gets its own HTML file, but
     // doclet.kind says otherwise. this happens due to mistagged JSDoc (for example, a module that
     // somehow has doclet.kind set to `member`).
@@ -750,6 +757,6 @@ exports.createLink = function(doclet) {
     }
 
     url = fragment ? (filename + INSTANCE + fragment) : filename;
-    
+
     return url;
 };
