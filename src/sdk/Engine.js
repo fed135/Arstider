@@ -146,7 +146,7 @@
 			});
 			
 			this.context = this.canvas.context;
-			this.canvas = this.canvas.tag;
+			this.canvas = this.canvas.data;
 			
 			this._isSynchronous = synchronous || false;
 			

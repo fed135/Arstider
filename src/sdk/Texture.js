@@ -34,8 +34,9 @@
 		 * @class Texture
 		 * @constructor
 		 * @param {string|Image|HTMLCanvasElement} url The url or asset to use as texture
+                 * @param {function(this:Texture)} callback The method to cal once the texture is ready
 		 */
-		function Texture(url){
+		function Texture(url, callback){
 			/**
 			 * Texture data
 			 * @private
@@ -50,7 +51,7 @@
 			 */
 			this._url = url;
 				
-			this.loadBitmap(url);
+			this.loadBitmap(url, callback);
 		}
 		
 		/**
@@ -58,17 +59,17 @@
 		 * @type {function(this:Texture)}
 		 * @param {string|Image|HTMLCanvasElement} url
 		 */
-		Texture.prototype.loadBitmap = function(url){
+		Texture.prototype.loadBitmap = function(url, callback){
 				
 			if(!(typeof url === 'string') && !(url instanceof String)){
-				thisRef._createPattern(url);
+				thisRef._createPattern(url, callback);
 				return;
 			}
 				
 			var thisRef = this;
 			
 			var req = new Bitmap(url, function(){
-				thisRef._createPattern.apply(thisRef, [this.data]);
+				thisRef._createPattern.apply(thisRef, [this.data, callback]);
 			});
 		};
 		
@@ -78,8 +79,9 @@
 		 * @type {function(this:Texture)}
 		 * @param {Image|HTMLCanvasElement} data The data to create a texture from
 		 */
-		Texture.prototype._createPattern = function(data){
+		Texture.prototype._createPattern = function(data, callback){
 			this._pattern = cnv.context.createPattern(data, 'repeat');
+                        if(callback) callback.apply(this);
 		};
 		
 		/**

@@ -183,10 +183,10 @@
 				else{
 					//instanceof is pretty fast,  we want to leverage data offset rather than having an extra buffer for sprites.
 					if(curChild instanceof Sprite || curChild.largeData === true){
-						this._context.drawImage((curChild.data instanceof Buffer)?curChild.data.tag:curChild.data, curChild.xOffset, curChild.yOffset, curChild.dataWidth, curChild.dataHeight, Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
+						this._context.drawImage((curChild.data instanceof Buffer)?curChild.data.data:curChild.data, curChild.xOffset, curChild.yOffset, curChild.dataWidth, curChild.dataHeight, Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
 					}
 					else{
-						this._context.drawImage((curChild.data instanceof Buffer)?curChild.data.tag:curChild.data, Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
+						this._context.drawImage((curChild.data instanceof Buffer)?curChild.data.data:curChild.data, Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
 					}
 				}
 			}

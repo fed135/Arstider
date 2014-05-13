@@ -18,7 +18,7 @@
 	/**
 	 * Defines the Gradient module
 	 */	
-	define( "Arstider/Gradient", ["Arstider/Buffer", ], /** @lends Gradient */ function (Buffer) {
+	define( "Arstider/Gradient", ["Arstider/Buffer", "Arstider/Browser"], /** @lends Gradient */ function (Buffer, Browser) {
 		
 		/**
 		 * If the gradient buffer wasn't initialized, do it here
@@ -41,16 +41,24 @@
 		 * @param {number} y1 The y value of the first gradient line point (0 to 100)
 		 * @param {number} x2 The x value of the second gradient line point (0 to 100)
 		 * @param {number} y2 The y value of the second gradient line point (0 to 100)
+                 * @param {number} r1 The radius value of the first gradient point
+		 * @param {number} r2 The radius value of the second gradient point
 		 */
-		function Gradient(type, x1, y1, x2, y2){	
-			y2 = (GameContainer.browserInfo.browserName === "Firefox") ? -y2 : y2;
+		function Gradient(type, x1, y1, x2, y2, r1, r2){	
+			y2 = (Browser.name === "firefox") ? -y2 : y2;
 
 			/**
 			 * Gradient data
 			 * @private
-			 * @type {nsIDOMCanvasGradient}
+			 * @type {nsIDOMCanvasGradient|null}
 			 */
-			this._pattern = grad.context.createLinearGradient(x1,y1,x2,y2);
+			this._pattern = null;
+                        
+                        if(type == "linear") grad.context.createLinearGradient(x1,y1,x2,y2);
+                        else if(type == "radial") grad.context.createRadialGradient(x1,y1,r1,x2,y2,r2);
+                        else{
+                            if(Arstider.verbose > 0) console.warn("Arstider.Gradient: gradient must be of type \"linear\" or \"radial\" ");
+                        }
 		}
 		
 		/**

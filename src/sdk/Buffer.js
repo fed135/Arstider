@@ -29,14 +29,14 @@
 		 * @param {Object} props The proprieties of the Buffer
 		 */
 		function Buffer(props){
-			this.tag = document.createElement("canvas");
-			this.context = this.tag.getContext("2d");
+			this.data = document.createElement("canvas");
+			this.context = this.data.getContext("2d");
 			
 			this.name = props.name || ("buffer"+(anonymousBuffers++));
-			this.tag.id = props.id || this.name;
+			this.data.id = props.id || this.name;
 			this.renderStyle = Arstider.checkIn(props.renderStyle, Arstider.defaultRenderStyle); 
-			this.width = this.tag.width = Arstider.checkIn(props.width, 1);
-			this.height = this.tag.height = Arstider.checkIn(props.height, 1);
+			this.width = this.data.width = Arstider.checkIn(props.width, 1);
+			this.height = this.data.height = Arstider.checkIn(props.height, 1);
 			
 			this._updateRenderStyle();
 			
@@ -56,7 +56,7 @@
 			delete Arstider.bufferPool[this.name];
 			this.width = 0;
 			this.height = 0;
-			this.tag = null;
+			this.data = null;
 		};
 		
 		/**
@@ -75,8 +75,8 @@
 		 * @param {number} height The desired height to apply
 		 */
 		Buffer.prototype.setSize = function(width, height){
-			this.width = this.tag.width = width;
-			this.height = this.tag.height = height;
+			this.width = this.data.width = width;
+			this.height = this.data.height = height;
 			
 			this._updateRenderStyle();
 		};
@@ -91,7 +91,7 @@
 			if(style) this.renderStyle = style;
 			
 			Arstider.setImageSmoothing(this.context, this.renderStyle == "auto");
-			Arstider.setRenderStyle(this.tag, this.renderStyle);
+			Arstider.setRenderStyle(this.data, this.renderStyle);
 		};
 		
 		/**
@@ -101,7 +101,7 @@
 		 * @return {string} The blobUrl
 		 */
 		Buffer.prototype.getURL = function(type){
-			return this.tag.toDataURL(type || "image/png");
+			return this.data.toDataURL(type || "image/png");
 		};
 		
 		/**
@@ -123,7 +123,7 @@
 			b = pix[2]; // blue
 			a = pix[3]; // alpha
 			
-			return new Pixel(x, y, this.tag, r, g, b, a);
+			return new Pixel(x, y, this.data, r, g, b, a);
 		};
 		
 		/**

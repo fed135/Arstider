@@ -663,14 +663,14 @@ require(["Arstider/Buffer", "Arstider/Browser"], function(Buffer, Browser){
 		
 		for(i; i<quality; i++){
 			if(i === 0){
-				copy.context.drawImage(buffer.tag, Arstider.checkIn(x, 0), Arstider.checkIn(y, 0), copy.width, copy.height);
-				ret.context.drawImage(copy.tag, 0, 0, ret.width, ret.height);
+				copy.context.drawImage(buffer.data, Arstider.checkIn(x, 0), Arstider.checkIn(y, 0), copy.width, copy.height);
+				ret.context.drawImage(copy.data, 0, 0, ret.width, ret.height);
 			}
 			else{
 				copy.context.clearRect(0,0,copy.width, copy.height);
-				copy.context.drawImage(ret.tag, 0, 0, copy.width, copy.height);
+				copy.context.drawImage(ret.data, 0, 0, copy.width, copy.height);
 				ret.context.clearRect(0,0,ret.width, ret.height);
-				ret.context.drawImage(copy.tag, 0, 0, ret.width, ret.height);
+				ret.context.drawImage(copy.data, 0, 0, ret.width, ret.height);
 			}
 		}
 			
