@@ -262,14 +262,27 @@
 			
 			require([name], function(_menu){
 				
-				
-				singleton.currentScreen = new Screen(_menu, singleton);
-				
-				singleton.currentScreen.stage = singleton;
-				singleton.currentScreen.name = name;
-				setTimeout(function(){
-					Preloader.progress("__screen__", 100);
-				},100);
+				if(Viewport.unsupportedOrientation){
+                                    Events.bind("Viewport.rotate", function finishLoadScreen(){
+                                        Events.unbind("Viewport.rotate", finishLoadScreen);
+                                        singleton.currentScreen = new Screen(_menu, singleton);
+
+                                        singleton.currentScreen.stage = singleton;
+                                        singleton.currentScreen.name = name;
+                                        setTimeout(function(){
+                                                Preloader.progress("__screen__", 100);
+                                        },100);
+                                    });
+                                }
+                                else{
+                                    singleton.currentScreen = new Screen(_menu, singleton);
+
+                                    singleton.currentScreen.stage = singleton;
+                                    singleton.currentScreen.name = name;
+                                    setTimeout(function(){
+                                            Preloader.progress("__screen__", 100);
+                                    },100);
+                               }
 			});
 		};
 			
