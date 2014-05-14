@@ -23,7 +23,8 @@ Javascript Libraries included:
 	JSDoc3 <http://usejsdoc.org>, 
 	
 Non-included Javascript Libraries:
-	RequireJS <http://requirejs.org> (Required for loading modules)
+	RequireJS <http://requirejs.org>,
+        HowlerJS <https://github.com/goldfire/howler.js>
 
 /*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***/
 
@@ -41,7 +42,8 @@ Non-included Javascript Libraries:
 
 	- Sync the repository in a safe location
         - Create a global Environment variable named BUILD_DEST pointing to the folder where the sdk will be compiled to
-
+        - Make sure you have downloaded and required the latest versions of the Howler and RequireJS libraries 
+        
 ## Building
 
 	- build.all task outputs the un-minified Arstider.js, the minified version and the turbo (ADVANCED_OPTIMIZATIONS) version
