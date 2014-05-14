@@ -19,7 +19,7 @@
 	 /**
 	 * Defines performance module
 	 */	
-	define( "Arstider/core/Renderer", ["Arstider/Sprite", "Arstider/DisplayObject", "Arstider/TextField", "Arstider/core/Performance", "Arstider/Buffer"], /** @lends core/Renderer */ function (Sprite, DisplayObject, TextField, Performance, Buffer){
+	define( "Arstider/core/Renderer", ["Arstider/Sprite", "Arstider/DisplayObject", "Arstider/TextField", "Arstider/core/Performance", "Arstider/Buffer", "Arstider/Shape"], /** @lends core/Renderer */ function (Sprite, DisplayObject, TextField, Performance, Buffer, Shape){
 		
 		if(singleton != null) return singleton;
 			
@@ -174,10 +174,14 @@
 			//Render
 			if(curChild.data){
 				Performance.draws++;
-				if(curChild.data._pattern){
+				if(curChild.data._pattern || curChild instanceof Shape){
 					prevFill = this._context.fillStyle;
-					this._context.fillStyle = curChild.data.pattern;
-					this._context.fillRect(Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
+					this._context.fillStyle = curChild.data._pattern;
+                                        if(curChild instanceof Shape){
+                                            curChild.render();
+                                            this._context.fill();
+                                        }
+					else this._context.fillRect(Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
 					this._context.fillStyle = prevFill;
 				}
 				else{

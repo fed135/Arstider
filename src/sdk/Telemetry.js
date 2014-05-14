@@ -80,9 +80,12 @@
 		};
 		
 		Telemetry.prototype.sendTo = function(req, category){
-			this._targetURLs[Arstider.checkIn(category, "*")] = req;
+                    category = category || ["*"];
+                    for(var i = 0; i<category.length; i++){
+                        this._targetURLs[category[i]] = req;
+                    }
 			
-			this._send();
+                    this._send();
 		};
 		
 		Telemetry.prototype._send = function(){

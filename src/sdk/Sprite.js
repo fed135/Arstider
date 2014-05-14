@@ -152,11 +152,22 @@
 		 * @type {function(this:Sprite)}
 		 * @return {Sprite} Returns self reference for chaining
 		 */
-		Sprite.prototype.stop = function(){
+		Sprite.prototype.stop = Sprite.prototype.pause = function(){
 			if(this._stepTimer != null) clearTimeout(this._stepTimer);
 			this._stepTimer = null;
 			return this;
 		};
+                
+                /**
+		 * Resumes the playing of the current Animation sheet
+		 * @type {function(this:Sprite)}
+		 * @return {Sprite} Returns self reference for chaining
+		 */
+                Sprite.prototype.resume = function(){
+                    this.step(this);
+			
+                    return this;
+                };
 		
 		/**
 		 * Rewinds the current Animation sheet
@@ -166,7 +177,7 @@
 		Sprite.prototype.rewind = function(){
 			this.stop();
 			this.currentFrame = -1;
-			this.step(this);
+			this.resume();
 			
 			return this;
 		};

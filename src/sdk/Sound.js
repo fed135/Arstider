@@ -246,7 +246,7 @@
 		 */
 		Sound.prototype.fade = function(id, from, to, duration, callback){
 			if(id in singleton.tracks){
-				if(singleton.tracks[id]._handle) singleton.tracks[id]._handle.fade(from, to, duration, callback || Arstider.emptyFunction);
+				if(singleton.tracks[id]._handle) singleton.tracks[id]._handle.fade(singleton.tracks[id]._handle._volume, to, duration, callback || Arstider.emptyFunction);
 				return;
 			}
 			
@@ -255,7 +255,7 @@
 				return;
 			}
 			
-			singleton.sounds._handle.fade(from, to, duration, callback || Arstider.emptyFunction, id);
+			singleton.sounds._handle.fade(singleton.sounds._handle._volume, to, duration, callback || Arstider.emptyFunction, id);
 		};
 		
 		/**

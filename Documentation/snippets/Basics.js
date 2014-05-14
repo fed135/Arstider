@@ -571,12 +571,12 @@ tools/closureCompiler.py absolute/path/to/file.js absolute/destination/file.js [
 /**
  * Important UPCOMMING Changes: 
  * 
- * Arstider/Shape (vector draw) //8h
- * Entity boxCollision .collides    //1h
- * Font and Text can be set at instantiation of textfield (Fonts.get also performed in TextField)   //3h
- * Sprite pause, resume //2h
- * Sound fade detects the from volume   //1h
- * Telemetry category should be array   //1h
+ * Arstider/Shape (vector draw) //8h - need testing
+ * Entity boxCollision .collides    //1h - need testing
+ * Font and Text can be set at instantiation of textfield (Fonts.get also performed in TextField)   //3h -need testing
+ * Sprite pause, resume //2h -need testing
+ * Sound fade detects the from volume   //1h - need testing
+ * Telemetry category should be array   //1h - need testing
  * 
  * TOTAL: 16h
  */

@@ -213,6 +213,9 @@
 			this._custom = {};
 			
 			Arstider.Super(this, Entity, props);
+                        
+                        if(props.font != undefined) this.setFont(props.font);
+                        if(props.text != undefined) this.setText(props.text);
 		};
 		
 		Arstider.Inherit(TextField, Entity);
@@ -255,7 +258,7 @@
 		 */
 		TextField.prototype.setFont = function(font, specials){
 			this._custom = specials || {};
-			this._font = font;
+			this._font = Fonts.get(font);
 			
 			if(this._autogrow === true){
 				this.height = 0;
