@@ -347,6 +347,48 @@ if(titleTrack != null) Sound.pause(titleTrack);
  * 12- GridMaps, CollisionMaps and box collision
  */
 
+//Using the map editor, you can build maps for an array of side view, top view and even isometric view games
+//To create a screen from a json map file, just do as follow
+
+define("screens/gameplay", ["Arstider/GridMap", "Arstider/Request"], function(GridMap, Request){
+    return{
+        level:null,
+        init:function(){
+            var req = new Request({
+                url:"media/maps/map01.json",
+                caller:this,
+                track:true,
+                type:"json",
+                callback:function(file){
+                    this.level = new GridMap(file);
+                    this.addChild(this.level);
+                }
+            });            
+        }
+    };
+});
+
+//The internal structure:
+//To access a tile
+
+var tile = this.level.getTile("layerName", x, y);
+
+//Full path
+var tile = this.level.layers["layerName"].tiles[x][y];
+//tile = DisplayObject-type {..., spawns:[]}
+
+//If you simply need to place a collision mask, There is a class to do it quickly
+//A black and white image (black returns a hit) 
+var mask = new CollisionMap({
+    mask:"collMask.png"
+});
+screen.addChild(mask);
+
+if(mask.collisionAt(x, y)) //Collision detected!
+
+//If you want simple box collision, entities have a collides method
+if(myDO.collides(x, y, w, h)) //Global position is used, returns true if a collision occured 
+
 
 /**
  * 13- Tags
@@ -366,7 +408,14 @@ if(titleTrack != null) Sound.pause(titleTrack);
  * Visual Profiler
  */
 
-
+/**
+ * 16- Build aids
+ * audioSpriter.py (in progress)
+ * imageOptimizer.py
+ * minify_json.py
+ * ping.py
+ * closureMinifier.py / compiler.jar
+ */
 
 /**
  * Important UPCOMMING Changes: 

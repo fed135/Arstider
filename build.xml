@@ -91,7 +91,7 @@
 		</copy>
 		
 		<echo> - running jsdoc...</echo>
-		<exec executable="${jsdoc.home}/jsdoc.cmd">
+		<exec executable="${jsdoc.home}/jsdoc">
 			<arg line="--destination ${dest}/Arstider-Documentation" />
 			<arg line="--recurse" />
 			<arg line="--verbose" />

@@ -20,7 +20,7 @@ define( "Arstider/GridMap", ["Arstider/GridLayer", "Arstider/DisplayObject", "Ar
 	function GridMap(map) {
 		Arstider.Super(this, DisplayObject);
 		
-		this.layers = [];
+		this.layers = {};
 		
 		this.mapWidth = parseInt(map.width);
 		this.mapHeight = parseInt(map.height);
