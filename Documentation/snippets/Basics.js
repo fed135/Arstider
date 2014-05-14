@@ -371,7 +371,7 @@ define("screens/gameplay", ["Arstider/GridMap", "Arstider/Request"], function(Gr
                     this.level = new GridMap(file);
                     this.addChild(this.level);
                 }
-            });            
+            }).send();            
         }
     };
 });
@@ -435,6 +435,86 @@ myTag.style("border"); //"1px solid red"
  */
 
 //You can create network requests very easily
+ var req = new Request({
+                url:"server1.com/rest/users/007",
+                caller:this, //for callback scoping
+                track:true, //progress tracked in the preloader
+                user:"myUsername",
+                password:"myPassword",
+                cache:true,
+                headers:{
+                    "someAPIKey":"APIKeyString"
+                },
+                type:"json",
+                callback:function(response){
+                    console.log(response); //A json-parsed object fetched from the server
+                }
+            }).send();    
+
+//Supports diffrent methods
+var req = new Request({
+                url:"server1.com/rest/users",
+                caller:this, //for callback scoping
+                track:true, //progress tracked in the preloader
+                user:"myUsername",
+                password:"myPassword",
+                headers:{
+                    "someAPIKey":"APIKeyString"
+                },
+                type:"json",
+                method:"POST",
+                postData:{
+                    "id":0,
+                    "name":"james bond"
+                },
+                callback:function(response){
+                    console.log(response); //A json-parsed object response from the server
+                }
+            }).send(); 
+
+//You can integrate social network integration (namely Facebook canvas app) very fast
+
+Social.login("facebook", {
+    cookies:true,
+    appId:"xxxxx",
+    permissions:["user_email", "user_likes"]
+}, function(){
+   console.log("Logged in!");
+   console.log("You are ", Social.user);
+   console.log("And your friends are ", Social.friends);
+},
+function(e){
+    console.error("could not login to facebook because ", e);
+});
+//This will look at the login status and attempt to connect with the provided permissions
+
+//and collect info like so
+Social.getInfo("05623956", ["first_name", "last_name", "location"], function(user){
+    console.log(user); //returns the user in the list with the freshly queried information
+});
+
+//to specifically get an avatar for a user
+Social.getPictureUrl("05623956", 110, 110, function(url){
+   //url is the url of the user's avatar, forced to a size of 110x110 
+});
+
+//The engine also supports telemetry events storing and sending
+Telemetry.sendTo({
+	url:"https://server1.com/temp/test/telemetry/[category]/[name]",
+	track:false,
+	cache:false,
+	method:"POST",
+	type:"json",
+	caller:this,
+	callback:function(){
+		console.log("Telemetry call completed !");
+	}
+}, "system");
+//This will send system events to server1
+//you could add other rules to send diffrent events to different servers
+
+//The SDK tracks "system" and "error" internally by default
+
 
 /**
  * 15- Debugging
@@ -446,14 +526,47 @@ myTag.style("border"); //"1px solid red"
  * Visual Profiler
  */
 
+//From the browser javascript console, you can query info about the elements on stage
+Arstider.findElement(); //will return an array with all on stage elements
+Arstider.findElement("title"); //will return an array with all elements with name "title"/ or the object directly, if there's only one
+
+//To inspect the image data of an object
+Arstider.debugDraw(Arstider.findElement("title").data);//Will draw the content of the title element datain a seperate window
+
+//To dispatch an event from the console
+Arstider.debugBroadcast("eventName", "extraData"); //Dispatches the "eventName" event with argument "extraData"
+
+//DEBUG OUTLINES
+//You can display the outline around stage elements by holding the d key while in debug mode
+//Items can have the boxes permanently displayed if showOutline is set to true in the entity object
+myDO.showOutline=true;
+
+//The visual profiler shows draw entities, canvas transformation and current fps. it can be expended, collapsed or closed
+//All these features are disbaled in release mode
+
+
 /**
  * 16- Build aids
- * audioSpriter.py (in progress)
  * imageOptimizer.py
  * minify_json.py
  * ping.py
  * closureMinifier.py / compiler.jar
  */
+
+//You can run an image optimization task on a given folder with this python script
+tools/imageOptimizer.py absolute/path/to/top-folder
+//Be careful as this clobbers the existing files
+
+//You can strip dev comments and remove whitespace from json files with this other script
+tools/minify_json.py absolute/path/to/file.json absolute/destination/file.json
+
+//Ping the internet, usefull if you want to create a local compile task versus using the online one, like in the engine build
+//See SDK's build task for reference
+
+//closure compiler python file will use the online google closure api, while the jar can be used to compile localy
+tools/closureCompiler.py absolute/path/to/file.js absolute/destination/file.js [COMPILE_LEVEL]
+//We recommend SIMPLE_OPTIMIZATIONS for compile level
+
 
 /**
  * Important UPCOMMING Changes: 
@@ -463,6 +576,7 @@ myTag.style("border"); //"1px solid red"
  * Font and Text can be set at instantiation of textfield (Fonts.get also performed in TextField)
  * Sprite pause, resume
  * Sound fade detects the from volume
+ * Telemetry category should be array
  */
 
 
