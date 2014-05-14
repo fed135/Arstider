@@ -31,8 +31,9 @@
 		"Arstider/Mouse",
 		"Arstider/Viewport",
 		"Arstider/core/Renderer",
-		"Arstider/Telemetry"
-	], /** @lends Engine */ function (Browser, Screen, Buffer, Events, Background, Preloader, GlobalTimers, Performance, Debugger, Mouse, Viewport, Renderer, Telemetry){
+		"Arstider/Telemetry",
+                "Arstider/Sound"
+	], /** @lends Engine */ function (Browser, Screen, Buffer, Events, Background, Preloader, GlobalTimers, Performance, Debugger, Mouse, Viewport, Renderer, Telemetry, Sound){
 		
 		if(singleton != null) return singleton;
 			
@@ -231,11 +232,12 @@
 			if(singleton.currentScreen){
 				if(singleton.currentScreen.onload && singleton.currentScreen.__loaded === false){
 					singleton.currentScreen.__loaded = true;
+                                        Sound.play("empty");
 					singleton.currentScreen.onload();
 				}
 				singleton.canvas.focus();
 				singleton.isPreloading = false;
-				singleton.play();
+				if(!Viewport.unsupportedOrientation) singleton.play();
 				Telemetry.log("system", "screenstart", {screen:singleton.currentScreen.name});
 			}
 			else{

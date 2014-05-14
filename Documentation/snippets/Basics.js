@@ -243,7 +243,7 @@ var xTilt = Viewport.getDeviceTilt().x - defXOffset;
 
 
 /**
- * 8- Tweens, Easings, Timers
+ * 8- Tweens, Easings, Timers, Dock, Fill
  */
 
 //Tween objects are created like so
@@ -271,6 +271,14 @@ GlobalTimers.push(myTimer);
 
 //Real time
 var myTimer = new Timer(callbackFct, 3000, true);
+
+//You can automatically dock an element relative to it's parent
+myDO.dock(0.5, 0.5);
+//This will make sure that the element is always at the center of it's parent
+
+//You can also make sure that an element fills the parent
+myDO.fill(0.5, 1);
+//Item width will always be half of it's parent, while height will completely fill to match the parent's
 
 
 /**
@@ -392,11 +400,41 @@ if(myDO.collides(x, y, w, h)) //Global position is used, returns true if a colli
 
 /**
  * 13- Tags
+ * Arstider/Tag
  */
+    
+//You can place tags over the canvas and control them like entities
+var myTag = new Tag({
+   x:50,
+   y:50,
+   tag:"input",
+   type:"password",
+   value:"put password here"
+});
+
+//You can set attributes and style
+myTag.attr("data-someData", "someValue"); //"someValue"
+myTag.style("border", "1px solid red"); //"1px solid red"
+
+//You can bind events to the field
+myTag.bind("change", function(){
+    //window scoped, event listener added on the tag directly
+    console.log("field was modified!");
+});
+
+//you can also get tag properties 
+myTag.attr("data-someData"); //"someValue"
+myTag.style("border"); //"1px solid red"
+
 
 /**
  * 14- Requests, Social and Telemetry
+ * Arstider/Request
+ * Arstider/Social
+ * Arstider/Telemetry
  */
+
+//You can create network requests very easily
 
 /**
  * 15- Debugging
