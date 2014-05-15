@@ -244,7 +244,7 @@
 		 * @param {number} duration The time to complete the transition
 		 * @param {function|null} callback Optional callback function
 		 */
-		Sound.prototype.fade = function(id, from, to, duration, callback){
+		Sound.prototype.fade = function(id, to, duration, callback){
 			if(id in singleton.tracks){
 				if(singleton.tracks[id]._handle) singleton.tracks[id]._handle.fade(singleton.tracks[id]._handle._volume, to, duration, callback || Arstider.emptyFunction);
 				return;

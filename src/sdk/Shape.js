@@ -58,7 +58,7 @@
                  * @type {function(this:Shape)}
                  * @param {type} ctx The context to draw on
                  */
-		Shape.protoytpe.render = function(ctx){
+		Shape.prototype.render = function(ctx){
                     for(var i = 0; i<this.steps.length; i++){
                         ctx[this.steps[i][0]](this.steps[i].slice(1));
                     }
