@@ -569,16 +569,11 @@ tools/closureCompiler.py absolute/path/to/file.js absolute/destination/file.js [
 
 
 /**
- * Important UPCOMMING Changes: 
+ * UPCOMMING Changes: 
  * 
- * Arstider/Shape (vector draw) //8h - need testing
- * Entity boxCollision .collides    //1h - need testing
- * Font and Text can be set at instantiation of textfield (Fonts.get also performed in TextField)   //3h -need testing
- * Sprite pause, resume //2h -need testing
- * Sound fade detects the from volume   //1h - need testing
- * Telemetry category should be array   //1h - need testing
+ * Support right and center aligned parsed text
+ * Auto add frame timers to global timers
  * 
- * TOTAL: 16h
  */
 
 

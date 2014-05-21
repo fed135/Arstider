@@ -85,8 +85,7 @@
 			;
 				
 			Performance.elements++;
-				
-			if(curChild.draw) curChild.draw();
+			
 				
 			if(curChild.alpha <= 0) return;
 				
@@ -194,6 +193,8 @@
 					}
 				}
 			}
+                        
+                        if(curChild.draw) curChild.draw();
 				
 			if(this._showBoxes || curChild.showOutline === true){
 				shadowSafe = this._context.shadowColor;

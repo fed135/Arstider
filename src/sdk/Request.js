@@ -156,6 +156,11 @@
 			 * @type {boolean}
 			 */
 			this.async = Arstider.checkIn(props.async, true);
+                        /**
+                         * Mime override
+                         * @type {string|null}
+                         */
+                        this.mimeOverride = Arstider.checkIn(props.mimeOverride, null);
 			/**
 			 * Optional server user name
 			 * @type {string}
@@ -264,7 +269,11 @@
 						
 					xhr.open(thisRef.method, thisRef.url, thisRef.async, thisRef.user, thisRef.password); 
 					if((Browser.name == "safari" || Browser.name == "unknown") && thisRef.type == "json") thisRef._parseRequired = true;
-					else xhr.responseType = thisRef.type;
+					else {
+                                            if(thisRef.async) xhr.responseType = thisRef.type;
+                                        }
+                                        
+                                        if(thisRef.mimeOverride != null) xhr.overrideMimeType(thisRef.mimeOverride);
 					
 					for(header in thisRef.headers){
 						if(refusedHeaders.indexOf(header) === -1){

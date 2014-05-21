@@ -60,7 +60,6 @@
 						var div = document.getElementById("Arstider_font_loader_"+this.name);
 						div.value += ".";
 						setTimeout(function(){
-							console.log("div onload son!");
 							thisRef.loaded = true;
 							thisRef._runCallbacks.apply(thisRef);
 							setTimeout(function(){

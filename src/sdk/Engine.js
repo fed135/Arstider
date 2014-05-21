@@ -31,9 +31,10 @@
 		"Arstider/Mouse",
 		"Arstider/Viewport",
 		"Arstider/core/Renderer",
+                "Arstider/core/WEBGLRenderer",
 		"Arstider/Telemetry",
                 "Arstider/Sound"
-	], /** @lends Engine */ function (Browser, Screen, Buffer, Events, Background, Preloader, GlobalTimers, Performance, Debugger, Mouse, Viewport, Renderer, Telemetry, Sound){
+	], /** @lends Engine */ function (Browser, Screen, Buffer, Events, Background, Preloader, GlobalTimers, Performance, Debugger, Mouse, Viewport, Renderer, WEBGLRenderer, Telemetry, Sound){
 		
 		if(singleton != null) return singleton;
 			
@@ -141,13 +142,19 @@
 				Arstider.verbose = 0;
 			}
 				
-			this.canvas = new Buffer({
-				name:"Arstider_main",
-				id:tag+"_canvas"
-			});
-			
+                        WEBGLRenderer.test();
+                        this.canvas = new Buffer({
+                            name:"Arstider_main",
+                            id:tag+"_canvas",
+                            webgl:WEBGLRenderer.enabled
+                        });
+                        
+                        WEBGLRenderer._context = this.canvas.context;
+                        
 			this.context = this.canvas.context;
 			this.canvas = this.canvas.data;
+                        
+                        
 			
 			this._isSynchronous = synchronous || false;
 			
@@ -196,6 +203,21 @@
 			Preloader.setScreen(new Screen(preloaderScreen));
 			Preloader._screen.stage = singleton;
 		};
+                
+                /**
+                 * Quick-access method to change the shaders of the WebGl Renderer
+                 * @type {function(this:Engine)}
+                 * @param {string} vertex The url of the vertex shader
+                 * @param {string} fragment The url of the fragment shader
+                 */
+                Engine.prototype.setShaders = function(vertex, fragment){
+                    if(WEBGLRenderer.enabled){
+                        WEBGLRenderer.setShaders(vertex, fragment);
+                    }
+                    else{
+                        if(Arstider.verbose > 1) console.warn("Arstider.Engine.setShaders: ignored because WebGl is not enabled");
+                    }
+                };
 		
 		/**
 		 * Steps the logic of the game (GlobalTimers)
@@ -435,8 +457,17 @@
 			var 
 				mouseX = Mouse.x(0),
 				mouseY = Mouse.y(0),
-				showFrames = false
+				showFrames = false,
+                                pencil
 			;
+                        
+                        pencil = WEBGLRenderer;
+                        if(!pencil.enabled) pencil = Renderer;
+                        else{
+                            if(pencil.program == null) return;
+                        }
+                        
+                        
 			
 			if(!singleton.debug && Arstider.verbose > 0) Arstider.verbose = 0;
 			
@@ -448,10 +479,11 @@
 			//Check if canvas rendering is on/off
 			if(singleton.handbreak){
 				if(Preloader._queue.length > 0){
-					singleton.context.clearRect(0,0,Viewport.maxWidth,Viewport.maxHeight);
+                                        if(pencil == WEBGLRenderer) singleton.context.clear(singleton.context.COLOR_BUFFER_BIT);
+					else singleton.context.clearRect(0,0,Viewport.maxWidth,Viewport.maxHeight);
 					Preloader._screen.cancelBubble();
 					Preloader._screen._update();
-					Renderer.draw(singleton, Preloader._screen, null, null, false);
+					pencil.draw(singleton, Preloader._screen, null, null, false);
 				}
 				else{
 					console.log("Nope", singleton.pausedByRequest);
@@ -473,7 +505,9 @@
 			Background.render(singleton.context, Viewport.maxWidth, Viewport.maxHeight, Viewport.globalScale);
 			
 			//Run through the elements and draw them at their global x and y with their global width and height
-			Renderer.draw(singleton, singleton.currentScreen, function(e){
+                        
+                        
+			pencil.draw(singleton, singleton.currentScreen, function(e){
 				if(mouseX == -1 && mouseY == -1) return;
 				if(e.isTouched(mouseX, mouseY)){
 					if(!e._hovered) e._onhover();

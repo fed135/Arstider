@@ -29,8 +29,14 @@
 		 * @param {Object} props The proprieties of the Buffer
 		 */
 		function Buffer(props){
+                        props = props || {};
 			this.data = document.createElement("canvas");
-			this.context = this.data.getContext("2d");
+                        if(props.webgl){
+                            this.context = this.data.getContext("webgl") || this.data.getContext("experimental-webgl") || null;
+                        }
+                        else{
+                            this.context = this.data.getContext("2d");
+                        }
 			
 			this.name = props.name || ("buffer"+(anonymousBuffers++));
 			this.data.id = props.id || this.name;

@@ -73,14 +73,22 @@
 		 */
 		Background.prototype.render = function(ctx, w, h,s){
 			s = Arstider.checkIn(s, 1);
-			if(singleton.data == null) ctx.clearRect(0, 0, w, h);
+			if(singleton.data == null){
+                            if(ctx.clearRect) ctx.clearRect(0, 0, w, h);
+                            else ctx.clear(ctx.COLOR_BUFFER_BIT);
+                        }
 			else{
+                            if(ctx.drawImage){
 				if(s != 1){
 					ctx.scale(s, s);
 					ctx.drawImage(singleton.data, 0, 0, w*s, h*s);
 					ctx.scale(1/s, 1/s);
 				} 
 				else ctx.drawImage(singleton.data, 0, 0);
+                            }
+                            else{
+                                
+                            }
 			}
 		};
 		
