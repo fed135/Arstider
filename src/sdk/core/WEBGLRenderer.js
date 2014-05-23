@@ -75,8 +75,9 @@
                 }
                 
                 WEBGLRenderer.prototype.test = function(){
-                    //disable for now 
-                    return false;
+                    
+                    //force 2d switch
+                    if(Arstider.force2d == true) return false;
                     
                     var testCnv = new Buffer({webgl:true});
                     

@@ -331,8 +331,20 @@
 			singleton.visibleWidth = Math.min(singleton.visibleWidth, singleton.maxWidth);
 			singleton.visibleHeight = Math.min(singleton.visibleHeight, singleton.maxHeight);
 			
+                        var tagParentNode = document.getElementById("Arstider_tag_overlay");
+                        if(tagParentNode){
+                            tagParentNode.style.position = "absolute";
+                            tagParentNode.style.display = "block";
+                            tagParentNode.style.zIndex = 9999;
+        
+                            tagParentNode.style.width = singleton.tag.style.width;
+                            tagParentNode.style.height = singleton.tag.style.height;
+                            tagParentNode.style.left = singleton.tag.style.left;
+                            tagParentNode.style.top = singleton.tag.style.top;
+                        }
+                        
 			Events.broadcast("Viewport.resize", singleton);
-			
+                        
 			if(Browser.isMobile) document.body.scrollTop=0;
 		};
 		

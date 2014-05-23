@@ -106,6 +106,13 @@ Arstider.RandomGenerator.prototype.next = function() {
 };
 
 /**
+ * Indicates if the engine should remain with canvas2D context or attempt WebGl rendering
+ * @memberof Arstider
+ * @type {boolean}
+ */
+Arstider.force2d = true;
+
+/**
  * Re-usable empty object
  * @memberof Arstider
  * @const

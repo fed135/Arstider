@@ -27,6 +27,7 @@ define("Arstider/Tag", ["Arstider/Entity", "Arstider/Viewport"], /** @lends Tag 
 			parentNode = document.createElement("div");
 			parentNode.id = "Arstider_tag_overlay";
 			Viewport.tag.parentNode.appendChild(parentNode);
+                        Viewport._resize();
 		}
 		
 		if(props.type) this._tag.type = props.type;
@@ -100,14 +101,32 @@ define("Arstider/Tag", ["Arstider/Entity", "Arstider/Viewport"], /** @lends Tag 
 	 * @type {function(this:Tag)}
 	 */
 	Tag.prototype._update = function(){
-		if(this._tag){
+            
+                /**
+		 * Check for docking options
+		 */
+		if(this.parent != null){
+			if(this._fillX != null){
+				this.width = this.parent.width * this._fillX;
+			}
+			if(this._fillY != null){
+				this.height = this.parent.height * this._fillY;
+			}
+			if(this._dockX != null){
+				this.x = (this.parent.width * this._dockX) - (this.width * this._dockX);
+			}
+			if(this._dockY != null){
+				this.y = (this.parent.height * this._dockY) - (this.height * this._dockY);
+			}
+		}
+            	if(this._tag){
 			this._tag.style.position = "absolute";
 			this._tag.style.zIndex = "999";
 			
 			this._tag.style.left = this.global.x + "px";
 			this._tag.style.top = this.global.y + "px";
-			this._tag.style.width = this.global.width + "px";
-			this._tag.style.height = this.global.height + "px";
+			this._tag.width = this._tag.style.width = this.global.width + "px";
+			this._tag.height = this._tag.style.height = this.global.height + "px";
 			this._tag.style.opacity = this.global.alpha;
 		}
 		else{

@@ -550,6 +550,8 @@
 				
 				thisRef._boundDrag = bound || false;
 			});
+			
+			return this;
 		};
 		
 		/**
@@ -564,6 +566,8 @@
 				thisRef._dragOffsetY = 0;
 				thisRef._boundDrag = false;
 			},0);
+			
+			return this;
 		};
 		
 		/**
@@ -582,6 +586,8 @@
 			else if(y === "center") this._dockY = 0.5;
 			else if(y === "bottom") this._dockY = 1;
 			else this._dockY = y || null;
+			
+			return this;
 		};
 		
 		/**
@@ -598,6 +604,8 @@
 			if(y === "full") this._fillY = 1;
 			else if(y === "half") this._fillY = 0.5;
 			else this._fillY = y || null;
+			
+			return this;
 		};
 		
 		/**
@@ -621,6 +629,8 @@
 			else{
 				if(Arstider.verbose > 0) console.warn("Arstider.Entity.filter: cannot find filter ", filter);
 			}
+			
+			return this;
 		};
 		
 		/**
@@ -701,6 +711,8 @@
 		 */
 		Entity.prototype.cancelBubble = function(){
 			this._skipUpdateBubble = true;
+			
+			return this;
 		};
 		
 		/**
@@ -711,6 +723,8 @@
 			if(this.data && this.data.kill) this.data.kill();
 			
 			this.data = null;
+			
+			return this;
 		};
 			
 		/**

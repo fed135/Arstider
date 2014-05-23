@@ -19,6 +19,7 @@
 	 * Defines Engine module
 	 */
 	define( "Arstider/Engine", [
+                "Arstider/Ad",
 		"Arstider/Browser",
 		"Arstider/Screen",
 		"Arstider/Buffer", 
@@ -34,7 +35,7 @@
                 "Arstider/core/WEBGLRenderer",
 		"Arstider/Telemetry",
                 "Arstider/Sound"
-	], /** @lends Engine */ function (Browser, Screen, Buffer, Events, Background, Preloader, GlobalTimers, Performance, Debugger, Mouse, Viewport, Renderer, WEBGLRenderer, Telemetry, Sound){
+	], /** @lends Engine */ function (Ad, Browser, Screen, Buffer, Events, Background, Preloader, GlobalTimers, Performance, Debugger, Mouse, Viewport, Renderer, WEBGLRenderer, Telemetry, Sound){
 		
 		if(singleton != null) return singleton;
 			
@@ -148,7 +149,7 @@
                             id:tag+"_canvas",
                             webgl:WEBGLRenderer.enabled
                         });
-                        
+                        Arstider.usingWebGl = WEBGLRenderer.enabled;
                         WEBGLRenderer._context = this.canvas.context;
                         
 			this.context = this.canvas.context;
@@ -316,6 +317,7 @@
 			if(singleton.currentScreen != null){
 				Telemetry.log("system", "screenstop", {screen:singleton.currentScreen.name});
 				singleton.currentScreen._unload();
+                                Ad.closeAll();
 				delete singleton.currentScreen;
 				//GlobalTimers.clean();
 			}

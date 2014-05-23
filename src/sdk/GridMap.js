@@ -63,6 +63,28 @@ define( "Arstider/GridMap", ["Arstider/GridLayer", "Arstider/DisplayObject", "Ar
 		this.removeChild(this.layers[name]);
 		delete this.layers[name];
 	};
+        
+        GridMap.prototype.getTilesOf = function(layer, obj){
+            var occupied = [], i=0, u=0;
+            var startTileX = Math.floor(obj.global.x / this.tileSizeX);
+            var startTileY = Math.floor(obj.global.y / this.tileSizeY);
+            var numTilesX = Math.ceil(obj.global.width / this.tileSizeX);
+            var numTilesY = Math.ceil(obj.global.height / this.tileSizeY);
+            
+            while(i<numTilesX){
+                while(u<numTilesY){
+                    if(this.layers[layer][startTileX+i] && this.layers[layer][startTileX+i][startTileY+u]){
+                        occupied.push(this.layers[layer][startTileX+i][startTileY+u]);
+                    }
+                    
+                    u++;
+                }
+                u=0;
+                i++;
+            }
+            
+            return occupied;
+        };
 	
 	/**
 	 * Returns the checked __collidable value of the selected tile
