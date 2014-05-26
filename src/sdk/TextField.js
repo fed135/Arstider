@@ -439,13 +439,13 @@
 			/**
 			 * Cancel operation if not all required fields are filled
 			 */
-			if(this._font === null || this._textValue === null) return;
+			if(this._font === null || this._textValue === null || this._textValue === "") return;
 			if(this._font.loaded === false) return;
 			if(this._font.temp && !Fonts.collection[this._font.name].temp) this.setFont(Fonts.get(this._font.name));
 			if(this._font.lineSpacing === null) this._font.lineSpacing = parseInt(this._font.size.split("px").join(""));
 
 			if(this.width === 0 && this.height === 0 && this._autogrow == null) this._autogrow = true;
-
+			
 			this._makeBuffer();
 
 			var _final = Arstider.mixin(Arstider.clone(this._font), this._custom, true);
