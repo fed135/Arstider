@@ -260,8 +260,8 @@
                             chunk._startTileY = (u*(tilesPerChunkY*this.tileSizeY));
                             chunk._endTileX = chunk._startTileX + tilesPerChunkX;
                             chunk._endTileY = chunk._startTileY + tilesPerChunkY;
-                            this.chunks.push(chunk);
-                            //this.addChild(chunk);
+                            chunk._numTilesX = tilesPerChunkX;
+                            chunk._numTilesY = tilesPerChunkY;
                             
                             if(chunk._endTileX > this.parent.mapWidth){
                             	chunk.width -= (chunk._endTileX - this.parent.mapWidth)*this.tileSizeX;
@@ -271,6 +271,8 @@
                             	chunk.height -= (chunk._endTileY - this.parent.mapHeight)*this.tileSizeY;
                             	chunk._endTileY = this.parent.mapHeight;
                             }
+                            
+                            this.chunks.push(chunk);
                             
                             u++;
                         }
@@ -285,39 +287,44 @@
 		 * @type {function(this:GridLayer)}
 		 */
 		GridLayer.prototype._parseFOV = function(fov){
-			if(this.locked){
-				this.children = this.chunks;
-			}
-			else{
-				this.children = [];
-			}
+			
+			this.children = [];
 			
 			var 
 				rz = fov || this.parent._getRenderZone(),
 				i,
-				u
+				u,
+				spawns = []
 			;
 			
 			for(i = rz[0]; i<rz[1]; i++){
 				if(i>=0 && i<=this.parent.mapWidth){
 					if(this.tiles[i] == undefined) this.tiles[i] = [];
 					
-					for(u = rz[2]; u<rz[3]; u++){
+					for(u = rz[2]; u<rz[3]; +u++){
 						if(u>=0 && u<=this.parent.mapHeight){
+							
+							if(this.tiles[i][u] == undefined) this.tiles[i][u] = this._createTile(i, u);
+							
 							if(!this.locked){
-								if(this.tiles[i][u] == undefined) this.tiles[i][u] = this._createTile(i, u);
-								
-								//place tile in children tile
 								if(this.tiles[i][u].data != null) this.children[this.children.length] = this.tiles[i][u];
 							}
 							
-							if(this.tiles[i][u] != undefined){
-								if(this.tiles[i][u].spawns && this.tiles[i][u].spawns.length != 0) this.children = this.children.concat(this.tiles[i][u].spawns);
-							}
+							if(this.tiles[i][u].spawns && this.tiles[i][u].spawns.length != 0) spawns = spawns.concat(this.tiles[i][u].spawns);
 						}
 					}
 				}
 			}
+			
+			if(this.locked){
+				for(i = 0; i<this.chunks.length; i++){
+					if(this.chunks[i]._startTileX < rz[1] && this.chunks[i]._endTileX > rz[0] && this.chunks[i]._startTileY < rz[3] && this.chunks[i]._endTileY > rz[2]){
+						this.children[this.children.length] = this.chunks[i];
+					}
+				}
+			}
+			
+			this.children = this.children.concat(spawns);
 		};
 			
 		/**
