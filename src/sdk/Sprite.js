@@ -139,6 +139,10 @@
 			if(animSheet.frames && animSheet.frames[frameNum]){
 				this.dataWidth = animSheet.frames[frameNum][2] || animSheet.frameWidth || 0;
 				this.dataHeight = animSheet.frames[frameNum][3] || animSheet.frameHeight || 0;
+
+				this.width = this.dataWidth;
+				this.height = this.dataHeight;
+
 				this.xOffset = animSheet.frames[frameNum][0];
 				this.yOffset = animSheet.frames[frameNum][1];
 				return this;
