@@ -349,28 +349,28 @@
 			 * @private
 			 * @type {string|number|null}
 			 */
-			this._dockX = null;
+			this._dockX = Arstider.checkIn(props.dockX, null);
 			
 			/**
 			 * Defines vertical docking option
 			 * @private
 			 * @type {string|number|null}
 			 */
-			this._dockY = null;
+			this._dockY = Arstider.checkIn(props.dockY, null);
 			
 			/**
 			 * Defines horizontal filling option
 			 * @private
 			 * @type {string|number|null}
 			 */
-			this._fillX = null;
+			this._fillX = Arstider.checkIn(props.fillX, null);
 			
 			/**
 			 * Defines vertical filling option
 			 * @private
 			 * @type {string|number|null}
 			 */
-			this._fillY = null;
+			this._fillY = Arstider.checkIn(props.fillX, null);
 			
 			/**
 			 * Flag to skip update propagation
