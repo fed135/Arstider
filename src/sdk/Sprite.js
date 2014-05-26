@@ -164,7 +164,7 @@
 		 * @return {Sprite} Returns self reference for chaining
 		 */
                 Sprite.prototype.resume = function(){
-                    this.step(this);
+                    this._step(this);
 
                     return this;
                 };
