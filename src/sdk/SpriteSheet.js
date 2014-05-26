@@ -22,6 +22,7 @@ define( "Arstider/SpriteSheet", ["Arstider/Bitmap", "Arstider/Sequence"], /** @l
 		this.data = null;
 		this.width = 0;
 		this.height = 0;
+		this.frames = Arstider.checkIn(props.frames, null);
 			
 		this.frameWidth = Arstider.checkIn(props.width, 0);
 		this.frameHeight = Arstider.checkIn(props.height, 0);
