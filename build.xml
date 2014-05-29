@@ -69,7 +69,7 @@
 	<target name="-build.minify.online">
 		<echo> - running compile request...</echo>
 		<exec executable="python" failonerror="true">
-			<arg line="./tools/closureMinifier.py ${dest}/_temp.parsed.js ${dest}/Arstider.${target}.js ${compiler.level}" />
+			<arg line='./tools/closureMinifier.py "${dest}/_temp.parsed.js" "${dest}/Arstider.${target}.js" ${compiler.level}' />
 		</exec>
 		
 		<delete file="${dest}/_temp.parsed.js" />
