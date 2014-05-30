@@ -70,7 +70,7 @@
 	document.addEventListener("keyup", function(event){
 		var key = keyCodeToCharName(event.keyCode);
 		
-		keyMap[key] = 1;
+		keyMap[key] = 0;
 		
 		runCallbacks(key, "up");
 		
