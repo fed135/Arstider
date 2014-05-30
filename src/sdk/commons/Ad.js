@@ -22,7 +22,7 @@
 	/*
 	 * Defines the Ad module
 	 */
-	define( "Arstider/Ad", ["Arstider/Tag"], /** @lends Ad */ function (Tag) {
+	define( "Arstider/commons/Ad", ["Arstider/Tag"], /** @lends Ad */ function (Tag) {
 			
 		/**
 		 * Ad constructors holder

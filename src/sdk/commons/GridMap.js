@@ -8,7 +8,7 @@
 /**
  * Defines the GridMap module
  */
-define( "Arstider/GridMap", ["Arstider/GridLayer", "Arstider/DisplayObject", "Arstider/Viewport"], /** @lends GridMap */ function (GridLayer, DisplayObject, Viewport) {
+define( "Arstider/commons/GridMap", ["Arstider/commons/GridLayer", "Arstider/DisplayObject", "Arstider/Viewport"], /** @lends GridMap */ function (GridLayer, DisplayObject, Viewport) {
 		
 	/**
 	 * GridMap constructor

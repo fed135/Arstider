@@ -38,7 +38,7 @@
 	/**
 	 * Defines the GridLayer module
 	 */	
-	define( "Arstider/GridLayer", ["Arstider/DisplayObject", "Arstider/Bitmap", "Arstider/Buffer", "Arstider/Preloader"], /** @lends GridLayer */ function (DisplayObject, Bitmap, Buffer, Preloader) {
+	define( "Arstider/commons/GridLayer", ["Arstider/DisplayObject", "Arstider/Bitmap", "Arstider/Buffer", "Arstider/Preloader"], /** @lends GridLayer */ function (DisplayObject, Bitmap, Buffer, Preloader) {
 	
 		/**
 		 * GridLayer constructor
