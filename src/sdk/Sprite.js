@@ -41,6 +41,8 @@
 		 */
 		function Sprite(props) {
 
+			props = props || {};
+
 			Arstider.Super(this, Entity, props);
 
 			var thisRef = this;
