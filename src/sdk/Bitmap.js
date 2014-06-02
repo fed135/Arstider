@@ -10,7 +10,7 @@
  */
 define("Arstider/Bitmap", ["Arstider/Request"], /** @lends Bitmap */ function(Request){
 
-	window.URL = window.URL || window.webkitURL;
+	window.URL = (window.URL != undefined && window.URL.createObjectURL)?window.URL:(window.webkitURL || {});
 
 	/**
 	 * Bitmap constructor
@@ -55,8 +55,18 @@ define("Arstider/Bitmap", ["Arstider/Request"], /** @lends Bitmap */ function(Re
 	 * @param {boolean|null} formatted If the response is already base64
 	 */
 	Bitmap.prototype._parse = function(e, formatted){
+		var thisRef = this;
+
 		if(Arstider.blobCache[this.url] == undefined){
-			if(formatted)Arstider.blobCache[this.url] = {url:e, size:(e.length*8)};
+			if(formatted || !window.URL.createObjectURL){
+				var reader = new window.FileReader();
+				reader.readAsDataURL(e); 
+				reader.onloadend = function(){
+				    Arstider.blobCache[thisRef.url] = {url:reader.result, size:e.size}; 
+				    thisRef._loadUrl.apply(thisRef, [Arstider.blobCache[thisRef.url].url]);          
+				}
+				return;
+			}
 			else Arstider.blobCache[this.url] = {url:window.URL.createObjectURL(e), size:e.size};
 		}
 		
