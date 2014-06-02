@@ -91,6 +91,7 @@ define("Arstider/Screen", [
 		 * Listen for scale change
 		 */
 		Events.bind("Viewport.globalScaleChange", this.updateScale, this);
+		Events.bind("Viewport.resize", this.updateScale, this);
 	};
 
 	/**
@@ -183,6 +184,9 @@ define("Arstider/Screen", [
 		this.width = Viewport.maxWidth;
 		this.height = Viewport.maxHeight;
 		this.scaleX = this.scaleY = Viewport.globalScale;
+		this.global.scaleX = this.global.scaleX = Viewport.globalScale;
+		this.global.width = Viewport.maxWidth;
+		this.global.height = Viewport.maxHeight;
 	};
 	
 	return Screen;
