@@ -8,7 +8,7 @@
 /**
  * Defines the Bitmap module
  */
-define("Arstider/Bitmap", ["Arstider/Request"], /** @lends Bitmap */ function(Request){
+define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser"], /** @lends Bitmap */ function(Request, Browser){
 
 	window.URL = (window.URL != undefined && window.URL.createObjectURL)?window.URL:(window.webkitURL || {});
 
@@ -28,7 +28,7 @@ define("Arstider/Bitmap", ["Arstider/Request"], /** @lends Bitmap */ function(Re
 		this.height = 0;
 			
 		if(Arstider.blobCache[url] != undefined) this._loadUrl(Arstider.blobCache[url].url);
-		else if(url.indexOf("data:image") != -1) this._loadUrl(url);
+		else if(url.indexOf("data:image") != -1 || (Browser.name == "safari" && Browser.version < 7)) this._loadUrl(url);
 		else{
 			this.req = new Request({
 				url:url,
@@ -52,13 +52,20 @@ define("Arstider/Bitmap", ["Arstider/Request"], /** @lends Bitmap */ function(Re
 	 * @private
 	 * @type {function(this:Bitmap)}
 	 * @param {Object} e The response of the xhr request
-	 * @param {boolean|null} formatted If the response is already base64
 	 */
-	Bitmap.prototype._parse = function(e, formatted){
+	Bitmap.prototype._parse = function(e){
 		var thisRef = this;
 
 		if(Arstider.blobCache[this.url] == undefined){
-			if(formatted || !window.URL.createObjectURL){
+			var testURL;
+			try{
+				testURL = window.URL.createObjectURL(e);
+			}
+			catch(e){
+				testURL = null;
+			}
+
+			if(!window.URL.createObjectURL || !testURL){
 				var reader = new window.FileReader();
 				reader.readAsDataURL(e); 
 				reader.onloadend = function(){
@@ -67,7 +74,7 @@ define("Arstider/Bitmap", ["Arstider/Request"], /** @lends Bitmap */ function(Re
 				}
 				return;
 			}
-			else Arstider.blobCache[this.url] = {url:window.URL.createObjectURL(e), size:e.size};
+			else Arstider.blobCache[this.url] = {url:testURL, size:e.size};
 		}
 		
 		//loads the element into bitmap data
@@ -83,6 +90,25 @@ define("Arstider/Bitmap", ["Arstider/Request"], /** @lends Bitmap */ function(Re
 	Bitmap.prototype._loadUrl = function(url){
 		var thisRef = this;
 		
+		if(Browser.name == "safari" && Browser.version < 7){
+			//need to save into a canvas
+			this.data = document.createElement("canvas");
+			var ctx = this.data.getContext("2d");
+			var img = new Image();
+			img.onload = function(){
+				thisRef.data.width = thisRef.width = img.width;
+				thisRef.data.height = thisRef.height = img.height;
+				ctx.drawImage(img, 0,0);
+				img.onload = null;
+				img.src = Arstider.emptyImgSrc;
+				if(thisRef.post) thisRef.post();
+			};
+			img.src = url;
+
+
+			return;
+		}
+
 		this.data.onload = function(){
 			thisRef.data.onload = null;
 			thisRef.width = thisRef.data.width;
