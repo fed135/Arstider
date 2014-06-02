@@ -41,7 +41,7 @@ define("Arstider/Screen", [
 		 */
 		this.stage = stage;
 
-		if(screenObj._screenData)
+		if(screenObj._screenData){
 			var req = new Request({
 				url:screenObj._screenData,
 				track:true,
@@ -105,7 +105,7 @@ define("Arstider/Screen", [
 		this.basePath = data.path;
 
 		//bg
-		if()
+		//if()
 
 		for(var i = 0; i<data.elements.length; i++){
 			this._spawnElement(data.elements[i], function(){

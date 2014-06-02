@@ -19,7 +19,7 @@
 	 * Defines Engine module
 	 */
 	define( "Arstider/Engine", [
-                "Arstider/Ad",
+                "Arstider/commons/Ad",
 		"Arstider/Browser",
 		"Arstider/Screen",
 		"Arstider/Buffer", 
