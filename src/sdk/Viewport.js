@@ -508,6 +508,22 @@
 			
 			Events.broadcast("Viewport.globalScaleChange", num);
 		};
+
+		/**
+		 * Updates the game's viewport size
+		 * @type {function(this:Viewport)}
+		 * @param {number} minWidth The new minimum width
+		 * @param {number} maxWidth The new maximum width
+		 * @param {number} minHeight The new minimum height
+		 * @param {number} maxHeight The new maximum height
+		 */
+		Viewport.prototype.changeResolution = function(minWidth, maxWidth, minHeight, maxHeight){
+			this.maxWidth = maxWidth;
+			this.maxHeight = maxHeight;
+			this.minWidth = minWidth;
+			this.minHeight = minHeight;
+			this._resize();
+		};
 			
 		singleton = new Viewport();
 		return singleton;
