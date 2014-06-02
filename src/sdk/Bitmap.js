@@ -9,7 +9,9 @@
  * Defines the Bitmap module
  */
 define("Arstider/Bitmap", ["Arstider/Request"], /** @lends Bitmap */ function(Request){
-	
+
+	window.URL = window.URL || window.webkitURL;
+
 	/**
 	 * Bitmap constructor
 	 * Image bitmap data object
@@ -50,10 +52,12 @@ define("Arstider/Bitmap", ["Arstider/Request"], /** @lends Bitmap */ function(Re
 	 * @private
 	 * @type {function(this:Bitmap)}
 	 * @param {Object} e The response of the xhr request
+	 * @param {boolean|null} formatted If the response is already base64
 	 */
-	Bitmap.prototype._parse = function(e){
+	Bitmap.prototype._parse = function(e, formatted){
 		if(Arstider.blobCache[this.url] == undefined){
-			Arstider.blobCache[this.url] = {url:window.URL.createObjectURL(e), size:e.size};
+			if(formatted)Arstider.blobCache[this.url] = {url:e, size:(e.length*8)};
+			else Arstider.blobCache[this.url] = {url:window.URL.createObjectURL(e), size:e.size};
 		}
 		
 		//loads the element into bitmap data

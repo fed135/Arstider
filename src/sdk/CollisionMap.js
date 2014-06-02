@@ -20,6 +20,8 @@ define("Arstider/CollisionMap", ["Arstider/Bitmap", "Arstider/Entity"], /** @len
 	function CollisionMap(props){
 		Arstider.Super(this, Entity, props);
 		
+		props = props || {};
+
 		this._collMask = null;
 		this._maskData = null;
 		this._collMaskUrl = Arstider.checkIn(props.mask, null);

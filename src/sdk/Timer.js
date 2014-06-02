@@ -17,7 +17,7 @@ define( "Arstider/Timer", [], /** @lends Timer */ function () {
 	 * @constructor
 	 * @param {function} callback Function to be ran after the delay.
 	 * @param {number} delay Number of millisecond before {callback} is triggered. 
-	 * @param {boolean|null} autoRun whether to start the timer immediately or not. default : true
+	 * @param {boolean|null} clockBased whether to use real time or frames (defaults to frames)
 	 */
 	function Timer(callback, delay, clockBased){
 		/**
