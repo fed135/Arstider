@@ -587,6 +587,7 @@
 			else if(y === "bottom") this._dockY = 1;
 			else this._dockY = y || null;
 			
+			this.cancelBubble()._update();
 			return this;
 		};
 		
@@ -605,6 +606,7 @@
 			else if(y === "half") this._fillY = 0.5;
 			else this._fillY = y || null;
 			
+			this.cancelBubble()._update();
 			return this;
 		};
 		

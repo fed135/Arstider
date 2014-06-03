@@ -76,6 +76,8 @@
 				}
 			}
 			this.children[this.children.length]=clip;
+
+			if(clip.cancelBubble) clip.cancelBubble()._update();
 			return this.children.length-1;
 		};
 		
