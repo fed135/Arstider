@@ -146,7 +146,7 @@
                         WEBGLRenderer.test();
                         this.canvas = new Buffer({
                             name:"Arstider_main",
-                            id:tag+"_canvas",
+                            id:"Arstider_main_canvas",
                             webgl:WEBGLRenderer.enabled
                         });
                         Arstider.usingWebGl = WEBGLRenderer.enabled;

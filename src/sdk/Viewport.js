@@ -283,14 +283,16 @@
 			var ratio = 1;
 			var scaleX, scaleY;
 			var posX, posY;
-			
+			var style = window.getComputedStyle(singleton.container, null);
+
+
 			if(singleton.orientation == LANDSCAPE){
-				windowW = window.innerWidth;
-				windowH = window.innerHeight;
+				windowW = parseInt(style.getPropertyValue("width"));
+				windowH = parseInt(style.getPropertyValue("height"));
 			}
 			else if(singleton.orientation == PORTRAIT){
-				windowW = window.innerHeight;
-				windowH = window.innerWidth;
+				windowW = parseInt(style.getPropertyValue("height"));
+				windowH = parseInt(style.getPropertyValue("width"));
 			}
 			else return;
 			
