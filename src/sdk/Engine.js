@@ -517,6 +517,7 @@
 				}
 				else{
 					if(e._hovered) e._onleave();
+					e._pressed = false;
 				}
 				
 				if(e._dragged){

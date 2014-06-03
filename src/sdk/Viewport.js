@@ -178,7 +178,8 @@
 		Viewport.prototype.init = function(tag, canvas){
 			var thisRef = this;
 			
-			this.container = document.getElementById(tag);
+			if(tag.appendChild) this.container = tag;
+			else this.container = document.getElementById(tag);
 			if(this.container){
 				this.container.appendChild(canvas);
 				this.tag = canvas;
