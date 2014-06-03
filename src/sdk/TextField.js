@@ -487,7 +487,7 @@
 				}
 			}
 
-			this.onchange();
+			this.onchange.apply(this);
 		};
 
 		return TextField;
