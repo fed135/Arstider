@@ -493,16 +493,16 @@
 			 */
 			if(this.parent != null){
 				if(this._fillX != null){
-					this.width = this.parent.width * this._fillX;
+					this.width = this.parent.global.width * this._fillX;
 				}
 				if(this._fillY != null){
-					this.height = this.parent.height * this._fillY;
+					this.height = this.parent.global.height * this._fillY;
 				}
 				if(this._dockX != null){
-					this.x = (this.parent.width * this._dockX) - (this.width * this._dockX);
+					this.x = (this.parent.global.width * this._dockX) - (this.global.width * this._dockX);
 				}
 				if(this._dockY != null){
-					this.y = (this.parent.height * this._dockY) - (this.height * this._dockY);
+					this.y = (this.parent.global.height * this._dockY) - (this.global.height * this._dockY);
 				}
 			}
 			
