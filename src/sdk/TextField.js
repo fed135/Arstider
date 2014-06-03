@@ -212,10 +212,12 @@
 			 */
 			this._custom = {};
 
+			this.onchange = Arstider.emptyFunction;
+
 			Arstider.Super(this, Entity, props);
 
-                        if(props.font != undefined) this.setFont(props.font);
-                        if(props.text != undefined) this.setText(props.text);
+            if(props.font != undefined) this.setFont(props.font);
+            if(props.text != undefined) this.setText(props.text);
 		};
 
 		Arstider.Inherit(TextField, Entity);
@@ -484,6 +486,8 @@
 					}
 				}
 			}
+
+			this.onchange();
 		};
 
 		return TextField;
