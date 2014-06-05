@@ -22,19 +22,11 @@ define("Arstider/Tag", ["Arstider/Entity", "Arstider/Viewport"], /** @lends Tag 
 		
 		this._tag = document.createElement(props.tag || "input");
 		
-		var parentNode = document.getElementById("Arstider_tag_overlay");
-		if(!parentNode){
-			parentNode = document.createElement("div");
-			parentNode.id = "Arstider_tag_overlay";
-			Viewport.tag.parentNode.appendChild(parentNode);
-                        Viewport._resize();
-		}
-		
 		if(props.type) this._tag.type = props.type;
 		if(props.value) this._tag.value = props.value;
 		this._tag.id = props.id || "Arstider_tag_"+this.name;
-		parentNode.appendChild(this._tag);
-		this.parentNode = parentNode;
+		Viewport.tagParentNode.appendChild(this._tag);
+		this.parentNode = Viewport.tagParentNode;
 	}
 	
 	Arstider.Inherit(Tag, Entity);
@@ -101,26 +93,17 @@ define("Arstider/Tag", ["Arstider/Entity", "Arstider/Viewport"], /** @lends Tag 
 	 * @type {function(this:Tag)}
 	 */
 	Tag.prototype._update = function(){
-        Entity.prototype._update.call(this);
+        if(this._tag){
+        	if(this.global.x == null){
+				this._tag.style.display = "none";
+				return;
+			}
+			else{
+				this._tag.style.display = "block";
+			}
 
-         /**
-		 * Check for docking options
-		 */
-		if(this.parent != null){
-			if(this._fillX != null){
-				this.width = this.parent.width * this._fillX;
-			}
-			if(this._fillY != null){
-				this.height = this.parent.height * this._fillY;
-			}
-			if(this._dockX != null){
-				this.x = (this.parent.width * this._dockX) - (this.width * this._dockX);
-			}
-			if(this._dockY != null){
-				this.y = (this.parent.height * this._dockY) - (this.height * this._dockY);
-			}
-		}
-            	if(this._tag){
+			Entity.prototype._update.call(this);
+
 			this._tag.style.position = "absolute";
 			this._tag.style.zIndex = "999";
 			
@@ -129,9 +112,6 @@ define("Arstider/Tag", ["Arstider/Entity", "Arstider/Viewport"], /** @lends Tag 
 			this._tag.width = this._tag.style.width = this.global.width + "px";
 			this._tag.height = this._tag.style.height = this.global.height + "px";
 			this._tag.style.opacity = this.global.alpha;
-		}
-		else{
-			if(Arstider.verbose > 1) console.warn("Arstider.Tag.update: no DOM element");
 		}
 	};
 	

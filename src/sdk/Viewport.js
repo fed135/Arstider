@@ -334,18 +334,21 @@
 			singleton.visibleWidth = Math.min(singleton.visibleWidth, singleton.maxWidth);
 			singleton.visibleHeight = Math.min(singleton.visibleHeight, singleton.maxHeight);
 			
-                        singleton.tagParentNode = document.getElementById("Arstider_tag_overlay");
-                        if(singleton.tagParentNode){
-                            singleton.tagParentNode.style.position = "absolute";
-                            singleton.tagParentNode.style.display = "block";
-                            singleton.tagParentNode.style.zIndex = 9999;
-                            singleton.tagParentNode.style.overflow = "hidden";
+            singleton.tagParentNode = document.getElementById("Arstider_tag_overlay");
+            if(!singleton.tagParentNode){
+            	singleton.tagParentNode = document.createElement("div");
+				singleton.tagParentNode.id = "Arstider_tag_overlay";
+				singleton.tag.parentNode.appendChild(singleton.tagParentNode);
+            	singleton.tagParentNode.style.position = "absolute";
+            	singleton.tagParentNode.style.display = "block";
+            	singleton.tagParentNode.style.zIndex = 9999;
+            	singleton.tagParentNode.style.overflow = "hidden";
+           	}
         
-                            singleton.tagParentNode.style.width = singleton.tag.style.width;
-                            singleton.tagParentNode.style.height = singleton.tag.style.height;
-                            singleton.tagParentNode.style.left = singleton.tag.style.left;
-                            singleton.tagParentNode.style.top = singleton.tag.style.top;
-                        }
+            singleton.tagParentNode.style.width = singleton.tag.style.width;
+            singleton.tagParentNode.style.height = singleton.tag.style.height;
+            singleton.tagParentNode.style.left = singleton.tag.style.left;
+            singleton.tagParentNode.style.top = singleton.tag.style.top;
                         
 			Events.broadcast("Viewport.resize", singleton);
                         
