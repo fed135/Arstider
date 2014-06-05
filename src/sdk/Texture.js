@@ -33,10 +33,12 @@
 		 * Creates a texture data object
 		 * @class Texture
 		 * @constructor
-		 * @param {string|Image|HTMLCanvasElement} url The url or asset to use as texture
-                 * @param {function(this:Texture)} callback The method to cal once the texture is ready
+		 * @param {Object|null} props The proprieties of the Texture (url/data)
 		 */
-		function Texture(url, callback){
+		function Texture(props){
+
+			props = props || {};
+
 			/**
 			 * Texture data
 			 * @private
@@ -45,19 +47,25 @@
 			this._pattern = null;
 			
 			/**
-			 * Safe copy of the url/data, in case we resize the texture and need to re-render
-			 * @private
+			 * Url/data, saved for reference and in case we resize the texture and need to re-render
 			 * @type {string|Image|HTMLCanvasElement}
 			 */
-			this._url = url;
-				
-			this.loadBitmap(url, callback);
+			this.url = Arstider.checkIn(props.data, (props.url || ""));
+
+			/**
+			 * Callback when texture is loaded
+			 * @type {string|Image|HTMLCanvasElement}
+			 */
+			this.callback = props.callback || Arstider.emptyFunction;
+
+			if(this.url != "") this.loadBitmap(this.url);
 		}
 		
 		/**
 		 * Loads the data, then calls to create the pattern
 		 * @type {function(this:Texture)}
-		 * @param {string|Image|HTMLCanvasElement} url
+		 * @param {string|Image|HTMLCanvasElement} url The data to load
+		 * @param {function|null} callback The method to call after the loading of this texture. Will call Texture callback if not specified
 		 */
 		Texture.prototype.loadBitmap = function(url, callback){
 				
@@ -68,8 +76,13 @@
 				
 			var thisRef = this;
 			
-			var req = new Bitmap(url, function(){
-				thisRef._createPattern.apply(thisRef, [this.data, callback]);
+			this.url = url;
+
+			var req = new Bitmap({
+				url:url, 
+				callback:function(img){
+					thisRef._createPattern.apply(thisRef, [img.data, callback]);
+				}
 			});
 		};
 		
@@ -81,7 +94,8 @@
 		 */
 		Texture.prototype._createPattern = function(data, callback){
 			this._pattern = cnv.context.createPattern(data, 'repeat');
-                        if(callback) callback.apply(this);
+            if(callback) callback.apply(this);
+            else this.callback(this);
 		};
 		
 		/**
@@ -93,7 +107,7 @@
 		Texture.prototype.setSize = function(width, height){
 			cnv.setSize(width, height);
 			
-			this.loadBitmap(this._url);
+			this.loadBitmap(this.url);
 		};
 			
 		return Texture;

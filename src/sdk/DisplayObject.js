@@ -201,17 +201,20 @@
 				return;
 			}
 			
-			var req = new Bitmap(url, function(e){
-				thisRef.data = this.data;
+			var req = new Bitmap({
+				url:url, 
+				callback:function(img){
+					thisRef.data = img.data;
+					
+					if(thisRef.dataWidth == 0) thisRef.dataWidth = img.width;
+					if(thisRef.dataHeight == 0) thisRef.dataHeight = img.height;
 				
-				if(thisRef.dataWidth == 0) thisRef.dataWidth = this.width;
-				if(thisRef.dataHeight == 0) thisRef.dataHeight = this.height;
-			
-				if(thisRef.width == 0) thisRef.width = this.width;
-				if(thisRef.height == 0) thisRef.height = this.height;
-				
-				if(success) success(this);
-				else thisRef.onload();
+					if(thisRef.width == 0) thisRef.width = img.width;
+					if(thisRef.height == 0) thisRef.height = img.height;
+					
+					if(success) success(img);
+					else thisRef.onload();
+				}
 			});
 		};
 		

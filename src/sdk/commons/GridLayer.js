@@ -73,12 +73,15 @@
 			var thisRef = this;
 			this._data = null;
 			Preloader.progress("_mapLayer"+this.name+"Setup", 0);
-			var req = new Bitmap(data.asset || Arstider.emptyImgSrc, function(bitmap){
-				thisRef._data = this.data;
-				thisRef._parseRequested = true;
-				thisRef._parseFOV.apply(thisRef, [[0,mapWidth,0, mapHeight]]);
-                thisRef._prepareChunks.apply(thisRef);
-                Preloader.progress("_mapLayer"+thisRef.name+"Setup", 100);
+			var req = new Bitmap({
+				url:data.asset || Arstider.emptyImgSrc, 
+				callback:function(img){
+					thisRef._data = img.data;
+					thisRef._parseRequested = true;
+					thisRef._parseFOV.apply(thisRef, [[0,mapWidth,0, mapHeight]]);
+	                thisRef._prepareChunks.apply(thisRef);
+	                Preloader.progress("_mapLayer"+thisRef.name+"Setup", 100);
+	            }
 			});
 		};
 		

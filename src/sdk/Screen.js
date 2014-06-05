@@ -12,9 +12,8 @@ define("Arstider/Screen", [
 	"Arstider/DisplayObject", 
 	"Arstider/Viewport", 
 	"Arstider/Events", 
-	"Arstider/Bitmap", 
 	"Arstider/Request"
-	], /** @lends Screen */ function(DisplayObject, Viewport, Events, Bitmap, Request){
+	], /** @lends Screen */ function(DisplayObject, Viewport, Events, Request){
 	
 	/**
 	 * Screen constructor

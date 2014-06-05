@@ -8,11 +8,11 @@
 
 	var 
 		/**
-		 * Gradient buffer reference
+		 * Anonymous Gradient buffer reference
 		 * @private
 		 * @type {Object|null}
 		 */
-		grad = null
+		gradNum = 0
 	;
 
 	/**
@@ -21,45 +21,79 @@
 	define( "Arstider/Gradient", ["Arstider/Buffer", "Arstider/Browser"], /** @lends Gradient */ function (Buffer, Browser) {
 		
 		/**
-		 * If the gradient buffer wasn't initialized, do it here
-		 */
-		if(grad == null){
-			grad = new Buffer({
-				name:'Arstider_gradient',
-				width:100,
-				height:100
-			});
-		}
-		
-		/**
 		 * Gradient constructor
 		 * Creates a linear gradient data object
 		 * @class Gradient
 		 * @constructor
 		 * @param {string} The gradient type (linear or radial)
-		 * @param {number} x1 The x value of the first gradient line point (0 to 100)
-		 * @param {number} y1 The y value of the first gradient line point (0 to 100)
-		 * @param {number} x2 The x value of the second gradient line point (0 to 100)
-		 * @param {number} y2 The y value of the second gradient line point (0 to 100)
+		 * @param {number} x1 The x value of the first gradient line point (0 to 1)
+		 * @param {number} y1 The y value of the first gradient line point (0 to 1)
+		 * @param {number} x2 The x value of the second gradient line point (0 to 1)
+		 * @param {number} y2 The y value of the second gradient line point (0 to 1)
                  * @param {number} r1 The radius value of the first gradient point
 		 * @param {number} r2 The radius value of the second gradient point
 		 */
-		function Gradient(type, x1, y1, x2, y2, r1, r2){	
-			y2 = (Browser.name === "firefox") ? -y2 : y2;
+		function Gradient(props){
+
+			props = props || {};
+
+			this.name = props.name || ("Gradient" + (gradNum++));
+			this.type = props.type || "linear";
+			this.x1 = Arstider.checkIn(props.x1, 0);
+			this.y1 = Arstider.checkIn(props.y1, 0);
+			this.x2 = Arstider.checkIn(props.x2, 1);
+			this.y2 = Arstider.checkIn(props.y2, 1);
+			this.r1 = Arstider.checkIn(props.r1, 1);
+			this.r2 = Arstider.checkIn(props.r2, 50);
+
+			this.width = props.width || 100;
+			this.height = props.height || 100;
+
+			this.colors = props.colors || [];
 
 			/**
 			 * Gradient data
 			 * @private
 			 * @type {nsIDOMCanvasGradient|null}
 			 */
-			this._pattern = null;
-                        
-                        if(type == "linear") grad.context.createLinearGradient(x1,y1,x2,y2);
-                        else if(type == "radial") grad.context.createRadialGradient(x1,y1,r1,x2,y2,r2);
-                        else{
-                            if(Arstider.verbose > 0) console.warn("Arstider.Gradient: gradient must be of type \"linear\" or \"radial\" ");
-                        }
+			this.pattern = null;
+
+			/**
+			 * If the gradient buffer wasn't initialized, do it here
+			 */
+			this.grad = new Buffer({
+				name:'Arstider_gradient_'+this.name,
+				width:this.width,
+				height:this.height
+			});
+
+			this.render();    
 		}
+
+		Gradient.prototype.render = function(){
+
+			var 
+				i = 0,
+				x1 = this.x1*this.width,
+				x2 = this.x2*this.width,
+				y1 = this.y1*this.height,
+				y2 = this.y2*this.height
+			;
+
+			y2 = (Browser.name === "firefox") ? -y2 : y2;
+
+			if(this.type == "linear") this.pattern = this.grad.context.createLinearGradient(x1,y1,x2,y2);
+            else if(this.type == "radial") this.pattern = this.grad.context.createRadialGradient(x1,y1,this.r1,x2,y2,this.r2);
+            else{
+                if(Arstider.verbose > 0) console.warn("Arstider.Gradient: gradient must be of type \"linear\" or \"radial\" ");
+            }
+
+            for(i; i<this.colors.length; i++){
+				this.pattern.addColorStop(this.colors[i].pos, this.colors[i].color);
+			}
+
+			return this;
+		};
 		
 		/**
 		 * Add a color point to the gradient
@@ -68,8 +102,15 @@
 		 * @param {string} color The color to apply at that point
 		 * @return {Object} Returns the Gradient object for easy chaining
 		 */
-		Gradient.prototype.addColorStop = function(position, color){
-			this._grad.addColorStop(position, color);
+		Gradient.prototype.addColor = function(position, color){
+			this.colors.push({pos:position, color:color});
+			this.render();
+			return this;
+		};
+
+		Gradient.prototype.changeSize = function(width, height){
+			this.grad.setSize(width, height);
+			this.render();
 			return this;
 		};
 		

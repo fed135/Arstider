@@ -64,12 +64,15 @@ define( "Arstider/SpriteSheet", ["Arstider/Bitmap", "Arstider/Sequence"], /** @l
 		}
 			
 		this.url = url;
-		var req = new Bitmap(url, function(){
-			thisRef.data = this.data;
-			if(thisRef.width == 0) thisRef.width = this.width;
-			if(thisRef.height == 0) thisRef.height = this.height;
-			
-			thisRef.onload();
+		var req = new Bitmap({
+			url:url, 
+			callback:function(img){
+				thisRef.data = img.data;
+				if(thisRef.width == 0) thisRef.width = img.width;
+				if(thisRef.height == 0) thisRef.height = img.height;
+				
+				thisRef.onload();
+			}
 		});
 	};
 			

@@ -50,8 +50,11 @@
 		 * @param {string} url The url of the image/ resource to load
 		 */
 		Background.prototype.set = function(url){
-			var req = new Bitmap(url,function(img){
-				singleton.data = this.data;
+			var req = new Bitmap({
+				url:url,
+				callback:function(img){
+					singleton.data = img.data;
+				}
 			});
 		};
 		

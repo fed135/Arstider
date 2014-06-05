@@ -59,14 +59,17 @@ define("Arstider/CollisionMap", ["Arstider/Bitmap", "Arstider/Entity"], /** @len
 			return;
 		}
 				
-		var req = new Bitmap(url, function(){
-			thisRef._collMask = this.data;
-			thisRef._maskData = Arstider.saveToCanvas("CollisionMap_"+thisRef._collMaskUrl, this.data).context2D().getImageData(0,0,this.width,this.height);
-			thisRef._parseMap();
-			if(thisRef.width == 0) thisRef.width = thisRef.dataWidth = this.width;
-			if(thisRef.height == 0) thisRef.height = thisRef.dataHeight = this.height;
-			
-			if(thisRef._debugDraw) thisRef._drawShape.apply(thisRef);
+		var req = new Bitmap({
+			url:url,
+			callback:function(img){
+				thisRef._collMask = img.data;
+				thisRef._maskData = Arstider.saveToCanvas("CollisionMap_"+thisRef._collMaskUrl, img.data).context2D().getImageData(0,0,img.width,img.height);
+				thisRef._parseMap();
+				if(thisRef.width == 0) thisRef.width = thisRef.dataWidth = img.width;
+				if(thisRef.height == 0) thisRef.height = thisRef.dataHeight = img.height;
+				
+				if(thisRef._debugDraw) thisRef._drawShape.apply(thisRef);
+			}
 		});
 	};
 	
