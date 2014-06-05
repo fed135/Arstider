@@ -58,10 +58,12 @@
 		
 		runCallbacks(key, "down");
 		
-		var e = event || window.event;
-		e.stopPropagation();
-		e.preventDefault();
-		return false;
+		if(key == "up" || key == "down"){
+			var e = event || window.event;
+			e.stopPropagation();
+			e.preventDefault();
+			return false;
+		}
 	});
 	
 	/**
@@ -74,10 +76,12 @@
 		
 		runCallbacks(key, "up");
 		
-		var e = event || window.event;
-		e.stopPropagation();
-		e.preventDefault();
-		return false;
+		if(key == "up" || key == "down"){
+			var e = event || window.event;
+			e.stopPropagation();
+			e.preventDefault();
+			return false;
+		}
 	});
 	
 	/**

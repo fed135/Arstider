@@ -32,7 +32,7 @@ define("Arstider/Tag", ["Arstider/Entity", "Arstider/Viewport"], /** @lends Tag 
 		
 		if(props.type) this._tag.type = props.type;
 		if(props.value) this._tag.value = props.value;
-		this._tag.id = props.id || "Arstider_tag_"+name;
+		this._tag.id = props.id || "Arstider_tag_"+this.name;
 		parentNode.appendChild(this._tag);
 		this.parentNode = parentNode;
 	}
@@ -101,8 +101,9 @@ define("Arstider/Tag", ["Arstider/Entity", "Arstider/Viewport"], /** @lends Tag 
 	 * @type {function(this:Tag)}
 	 */
 	Tag.prototype._update = function(){
-            
-                /**
+        Entity.prototype._update.call(this);
+
+         /**
 		 * Check for docking options
 		 */
 		if(this.parent != null){

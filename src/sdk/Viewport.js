@@ -334,16 +334,17 @@
 			singleton.visibleWidth = Math.min(singleton.visibleWidth, singleton.maxWidth);
 			singleton.visibleHeight = Math.min(singleton.visibleHeight, singleton.maxHeight);
 			
-                        var tagParentNode = document.getElementById("Arstider_tag_overlay");
-                        if(tagParentNode){
-                            tagParentNode.style.position = "absolute";
-                            tagParentNode.style.display = "block";
-                            tagParentNode.style.zIndex = 9999;
+                        singleton.tagParentNode = document.getElementById("Arstider_tag_overlay");
+                        if(singleton.tagParentNode){
+                            singleton.tagParentNode.style.position = "absolute";
+                            singleton.tagParentNode.style.display = "block";
+                            singleton.tagParentNode.style.zIndex = 9999;
+                            singleton.tagParentNode.style.overflow = "hidden";
         
-                            tagParentNode.style.width = singleton.tag.style.width;
-                            tagParentNode.style.height = singleton.tag.style.height;
-                            tagParentNode.style.left = singleton.tag.style.left;
-                            tagParentNode.style.top = singleton.tag.style.top;
+                            singleton.tagParentNode.style.width = singleton.tag.style.width;
+                            singleton.tagParentNode.style.height = singleton.tag.style.height;
+                            singleton.tagParentNode.style.left = singleton.tag.style.left;
+                            singleton.tagParentNode.style.top = singleton.tag.style.top;
                         }
                         
 			Events.broadcast("Viewport.resize", singleton);

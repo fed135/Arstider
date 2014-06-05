@@ -91,7 +91,7 @@
 	/**
 	 * Defines the Request module
 	 */
-	define("Arstider/Request", [], /** @lends Request */ function(Preloader){
+	define("Arstider/Request", [], /** @lends Request */ function(){
 		
 		/**
 		 * Request constructor

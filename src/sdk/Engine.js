@@ -319,6 +319,7 @@
 				singleton.currentScreen._unload();
                                 Ad.closeAll();
 				delete singleton.currentScreen;
+				if(Viewport.tagParentNode) Viewport.tagParentNode.innerHTML = "";
 				//GlobalTimers.clean();
 			}
 			else{
@@ -486,12 +487,15 @@
 					Preloader._screen.cancelBubble();
 					Preloader._screen._update();
 					pencil.draw(singleton, Preloader._screen, null, null, false);
+					if(Viewport.tagParentNode) Viewport.tagParentNode.style.display = "none";
 				}
 				else{
 					console.log("Nope", singleton.pausedByRequest);
 				}
 				return;
 			}
+
+			if(Viewport.tagParentNode) Viewport.tagParentNode.style.display = "block";
 			
 			Performance.startStep(singleton.allowSkip);
 			

@@ -129,6 +129,16 @@ function(DisplayObject, TextField, Viewport){
 
 		this.currentState = name;
 	};
+
+	Button.prototype.enable = function(){
+		this.enabled = true;
+		this.showState("normal");
+	};
+
+	Button.prototype.disable = function(){
+		this.enabled = false;
+		this.showState("disabled");
+	};
 	
 	return Button;
 });
