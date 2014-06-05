@@ -84,7 +84,7 @@
                 if(ctx.drawImage){
 					if(s != 1){
 						ctx.scale(s, s);
-						ctx.drawImage(singleton.data, 0, 0, w*s, h*s);
+						ctx.drawImage(singleton.data, 0, 0);
 						ctx.scale(1/s, 1/s);
 					}
 					else ctx.drawImage(singleton.data, 0, 0);

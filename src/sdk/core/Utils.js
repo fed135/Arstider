@@ -13,42 +13,6 @@
 window.Arstider = {};
 
 /**
-* RandomGenerator
-* @memberof Arstider
-* @name Arstider.RandomGenerator
-* @constructor
-* @param {number=} seed The generator seed.
-*/
-Arstider.RandomGenerator = function(seed) {
-
-    /**
-     * @private 
-     * @type {number} 
-     */
-    this.seed = seed && !isNaN(seed) ? seed : Arstider.timestamp();
-
-    /**
-     * @private 
-     * @type {number} 
-     */
-    this.i_ = 0;
-
-    /**
-     * @private 
-     * @type {number} 
-     */
-    this.j_ = 0;
-
-    /**
-     * @private 
-     * @type {Array.<number>}
-     */
-    this.S_ = [];
-
-    this.init(('' + seed).split(''));
-};
-
-/**
  * Gets a number timestamp, usefull for id-ing or cache busting
  * @memberof Arstider
  * @type {function}
@@ -70,40 +34,6 @@ Arstider.guid = function() {
   }
   return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 }
-
-/**
-* Get a random number
-* @param {Array.<number>} key The generator key.
-*/
-Arstider.RandomGenerator.prototype.init = function(key) {
-    var i, j, t;
-    for (i = 0; i < 256; ++i) {
-        this.S_[i] = i;
-    }
-    j = 0;
-    for (i = 0; i < 256; ++i) {
-        j = (j + this.S_[i] + key[i % key.length]) & 255;
-        t = this.S_[i];
-        this.S_[i] = this.S_[j];
-        this.S_[j] = t;
-    }
-    this.i_ = 0;
-    this.j_ = 0;
-};
-
-/**
-* Get a random number
-* @return {number} A random number.
-*/
-Arstider.RandomGenerator.prototype.next = function() {
-    var t;
-    this.i_ = (this.i_ + 1) & 255;
-    this.j_ = (this.j_ + this.S_[this.i_]) & 255;
-    t = this.S_[this.i_];
-    this.S_[this.i_] = this.S_[this.j_];
-    this.S_[this.j_] = t;
-    return this.S_[(t + this.S_[this.i_]) & 255];
-};
 
 /**
  * Indicates if the engine should remain with canvas2D context or attempt WebGl rendering
@@ -145,12 +75,11 @@ Arstider.emptyString = "";
 Arstider.emptyImgSrc = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
 
 /**
- * Min/Max FPS value
+ * Max FPS value
  * @memberof Arstider
- * @const
  * @type {number}
  */
-Arstider._fullFPS = 1000/60;
+Arstider.FPS = 60;
 
 /**
  * Degrees-to-radians constant
@@ -340,7 +269,7 @@ Arstider.Inherit = function(child, parent){
  * @param {function()} callback The called method for rendering
  */
 Arstider.fixedAnimationFrame = function(callback){
-	window.setTimeout(callback, Arstider._fullFPS);
+	Arstider.__animTimer = window.setTimeout(callback, 1000/Arstider.FPS);
 };
 
 /**
@@ -350,36 +279,8 @@ Arstider.fixedAnimationFrame = function(callback){
  * @param {*} ref The requestAnimationFrame method
  */
 Arstider.fixedCancelAnimationFrame = function(ref){
-	window.clearTimeout(ref);
+	if(Arstider.__animTimer != undefined) window.clearTimeout(Arstider.__animTimer);
 };
-	
-/**
- * Parses vendor-prefixed values for requesting an animation frame
- * @memberof Arstider
- * @const
- */
-Arstider.requestAnimFrame = (function(){
-	return window.requestAnimationFrame    || 
-		window.webkitRequestAnimationFrame || 
-		window.mozRequestAnimationFrame    || 
-		window.oRequestAnimationFrame      || 
-		window.msRequestAnimationFrame     ||
-		Arstider.fixedAnimationFrame;
-})();
-
-/**
- * Parses vendor-prefixed values for canceling request animation frame
- * @memberof Arstider
- * @const
- */
-Arstider.cancelAnimFrame = (function(){
-	return	window.cancelAnimationFrame    || 
-		window.webkitCancelAnimationFrame  || 
-		window.mozCancelAnimationFrame     || 
-		window.oCancelAnimationFrame       || 
-		window.msCancelAnimationFrame      || 
-		Arstider.fixedCancelAnimationFrame;
-})();
 
 /**
  * Global blobURL cache
@@ -408,368 +309,102 @@ Arstider.clearBlobUrls = function(){
 };
 
 /**
- * Image Transformations, requiring Buffer
+ * Sets the FPS of the game (max 60)
+ * @memberof Arstider
+ * @type {function} 
  */
-require(["Arstider/Buffer", "Arstider/Browser"], function(Buffer, Browser){
+Arstider.setFPS = function(val){
+	val = val || 60;
+
+	if(val == "auto" || val >= 60){
+		Arstider.FPS = 60;
+		/**
+		 * Parses vendor-prefixed values for requesting an animation frame
+		 * @memberof Arstider
+		 * @const
+		 */
+		Arstider.requestAnimFrame = (function(){
+			return window.requestAnimationFrame    || 
+				window.webkitRequestAnimationFrame || 
+				window.mozRequestAnimationFrame    || 
+				window.oRequestAnimationFrame      || 
+				window.msRequestAnimationFrame     ||
+				Arstider.fixedAnimationFrame;
+		})();
+
+		/**
+		 * Parses vendor-prefixed values for canceling request animation frame
+		 * @memberof Arstider
+		 * @const
+		 */
+		Arstider.cancelAnimFrame = (function(){
+			return	window.cancelAnimationFrame    || 
+				window.webkitCancelAnimationFrame  || 
+				window.mozCancelAnimationFrame     || 
+				window.oCancelAnimationFrame       || 
+				window.msCancelAnimationFrame      || 
+				Arstider.fixedCancelAnimationFrame;
+		})();
+	}
+	else{
+		Arstider.FPS = val;
+		Arstider.requestAnimFrame = Arstider.fixedAnimationFrame;
+		Arstider.cancelAnimFrame = Arstider.fixedCancelAnimationFrame;
+	}
+};
 	
-	/**
-	 * Set render style for canvas tags 
-	 * @memberof Arstider
-	 * @private
-	 * @param {HTMLCanvasElement} cnv Applies the imageRendering style from the tag's _renderMode property
-	 * @param {string} style The rendering style to apply
-	 */
-	Arstider.setRenderStyle = function(element, style){
-		
-		if(style === "sharp"){
-			if(Browser.name == "firefox") element.style.imageRendering = '-moz-crisp-edges';
-			else if(Browser.name == "opera") element.style.imageRendering = '-o-crisp-edges';
-			else if(Browser.name == "safari") element.style.imageRendering = '-webkit-optimize-contrast';
-			else if(Browser.name == "ie") element.style.msInterpolationMode = 'nearest-neighbor';
-			else element.style.imageRendering = 'crisp-edges';
-		}
-		else if(style === "auto"){
-			element.style.imageRendering = 'auto';
-			element.style.msInterpolationMode = 'auto';
-		}
-		else{
-			if(Arstider.verbose > 0) console.warn("Arstider.setRenderStyle: Cannot apply mode '",style,"'");
-		}
-	};
+/**
+ * Default rendering style
+ * @memberof Arstider
+ * @type {string}
+ */
+Arstider.defaultRenderStyle = "auto";
 	
-	/**
-	 * Sets image smoothing for canvas contexts 
-	 * @memberof Arstider
-	 * @private
-	 * @param {CanvasRenderingContext2D} ctx The context to switch the smoothing mode on
-	 * @param {Boolean} val Image smoothing activated
-	 */
-	Arstider.setImageSmoothing = function(ctx, val){
-		var attr = 'imageSmoothingEnabled', uc = attr.charAt(0).toUpperCase() + attr.substr(1);
-		ctx[attr] = ctx['ms'+uc] = ctx['moz'+uc] = ctx['webkit'+uc] = ctx['o'+uc] = val;
+/**
+ * Collection of the intantiated buffers
+ * @memberof Arstider
+ * @type {Object}
+ */
+Arstider.bufferPool = {};
+	
+/**
+ * Counts the number of buffers in the system
+ * @memberof Arstider
+ * @type {function}
+ * @return {number} The number of buffers
+ */
+Arstider.countBuffers = function(){
+	var 
+		i, 
+		total = 0
+	;
+	
+	for(i in Arstider.bufferPool){
+		total ++;
 	}
 	
-	/**
-	 * Default rendering style
-	 * @memberof Arstider
-	 * @type {string}
-	 */
-	Arstider.defaultRenderStyle = "auto";
+	return total;
+};
 	
-	/**
-	 * Collection of the intantiated buffers
-	 * @memberof Arstider
-	 * @type {Object}
-	 */
-	Arstider.bufferPool = {};
-	
-	/**
-	 * Counts the number of buffers in the system
-	 * @memberof Arstider
-	 * @type {function}
-	 * @return {number} The number of buffers
-	 */
-	Arstider.countBuffers = function(){
-		var 
-			i, 
-			total = 0
-		;
-		
-		for(i in Arstider.bufferPool){
-			total ++;
-		}
-		
-		return total;
-	};
-	
-	/**
-	 * Returns the total size of assets in memory
-	 * @memberof Arstider
-	 * @type {function}
-	 * @return {number} memory (in MB)
-	 */
-	Arstider.getMemory = function(){
-		var 
-			i, 
-			total = 0
-		;
-		
-		for(i in Arstider.blobCache){
-			total += (Arstider.blobCache[i].size || 0);
-		}
-		
-		for(i in Arstider.bufferPool){
-			total += (Arstider.bufferPool[i].getMemory());
-		}
-		
-		return total >> 20;
-	};
-	
-	/**
-	 * Saves graphic data into a new buffer
-	 * @memberof Arstider
-	 * @param {string} name The name of the future Buffer
-	 * @param {Image|HTMLCanvasElement} img The graphic resource to draw onto the canvas
-	 * @return {Buffer} The newly created Buffer
-	 */
-	Arstider.saveToBuffer = function(name, img){
-		
-		var
-			canvas = new Buffer({
-				name:name,
-				width:img.width,
-				height:img.height
-			})
-		;
-		
-		canvas.context.drawImage(img,0,0,canvas.width,canvas.height);
-		
-		return canvas;
-	};
-	
-	/**
-	 * Inverts the colors of the Entity.
-	 * @memberof Arstider
-	 * @param {Buffer} buffer The target data buffer
-	 * @param {number=} x Optional zone horizontal offset
-	 * @param {number=} y Optional zone vertical offset
-	 * @param {number=} w Optional zone width
-	 * @param {number=} h Optional zone height
-	 * @return {Buffer} The newly created buffer with the inverted colors
-	 */
-	Arstider.invertColors = function(buffer, x, y, w, h){
-		
-		var 
-			imageData = buffer.context.getImageData(Arstider.checkIn(x,0),Arstider.checkIn(y,0), Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height)), 
-			pixels = imageData.data, 
-			i = (Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height))-1,
-			ret = new Buffer({
-				name:buffer.name + "_inverted_",
-				width:Arstider.checkIn(w, buffer.width),
-				height:Arstider.checkIn(h, buffer.height)
-			})
-		;
-		
-		
-		for (i; i >= 0; i--) {  
-		    pixels[i*4] = 255-pixels[i*4];
-	    	pixels[i*4+1] = 255-pixels[i*4+1];  
-	    	pixels[i*4+2] = 255-pixels[i*4+2];  
-		}
-			
-		ret.context.putImageData(imageData, 0, 0);
-	
-		return ret;
-	};
-	
-	/**
-	 * Grayscales the colors of the Entity.
-	 * @memberof Arstider
-	 * @param {Buffer} buffer The target data buffer
-	 * @param {number=} x Optional zone horizontal offset
-	 * @param {number=} y Optional zone vertical offset
-	 * @param {number=} w Optional zone width
-	 * @param {number=} h Optional zone height
-	 * @return {Buffer} The newly created buffer with the grayscaled colors
-	 */
-	Arstider.grayscale = function(buffer, x, y, w, h) {
-		
-		var 
-			imageData = buffer.context.getImageData(Arstider.checkIn(x,0),Arstider.checkIn(y,0), Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height)), 
-			pixels = imageData.data, 
-			i = (Arstider.checkIn(w,buffer.width) * Arstider.checkIn(h,buffer.height))-1,
-			ret = new Buffer({
-				name:buffer.name + "_grayscale",
-				width:Arstider.checkIn(w, buffer.width),
-				height:Arstider.checkIn(h, buffer.height)
-			}),
-			avg = null
-		;
-		
-		for(i; i >= 0; i--){
-			avg = (pixels[i*4] + pixels[i*4+1] + pixels[i*4+2])/3;
-			
-			pixels[i*4] = avg;
-	    	pixels[i*4+1] = avg;  
-	    	pixels[i*4+2] = avg;
-		}
-		
-		ret.context.putImageData(imageData, 0, 0);
-	
-		return ret;
-	};
-	
-	/**
-	 * Tints an element
-	 * @memberof Arstider
-	 * @param {Buffer} buffer The target data buffer
-	 * @param {number} r Red value
-	 * @param {number} g Green value
-	 * @param {number} b Blue value
-	 * @param {number=} x Optional zone horizontal offset
-	 * @param {number=} y Optional zone vertical offset
-	 * @param {number=} w Optional zone width
-	 * @param {number=} h Optional zone height
-	 * @return {Buffer} The newly created buffer with the new colors
-	 */
-	Arstider.tint = function(buffer, r, g, b, f, x, y, w, h){
-		var 
-			imageData = buffer.context.getImageData(Arstider.checkIn(x,0),Arstider.checkIn(y,0), Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height)), 
-			pixels = imageData.data, 
-			i = (Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height))-1,
-			ret = new Buffer({
-				name:buffer.name + "_tint"+r+g+b,
-				width:Arstider.checkIn(w, buffer.width),
-				height:Arstider.checkIn(h, buffer.height)
-			})
-		;
-		
-		f = Arstider.checkIn(f, 1);
-		
-		for (i; i >= 0; i--) {  
-		    pixels[i*4] = Math.min(r + pixels[i*4] * f);
-	    	pixels[i*4+1] = Math.min(r + pixels[i*4+1] * f); 
-	    	pixels[i*4+2] = Math.min(r + pixels[i*4+2] * f); 
-		}
-			
-		ret.context.putImageData(imageData, 0, 0);
-	
-		return ret;
-	};
-	
-	/**
-	 * Blurs an element
-	 * @memberof Arstider
-	 * @param {Buffer} buffer The target data buffer
-	 * @param {number} force The amount of blur to add
-	 * @param {number} quality The amount of passes (more passes for better looking blur, at the cost of a longer process)
-	 * @param {number=} x Optional zone horizontal offset
-	 * @param {number=} y Optional zone vertical offset
-	 * @param {number=} w Optional zone width
-	 * @param {number=} h Optional zone height
-	 * @return {Buffer} The newly created buffer with the blurred content
-	 */
-	Arstider.blur = function(buffer, force, quality, x, y, w, h){
-		
-		var 
-			i = 0,
-			copy = new Buffer({
-				name:buffer.name+"_blurred_temp",
-				renderStyle:"auto"
-			}), 
-			ratio = (1/force),
-			ret = new Buffer({
-				name:buffer.name+"_blur",
-				width:Arstider.checkIn(w, buffer.width),
-				height:Arstider.checkIn(h, buffer.height),
-				renderStyle:"auto"
-			})
-		;
-		
-		copy.setSize(copy.width*ratio, copy.height*ratio);
-		
-		for(i; i<quality; i++){
-			if(i === 0){
-				copy.context.drawImage(buffer.data, Arstider.checkIn(x, 0), Arstider.checkIn(y, 0), copy.width, copy.height);
-				ret.context.drawImage(copy.data, 0, 0, ret.width, ret.height);
-			}
-			else{
-				copy.context.clearRect(0,0,copy.width, copy.height);
-				copy.context.drawImage(ret.data, 0, 0, copy.width, copy.height);
-				ret.context.clearRect(0,0,ret.width, ret.height);
-				ret.context.drawImage(copy.data, 0, 0, ret.width, ret.height);
-			}
-		}
-			
-		return ret;
-	};
-});
-
 /**
- * Debug methods, requiring Engine and Events
+ * Returns the total size of assets in memory
+ * @memberof Arstider
+ * @type {function}
+ * @return {number} memory (in MB)
  */
-require(["Arstider/Engine", "Arstider/Events"], function(Engine, Events){
+Arstider.getMemory = function(){
+	var 
+		i, 
+		total = 0
+	;
 	
-	/**
-	 * Returns an element or a list of elements that match the search criterias for inspection
-	 * @memberof Arstider
-	 * @type {function}
-	 * @const
-	 * @param {string|null} name The name of the element to search for. If none is provided, returns all elements
-	 * @param {Object|null} t The target to perform the seach in. If none is provided, seaches in the current screen
-	 * @return {Array|Object} The element(s) that fit the search query
-	 */
-	Arstider.findElement = function(name, t){
-		if(!Engine.debug) return;
-		
-		var 
-			ret = [], 
-			i = 0, 
-			t = t || Engine.currentScreen
-		;
-			
-		if(t && t.children){
-			for(i; i<t.children.length; i++){
-				if(!name || name === t.children[i].name){
-					ret.push(t.children[i]);
-				}
-				if(t.children[i].children){
-					ret = ret.concat(Arstider.findElement(name, t.children[i]));
-				}
-			}
-		}
-		
-		if(ret.length == 1) return ret[0];
-		return ret;
-	};
+	for(i in Arstider.blobCache){
+		total += (Arstider.blobCache[i].size || 0);
+	}
 	
-	/**
-	 * Draws the desired data object into a separate buffer for inspection
-	 * @memberof Arstider
-	 * @type {function}
-	 * @const
-	 * @param {Image|HTMLCanvasElement} targetData The data to draw on the debug canvas
-	 */
-	Arstider.debugDraw = function(targetData){
-		if(!Engine.debug) return;
-		
-		var 
-			ctx = null,
-			win = document.getElementById("debugWindow")
-		;
-			
-		if(!win){
-			win = document.createElement('canvas');
-			win.width=300;
-			win.height=300;
-			win.id = "debugWindow";
-			win.style.height = "300px";
-			win.style.width = "300px";
-			win.style.position = "absolute";
-			win.style.display = "block";
-			win.style.backgroundColor = "green";
-			win.style.bottom = "0px";
-			win.style.right = "0px";
-			win.style.zIndex = 999;
-			document.body.appendChild(win);
-		}
-		ctx = win.getContext('2d');
-		ctx.clearRect(0,0,300,300);
-		ctx.drawImage(targetData, 0,0,300,300);
-	};
+	for(i in Arstider.bufferPool){
+		total += (Arstider.bufferPool[i].getMemory());
+	}
 	
-	/**
-	 * Broadcasts an event for debugging
-	 * @memberof Arstider
-	 * @type {function}
-	 * @const
-	 * @param {string} name The name of the event to call
-	 * @param {*} param The parameters to provide the broadcast
-	 * @param {*} target The target for broadcast
-	 */
-	Arstider.debugBroadcast = function(name, param, target){
-		if(!Engine.debug) return;
-		
-		Events.broadcast(name, param, target);
-	};
-});
+	return total >> 20;
+};

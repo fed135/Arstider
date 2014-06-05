@@ -19,8 +19,8 @@
 	/**
 	 * Defines the Buffer module
 	 */
-	define("Arstider/Buffer", [], /** @lends Buffer */ function(){
-		
+	define("Arstider/Buffer", ["Arstider/Browser"], /** @lends Buffer */ function(Browser){
+
 		/**
 		 * Buffer constructor
 		 * Displayable data container (offscreen canvas)
@@ -29,14 +29,10 @@
 		 * @param {Object} props The proprieties of the Buffer
 		 */
 		function Buffer(props){
-                        props = props || {};
+            props = props || {};
 			this.data = document.createElement("canvas");
-                        if(props.webgl){
-                            this.context = this.data.getContext("webgl") || this.data.getContext("experimental-webgl") || null;
-                        }
-                        else{
-                            this.context = this.data.getContext("2d");
-                        }
+            if(props.webgl) this.context = this.data.getContext("webgl") || this.data.getContext("experimental-webgl") || null;
+            else this.context = this.data.getContext("2d");
 			
 			this.name = props.name || ("buffer"+(anonymousBuffers++));
 			this.data.id = props.id || this.name;
@@ -44,7 +40,7 @@
 			this.width = this.data.width = Arstider.checkIn(props.width, 1);
 			this.height = this.data.height = Arstider.checkIn(props.height, 1);
 			
-			this._updateRenderStyle();
+			this.updateRenderStyle();
 			
 			if(Arstider.bufferPool[this.name] != undefined){
 				if(Arstider.verbose > 1) console.warn("Arstider.Buffer: buffer ", this.name, " already exists, it will be ovewritten");
@@ -84,20 +80,34 @@
 			this.width = this.data.width = width;
 			this.height = this.data.height = height;
 			
-			this._updateRenderStyle();
+			this.updateRenderStyle();
 		};
 		
 		/**
 		 * Updates the Buffer's rendering mode
-		 * @private
 		 * @type {function(this:Buffer)}
 		 * @param {string|null} style Optional rendering style change
 		 */
-		Buffer.prototype._updateRenderStyle = function(style){
+		Buffer.prototype.updateRenderStyle = function(style){
 			if(style) this.renderStyle = style;
 			
-			Arstider.setImageSmoothing(this.context, this.renderStyle == "auto");
-			Arstider.setRenderStyle(this.data, this.renderStyle);
+			if(this.renderStyle === "sharp"){
+				if(Browser.name == "firefox") this.data.style.imageRendering = '-moz-crisp-edges';
+				else if(Browser.name == "opera") this.data.style.imageRendering = '-o-crisp-edges';
+				else if(Browser.name == "safari") this.data.style.imageRendering = '-webkit-optimize-contrast';
+				else if(Browser.name == "ie") this.data.style.msInterpolationMode = 'nearest-neighbor';
+				else this.data.style.imageRendering = 'crisp-edges';
+			}
+			else if(this.renderStyle === "auto"){
+				this.data.style.imageRendering = 'auto';
+				this.data.style.msInterpolationMode = 'auto';
+			}
+			else{
+				if(Arstider.verbose > 0) console.warn("Arstider.setRenderStyle: Cannot apply mode '",this.renderStyle,"'");
+			}
+
+			var attr = 'imageSmoothingEnabled', uc = attr.charAt(0).toUpperCase() + attr.substr(1);
+			this.context[attr] = this.context['ms'+uc] = this.context['moz'+uc] = this.context['webkit'+uc] = this.context['o'+uc] = (this.renderStyle == "auto");
 		};
 		
 		/**
@@ -167,6 +177,28 @@
 			pix[3] = pixel.a; // alpha
 			
 			this.context.putImageData(imgd, x, y);
+		};
+
+		/**
+		 * Saves graphic data into a new buffer
+		 * @memberof Arstider
+		 * @param {string} name The name of the future Buffer
+		 * @param {Image|HTMLCanvasElement} img The graphic resource to draw onto the canvas
+		 * @return {Buffer} The newly created Buffer
+		 */
+		Arstider.saveToBuffer = function(name, img){
+			
+			var
+				canvas = new Buffer({
+					name:name,
+					width:img.width,
+					height:img.height
+				})
+			;
+			
+			canvas.context.drawImage(img,0,0,canvas.width,canvas.height);
+			
+			return canvas;
 		};
 		
 		return Buffer;

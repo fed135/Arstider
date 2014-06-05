@@ -129,7 +129,7 @@
 		Performance.prototype._stepLogic = function(){
 			if(singleton.updateLogic == null) return;
 			
-			setTimeout(singleton._stepLogic, Arstider._fullFPS);
+			setTimeout(singleton._stepLogic, 1000/Arstider.FPS);
 			
 			singleton.updateLogic();
 		};

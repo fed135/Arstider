@@ -331,8 +331,8 @@
 			singleton.canvasRatio = ratio;
 			singleton.visibleWidth = Math.round(windowW / ratio);
 			singleton.visibleHeight = Math.round(windowH / ratio);
-			singleton.visibleWidth = Math.min(singleton.visibleWidth, singleton.maxWidth);
-			singleton.visibleHeight = Math.min(singleton.visibleHeight, singleton.maxHeight);
+			singleton.visibleWidth = Math.min(singleton.visibleWidth, singleton.maxWidth)/this.globalScale;
+			singleton.visibleHeight = Math.min(singleton.visibleHeight, singleton.maxHeight)/this.globalScale;
 			
             singleton.tagParentNode = document.getElementById("Arstider_tag_overlay");
             if(!singleton.tagParentNode){
@@ -502,14 +502,10 @@
 		 */
 		Viewport.prototype.setGlobalScale = function(num){		
 			var numRevert = 1/this.globalScale;
-			this.maxWidth = this.maxWidth / numRevert;
-			this.maxHeight = this.maxHeight / numRevert;
 			this.visibleWidth = this.visibleWidth / numRevert;
 			this.visibleHeight = this.visibleHeight / numRevert;
 			
 			this.globalScale = num;
-			this.maxWidth = this.maxWidth / num;
-			this.maxHeight = this.maxHeight / num;
 			this.visibleWidth = this.visibleWidth / num;
 			this.visibleHeight = this.visibleHeight / num;
 			

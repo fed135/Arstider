@@ -42,7 +42,7 @@
 				if(this.list[i].running){
 					(function(t){
 						setTimeout(function(){
-							t.delay -= Arstider._fullFPS;
+							t.delay -= Math.round(1000/Arstider.FPS);
 							
 							if(t.step) t.step.apply(t);
 							if(t.delay <= 0 && t.completed == false) t.finish();

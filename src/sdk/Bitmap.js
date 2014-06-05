@@ -8,7 +8,7 @@
 /**
  * Defines the Bitmap module
  */
-define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser"], /** @lends Bitmap */ function(Request, Browser){
+define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buffer"], /** @lends Bitmap */ function(Request, Browser, Buffer){
 
 	window.URL = (window.URL != undefined && window.URL.createObjectURL)?window.URL:(window.webkitURL || {});
 
@@ -94,17 +94,19 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser"], /** @lends B
 		
 		if(Browser.name == "safari" && Browser.version < 7){
 			//need to save into a canvas
-			this.data = document.createElement("canvas");
-			var ctx = this.data.getContext("2d");
+			this.data = new Buffer({
+				name:this.name + "_compatBuffer_"+url
+			});
 			var img = new Image();
 			img.onload = function(){
+				thisRef.data.setSize(img.width, img.height)
 				thisRef.data.width = thisRef.width = img.width;
 				thisRef.data.height = thisRef.height = img.height;
-				ctx.drawImage(img, 0,0);
+				thisRef.data.context.drawImage(img, 0,0);
 				img.onload = null;
 				img.src = Arstider.emptyImgSrc;
-				if(callback) callback(thisRef);
-				else thisRef.callback(thisRef);
+				if(callback) callback(thisRef.data);
+				else thisRef.callback(thisRef.data);
 			};
 			img.src = url;
 
@@ -112,12 +114,25 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser"], /** @lends B
 			return;
 		}
 
+		if(Arstider.defaultRenderStyle === "sharp"){
+			if(Browser.name == "firefox") this.data.style.imageRendering = '-moz-crisp-edges';
+			else if(Browser.name == "opera") this.data.style.imageRendering = '-o-crisp-edges';
+			else if(Browser.name == "safari") this.data.style.imageRendering = '-webkit-optimize-contrast';
+			else if(Browser.name == "ie") this.data.style.msInterpolationMode = 'nearest-neighbor';
+			else this.data.style.imageRendering = 'crisp-edges';
+		}
+		else if(Arstider.defaultRenderStyle === "auto"){
+			this.data.style.imageRendering = 'auto';
+			this.data.style.msInterpolationMode = 'auto';
+		}
+		else{
+			if(Arstider.verbose > 0) console.warn("Arstider.setRenderStyle: Cannot apply mode '",Arstider.defaultRenderStyle,"'");
+		}
+
 		this.data.onload = function(){
 			thisRef.data.onload = null;
 			thisRef.width = thisRef.data.width;
 			thisRef.height = thisRef.data.height;
-			
-			Arstider.setRenderStyle(thisRef.data, Arstider.defaultRenderStyle);
 			
 			if(callback) callback(thisRef);
 			else thisRef.callback(thisRef);

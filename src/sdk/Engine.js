@@ -19,7 +19,7 @@
 	 * Defines Engine module
 	 */
 	define( "Arstider/Engine", [
-                "Arstider/commons/Ad",
+        "Arstider/commons/Ad",
 		"Arstider/Browser",
 		"Arstider/Screen",
 		"Arstider/Buffer", 
@@ -32,10 +32,11 @@
 		"Arstider/Mouse",
 		"Arstider/Viewport",
 		"Arstider/core/Renderer",
-                "Arstider/core/WEBGLRenderer",
+        "Arstider/core/WEBGLRenderer",
 		"Arstider/Telemetry",
-                "Arstider/Sound"
-	], /** @lends Engine */ function (Ad, Browser, Screen, Buffer, Events, Background, Preloader, GlobalTimers, Performance, Debugger, Mouse, Viewport, Renderer, WEBGLRenderer, Telemetry, Sound){
+        "Arstider/Sound", 
+        "Arstider/Filters"
+	], /** @lends Engine */ function (Ad, Browser, Screen, Buffer, Events, Background, Preloader, GlobalTimers, Performance, Debugger, Mouse, Viewport, Renderer, WEBGLRenderer, Telemetry, Sound, Filters){
 		
 		if(singleton != null) return singleton;
 			
@@ -143,19 +144,18 @@
 				Arstider.verbose = 0;
 			}
 				
-                        WEBGLRenderer.test();
-                        this.canvas = new Buffer({
-                            name:"Arstider_main",
-                            id:"Arstider_main_canvas",
-                            webgl:WEBGLRenderer.enabled
-                        });
-                        Arstider.usingWebGl = WEBGLRenderer.enabled;
-                        WEBGLRenderer._context = this.canvas.context;
+            WEBGLRenderer.test();
+            this.canvas = new Buffer({
+                name:"Arstider_main",
+                id:"Arstider_main_canvas",
+                webgl:WEBGLRenderer.enabled
+            });
+            Arstider.usingWebGl = WEBGLRenderer.enabled;
+            WEBGLRenderer._context = this.canvas.context;
                         
 			this.context = this.canvas.context;
-			this.canvas = this.canvas.data;
                         
-                        
+            Arstider.setFPS(Arstider.FPS);
 			
 			this._isSynchronous = synchronous || false;
 			
@@ -163,7 +163,7 @@
 			
 			window.addEventListener("error", this._handleError);
 				
-			Viewport.init(tag, this.canvas);
+			Viewport.init(tag, this.canvas.data);
 			
 			Mouse._touchRelay = this.applyTouch;
 			
@@ -205,20 +205,20 @@
 			Preloader._screen.stage = singleton;
 		};
                 
-                /**
-                 * Quick-access method to change the shaders of the WebGl Renderer
-                 * @type {function(this:Engine)}
-                 * @param {string} vertex The url of the vertex shader
-                 * @param {string} fragment The url of the fragment shader
-                 */
-                Engine.prototype.setShaders = function(vertex, fragment){
-                    if(WEBGLRenderer.enabled){
-                        WEBGLRenderer.setShaders(vertex, fragment);
-                    }
-                    else{
-                        if(Arstider.verbose > 1) console.warn("Arstider.Engine.setShaders: ignored because WebGl is not enabled");
-                    }
-                };
+        /**
+         * Quick-access method to change the shaders of the WebGl Renderer
+         * @type {function(this:Engine)}
+         * @param {string} vertex The url of the vertex shader
+         * @param {string} fragment The url of the fragment shader
+         */
+        Engine.prototype.setShaders = function(vertex, fragment){
+            if(WEBGLRenderer.enabled){
+                WEBGLRenderer.setShaders(vertex, fragment);
+            }
+            else{
+                if(Arstider.verbose > 1) console.warn("Arstider.Engine.setShaders: ignored because WebGl is not enabled");
+            }
+        };
 		
 		/**
 		 * Steps the logic of the game (GlobalTimers)
@@ -255,10 +255,10 @@
 			if(singleton.currentScreen){
 				if(singleton.currentScreen.onload && singleton.currentScreen.__loaded === false){
 					singleton.currentScreen.__loaded = true;
-                                        Sound.play("empty");
+                    Sound.play("empty");
 					singleton.currentScreen.onload();
 				}
-				singleton.canvas.focus();
+				singleton.canvas.data.focus();
 				singleton.isPreloading = false;
 				if(!Viewport.unsupportedOrientation) singleton.play();
 				Telemetry.log("system", "screenstart", {screen:singleton.currentScreen.name});
@@ -317,10 +317,9 @@
 			if(singleton.currentScreen != null){
 				Telemetry.log("system", "screenstop", {screen:singleton.currentScreen.name});
 				singleton.currentScreen._unload();
-                                Ad.closeAll();
+                Ad.closeAll();
 				delete singleton.currentScreen;
 				if(Viewport.tagParentNode) Viewport.tagParentNode.innerHTML = "";
-				//GlobalTimers.clean();
 			}
 			else{
 				if(Arstider.verbose > 1) console.warn("Arstider.Engine.killScreen: no current screen");
@@ -334,7 +333,6 @@
 		 */
 		Engine.prototype.showPopup = function(name){
 			singleton.stop();
-			//singleton.isPreloading = true;
 			
 			if(singleton.currentScreen.onpopup) singleton.currentScreen.onpopup(name);
 					
@@ -346,7 +344,6 @@
 				singleton.currentScreen.stage = singleton;
 				singleton.currentScreen.name = name;
 				singleton.currentScreen.origin = singleton._savedScreen;
-				//singleton.isPreloading = false;
 				singleton.play();
 				if(singleton.currentScreen.onload) singleton.currentScreen.onload();
 				Telemetry.log("system", "screenstart", {screen:singleton.currentScreen.name, originscreen:singleton._savedScreen.name});
@@ -461,14 +458,14 @@
 				mouseX = Mouse.x(0),
 				mouseY = Mouse.y(0),
 				showFrames = false,
-                                pencil
+                pencil
 			;
                         
-                        pencil = WEBGLRenderer;
-                        if(!pencil.enabled) pencil = Renderer;
-                        else{
-                            if(pencil.program == null) return;
-                        }
+            pencil = WEBGLRenderer;
+            if(!pencil.enabled) pencil = Renderer;
+            else{
+                if(pencil.program == null) return;
+            }
                         
                         
 			
@@ -477,12 +474,12 @@
 			//Immediately request the next frame
 			singleton.frameRequest = Arstider.requestAnimFrame.apply(window, [singleton.draw]);
 			
-			if(Viewport.globalScale != 1 && Arstider.defaultRenderStyle == "sharp") Arstider.setRenderStyle(singleton.canvas, Arstider.defaultRenderStyle);
-			
+			if(Arstider.defaultRenderStyle == "sharp") singleton.canvas.updateRenderStyle(Arstider.defaultRenderStyle);
+
 			//Check if canvas rendering is on/off
 			if(singleton.handbreak){
 				if(Preloader._queue.length > 0){
-                                        if(pencil == WEBGLRenderer) singleton.context.clear(singleton.context.COLOR_BUFFER_BIT);
+                    if(pencil == WEBGLRenderer) singleton.context.clear(singleton.context.COLOR_BUFFER_BIT);
 					else singleton.context.clearRect(0,0,Viewport.maxWidth,Viewport.maxHeight);
 					Preloader._screen.cancelBubble();
 					Preloader._screen._update();

@@ -62,7 +62,7 @@
 			 * @private
 			 * @type {number}
 			 */
-			this._stepTimer = setTimeout(function(){thisRef._step.apply(thisRef);}, Arstider._fullFPS); //wait 1 frame
+			this._stepTimer = setTimeout(function(){thisRef._step.apply(thisRef);}, Math.round(1000/Arstider.FPS)); //wait 1 frame
 		};
 
 		Arstider.Inherit(Sprite, Entity);

@@ -611,31 +611,6 @@
 		};
 		
 		/**
-		 * Applies filters to element's data
-		 * @type {function(this:Entity)}
-		 * @param {string} filter Filter name
-		 * @param {*} args extra params
-		 */
-		Entity.prototype.filter = function(filter){
-			if(this.data == null){
-				if(Arstider.verbose > 0) console.warn("Arstider.Entity.filter: entity has no data");
-				return;
-			}
-			
-			if(Arstider[filter]){
-				var ret = Arstider.saveToCanvas(this.name+"Filter_"+filter, this.data);
-				var params = (Array.prototype.slice.call(arguments,1)).concat();
-				params.unshift(ret);
-				this.data = Arstider[filter].apply(window, params);
-			}
-			else{
-				if(Arstider.verbose > 0) console.warn("Arstider.Entity.filter: cannot find filter ", filter);
-			}
-			
-			return this;
-		};
-		
-		/**
 		 * Checks if coordinates fit in the global location of the Entity
 		 * @type {function(this:Entity)}
 		 * @param {number} x The x coordinate to check against.
