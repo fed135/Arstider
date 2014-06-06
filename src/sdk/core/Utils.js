@@ -132,6 +132,22 @@ Arstider.checkIn = function(val, def){
 };
 
 /**
+ * Multiple check-if-exist method in order of fallback
+ * @memberof Arstider
+ * @const
+ * @param {Array} val The values to check against undefined, one after another
+ * @param {*} def The default value to provide if all val are undefined
+ * @return {*} The final value
+ */
+ Arstider.firstOf = function(val, def){
+ 	if(!val.length) return def;
+ 	for(var i = 0; i<val.length; i++){
+ 		if(val[i] != undefined) return val[i];
+ 	}
+ 	return def;
+ };
+
+/**
  * Indicates whether or not to output full verbose warnings
  * 
  * 0 = nothing,
@@ -142,6 +158,146 @@ Arstider.checkIn = function(val, def){
  * @type {number}
  */
 Arstider.verbose = 0;
+
+/**
+ * Removes duplicate entries from an array
+ * @memberof Arstider
+ * @const
+ * @param {Array} arr The array to shuffle
+ * @return {Array} The shuffled array
+ */
+Arstider.trimDuplicates = function(arr){
+    var 
+    	o = {},
+        i = 0,
+        l = arr.length,
+        r = []
+    ;
+
+    for (i; i<l; i++){
+        o[arr[i]] = arr[i];
+    }
+
+    for (i in o) {
+        if(o.hasOwnProperty(i)) r.push(o[i]);
+    }
+
+    arr = r;
+    return arr;
+};
+
+Arstider.getFileExt = function(str){
+    var x = -1;
+
+    t = t['basename']();
+    t = t['stripUrlQuery']();
+    x = t.lastIndexOf('.');
+    t = x >= 0 ? t.substr(x) : '';
+    return t;
+};
+
+Arstider.getUrlQuery = function(){
+
+};
+
+/**
+ * Detects if an element is a plain object
+ * @memberof Arstider
+ * @const
+ * @param {*} obj The object to analyse
+ * @return {boolean}
+ */
+Arstider.isObject = function(obj){
+	if(!obj || !(typeof obj === "object") || obj.nodeType || Arstider.isWindow(obj)) return false;
+	if (obj.constructor && !Object.prototype.hasOwnProperty.call(obj, "constructor") && !Object.prototype.hasOwnProperty.call(obj.constructor.prototype, "isPrototypeOf")) return false;
+    var key;
+    for (key in obj) {
+        if(obj.hasOwnProperty(key)) continue;
+    }
+
+    return (key == undefined) || Object.prototype.hasOwnProperty.call(obj, key);
+};
+
+/**
+ * Detects if an element is the window element
+ * @memberof Arstider
+ * @const
+ * @param {*} obj The object to analyse
+ * @return {boolean}
+ */
+Arstider.isWindow = function(obj){
+	return obj && (typeof obj === "object") && "setInterval" in obj;
+};
+
+/**
+ * Find the length of an Object or array
+ * @memberof Arstider
+ * @const
+ * @param {*} obj The object to find the length of
+ * @return {number} The length 
+ */
+Arstider.lengthOf = function(obj){
+    if(typeof obj === "array") return obj.length;
+    else if(Arstider.isObject(obj)){
+        var 
+        	l = 0,
+            i
+        ;
+
+        for (i in obj) {
+            if (obj.hasOwnProperty(i)) l ++;
+        }
+
+        return l;
+    }
+    return 0;
+};
+
+/**
+ * Compares two elements
+ * @memberof Arstider
+ * @const
+ * @param {*} a The first element
+ * @param {*} b The second element
+ * @return {boolean}
+ */
+Arstider.compare = function(a, b){
+    var i;
+
+    if(typeof a !== typeof b) return false;
+
+    switch (typeof a){
+        case "object":
+            if(Arstider.lengthOf(a) !== Arstider.lengthOf(b)) return false;
+
+            for(i in a) {
+                if (a.hasOwnProperty(i)){
+                    if(!b.hasOwnProperty(i) || !Arstider.compare(a[i], b[i])) return false;
+                }
+            }
+
+            for(i in b){
+                if(b.hasOwnProperty(i) && !a.hasOwnProperty(i)) return false;
+            }
+
+            break;
+        case "array":
+            i = a.length;
+            if(i !== b.length) return false;
+
+            i--;
+            while(i >= 0){
+                if(!Arstider.compare(a[i], b[i])) return false;
+                i--;
+            }
+
+            break;
+        default:
+            return a === b;
+    }
+
+    return true;
+};
 
 /**
  * Fisher-Yates array shuffling method

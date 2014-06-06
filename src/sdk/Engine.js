@@ -542,6 +542,16 @@
 			
 			Performance.endStep();
 		};
+
+		/**
+		 * Returns a snapshot url of the Engine
+		 * @memberof Arstider
+		 * @type {function}
+		 * @return {string}
+		 */
+		 Arstider.printScreen = function(type){
+		 	return singleton.canvas.getURL(type);
+		 };
 		
 		singleton = new Engine();
 		return singleton;

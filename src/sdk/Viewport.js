@@ -278,13 +278,17 @@
 		 * @param {event} e Event from the browser
 		 */
 		Viewport.prototype._resize = function(e){
+			if(Browser.isMobile){
+				document.body.style.width = window.innerWidth + "px";
+				document.body.style.height = window.innerHeight +"px";
+			}
+
 			var windowW;
 			var windowH;
 			var ratio = 1;
 			var scaleX, scaleY;
 			var posX, posY;
 			var style = window.getComputedStyle(singleton.container, null);
-
 
 			if(singleton.orientation == LANDSCAPE){
 				windowW = parseInt(style.getPropertyValue("width"));
@@ -523,8 +527,8 @@
 		Viewport.prototype.changeResolution = function(minWidth, maxWidth, minHeight, maxHeight){
 			this.maxWidth = maxWidth;
 			this.maxHeight = maxHeight;
-			this.minWidth = minWidth;
-			this.minHeight = minHeight;
+			this.minWidth = minWidth || 0;
+			this.minHeight = minHeight || 0;
 			this._resize();
 		};
 			
