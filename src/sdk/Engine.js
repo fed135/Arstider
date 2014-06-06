@@ -392,47 +392,67 @@
 		 * @type {function(this:Engine)}
 		 * @param {Object} e The touch/mouse event
 		 * @param {Object|null} target The target to apply the event to (defaults to current screen) 
-		 * @param {number|null} inputId The id of the mobile input to look at
 		 */
-		Engine.prototype.applyTouch = function(e, target, inputId){
+		Engine.prototype.applyTouch = function(e, target, mX, mY){
 			
 			target = target || singleton.currentScreen;
-			inputId = inputId || 0;
 			
 			var 
-				mouseX = Mouse.x(inputId),
-				mouseY = Mouse.y(inputId),
-				i
+				mouseX = [],
+				mouseY = [],
+				i,
+				u
 			;
-			
-			if(mouseX == -1 && mouseY == -1) return;
+
+			if(Browser.isMobile){
+				if(!mX || !mY){
+					var numInputs = Mouse.count();
+
+					if(numInputs == 0) return;
+
+					for(i=0; i<numInputs; i++){
+						mouseX[i] = Mouse.x(i);
+						mouseY[i] = Mouse.y(i);
+					}
+				}
+				else{
+					mouseX = mX;
+					mouseY = mY;
+				}
+			}
+			else{
+				mouseX[0] = mX || Mouse.x();
+				mouseY[0] = mY || Mouse.y();
+
+				if(mouseX[0] == -1 && mouseY[0] == -1) return;
+			}
 			
 			if(target && target.children && target.children.length > 0){
 				for(i = target.children.length-1; i>=0; i--){
 					if(target && target.children && target.children[i] && !target.children[i].__skip){
-						if(target.children[i].isTouched(mouseX, mouseY)){
-							if(Mouse.pressed){
-								if(!target.children[i]._pressed) target.children[i]._onpress(e);
-							}
-							else{
-								if(target.children[i]._pressed) target.children[i]._onrelease(e);
-							}
-							
-							if(target && target.children && target.children[i] && !target.children[i].__skip){
-								if(Mouse.rightPressed) target.children[i]._rightPressed = true;
+						for(u=0; u<mouseX.length;u++){
+							if(target.children[i].isTouched(mouseX[u], mouseY[u])){
+								if(Mouse.pressed){
+									if(!target.children[i]._pressed) target.children[i]._onpress(e);
+								}
 								else{
-									if(target.children[i]._rightPressed) target.children[i]._onrightclick(e);
+									if(target.children[i]._pressed) target.children[i]._onrelease(e);
+								}
+								
+								if(target && target.children && target.children[i] && !target.children[i].__skip){
+									if(Mouse.rightPressed) target.children[i]._rightPressed = true;
+									else{
+										if(target.children[i]._rightPressed) target.children[i]._onrightclick(e);
+									}
 								}
 							}
 						}
 					
 						//recursion
-						if(target && target.children && target.children[i] && !target.children[i].__skip && target.children[i].children && target.children[i].children.length > 0) singleton.applyTouch(e, target.children[i]);
+						if(target && target.children && target.children[i] && !target.children[i].__skip && target.children[i].children && target.children[i].children.length > 0) singleton.applyTouch(e, target.children[i], mouseX, mouseY);
 					}
 				}
 			}
-
-			if(Browser.isMobile && inputId <4) singleton.applyTouch(e, target, inputId++);
 		};
 
 		/**
@@ -441,39 +461,54 @@
 		 * @param {Object|null} target The target to apply the event to (defaults to current screen) 
 		 * @param {number|null} inputId The id of the mobile input to look at
 		 */
-		Engine.prototype.applyRelease = function(target, inputId){
+		Engine.prototype.applyRelease = function(target){
 
-			inputId = inputId || 0;
-
-			var
-				mouseX = Mouse.x(inputId),
-				mouseY = Mouse.y(inputId)
+			var 
+				mouseX = [],
+				mouseY = [],
+				i,
+				u
 			;
 
-			if(mouseX == -1 && mouseY == -1) return;
-			
-			if(target.isTouched(mouseX, mouseY)){
-				if(!target._hovered) target._onhover();
-				if(!Mouse.pressed) target._preclick = true;
-			}
-			else{
-				if(target._hovered) target._onleave();
-				target._pressed = false;
-			}
-			
-			if(target._dragged){
-				target.x = mouseX - target._dragOffsetX;
-				target.y = mouseY - target._dragOffsetY;
-					
-				if(target._boundDrag){
-					if(target.x < 0) target.x = 0;
-					if(target.y < 0) target.y = 0;
-					if(target.x > target.parent.width) target.x = target.parent.width;
-					if(target.y > target.parent.height) target.y = target.parent.height;
+			if(Browser.isMobile){
+				var numInputs = Mouse.count();
+
+				if(numInputs == 0) return;
+
+				for(i=0; i<numInputs; i++){
+					mouseX[i] = Mouse.x(i);
+					mouseY[i] = Mouse.y(i);
 				}
 			}
+			else{
+				mouseX[0] = Mouse.x();
+				mouseY[0] = Mouse.y();
 
-			if(Browser.isMobile && inputId <4) singleton.applyTouch(target, inputId++);
+				if(mouseX[0] == -1 && mouseY[0] == -1) return;
+			}
+			
+			for(u = 0; u<mouseX.length; u++){
+				if(target.isTouched(mouseX[u], mouseY[u])){
+					if(!target._hovered) target._onhover();
+					if(!Mouse.pressed) target._preclick = true;
+				}
+				else{
+					if(target._hovered) target._onleave();
+					target._pressed = false;
+				}
+				
+				if(target._dragged){
+					target.x = mouseX[u] - target._dragOffsetX;
+					target.y = mouseY[u] - target._dragOffsetY;
+						
+					if(target._boundDrag){
+						if(target.x < 0) target.x = 0;
+						if(target.y < 0) target.y = 0;
+						if(target.x > target.parent.width) target.x = target.parent.width;
+						if(target.y > target.parent.height) target.y = target.parent.height;
+					}
+				}
+			}
 		};
 		
 		/**

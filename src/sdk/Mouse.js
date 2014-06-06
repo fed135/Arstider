@@ -354,6 +354,19 @@
 			}
 			else return singleton._mouse.y;
 		};
+
+		/**
+		 * Returns the number of touch inputs
+		 * @type {function(this:Mouse)}
+		 * @return {number} The number of inputs
+		 */
+		Mouse.prototype.count = function(){
+			var i = 0;
+			for(i; i<singleton._touch.length; i++){
+				if(!singleton._touch[i] || singleton._touch[i].x == -1) break;
+			}
+			return i;
+		};
 		
 		/**
 		 * Internal handler for touch input movement
