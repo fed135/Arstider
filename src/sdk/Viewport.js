@@ -279,8 +279,14 @@
 		 */
 		Viewport.prototype._resize = function(e){
 			if(Browser.isMobile){
-				document.body.style.width = window.innerWidth + "px";
-				document.body.style.height = window.innerHeight +"px";
+				if(singleton.orientation == LANDSCAPE){
+					document.body.style.width = window.innerWidth + "px";
+					document.body.style.height = window.innerHeight +"px";
+				}
+				else{
+					document.body.style.height = window.innerWidth + "px";
+					document.body.style.width = window.innerHeight +"px";
+				}
 			}
 
 			var windowW;
