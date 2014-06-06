@@ -432,7 +432,7 @@
 				}
 			}
 
-			if(Browser.isMobile) singleton.applyTouch(e, target, inputId++);
+			if(Browser.isMobile && inputId <4) singleton.applyTouch(e, target, inputId++);
 		};
 
 		/**
@@ -473,7 +473,7 @@
 				}
 			}
 
-			if(Browser.isMobile) singleton.applyTouch(target, inputId++);
+			if(Browser.isMobile && inputId <4) singleton.applyTouch(target, inputId++);
 		};
 		
 		/**

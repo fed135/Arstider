@@ -260,7 +260,7 @@
 			/**
 			 * Populate the touch array
 			 */
-			for(var i=0; i<touchLimit; i++) touchObjBank.push({x:0,y:0});
+			for(var i=0; i<touchLimit; i++) touchObjBank.push({x:-1,y:-1});
 			
 			/**
 			 * Add event listeners
