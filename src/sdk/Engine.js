@@ -429,6 +429,7 @@
 			
 			if(target && target.children && target.children.length > 0){
 				for(i = target.children.length-1; i>=0; i--){
+					target.children[i].__inputId = null;
 					if(target && target.children && target.children[i] && !target.children[i].__skip){
 						for(u=0; u<mouseX.length;u++){
 							if(target.children[i].isTouched(mouseX[u], mouseY[u])){
@@ -445,6 +446,8 @@
 										if(target.children[i]._rightPressed) target.children[i]._onrightclick(e);
 									}
 								}
+								target.children[i].__inputId = u;
+								break;
 							}
 						}
 					
@@ -464,49 +467,45 @@
 		Engine.prototype.applyRelease = function(target){
 
 			var 
-				mouseX = [],
-				mouseY = [],
-				i,
-				u
+				mouseX,
+				mouseY,
+				i
 			;
 
 			if(Browser.isMobile){
+
 				var numInputs = Mouse.count();
+				if(target.__inputId > numInputs) target.__inputId = numInputs;
 
-				if(numInputs == 0) return;
-
-				for(i=0; i<numInputs; i++){
-					mouseX[i] = Mouse.x(i);
-					mouseY[i] = Mouse.y(i);
-				}
+				mouseX = Mouse.x(target.__inputId || 0);
+				mouseY = Mouse.y(target.__inputId || 0);
 			}
 			else{
-				mouseX[0] = Mouse.x();
-				mouseY[0] = Mouse.y();
-
-				if(mouseX[0] == -1 && mouseY[0] == -1) return;
+				mouseX = Mouse.x();
+				mouseY = Mouse.y();
 			}
+
+			if(mouseX == -1 && mouseY == -1) return;
 			
-			for(u = 0; u<mouseX.length; u++){
-				if(target.isTouched(mouseX[u], mouseY[u])){
-					if(!target._hovered) target._onhover();
-					if(!Mouse.pressed) target._preclick = true;
-				}
-				else{
-					if(target._hovered) target._onleave();
-					target._pressed = false;
-				}
+			if(target.isTouched(mouseX, mouseY)){
+				if(!target._hovered) target._onhover();
+				if(!Mouse.pressed) target._preclick = true;
+			}
+			else{
+				if(target._hovered) target._onleave();
+				target._pressed = false;
+				target.__inputId = null;
+			}
 				
-				if(target._dragged){
-					target.x = mouseX[u] - target._dragOffsetX;
-					target.y = mouseY[u] - target._dragOffsetY;
-						
-					if(target._boundDrag){
-						if(target.x < 0) target.x = 0;
-						if(target.y < 0) target.y = 0;
-						if(target.x > target.parent.width) target.x = target.parent.width;
-						if(target.y > target.parent.height) target.y = target.parent.height;
-					}
+			if(target._dragged){
+				target.x = mouseX - target._dragOffsetX;
+				target.y = mouseY - target._dragOffsetY;
+					
+				if(target._boundDrag){
+					if(target.x < 0) target.x = 0;
+					if(target.y < 0) target.y = 0;
+					if(target.x > target.parent.width) target.x = target.parent.width;
+					if(target.y > target.parent.height) target.y = target.parent.height;
 				}
 			}
 		};
