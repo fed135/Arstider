@@ -392,14 +392,16 @@
 		 * @type {function(this:Engine)}
 		 * @param {Object} e The touch/mouse event
 		 * @param {Object|null} target The target to apply the event to (defaults to current screen) 
+		 * @param {number|null} inputId The id of the mobile input to look at
 		 */
-		Engine.prototype.applyTouch = function(e, target){
+		Engine.prototype.applyTouch = function(e, target, inputId){
 			
 			target = target || singleton.currentScreen;
+			inputId = inputId || 0;
 			
 			var 
-				mouseX = Mouse.x(),
-				mouseY = Mouse.y(),
+				mouseX = Mouse.x(inputId),
+				mouseY = Mouse.y(inputId),
 				i
 			;
 			
@@ -429,6 +431,49 @@
 					}
 				}
 			}
+
+			if(Browser.isMobile) singleton.applyTouch(e, target, inputId++);
+		};
+
+		/**
+		 * Finishes touch behaviours to the canvas element before draw
+		 * @type {function(this:Engine)}
+		 * @param {Object|null} target The target to apply the event to (defaults to current screen) 
+		 * @param {number|null} inputId The id of the mobile input to look at
+		 */
+		Engine.prototype.applyRelease = function(target, inputId){
+
+			inputId = inputId || 0;
+
+			var
+				mouseX = Mouse.x(inputId),
+				mouseY = Mouse.y(inputId)
+			;
+
+			if(mouseX == -1 && mouseY == -1) return;
+			
+			if(target.isTouched(mouseX, mouseY)){
+				if(!target._hovered) target._onhover();
+				if(!Mouse.pressed) target._preclick = true;
+			}
+			else{
+				if(target._hovered) target._onleave();
+				target._pressed = false;
+			}
+			
+			if(target._dragged){
+				target.x = mouseX - target._dragOffsetX;
+				target.y = mouseY - target._dragOffsetY;
+					
+				if(target._boundDrag){
+					if(target.x < 0) target.x = 0;
+					if(target.y < 0) target.y = 0;
+					if(target.x > target.parent.width) target.x = target.parent.width;
+					if(target.y > target.parent.height) target.y = target.parent.height;
+				}
+			}
+
+			if(Browser.isMobile) singleton.applyTouch(target, inputId++);
 		};
 		
 		/**
@@ -454,9 +499,7 @@
 		 */
 		Engine.prototype.draw = function(){
 			//Declare vars
-			var 
-				mouseX = Mouse.x(0),
-				mouseY = Mouse.y(0),
+			var
 				showFrames = false,
                 pencil
 			;
@@ -510,29 +553,7 @@
 			//Run through the elements and draw them at their global x and y with their global width and height
                         
                         
-			pencil.draw(singleton, singleton.currentScreen, function(e){
-				if(mouseX == -1 && mouseY == -1) return;
-				if(e.isTouched(mouseX, mouseY)){
-					if(!e._hovered) e._onhover();
-					if(!Mouse.pressed) e._preclick = true;
-				}
-				else{
-					if(e._hovered) e._onleave();
-					e._pressed = false;
-				}
-				
-				if(e._dragged){
-					e.x = mouseX - e._dragOffsetX;
-					e.y = mouseY - e._dragOffsetY;
-						
-					if(e._boundDrag){
-						if(e.x < 0) e.x = 0;
-						if(e.y < 0) e.y = 0;
-						if(e.x > e.parent.width) e.x = e.parent.width;
-						if(e.y > e.parent.height) e.y = e.parent.height;
-					}
-				}
-			}, null, showFrames);
+			pencil.draw(singleton, singleton.currentScreen, singleton.applyRelease, null, showFrames);
 				
 			if(showFrames) singleton.profiler.drawFrames();
 			
