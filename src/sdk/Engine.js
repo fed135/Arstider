@@ -277,6 +277,7 @@
 		Engine.prototype.loadScreen = function(name){
 			if(Arstider.savedStates[name] != undefined){
 				singleton.currentScreen = Arstider.savedStates[name];
+				singleton.currentScreen.__savedState = false;
 				if(singleton.currentScreen.onresume) singleton.currentScreen.onresume();
 				delete Arstider.savedStates[name];
 				return;
@@ -290,7 +291,8 @@
 			singleton.isPreloading = true;
 			Preloader.set(name);
 			Preloader.progress("__screen__", 0);
-			singleton.killScreen();
+
+			singleton.killScreen((singleton.currentScreen && singleton.currentScreen.__savedState));
 			
 			require([name], function(_menu){
 				
@@ -322,10 +324,10 @@
 		 * Kills the current screen
 		 * @type {function(this:Engine)}
 		 */
-		Engine.prototype.killScreen = function(){
+		Engine.prototype.killScreen = function(preserve){
 			if(singleton.currentScreen != null){
 				Telemetry.log("system", "screenstop", {screen:singleton.currentScreen.name});
-				singleton.currentScreen._unload();
+				if(!preserve) singleton.currentScreen._unload();
                 Ad.closeAll();
 				delete singleton.currentScreen;
 				if(Viewport.tagParentNode) Viewport.tagParentNode.innerHTML = "";

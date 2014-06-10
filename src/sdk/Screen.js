@@ -181,6 +181,7 @@ define("Arstider/Screen", [
 	 * @param {boolean|null} save Whether to save thatr state in localStorage
 	 */
 	Screen.prototype.saveStateAs = function(name, save){
+		this.__savedState = true;
 		Arstider.savedStates[name] = this;
 	};
 
