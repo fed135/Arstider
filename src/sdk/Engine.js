@@ -275,6 +275,14 @@
 		 * @param {string} name The url of the screen to load (must match define!)
 		 */
 		Engine.prototype.loadScreen = function(name){
+			if(Arstider.savedStates[name] != undefined){
+				singleton.currentScreen = Arstider.savedStates[name];
+				if(singleton.currentScreen.onresume) singleton.currentScreen.onresume();
+				delete Arstider.savedStates[name];
+				return;
+			}
+
+
 			Events.unbind("Preloader.loadingCompleted", singleton.startScreen);
 			Events.bind("Preloader.loadingCompleted", singleton.startScreen);
 			
@@ -325,42 +333,6 @@
 			else{
 				if(Arstider.verbose > 1) console.warn("Arstider.Engine.killScreen: no current screen");
 			}
-		};
-		
-		/**
-		 * Displays a screen while keeping the previous screen's state intact
-		 * @type {function(this:Engine)}
-		 * @param {string} name The url of the screen to load (must match define!)
-		 */
-		Engine.prototype.showPopup = function(name){
-			singleton.stop();
-			
-			if(singleton.currentScreen.onpopup) singleton.currentScreen.onpopup(name);
-					
-			singleton._savedScreen = singleton.currentScreen;
-			singleton.currentScreen = null;
-				
-			require([name], function(_menu){
-				singleton.currentScreen = new Screen(_menu, singleton);
-				singleton.currentScreen.stage = singleton;
-				singleton.currentScreen.name = name;
-				singleton.currentScreen.origin = singleton._savedScreen;
-				singleton.play();
-				if(singleton.currentScreen.onload) singleton.currentScreen.onload();
-				Telemetry.log("system", "screenstart", {screen:singleton.currentScreen.name, originscreen:singleton._savedScreen.name});
-			});
-		};
-			
-		/**
-		 * Kills the popup screen and returns to the previous screen in the state it was in
-		 * @type {function(this:Engine)}
-		 */
-		Engine.prototype.hidePopup = function(){
-			singleton.killScreen();
-				
-			singleton.currentScreen = singleton._savedScreen;
-				
-			if(singleton.currentScreen.onresume) singleton.currentScreen.onresume();
 		};
 			
 		/**

@@ -175,6 +175,16 @@ define("Arstider/Screen", [
 	};
 	
 	/**
+	 * Saves the state of a screen so you can hold, show another screen, then load back the state
+	 * @type {function(this:Screen)}
+	 * @param {string} name The name to store the state under
+	 * @param {boolean|null} save Whether to save thatr state in localStorage
+	 */
+	Screen.prototype.saveStateAs = function(name, save){
+		Arstider.savedStates[name] = this;
+	};
+
+	/**
 	 * Resizes the screen when globalScale changes
 	 * @private
 	 * @type {function(this:Screen)}

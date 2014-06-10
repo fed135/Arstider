@@ -82,6 +82,14 @@ Arstider.emptyImgSrc = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACAD
 Arstider.FPS = 60;
 
 /**
+ * Saved screen states
+ * @memberof Arstider
+ * @const
+ * @type {Object}
+ */
+Arstider.savedStates = {};
+
+/**
  * Degrees-to-radians constant
  * @memberof Arstider
  * @const
