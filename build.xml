@@ -46,6 +46,7 @@
 		    <param name="compiler.level" value="SIMPLE_OPTIMIZATIONS"/>
 		</antcall>
 		
+		<!--
 		<echo># Building turbo release (${dest}/sdk/Arstider.turbo.js)</echo>
 							
 		<filter token="target" value="turbo"/>
@@ -57,6 +58,7 @@
 			<param name="target" value="turbo"/>
 		    <param name="compiler.level" value="ADVANCED_OPTIMIZATIONS"/>
 		</antcall>
+		-->
 			
 		<delete file="${dest}/_temp.js" />
 		<echo># Build completed</echo>

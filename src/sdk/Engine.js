@@ -165,6 +165,7 @@
 				
 			Viewport.init(tag, this.canvas.data);
 			
+			Mouse.init(Viewport.container);
 			Mouse._touchRelay = this.applyTouch;
 			
 			Events.bind("Engine.gotoScreen", this.loadScreen);
@@ -393,47 +394,28 @@
 		 * @param {Object} e The touch/mouse event
 		 * @param {Object|null} target The target to apply the event to (defaults to current screen) 
 		 */
-		Engine.prototype.applyTouch = function(e, target, mX, mY){
+		Engine.prototype.applyTouch = function(e, target){
 			
 			target = target || singleton.currentScreen;
 			
 			var 
-				mouseX = [],
-				mouseY = [],
 				i,
-				u
+				u,
+				numInputs = 1
 			;
 
 			if(Browser.isMobile){
-				if(!mX || !mY){
-					var numInputs = Mouse.count();
-
-					if(numInputs == 0) return;
-
-					for(i=0; i<numInputs; i++){
-						mouseX[i] = Mouse.x(i);
-						mouseY[i] = Mouse.y(i);
-					}
-				}
-				else{
-					mouseX = mX;
-					mouseY = mY;
-				}
-			}
-			else{
-				mouseX[0] = mX || Mouse.x();
-				mouseY[0] = mY || Mouse.y();
-
-				if(mouseX[0] == -1 && mouseY[0] == -1) return;
+				numInputs = Math.min(Mouse.count(true), 5);
 			}
 			
 			if(target && target.children && target.children.length > 0){
 				for(i = target.children.length-1; i>=0; i--){
 					target.children[i].__inputId = null;
 					if(target && target.children && target.children[i] && !target.children[i].__skip){
-						for(u=0; u<mouseX.length;u++){
-							if(target.children[i].isTouched(mouseX[u], mouseY[u])){
-								if(Mouse.pressed){
+						for(u=0; u<numInputs;u++){
+
+							if(target.children[i].isTouched(Mouse.x(u), Mouse.y(u))){
+								if(Mouse.isPressed(u)){
 									if(!target.children[i]._pressed) target.children[i]._onpress(e);
 								}
 								else{
@@ -452,7 +434,7 @@
 						}
 					
 						//recursion
-						if(target && target.children && target.children[i] && !target.children[i].__skip && target.children[i].children && target.children[i].children.length > 0) singleton.applyTouch(e, target.children[i], mouseX, mouseY);
+						if(target && target.children && target.children[i] && !target.children[i].__skip && target.children[i].children && target.children[i].children.length > 0) singleton.applyTouch(e, target.children[i]);
 					}
 				}
 			}
@@ -467,45 +449,52 @@
 		Engine.prototype.applyRelease = function(target){
 
 			var 
-				mouseX,
-				mouseY,
+				mouseX = Mouse.x(),
+				mouseY = Mouse.y(),
 				i
 			;
 
 			if(Browser.isMobile){
+				var numInputs = Math.min(Mouse.count(true), 5);
+				for(i=0; i< numInputs; i++){
+					if(target.isTouched(Mouse.x(i), Mouse.y(i))){
+						target.__inputId = i;
+						mouseX = Mouse.x(i);
+						mouseY = Mouse.y(i);
+						if(!target._hovered) target._onhover();
+						if(!Mouse.isPressed(i) && !target._preclick) target._preclick = true;
+						break;
+					}
+				}
 
-				var numInputs = Mouse.count();
-				if(target.__inputId > numInputs) target.__inputId = numInputs;
-
-				mouseX = Mouse.x(target.__inputId || 0);
-				mouseY = Mouse.y(target.__inputId || 0);
+				if(target.__inputId == null){
+					if(target._hovered) target._onleave();
+					target._pressed = false;
+				}
 			}
 			else{
-				mouseX = Mouse.x();
-				mouseY = Mouse.y();
+				if(target.isTouched(mouseX, mouseY)){
+					if(!target._hovered) target._onhover();
+					if(!Mouse.isPressed()) target._preclick = true;
+				}
+				else{
+					if(target._hovered) target._onleave();
+					target._pressed = false;
+					target.__inputId = null;
+				}
 			}
 
-			if(mouseX == -1 && mouseY == -1) return;
-			
-			if(target.isTouched(mouseX, mouseY)){
-				if(!target._hovered) target._onhover();
-				if(!Mouse.pressed) target._preclick = true;
-			}
-			else{
-				if(target._hovered) target._onleave();
-				target._pressed = false;
-				target.__inputId = null;
-			}
-				
-			if(target._dragged){
-				target.x = mouseX - target._dragOffsetX;
-				target.y = mouseY - target._dragOffsetY;
-					
-				if(target._boundDrag){
-					if(target.x < 0) target.x = 0;
-					if(target.y < 0) target.y = 0;
-					if(target.x > target.parent.width) target.x = target.parent.width;
-					if(target.y > target.parent.height) target.y = target.parent.height;
+			if(mouseX != -1 && mouseY != -1){
+				if(target._dragged){
+					target.x = mouseX - target._dragOffsetX;
+					target.y = mouseY - target._dragOffsetY;
+						
+					if(target._boundDrag){
+						if(target.x < 0) target.x = 0;
+						if(target.y < 0) target.y = 0;
+						if(target.x > target.parent.width) target.x = target.parent.width;
+						if(target.y > target.parent.height) target.y = target.parent.height;
+					}
 				}
 			}
 		};
@@ -589,6 +578,8 @@
                         
 			pencil.draw(singleton, singleton.currentScreen, singleton.applyRelease, null, showFrames);
 				
+			Mouse.cleanTouches();
+
 			if(showFrames) singleton.profiler.drawFrames();
 			
 			singleton.removePending(singleton.currentScreen);

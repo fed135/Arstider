@@ -1,9 +1,10 @@
 define("Arstider/commons/Button",[
 	"Arstider/DisplayObject",
 	"Arstider/TextField",
-	"Arstider/Viewport"
+	"Arstider/Viewport",
+	"Arstider/Browser"
 ], 
-function(DisplayObject, TextField, Viewport){
+function(DisplayObject, TextField, Viewport, Browser){
 	function Button(props){
 
 		Arstider.Super(this, DisplayObject, props);
@@ -22,7 +23,7 @@ function(DisplayObject, TextField, Viewport){
 	Arstider.Inherit(Button, DisplayObject);
 
 	Button.prototype._onhover = function(){
-		if(this.enabled){
+		if(this.enabled && !Browser.isMobile){
 			Viewport.tag.style.cursor = "pointer";
 			this.showState("hover");
 			DisplayObject.prototype._onhover.call(this);
@@ -84,32 +85,31 @@ function(DisplayObject, TextField, Viewport){
 		var label = Arstider.checkIn(props.label, Arstider.checkIn(props.text, null));
 		
 		if(label != null){
-			var labelText = new TextField({
+			state.label = new TextField({
 				text:label
 			});
 
 			if(props.font){
-				labelText.setFont(props.font);
+				state.label.setFont(props.font);
 			}
 
-			labelText.dock(0.5, 0.5);
-			state.addChild(labelText);
+			state.label.dock(0.5, 0.5);
+			state.addChild(state.label);
 		}
 
 		if(props.icon != null){
-			var stateIcon;
 			if(typeof props.icon === "string"){
-				stateIcon = new DisplayObject({
+				state.icon = new DisplayObject({
 					data:props.icon
 				});
 			}
 			else if(bg.data != null){
-				stateIcon = props.icon;
+				state.icon = props.icon;
 			}
 			else{
-				stateIcon = new DisplayObject();
+				state.icon = new DisplayObject();
 			}
-			state.addChild(stateIcon);
+			state.addChild(state.icon);
 		}
 
 		this.addChild(state);

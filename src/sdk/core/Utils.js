@@ -186,18 +186,15 @@ Arstider.trimDuplicates = function(arr){
     return arr;
 };
 
-Arstider.getFileExt = function(str){
-    var x = -1;
-
-    t = t['basename']();
-    t = t['stripUrlQuery']();
-    x = t.lastIndexOf('.');
-    t = x >= 0 ? t.substr(x) : '';
-    return t;
-};
-
-Arstider.getUrlQuery = function(){
-
+/**
+ * Attempts to reload the page
+ * @memberof Arstider
+ * @const
+ */
+ Arstider.reload = function() {
+    if("reload" in window.location) window.location.reload();
+    else if("history" in window && "go" in window.history) window.history.go(0);
+    else window.location.href = window.location.href;
 };
 
 /**
