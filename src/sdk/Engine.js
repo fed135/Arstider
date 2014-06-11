@@ -418,29 +418,26 @@
 		 * @type {function(this:Engine)}
 		 * @param {Object|null} target The target to apply the event to (defaults to current screen) 
 		 */
-		Engine.prototype.applyRelease = function(target){
+		Engine.prototype.applyRelease = function(target, inputs){
 
 			var 
-				mouseX = Mouse.x(),
-				mouseY = Mouse.y(),
+				mouseX = (inputs.length == 0)?-1:inputs[0].x,
+				mouseY = (inputs.length == 0)?-1:inputs[0].y,
 				i,
 				inputId = null
 			;
 
-			//target.showOutline = true;
-
 			if(Browser.isMobile){
-				var numInputs = Math.min(Mouse.count(), 5);
-				for(i=0; i< numInputs; i++){
-					if(target.isTouched(Mouse.x(i), Mouse.y(i)) && Mouse.isPressed(i)){
+				for(i=0; i< inputs.length; i++){
+					if(target.isTouched(inputs[i].x, inputs[i].y) && inputs[i].pressed){
 						inputId = i;
-						mouseX = Mouse.x(i);
-						mouseY = Mouse.y(i);
+						mouseX = inputs[i].x;
+						mouseY = inputs[i].y;
 						break;
 					}
 				}
 
-				if(inputId == null){
+				if(inputId == null && (target._pressed || target._preclick)){
 					target._onleave();
 					target._pressed = false;
 					target._preclick = false;
@@ -547,25 +544,8 @@
 			Background.render(singleton.context, Viewport.maxWidth, Viewport.maxHeight, Viewport.globalScale);
 			
 			//Run through the elements and draw them at their global x and y with their global width and height
-                        
-                        
-			pencil.draw(singleton, singleton.currentScreen, singleton.applyRelease, null, showFrames);
-				
-			/*if(Browser.isMobile){
-				var numInputs = Math.min(Mouse.count(), 5);
-				var i;
-				for(i=0; i< numInputs; i++){
-					singleton.context.fillStyle = "red";
-					singleton.context.strokeRect(Mouse.x(i)-22,Mouse.y(i)-22,44,44);
-				}
-
-				singleton.context.fillText("Detecting "+numInputs+ " inputs." , 200, 80);
-
-				var inputs = Mouse._ongoingTouches;
-				for(i=0; i<inputs.length; i++){
-					singleton.context.fillText("input "+i+"["+inputs[i].id+"]: "+inputs[i].x +","+inputs[i].y+" ["+inputs[i].pressed+"]", 200, 100 + (i*32));
-				}
-			}*/
+            
+			pencil.draw(singleton, singleton.currentScreen, function(e){singleton.applyRelease(e, ((Browser.isMobile)?Mouse._ongoingTouches:[{x:Mouse.x(), y:Mouse.y(), pressed:Mouse.pressed}]));}, null, showFrames);
 
 			Mouse.cleanTouches();
 
