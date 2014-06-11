@@ -1,13 +1,14 @@
-define("Arstider/core/Gesture", [], /** @lends core/Gesture */ function(){
+define("Arstider/Gesture", ["Arstider/Mouse"], /** @lends Gesture */ function(Mouse){
 
 	/**
 	 * Gesture constructor
 	 * @constructor
-	 * @class core/Gesture
-	 * @name core/Gesture
-	 * @private
+	 * @class Gesture
+	 * @name Gesture
 	 */
 	function Gesture(){
+		this.reccording = false;
+
 		this.points = [];
 		this.center = null;
 		this.speed = 0;
@@ -26,6 +27,9 @@ define("Arstider/core/Gesture", [], /** @lends core/Gesture */ function(){
 		this._savedDelay = 0;
 		this._savedDistanceX = 0;
 		this._savedDistanceY = 0;
+		this._startDelay =null;
+
+		this.maxPoints = 6;
 	}
 	
 	/**
@@ -58,7 +62,7 @@ define("Arstider/core/Gesture", [], /** @lends core/Gesture */ function(){
 				currY = this.points[i].inputs[0].y;
 			}
 			
-			if(this.points[i].inputs.length > 1){
+			if(this.points[i].inputs[1] != null){
 				if(this.center == null){
 					this.center = {x:(this.points[i].inputs[0].x + this.points[i].inputs[1].x) / 2, y:(this.points[i].inputs[0].y + this.points[i].inputs[1].y) / 2};
 				}
@@ -116,45 +120,29 @@ define("Arstider/core/Gesture", [], /** @lends core/Gesture */ function(){
 			this.resembles = gestures.SWIPE;
 		}
 	};
-	
-	/**
-	 * Adds a gesture history point
-	 * @private
-	 * @type {function(this:Gesture)} 
-	 */
-	Gesture.prototype.addPoint = function(point){
-		if(point.inputs[0].x === -1 || point.inputs[0].y === -1) return;
-		
-		if(point.inputs[1]){
-			if(point.inputs[1].x === -1 || point.inputs[0].y === -1) point.inputs.splice(1,1);
-		}
-		
-		if(this.points.length > maxGesturePoints){
-			this._savedDelay = this.drawTime;
-			this._savedDistanceX = this.distanceX;
-			this._savedDistanceY = this.distanceY;
-			
-			this.points = [this.points[this.points.length-1]];
-			
-			//this.startSpread = null;
-			this.center = null;
-		}
-		
-		this.points.push(point);
+
+	Gesture.prototype.step = function(points){
+		this.points.push({
+			inputs: [points[0],points[1] || null],
+			delay:parseInt(Arstider.timeStamp()) - this._startDelay
+		});
+
+		if(this.points.length > this.maxPoints) this.points.shift()
 		this.update();
 	};
-	
-	/**
-	 * Gesture point constructor
-	 * @private
-	 * @constructor
-	 * @param {Array} inputs The list of inputs
-	 * @param {Object} prevDelay Time stamp (to calculate velocity)
-	 */
-	function GesturePoint(inputs, prevDelay){
-		this.inputs = inputs;
-		this.delay = prevDelay;
-	}
+
+	Gesture.prototype.startReccording = function(){
+		this.reccording = true;
+		this._startDelay = parseInt(Arstider.timeStamp());
+		if(Mouse._currentGestures.indexOf(this) != -1) return;
+		Mouse._currentGestures.push(this);
+	};
+
+	Gesture.prototype.stopReccording = function(){
+		this.reccording = true;
+		var i = Mouse._currentGestures.indexOf(this);
+		if(i != -1) Mouse._currentGestures.splice(i, 1);
+	};
 
 	return Gesture;
 });

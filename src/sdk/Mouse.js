@@ -19,7 +19,7 @@
 	/**
 	 * Defines the Mouse module
 	 */
-	define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Events", "Arstider/core/Gesture"], /** @lends Mouse */ function (Browser, Viewport, Events, Gesture){
+	define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Events"], /** @lends Mouse */ function (Browser, Viewport, Events){
 			
 		if(singleton != null) return singleton;
 		
@@ -76,6 +76,13 @@
 			 * @type {Array}
 			 */
 			this._ongoingTouches = [];
+
+			/**
+			 * Current gestures to step on touchmove
+			 * @private
+			 * @type {Array}
+			 */
+			this._currentGestures = [];
 		}
 
 		/**
@@ -194,9 +201,9 @@
 			e = event || window.event;
 			e.preventDefault();
 			
-			var idx = -1, touches = e.changedTouches, prevState;
+			var i, idx = -1, touches = e.changedTouches, prevState;
 
-  			for(var i=0; i<touches.length; i++){
+  			for(i=0; i<touches.length; i++){
   				idx = singleton.getIndexFromId(touches[i].identifier);
   				if(idx >= 0){
   					prevState = singleton._ongoingTouches[idx].pressed;
@@ -206,6 +213,8 @@
   					if(Arstider.verbose > 2) console.warn("Arstider.Mouse.handleTouchMove: could not resolve input id ",idx);
   				}
   			}
+
+  			singleton.stepGestures();
 		};
 		
 		/**
@@ -226,6 +235,17 @@
 			singleton._touchRelay(e);
 		};
 		
+		/**
+		 * Steps all the current reccording gestures
+		 * @private
+		 * @type {function(this:Mouse)}
+		 */
+		Mouse.prototype.stepGestures = function(){
+			for(i = 0; i< singleton_currentGestures.length; i++){
+  				if(singleton_currentGestures[i] && singleton_currentGestures[i].reccording) singleton_currentGestures[i].step();
+  			}
+		}
+
 		/**
 		 * Internal handler for touch input end
 		 * @private
