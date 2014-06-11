@@ -1,10 +1,10 @@
 define("Arstider/commons/Button",[
 	"Arstider/DisplayObject",
 	"Arstider/TextField",
-	"Arstider/Viewport",
+	"Arstider/Mouse",
 	"Arstider/Browser"
 ], 
-function(DisplayObject, TextField, Viewport, Browser){
+function(DisplayObject, TextField, Mouse, Browser){
 	function Button(props){
 
 		Arstider.Super(this, DisplayObject, props);
@@ -24,14 +24,14 @@ function(DisplayObject, TextField, Viewport, Browser){
 
 	Button.prototype._onhover = function(){
 		if(this.enabled && !Browser.isMobile){
-			Viewport.tag.style.cursor = "pointer";
+			Mouse.setCursor("pointer");
 			this.showState("hover");
 			DisplayObject.prototype._onhover.call(this);
 		}
 	};
 
 	Button.prototype._onleave = function(){
-		Viewport.tag.style.cursor = "default";
+		Mouse.setCursor("default");
 		if(this.enabled) this.showState("normal");
 		else this.showState("disabled");
 		DisplayObject.prototype._onleave.call(this);
@@ -46,7 +46,7 @@ function(DisplayObject, TextField, Viewport, Browser){
 
 	Button.prototype._onrelease = function(){
 		if(this.enabled){
-			Viewport.tag.style.cursor = "default";
+			Mouse.setCursor("default");
 			this.showState("normal");
 			DisplayObject.prototype._onrelease.call(this);
 		}

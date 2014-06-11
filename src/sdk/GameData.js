@@ -125,6 +125,14 @@
 				Storage.set(id, val);
 			}
 		};
+
+		/**
+		 * Save GameData current state
+		 */
+
+		/**
+		 * Load GameData state
+		 */
 		
 		/**
 		 * Flushes the runtime set (and localStorage if seekLocalStorage is true)

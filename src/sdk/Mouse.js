@@ -270,6 +270,15 @@
 
 			singleton._touchRelay(e);
 		};
+
+		/**
+		 * Cahnge cursor appearance over the viewport via css
+		 * @type {function(this:Mouse)}
+		 * @param {string} style The style rule to apply to the cursor
+		 */
+		Mouse.prototype.setCursor = function(style){
+			Viewport.tag.style.cursor = style;
+		};
 		
 		/**
 		 * Internal handler for mouse input start
