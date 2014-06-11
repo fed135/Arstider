@@ -40,12 +40,12 @@
 		
 		return "rgba("+(red+inc)+","+(green+inc)+",0,1)";
 	}
-	
+	singleton = null;
 	/**
 	 * Defines the Debugger module
 	 */	
 	define( "Arstider/Debugger", ["Arstider/core/Performance","Arstider/Keyboard","Arstider/core/Profiler", "Arstider/Events"], function /** @lends Debugger */ (Performance, Keyboard, Profiler, Events){
-
+		if(singleton != null)return singleton;
 		/**
 		 * Debugger constructor
 		 * Visual profiler backend
@@ -71,6 +71,7 @@
 				
 			Keyboard.bind("d", "down", function(){thisRef.showFrames = true;});
 			Keyboard.bind("d", "up", function(){thisRef.showFrames = false;});
+			singleton = this;
 		}
 		
 		/**
@@ -285,12 +286,12 @@
 		 * @return {Array|Object} The element(s) that fit the search query
 		 */
 		Arstider.findElement = function(name, t){
-			if(!this.engine.debug) return;
+			if(!singleton.engine.debug) return;
 			
 			var 
 				ret = [], 
 				i = 0, 
-				t = t || this.engine.currentScreen
+				t = t || singleton.engine.currentScreen
 			;
 				
 			if(t && t.children){
@@ -299,7 +300,7 @@
 						ret.push(t.children[i]);
 					}
 					if(t.children[i].children){
-						ret = ret.concat(Arstider.findElement(name, t.children[i]));
+						ret = ret.concat(Arstider.findElement.apply(singleton,[name, t.children[i]]));
 					}
 				}
 			}
