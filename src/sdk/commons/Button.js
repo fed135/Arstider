@@ -117,6 +117,8 @@ function(DisplayObject, TextField, Viewport, Browser){
 	};
 
 	Button.prototype.showState = function(name){
+		if(this.currentState == name) return;
+
 		if(!(name in this.states)){
 			if(Arstider.verbose > 1) console.warn("Arstider.commons.Button.showState: unexisting state ", name);
 			return;

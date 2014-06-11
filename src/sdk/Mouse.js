@@ -32,7 +32,7 @@
 		 */
 		function copyTouch(touch, state){
 			return {
-				id:touch.identifier || -1, 
+				id:Arstider.checkIn(touch.identifier, -1), 
 				x:((touch.clientX - Viewport.xOffset) / Viewport.canvasRatio) / Viewport.globalScale,
 				y:((touch.clientY - Viewport.yOffset) / Viewport.canvasRatio) / Viewport.globalScale,
 				pressed:Arstider.checkIn(state, true)
@@ -128,11 +128,10 @@
 			input = input || 0;
 			
 			if(Browser.isMobile){
-				var touch = singleton.getIndexFromId(input);
-				if(touch != -1) return singleton._ongoingTouches[touch].x;
+				if(singleton._ongoingTouches[input] != undefined) return parseInt(singleton._ongoingTouches[input].x);
 				else return -1;
 			}
-			else return singleton._mouse.x;
+			else return parseInt(singleton._mouse.x);
 		};
 		
 		/**
@@ -145,11 +144,10 @@
 			input = input || 0;
 		
 			if(Browser.isMobile){
-				var touch = singleton.getIndexFromId(input);
-				if(touch != -1) return singleton._ongoingTouches[touch].y;
+				if(singleton._ongoingTouches[input] != undefined) return parseInt(singleton._ongoingTouches[input].y);
 				else return -1;
 			}
-			else return singleton._mouse.y;
+			else return parseInt(singleton._mouse.y);
 		};
 
 		/**
@@ -162,8 +160,7 @@
 			input = input || 0;
 		
 			if(Browser.isMobile){
-				var touch = singleton.getIndexFromId(input);
-				if(touch != -1) return singleton._ongoingTouches[touch].pressed;
+				if(singleton._ongoingTouches[input] != undefined) return singleton._ongoingTouches[input].pressed;
 				else return false;
 			}
 			else{

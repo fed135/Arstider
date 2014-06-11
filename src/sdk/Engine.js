@@ -384,13 +384,13 @@
 			
 			if(target && target.children && target.children.length > 0){
 				for(i = target.children.length-1; i>=0; i--){
-					target.children[i].__inputId = null;
 					if(target && target.children && target.children[i] && !target.children[i].__skip){
 						for(u=0; u<numInputs;u++){
 
 							if(target.children[i].isTouched(Mouse.x(u), Mouse.y(u))){
 								if(Mouse.isPressed(u)){
 									if(!target.children[i]._pressed) target.children[i]._onpress(e);
+									if(Browser.isMobile) target.children[i]._preclick = true;
 								}
 								else{
 									if(target.children[i]._pressed) target.children[i]._onrelease(e);
@@ -402,7 +402,6 @@
 										if(target.children[i]._rightPressed) target.children[i]._onrightclick(e);
 									}
 								}
-								target.children[i].__inputId = u;
 								break;
 							}
 						}
@@ -418,32 +417,33 @@
 		 * Finishes touch behaviours to the canvas element before draw
 		 * @type {function(this:Engine)}
 		 * @param {Object|null} target The target to apply the event to (defaults to current screen) 
-		 * @param {number|null} inputId The id of the mobile input to look at
 		 */
 		Engine.prototype.applyRelease = function(target){
 
 			var 
 				mouseX = Mouse.x(),
 				mouseY = Mouse.y(),
-				i
+				i,
+				inputId = null
 			;
 
+			//target.showOutline = true;
+
 			if(Browser.isMobile){
-				var numInputs = Math.min(Mouse.count(true), 5);
+				var numInputs = Math.min(Mouse.count(), 5);
 				for(i=0; i< numInputs; i++){
-					if(target.isTouched(Mouse.x(i), Mouse.y(i))){
-						target.__inputId = i;
+					if(target.isTouched(Mouse.x(i), Mouse.y(i)) && Mouse.isPressed(i)){
+						inputId = i;
 						mouseX = Mouse.x(i);
 						mouseY = Mouse.y(i);
-						if(!target._hovered) target._onhover();
-						if(!Mouse.isPressed(i) && !target._preclick) target._preclick = true;
 						break;
 					}
 				}
 
-				if(target.__inputId == null){
-					if(target._hovered) target._onleave();
+				if(inputId == null){
+					target._onleave();
 					target._pressed = false;
+					target._preclick = false;
 				}
 			}
 			else{
@@ -454,7 +454,6 @@
 				else{
 					if(target._hovered) target._onleave();
 					target._pressed = false;
-					target.__inputId = null;
 				}
 			}
 
@@ -552,6 +551,22 @@
                         
 			pencil.draw(singleton, singleton.currentScreen, singleton.applyRelease, null, showFrames);
 				
+			/*if(Browser.isMobile){
+				var numInputs = Math.min(Mouse.count(), 5);
+				var i;
+				for(i=0; i< numInputs; i++){
+					singleton.context.fillStyle = "red";
+					singleton.context.strokeRect(Mouse.x(i)-22,Mouse.y(i)-22,44,44);
+				}
+
+				singleton.context.fillText("Detecting "+numInputs+ " inputs." , 200, 80);
+
+				var inputs = Mouse._ongoingTouches;
+				for(i=0; i<inputs.length; i++){
+					singleton.context.fillText("input "+i+"["+inputs[i].id+"]: "+inputs[i].x +","+inputs[i].y+" ["+inputs[i].pressed+"]", 200, 100 + (i*32));
+				}
+			}*/
+
 			Mouse.cleanTouches();
 
 			if(showFrames) singleton.profiler.drawFrames();
