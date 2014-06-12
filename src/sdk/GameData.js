@@ -1,12 +1,12 @@
 /**
- * Game Data. 
+ * Game Data.
  *
  * @version 1.1.2
  * @author frederic charette <fredericcharette@gmail.com>
  */
 ;(function(){
 
-	var 
+	var
 		/**
 		 * Singleton static
 		 * @private
@@ -22,34 +22,34 @@
 	
 	/**
 	 * Defines the GameData Module
-	 */	
+	 */
 	define( "Arstider/GameData", ["Arstider/core/Storage", "Arstider/Request"], /** @lends GameData */ function (Storage, Request){
-		
+
 		if(singleton != null) return singleton;
-		
+
 		/**
 		 * GameData constructor
 		 * A centralized data-store, joining config files, localstorage and runtime variables
 		 * @class GameData
-		 * @constructor 
+		 * @constructor
 		 */
 		function GameData(){
-			
+
 			/**
 			 * The data set that comes from the config file, second in priority to the runtime set (defined at runtime)
 			 * @private
 			 * @type {Object}
-			 */			
+			 */
 			this._defaultSet = {};
-			
+
 			/**
 			 * The data set that is defined at runtime, also serves as a cache for localStorage
 			 * @private
 			 * @type {Object}
-			 */	
+			 */
 			this._runtimeSet = {};
 		}
-			
+
 		/**
 		 * Loads a JSON file to populate the default data set
 		 * @type {function(this:GameData)}
@@ -70,12 +70,11 @@
 					else{
 						if(Arstider.verbose > 0) console.warn("Arstider.GameData.load: JSON parse error in config file");
 					}
-				
 					if(callback) callback();
 				}
 			}).send();
 		};
-			
+
 		/**
 		 * Sets the localStorage key prefix for the game
 		 * @type {function(this:GameData)}
@@ -86,18 +85,18 @@
 			Storage.prefix = key;
 			return singleton;
 		};
-		
+
 		/**
 		 * Gets some data from the data sets
-		 * NB: Priorities are : 1- Runtime set, 2- localStorage (if seekLocalStorage is true) or Default set, 3- Default set 
+		 * NB: Priorities are : 1- Runtime set, 2- localStorage (if seekLocalStorage is true) or Default set, 3- Default set
 		 * @type {function(this:GameData)}
 		 * @param {Object} id The data key
-		 * @param {Object} seekLocalStorage Whether to look into the localStorage 
+		 * @param {Object} seekLocalStorage Whether to look into the localStorage
 		 * @return {*} The data
 		 */
 		GameData.prototype.get = function(id, seekLocalStorage){
 			var ls = null;
-				
+
 			if(this._runtimeSet[id] != undefined){
 				return this._runtimeSet[id].hist[this._runtimeSet[id].rev];
 			}
@@ -109,14 +108,14 @@
 						return this._runtimeSet[id];
 					}
 				}
-				
+
 				if(this._defaultSet[id] != undefined){
 					return this._defaultSet[id];
 				}
 			}
 			return;
 		};
-		
+
 		/**
 		 * Saves an entry in the runtime data set (and in localStorage if save is true)
 		 * @type {function(this:GameData)}
@@ -393,7 +392,7 @@
 			Storage.reset();
 			return singleton;
 		};
-		
+
 		singleton = new GameData();
 		return singleton;
 	});
