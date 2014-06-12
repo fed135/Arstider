@@ -194,7 +194,7 @@
 					window.addEventListener("orientationchange", this._rotate);
 				}
 				
-				window.document.addEventListener("unload", this._unload);
+				window.onbeforeunload = this._unload;
 				window.addEventListener('pagehide', this._pagehide);
 
 				var hidden, visibilityChange;

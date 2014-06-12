@@ -130,6 +130,38 @@
 			
 			return true;
 		};
+
+		/**
+		 * Removes an entry from the localStorage
+		 * @type {function(this:Storage)}
+		 * @param {string} key The name of the Storage key
+		 * @return {boolean} Whether the operation was successful or not
+		 */	
+		Storage.prototype.remove = function(key){
+			if(this.enabled === false){
+				return false;
+				if(Arstider.verbose > 1) console.warn("Arstider.Storage.remove: localStorage is unavailable");
+			}
+
+			localStorage.removeItem(key);
+			localStorage.removeItem(this.prefix+key);
+			return true;
+		};
+
+		/**
+		 * Returns a list of all the entries for this app
+		 * @type {function(this:Storage)}
+		 * @retrun {Array}
+		 */
+		Storage.prototype.list = function(){
+			var ret = [];
+			for(item in localStorage){
+				if(this._safeKeys.indexOf(item) == -1 && item.indexOf(this.prefix) != -1){
+					ret[ret.length] = item;
+				}
+			}
+			return ret;
+		};
 		
 		/**
 		 * Wipes all non-safeKey entries from localStorage
