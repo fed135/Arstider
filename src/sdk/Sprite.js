@@ -161,7 +161,7 @@
 
 			for (var i = this.currentAnim.frameCallbacks.length - 1; i >= 0; i--) {
 				if(this.currentAnim.frameCallbacks[i]){
-					this.currentAnim.frameCallbacks[i].apply(this);
+					this.currentAnim.frameCallbacks[i].apply(this, [frameNum]);
 				}
 			};
 
