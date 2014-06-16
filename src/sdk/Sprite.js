@@ -149,7 +149,7 @@
 				this.yOffset = animSheet.frames[frameNum][1];
 				return this;
 			}
-			
+
 			if(animSheet.frameWidth != 0) this.width = animSheet.frameWidth;
 			if(animSheet.frameHeight != 0) this.height = animSheet.frameHeight;
 
@@ -158,6 +158,13 @@
 			this.dataHeight = this.height;
 			this.xOffset = theFrame[0];
 			this.yOffset = theFrame[1];
+
+			for (var i = this.currentAnim.frameCallbacks.length - 1; i >= 0; i--) {
+				if(this.currentAnim.frameCallbacks[i]){
+					this.currentAnim.frameCallbacks[i].apply(this);
+				}
+			};
+
 			return this;
 		};
 
