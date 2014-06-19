@@ -74,7 +74,7 @@
 		Sprite.prototype.killBuffer = function(){
 			this.stop();
 
-			if(this.data.kill) this.data.kill();
+			if(this.data && this.data.kill) this.data.kill();
 			this.data = null;
 
 			if(this.currentAnim && this.currentAnim.sheet.url && Arstider.bufferPool[this.currentAnim.sheet.url]) Arstider.bufferPool[this.currentAnim.sheet.url].kill();
