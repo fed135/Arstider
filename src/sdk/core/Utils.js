@@ -140,6 +140,18 @@ Arstider.checkIn = function(val, def){
 };
 
 /**
+ * Test if a value exist
+ * @memberof Arstider
+ * @const
+ * @param {*} val The value to check against undefined
+ * @return {*} A boolean
+ */
+Arstider.isDefine = function(val){
+	return typeof val != 'undefined';
+};
+
+
+/**
  * Multiple check-if-exist method in order of fallback
  * @memberof Arstider
  * @const
