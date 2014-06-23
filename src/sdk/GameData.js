@@ -104,8 +104,8 @@
 				if(seekLocalStorage){
 					ls = Storage.get(id);
 					if(ls != null && ls != undefined){
-						this.set(id, {value:ls});
-						return this._runtimeSet[id];
+						this.set(id, ls);
+						return this._runtimeSet[id].hist[this._runtimeSet[id].rev];
 					}
 				}
 
