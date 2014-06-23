@@ -30,7 +30,7 @@
 	/**
 	 * Defines the Sprite module
 	 */
-	define( "Arstider/Sprite", ["Arstider/Entity"], /** @lends Sprite */ function (Entity) {
+	define( "Arstider/Sprite", ["Arstider/Entity", "Arstider/GlobalTimers"], /** @lends Sprite */ function (Entity, GlobalTimers) {
 
 		/**
 		 * Sprite constructor
@@ -45,8 +45,6 @@
 
 			Arstider.Super(this, Entity, props);
 
-			var thisRef = this;
-
 			/**
 			 * Current animation sequence
 			 * @type {Sequence|null}
@@ -58,11 +56,19 @@
 			 */
 			this.currentFrame = -1;
 			/**
-			 * Current step timer
+			 * Current step timer - gets reset every step
 			 * @private
 			 * @type {number}
 			 */
-			this._stepTimer = setTimeout(function(){thisRef._step.apply(thisRef);}, Math.round(1000/Arstider.FPS)); //wait 1 frame
+			this.delay = 512;
+
+			this.running = false;
+
+			this.completed = false;
+
+			this.stopped = false;
+
+			GlobalTimers.push(this);
 		};
 
 		Arstider.Inherit(Sprite, Entity);
@@ -73,6 +79,7 @@
 		 */
 		Sprite.prototype.killBuffer = function(){
 			this.stop();
+			GlobalTimers.remove(this);
 
 			if(this.data && this.data.kill) this.data.kill();
 			this.data = null;
@@ -81,12 +88,25 @@
 		};
 
 
+		Sprite.prototype.step = function(){
+			if(this.currentAnim == null){
+				this.delay = 512;
+				this.running = false;
+			}
+			else{
+				if(this.running == false && this.completed == false && this.stopped == false){
+					this.running = true;
+					this.delay = this.currentAnim.time;
+				}
+			}
+		};
+
 		/**
 		 * Draws the current Sprite onto the canvas
 		 * @private
 		 * @type {function(this:Sprite)}
 		 */
-		Sprite.prototype._step = function() {
+		Sprite.prototype.finish = function(){
 
 			var stopping = false, i = 0, len = null, thisRef = this;
 
@@ -112,20 +132,22 @@
 						else this.currentFrame = 0;
 
 						for(i; i<len; i++){
-							if(this.currentAnim.callbacks[i]){
-								this.currentAnim.callbacks[i].apply(this);
-							}
+							if(this.currentAnim.callbacks[i]) this.currentAnim.callbacks[i].apply(this);
 						}
 					}
 				}
 
 				if(stopping === false){
-					this._stepTimer = setTimeout(function(){thisRef._step(thisRef);}, this.currentAnim.time);
+					this.running = true;
+					this.completed = false;
+					this.delay = this.currentAnim.time;
 					this.showFrame(this.currentAnim.sheet,this.currentAnim.frames[this.currentFrame]);
 				}
 			}
 			else{
-				this._stepTimer = setTimeout(function(){thisRef._step(thisRef);}, (this.currentAnim)?this.currentAnim.time:1000);
+				this.running = true;
+				this.completed = false;
+				this.delay = this.currentAnim.time;
 			}
 		};
 
@@ -160,35 +182,47 @@
 			this.yOffset = theFrame[1];
 
 			for (var i = this.currentAnim.frameCallbacks.length - 1; i >= 0; i--) {
-				if(this.currentAnim.frameCallbacks[i]){
-					this.currentAnim.frameCallbacks[i].apply(this, [frameNum]);
-				}
-			};
+				if(this.currentAnim.frameCallbacks[i]) this.currentAnim.frameCallbacks[i].apply(this, [frameNum]);
+			}
 
 			return this;
 		};
 
 		/**
-		 * Stops the stepping.
+		 * Stops the stepping, rewinds.
 		 * @type {function(this:Sprite)}
 		 * @return {Sprite} Returns self reference for chaining
 		 */
-		Sprite.prototype.stop = Sprite.prototype.pause = function(){
-			if(this._stepTimer != null) clearTimeout(this._stepTimer);
-			this._stepTimer = null;
+		Sprite.prototype.stop = function(){
+			this.pause();
+			this.currentFrame = -1;
+			if(this.currentAnim != null) this.delay = this.currentAnim.time;
+			else this.delay = 512;
 			return this;
 		};
 
-                /**
+		/**
+		 * Pauses the stepping, will resume at the exact smae frame, with the exact same delay before the next step
+		 * @type {function(this:Sprite)}
+		 * @return {Sprite} Returns self reference for chaining
+		 */
+		Sprite.prototype.pause = function(){
+			this.stopped = true;
+			this.running = false;
+			return this;
+		};
+
+        /**
 		 * Resumes the playing of the current Animation sheet
 		 * @type {function(this:Sprite)}
 		 * @return {Sprite} Returns self reference for chaining
 		 */
-                Sprite.prototype.resume = function(){
-                    this._step(this);
-
-                    return this;
-                };
+        Sprite.prototype.resume = function(){
+            this.running = true;
+			this.completed = false;
+			this.stopped = false;
+			return this;
+        };
 
 		/**
 		 * Rewinds the current Animation sheet
@@ -197,9 +231,7 @@
 		 */
 		Sprite.prototype.rewind = function(){
 			this.stop();
-			this.currentFrame = -1;
 			this.resume();
-
 			return this;
 		};
 
