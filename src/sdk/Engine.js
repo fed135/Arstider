@@ -37,7 +37,7 @@
 		"Arstider/Telemetry",
         "Arstider/Sound", 
         "Arstider/Filters"
-	], /** @lends Engine */ function (Ad, Browser, Screen, Buffer, Events, Background, Preloader, GlobalTimers, Performance, Debugger, Mouse, Viewport, Renderer, WEBGLRenderer, Telemetry, Sound, Filters){
+	], /** @lends Engine */ function (Ad, Browser, Screen, Buffer, Events, Background, Watermark, Preloader, GlobalTimers, Performance, Debugger, Mouse, Viewport, Renderer, WEBGLRenderer, Telemetry, Sound, Filters){
 		
 		if(singleton != null) return singleton;
 			
