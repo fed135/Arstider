@@ -95,7 +95,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 		if(Browser.name == "safari" && Browser.version < 7){
 			//need to save into a canvas
 			this.data = new Buffer({
-				name:this.name + "_compatBuffer_"+url
+				name:"_compatBuffer_"+url+Arstider.timestamp()
 			});
 			var img = new Image();
 			img.onload = function(){

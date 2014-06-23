@@ -62,7 +62,7 @@
 			 * Engine debug flag
 			 * @type {boolean}
 			 */
-			this.debug = @debug@;
+			this.debug = ("@debug@" == "true");
 			/**
 			 * Whether or not the engine should skip the rendering of frames if performances are low
 			 * @type {boolean}
@@ -330,6 +330,14 @@
 				Telemetry.log("system", "screenstop", {screen:singleton.currentScreen.name});
 				if(!preserve) singleton.currentScreen._unload();
                 Ad.closeAll();
+                for(var i in Arstider.bufferPool){
+                	if(i.indexOf("_compatBuffer_")){
+                		if(Background.data != Arstider.bufferPool[i] && Watermark.data != Arstider.bufferPool[i]){
+                			Arstider.bufferPool[i].kill();
+                		}
+                	}
+                }
+
 				delete singleton.currentScreen;
 				if(Viewport.tagParentNode) Viewport.tagParentNode.innerHTML = "";
 			}
