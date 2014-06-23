@@ -40,12 +40,16 @@
 		
 		return "rgba("+(red+inc)+","+(green+inc)+",0,1)";
 	}
+
 	singleton = null;
+
 	/**
 	 * Defines the Debugger module
 	 */	
-	define( "Arstider/Debugger", ["Arstider/core/Performance","Arstider/Keyboard","Arstider/core/Profiler", "Arstider/Events"], function /** @lends Debugger */ (Performance, Keyboard, Profiler, Events){
-		if(singleton != null)return singleton;
+	define( "Arstider/Debugger", ["Arstider/core/Performance","Arstider/Keyboard","Arstider/core/Profiler", "Arstider/Events", "Arstider/Viewport"], function /** @lends Debugger */ (Performance, Keyboard, Profiler, Events, Viewport){
+		
+		if(singleton != null) return singleton;
+
 		/**
 		 * Debugger constructor
 		 * Visual profiler backend
@@ -65,23 +69,12 @@
 			this.loggedFrames = 0;
 				
 			var thisRef = this;
-					
-			this.framesImg = new Image();
 				
 				
 			Keyboard.bind("d", "down", function(){thisRef.showFrames = true;});
 			Keyboard.bind("d", "up", function(){thisRef.showFrames = false;});
 			singleton = this;
 		}
-		
-		/**
-		 * Defines the frame asset to display along the debug outlines (visible zone)
-		 * @type {function(this:Debugger)}
- 		 * @param {string} e The string of the asset
-		 */	
-		Debugger.prototype.setFramesAsset = function(e){
-			this.framesImg.src = e;
-		};
 		
 		/**
 		 * By second step updates the data of the the details and minibar tab
@@ -186,8 +179,23 @@
 		 * @type {function(this:Debugger)}
 		 */
 		Debugger.prototype.drawFrames = function(){
-			if(this.engine.debug && this.showFrames && this.framesImg){
-				this.engine.context.drawImage(this.framesImg,0,0);
+			if(this.engine.debug && this.showFrames){
+				this.engine.context.fillStyle = "black";
+				this.engine.context.globalAlpha = 0.3;
+				var w = (Viewport.maxWidth-Viewport.minWidth)*0.5;
+				var h = (Viewport.maxHeight-Viewport.minHeight)*0.5;
+
+				//left
+				this.engine.context.fillRect(0,0,w, Viewport.maxHeight);
+				//right
+				this.engine.context.fillRect(Viewport.maxWidth-w,0,w, Viewport.maxHeight);
+
+				//top
+				this.engine.context.fillRect(w,0,Viewport.maxWidth-(w*2), h);
+				//right
+				this.engine.context.fillRect(w,Viewport.maxHeight-h,Viewport.maxWidth-(w*2), h);
+
+				//console.log("drew frames ", w, ",", h);
 			}
 		};
 		

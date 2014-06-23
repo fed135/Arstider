@@ -8,125 +8,13 @@
 /**
  * Defines the Tween module
  */	
-define( "Arstider/Tween", ["Arstider/Easings", "Arstider/GlobalTimers"], /** @lends Tween */ function (Easings, GlobalTimers){
-	
-	/**
-	 * Transformation Object constructor
-	 * @constructor
-	 * @private
-	 * @param {Object} property The property affected by the transformation
-	 * @param {Object} start The starting value
-	 * @param {Object} end The end value
-	 */
-	function Transformation(property, start, end){
-		this.property = property;
-		this.start = start;
-		this.end = end;
-		this.lastStep = start;
-	}
-	
-	/**
-	 * Tween animation Object constructor
-	 * @constructor
-	 * @private
-	 * @param {Object} target The tween target
-	 * @param {Object} changes The list of Transformation objects
-	 * @param {Object} time The time to complete the transformations
-	 * @param {function|null} easing The Easing method to apply
-	 * @param {number|null} easeOpt Easing options (for bounce, backswing and elastic)
-	 */
-	function Animation(target, changes, time, easing, easeOpt){
-		this.changes = [];
-		var prop;
-		for(prop in changes){
-			if(!(target[prop] instanceof Function)){
-				if(!(prop in target)) target[prop] = 0;
-				this.changes.push(new Transformation(prop, target[prop], changes[prop]));
-			}
-		}
-				
-		this.startTime = Arstider.checkIn(time, 1000);
-		this.time = this.startTime;
-		this.easing = Arstider.checkIn(easing, Easings.LINEAR);
-		this.easeOpt = easeOpt;
-	}
-	
-	/**
-	 * Rewinds the current tween animation
-	 * @private
-	 * @type {function(this:Animation)}
-	 */
-	Animation.prototype.rewind = function(){
-		this.time = this.startTime;
-	};
-	
-	/**
-	 * Steps the tween animation to the next frame
-	 * @private
-	 * @type {function(this:Animation)}
-	 * @param {Tween} target The tween chain holding the animation
-	 */
-	Animation.prototype.step = function(target){
-		var i = this.changes.length-1, progress = Math.min(this.time / this.startTime, 1);
-		
-		for(i; i>= 0; i--){
-			this.changes[i].lastStep = target.target[this.changes[i].property];
-			target.target[this.changes[i].property] = this.changes[i].end - ((this.changes[i].end - this.changes[i].start) * this.easing(progress, this.easeOpt));
-		}
-	};
-	
-	/**
-	 * Returns to the previous frame
-	 * @private
-	 * @type {function(this:Animation)}
-	 * @param {Tween} target The tween chain holding the animation
-	 */
-	Animation.prototype.stepBack = function(target){
-		var i = this.changes.length-1;
-		
-		for(i; i>= 0; i--){
-			target.target[this.changes[i].property] = this.changes[i].lastStep;
-		}
-	};
-	
-	/**
-	 * Tween action step constructor
-	 * @constructor
-	 * @private
-	 * @param {function} callback The method to call at that step
-	 * @param {*} option Optional data to provide the callback with
-	 */
-	function Action(callback, option){
-		this.startTime = 1;
-		this.timesToRun = Arstider.checkIn(option, 1);
-		this.timesRan = 0;
-		this.time = this.startTime;
-		this.callback = callback;
-		this.callbackOption = [Arstider.checkIn(option, null)];
-	}
-	
-	/**
-	 * Rewinds the action step
-	 * @private
-	 * @type {function(this:Action)}
-	 */
-	Action.prototype.rewind = function(){
-		this.time = this.startTime;
-		this.timesRan = 0;
-	};
-	
-	/**
-	 * Calls the callback function
-	 * @private
-	 * @type {function(this:Action)}
-	 * @param {Tween} target The tween chain holding the animation
-	 */	
-	Action.prototype.step = function(target){
-		if(this.timesToRun > this.timesRan || this.timesToRun == -1){
-			this.callback.apply(target, this.callbackOption);
-			this.timesRan++;
-		}
-	};
+define( "Arstider/Tween", [
+	"Arstider/Easings", 
+	"Arstider/GlobalTimers", 
+	"Arstider/core/Transformation", 
+	"Arstider/core/Animation",
+	"Arstider/core/Action"
+	], /** @lends Tween */ function (Easings, GlobalTimers, Transformation, Animation, Action){
 	
 	/**
 	 * Tween constructor

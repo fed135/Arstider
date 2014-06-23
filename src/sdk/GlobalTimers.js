@@ -75,8 +75,32 @@
 			if(Arstider.verbose > 2) console.warn("Arstider.GlobalTimers.remove: timer not in list, nothing was removed");
 		};
 		
+		/**
+		 * Removes all the timers from the list
+		 * @type {function(this:GlobalTimers)}
+		 */
 		GlobalTimers.prototype.clean = function(){
 			this.list = [];
+		};
+
+		/**
+		 * Pauses all the timers from the list
+		 * @type {function(this:GlobalTimers)}
+		 */
+		GlobalTimers.prototype.pauseAll = function(){
+			for(var i = this.list.length-1; i>=0;i--){
+				if(this.list[i] && this.list[i].pause) this.list[i].pause();
+			}
+		};
+
+		/**
+		 * Resumes all the timers from the list
+		 * @type {function(this:GlobalTimers)}
+		 */
+		GlobalTimers.prototype.resumeAll = function(){
+			for(var i = this.list.length-1; i>=0;i--){
+				if(this.list[i] && this.list[i].resume) this.list[i].resume();
+			}
 		};
 			
 		singleton = new GlobalTimers();

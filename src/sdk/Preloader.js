@@ -46,11 +46,6 @@
 		 * @constructor
 		 */
 		function Preloader(){
-			/**
-			 * Whether or not to add a input check at the end of the preloading ("click to continue")
-			 * @type {boolean}
-			 */
-			this.clickToDismiss = false;
 			
 			/**
 			 * The list of items in the preload queue
@@ -89,12 +84,10 @@
 		 * Resets the preloader and prepares the load of a new screen
 		 * @type {function(this:Preloader)}
 		 * @param {string} name The name of the screen that is about to be preloaded
-		 * @param {boolean} clickReq Whether to listen for a click input at the end
 		 */
-		Preloader.prototype.set = function(name, clickReq){
+		Preloader.prototype.set = function(name){
 			this.reset();
 			Events.broadcast("Preloader.showPreloader", name);
-			this.clickToDismiss = clickReq || false;
 		};
 		
 		/**
@@ -156,7 +149,6 @@
 			}
 			
 			var currPcent = this.totalPercent();
-			if(this._screen) this._screen.update(currPcent, this.clickToDismiss);
 			if(currPcent >= 100) this._checkComplete(true);
 		};
 			
