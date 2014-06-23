@@ -325,7 +325,7 @@
 		 * @param {Image|HTMLCanvasElement} targetData The data to draw on the debug canvas
 		 */
 		Arstider.debugDraw = function(targetData){
-			if(!this.engine.debug) return;
+			if(!singleton.engine.debug) return;
 			
 			var 
 				ctx = null,
@@ -362,7 +362,7 @@
 		 * @param {*} target The target for broadcast
 		 */
 		Arstider.debugBroadcast = function(name, param, target){
-			if(!this.engine.debug) return;
+			if(!singleton.engine.debug) return;
 			
 			Events.broadcast(name, param, target);
 		};
