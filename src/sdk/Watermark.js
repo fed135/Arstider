@@ -1,5 +1,5 @@
 /**
- * Background
+ * Watermark
  * 
  * @version 1.1
  * @author frederic charette <fredericcharette@gmail.com>
@@ -14,15 +14,15 @@
 		/**
 		 * Singleton static
 		 * @private
-		 * @type {Background|null}
+		 * @type {Watermark|null}
 		 */
 		singleton = null
 	;
 	
 	/*
-	 * Defines the Background module
+	 * Defines the Watermark module
 	 */
-	define( "Arstider/Background", ["Arstider/DisplayObject"], /** @lends Background */ function (DisplayObject) {
+	define( "Arstider/Watermark", ["Arstider/DisplayObject"], /** @lends Watermark */ function (DisplayObject) {
 		
 		/**
 		 * Returns singleton if it has been instantiated
@@ -35,4 +35,4 @@
 		singleton = new DisplayObject();
 		return singleton;
 	});
-})();		
+})();

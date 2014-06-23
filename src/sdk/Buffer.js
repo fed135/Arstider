@@ -19,7 +19,7 @@
 	/**
 	 * Defines the Buffer module
 	 */
-	define("Arstider/Buffer", ["Arstider/Browser"], /** @lends Buffer */ function(Browser){
+	define("Arstider/Buffer", ["Arstider/Browser", "Arstider/core/Pixel"], /** @lends Buffer */ function(Browser, Pixel){
 
 		/**
 		 * Buffer constructor

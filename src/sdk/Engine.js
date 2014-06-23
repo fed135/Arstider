@@ -25,6 +25,7 @@
 		"Arstider/Buffer", 
 		"Arstider/Events",
 		"Arstider/Background",
+		"Arstider/Watermark",
 		"Arstider/Preloader",
 		"Arstider/GlobalTimers",
 		"Arstider/core/Performance",
@@ -541,11 +542,10 @@
 				
 			if(singleton.profiler) showFrames = singleton.profiler.showFrames;
 			
-			Background.render(singleton.context, Viewport.maxWidth, Viewport.maxHeight, Viewport.globalScale);
-			
-			//Run through the elements and draw them at their global x and y with their global width and height
-            
+			pencil.draw(singleton, Background, null, null, showFrames);  
 			pencil.draw(singleton, singleton.currentScreen, function(e){singleton.applyRelease(e, ((Browser.isMobile)?Mouse._ongoingTouches:[{x:Mouse.x(), y:Mouse.y(), pressed:Mouse.pressed}]));}, null, showFrames);
+			pencil.draw(singleton, Watermark, null, null, showFrames);
+
 
 			Mouse.cleanTouches();
 
