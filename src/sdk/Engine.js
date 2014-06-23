@@ -260,7 +260,7 @@
                     Sound.play("empty");
 					singleton.currentScreen.onload();
 				}
-				singleton.canvas.data.focus();
+				if(singleton.canvas && singleton.canvas.data) singleton.canvas.data.focus();
 				singleton.isPreloading = false;
 				if(!Viewport.unsupportedOrientation) singleton.play();
 				Telemetry.log("system", "screenstart", {screen:singleton.currentScreen.name});
@@ -331,7 +331,7 @@
 				if(!preserve) singleton.currentScreen._unload();
                 Ad.closeAll();
                 for(var i in Arstider.bufferPool){
-                	if(i.indexOf("_compatBuffer_")){
+                	if(i.indexOf("_compatBuffer_") != -1){
                 		if(Background.data != Arstider.bufferPool[i] && Watermark.data != Arstider.bufferPool[i]){
                 			Arstider.bufferPool[i].kill();
                 		}

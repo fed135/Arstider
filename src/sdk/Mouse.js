@@ -241,8 +241,8 @@
 		 * @type {function(this:Mouse)}
 		 */
 		Mouse.prototype.stepGestures = function(){
-			for(i = 0; i< singleton_currentGestures.length; i++){
-  				if(singleton_currentGestures[i] && singleton_currentGestures[i].reccording) singleton_currentGestures[i].step();
+			for(i = 0; i< singleton._currentGestures.length; i++){
+  				if(singleton._currentGestures[i] && singleton._currentGestures[i].reccording) singleton._currentGestures[i].step();
   			}
 		}
 
