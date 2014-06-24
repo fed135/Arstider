@@ -19,7 +19,7 @@
 	 /**
 	 * Defines performance module
 	 */	
-	define( "Arstider/core/Renderer", ["Arstider/Sprite", "Arstider/DisplayObject", "Arstider/TextField", "Arstider/core/Performance", "Arstider/Buffer", "Arstider/Shape"], /** @lends core/Renderer */ function (Sprite, DisplayObject, TextField, Performance, Buffer, Shape){
+	define( "Arstider/core/Renderer", ["Arstider/Sprite", "Arstider/DisplayObject", "Arstider/TextField", "Arstider/core/Performance", "Arstider/Buffer", "Arstider/Shape", "Arstider/Viewport"], /** @lends core/Renderer */ function (Sprite, DisplayObject, TextField, Performance, Buffer, Shape, Viewport){
 		
 		if(singleton != null) return singleton;
 			
@@ -185,12 +185,35 @@
 				}
 				else{
 					//instanceof is pretty fast,  we want to leverage data offset rather than having an extra buffer for sprites.
-					if(curChild instanceof Sprite || curChild.largeData === true){
-						this._context.drawImage((curChild.data instanceof Buffer)?curChild.data.data:curChild.data, curChild.xOffset, curChild.yOffset, curChild.dataWidth, curChild.dataHeight, Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
+					
+					var isOffscreen;
+					
+					if (isComplex) {
+						isOffscreen = false;
+					} else {
+						isOffscreen = true;
+						if (_currentX < Viewport.maxWidth) {
+							if (_currentY < Viewport.maxHeight) {
+								if (_currentX + curChild.width >= 0) {
+									if (_currentY + curChild.height >= 0) {
+										isOffscreen = false;
+									}
+								}
+							}
+						}
 					}
-					else{
-						this._context.drawImage((curChild.data instanceof Buffer)?curChild.data.data:curChild.data, Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
+					
+					if (!isOffscreen) {
+						
+						if(curChild instanceof Sprite || curChild.largeData === true){
+							this._context.drawImage((curChild.data instanceof Buffer)?curChild.data.data:curChild.data, curChild.xOffset, curChild.yOffset, curChild.dataWidth, curChild.dataHeight, Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
+						}
+						else{
+							this._context.drawImage((curChild.data instanceof Buffer)?curChild.data.data:curChild.data, Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
+						}
+						
 					}
+					
 				}
 			}
                         
