@@ -1,4 +1,4 @@
-define("Arstider/commons/Input", ["Arstider/Tag"], function(Tag){
+define("Arstider/commons/Input", ["Arstider/Tag"], /** @lends commons/Input */ function(Tag){
 	
 	function Input(props){
 		

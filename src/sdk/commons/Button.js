@@ -3,7 +3,7 @@ define("Arstider/commons/Button",[
 	"Arstider/TextField",
 	"Arstider/Mouse",
 	"Arstider/Browser"
-], 
+], /** @lends commons/Button */
 function(DisplayObject, TextField, Mouse, Browser){
 	function Button(props){
 

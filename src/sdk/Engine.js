@@ -302,7 +302,7 @@
                                         Events.unbind("Viewport.rotate", finishLoadScreen);
                                         singleton.currentScreen = new Screen(_menu, singleton);
 
-                                        singleton.currentScreen.stage = singleton;
+                                        //singleton.currentScreen.stage = singleton;
                                         singleton.currentScreen.name = name;
                                         setTimeout(function(){
                                                 Preloader.progress("__screen__", 100);
@@ -526,8 +526,8 @@
 				if(Preloader._queue.length > 0){
                     if(pencil == WEBGLRenderer) singleton.context.clear(singleton.context.COLOR_BUFFER_BIT);
 					else singleton.context.clearRect(0,0,Viewport.maxWidth,Viewport.maxHeight);
-					Preloader._screen.cancelBubble();
-					Preloader._screen._update();
+					//Preloader._screen.cancelBubble();
+					//Preloader._screen._update();
 					pencil.draw(singleton, Preloader._screen, null, null, false);
 					if(Viewport.tagParentNode) Viewport.tagParentNode.style.display = "none";
 				}

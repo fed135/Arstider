@@ -35,7 +35,7 @@
 	/**
 	 * Defines the Preloader module
 	 */	
-	define( "Arstider/Preloader", ["Arstider/Events"], /** @lends Preloader */ function(Events) {
+	define( "Arstider/Preloader", ["Arstider/Events", "Arstider/Screen"], /** @lends Preloader */ function(Events, Screen) {
 	
 		if(singleton != null) return singleton;
 			
@@ -96,7 +96,7 @@
 		 * @param {Object} preloaderScreen The screen object to use
 		 */
 		Preloader.prototype.setScreen = function(preloaderScreen){
-			this._screen = preloaderScreen;
+			this._screen = new Screen(preloaderScreen, this);
 		};
 		
 		/**
@@ -149,6 +149,7 @@
 			}
 			
 			var currPcent = this.totalPercent();
+			if(this._screen && this._screen.update) this._screen.update.apply(this._screen, [currPcent]);
 			if(currPcent >= 100) this._checkComplete(true);
 		};
 			
