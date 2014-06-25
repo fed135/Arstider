@@ -336,6 +336,12 @@
 		 * @param {string} id The name of the sound to stop
 		 */
 		Sound.prototype.stop = function(id){
+			if(id == undefined){
+				this.stopAllTracks();
+				this.stopAllSounds();
+				return;
+			}
+
 			if(id in singleton.tracks){
 				if(singleton.tracks[id]._handle) singleton.tracks[id]._handle.stop();
 				
@@ -348,6 +354,27 @@
 				return;
 			}
 			
+			singleton.sounds._handle.stop(id);
+		};
+
+		/**
+		 * Stops all tracks not in the sprite
+		 * @type {function(this:Sound)}
+		 */
+		Sound.prototype.stopAllTracks = function(){
+			for(var id in singleton.tracks){
+				if(singleton.tracks[id]._handle) singleton.tracks[id]._handle.stop();
+				
+				if(singleton.tracks[id].fadeOutTimer) singleton.tracks[id].fadeOutTimer.pause();
+				return;
+			}
+		};
+
+		/**
+		 * Stops all the sounds from the sprite
+		 * @type {function(this:Sound)}
+		 */
+		Sound.prototype.stopAllSounds = function(){	
 			singleton.sounds._handle.stop(id);
 		};
 		
@@ -412,7 +439,7 @@
 			
 			singleton.sounds._handle.volume(val, id);
 		};
-	
+
 		singleton = new Sound();
 		return singleton;
 	});
