@@ -375,7 +375,7 @@
 		 * @type {function(this:Sound)}
 		 */
 		Sound.prototype.stopAllSounds = function(){	
-			singleton.sounds._handle.stop(id);
+			singleton.sounds._handle.stop();
 		};
 		
 		/**
