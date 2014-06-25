@@ -86,7 +86,10 @@ function(DisplayObject, TextField, Mouse, Browser){
 		
 		if(label != null){
 			state.label = new TextField({
-				text:label
+				text:label,
+				width:props.textWidth || 100,
+				//height: props.textHeight || 50,
+				strokeText: props.strokeText || false
 			});
 
 			if(props.font){
