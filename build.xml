@@ -1,4 +1,4 @@
-<project name="Arstider" basedir=".">
+<project name="Arstider" basedir="." default="build.all">
 	
 	<property environment="env."/>
 	
