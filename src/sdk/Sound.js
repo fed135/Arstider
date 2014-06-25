@@ -366,7 +366,6 @@
 				if(singleton.tracks[id]._handle) singleton.tracks[id]._handle.stop();
 				
 				if(singleton.tracks[id].fadeOutTimer) singleton.tracks[id].fadeOutTimer.pause();
-				return;
 			}
 		};
 
