@@ -180,8 +180,8 @@
 		 */
 		Debugger.prototype.drawFrames = function(){
 			if(this.engine.debug && this.showFrames){
-				this.engine.context.fillStyle = "black";
-				this.engine.context.globalAlpha = 0.3;
+				this.engine.context.fillStyle = "rgba(0,0,0,0.3)";
+				//this.engine.context.globalAlpha = 0.3;
 				var w = (Viewport.maxWidth-Viewport.minWidth)*0.5;
 				var h = (Viewport.maxHeight-Viewport.minHeight)*0.5;
 
