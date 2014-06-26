@@ -35,7 +35,7 @@
 	/**
 	 * Defines the Preloader module
 	 */	
-	define( "Arstider/Preloader", ["Arstider/Events", "Arstider/Screen"], /** @lends Preloader */ function(Events, Screen) {
+	define( "Arstider/Preloader", ["Arstider/Events"], /** @lends Preloader */ function(Events) {
 	
 		if(singleton != null) return singleton;
 			
@@ -96,7 +96,7 @@
 		 * @param {Object} preloaderScreen The screen object to use
 		 */
 		Preloader.prototype.setScreen = function(preloaderScreen){
-			this._screen = new Screen(preloaderScreen, this);
+			this._screen = preloaderScreen;
 		};
 		
 		/**
