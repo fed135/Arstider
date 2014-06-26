@@ -279,7 +279,6 @@
 			this._showBoxes = showBoxes;
 			
 			this.renderChild(rootChild, 0, 0);
-			Performance.frames++;
 		};
 			
 		singleton = new Renderer();

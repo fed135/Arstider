@@ -555,7 +555,7 @@
 			pencil.draw(singleton, Background, null, null, showFrames);  
 			pencil.draw(singleton, singleton.currentScreen, function(e){singleton.applyRelease(e, ((Browser.isMobile)?Mouse._ongoingTouches:[{x:Mouse.x(), y:Mouse.y(), pressed:Mouse.pressed}]));}, null, showFrames);
 			pencil.draw(singleton, Watermark, null, null, showFrames);
-
+			Performance.frames++;
 
 			Mouse.cleanTouches();
 
