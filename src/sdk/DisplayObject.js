@@ -64,7 +64,7 @@
 		 * Adds an Entity-type to the list of children.
 		 * @type {function(this:DisplayObject)}
 		 * @param {Entity} clip The Entity to be added to the DisplayObject's list of children
-		 * @return {number} Index of the newly added child
+		 * @return {Object} Self reference for chaining
 		 */
 		DisplayObject.prototype.addChild = function(clip){
 			if(clip.parent != null && Arstider.verbose > 1) console.warn("Arstider.DisplayObject.addChild: object already has a parent");
@@ -78,14 +78,14 @@
 			this.children[this.children.length]=clip;
 
 			if(clip.cancelBubble) clip.cancelBubble()._update();
-			return this.children.length-1;
+			return this;
 		};
 		
 		/**
 		 * Removes an Entity-type from the list of children.
 		 * @type {function(this:DisplayObject)}
 		 * @param {string} name The name of the Entity to be removed from the DisplayObject's list of children
-		 * @return {boolean} Was a child removed or not.
+		 * @return {Object} Self reference for chaining
 		 */
 		DisplayObject.prototype.removeChildByName = function(name) {
 			var index = getChildIndexByName(this.children, name);
@@ -102,17 +102,18 @@
 					
 					this.children.splice(index,1);
 				}
-				return true;
 			}
-			if(Arstider.verbose > 1) console.warn("Arstider.DisplayObject.removeChildByName: could not find children "+name);
-			return false;
+			else{
+				if(Arstider.verbose > 1) console.warn("Arstider.DisplayObject.removeChildByName: could not find children "+name);
+			}
+			return this;
 		};
 		
 		/**
 		 * Removes an Entity from the list of children.
 		 * @type {function(this:DisplayObject)}
 		 * @param {Entity} ref The reference of the Entity to be removed from the DisplayObject's list of children
-		 * @return {boolean} Was a child removed or not.
+		 * @return {Object} Self reference for chaining
 		 */
 		DisplayObject.prototype.removeChild = function(ref, keepBuffer) {
 			var index = this.children.indexOf(ref);
@@ -129,10 +130,11 @@
 					
 					this.children.splice(index,1);
 				}
-				return true;
 			}
-			if(Arstider.verbose > 1) console.warn("Arstider.DisplayObject.removeChild: could not find child");
-			return false;
+			else{
+				if(Arstider.verbose > 1) console.warn("Arstider.DisplayObject.removeChild: could not find child");
+			}
+			return this;
 		};
 		
 		/**
@@ -161,6 +163,7 @@
 		/**
 		 * Removes all children from stage and destroys their buffers.
 		 * @type {function(this:DisplayObject)}
+		 * @return {Object} Self reference for chaining
 		 */
 		DisplayObject.prototype.removeChildren = function(force){
 			var someKept = false;
@@ -185,6 +188,35 @@
 			}
 			
 			if(!someKept) this.children = [];
+
+			return this;
+		};
+
+		/**
+		 * Detaches a child from it's parent while keeping buffers and children intact
+		 * @type {function(this:DisplayObject)}
+		 * @param {string|Object} ref The name or reference of the child to detach
+		 * @return {Object} Self reference for chaining
+		 */
+		DisplayObject.prototype.detachChild = function(ref){
+			var i = this.children.indexOf(ref);
+			if(i != -1){
+				this.children[i].parent = null;
+				this.children[i].onStage = false;
+				this.children.splice(i,1);
+			}
+			else{
+				i = getChildIndexByName(this.children, ref);
+				if(i != -1){
+					this.children[i].parent = null;
+					this.children[i].onStage = false;
+					this.children.splice(i,1);
+				}
+				else{
+					if(Arstider.verbose > 1) console.warn("Arstider.DisplayObject.detachChild: could not find child ", ref);
+				}
+			}
+			return this;
 		};
 		
 		/**

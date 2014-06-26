@@ -102,7 +102,7 @@
 			 * Stops rendering
 			 * @type {boolean}
 			 */
-			this.handbreak = false;
+			this.handbreak = true;
 			/**
 			 * Forces a stopped engine to remain paused until this gets reverted
 			 * @type {boolean}
@@ -351,13 +351,15 @@
 		 * @type {function(this:Engine)}
 		 */
 		Engine.prototype.play = function(){
-			if(Viewport.unsupportedOrientation) return;
-			
-			if(Arstider.verbose > 2) console.warn("Arstider.Engine.play: playing...");
-			if(!singleton.isPreloading) singleton.handbreak = false;
-			if(singleton.frameRequest) Arstider.cancelAnimFrame.apply(window, [singleton.frameRequest]);
-			singleton.draw();
-			Events.broadcast("Engine.play", singleton);
+			if(singleton.handbreak){
+				if(Viewport.unsupportedOrientation) return;
+				
+				if(Arstider.verbose > 2) console.warn("Arstider.Engine.play: playing...");
+				if(!singleton.isPreloading) singleton.handbreak = false;
+				if(singleton.frameRequest) Arstider.cancelAnimFrame.apply(window, [singleton.frameRequest]);
+				singleton.draw();
+				Events.broadcast("Engine.play", singleton);
+			}
 		};
 			
 		/**
