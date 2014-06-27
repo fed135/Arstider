@@ -19,7 +19,7 @@
 	/**
 	 * Defines the Sound module
 	 */
-	define( "Arstider/Sound", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Request", "Arstider/Timer"], /** @lends Sound */ function (Browser, Viewport, Request, Timer) {
+	define( "Arstider/Sound", ["Arstider/Browser", "Arstider/Request", "Arstider/Timer"], /** @lends Sound */ function (Browser, Request, Timer) {
 		
 		if(singleton != null) return singleton;
 		
@@ -111,8 +111,7 @@
 				onend:singleton._removeInstance
 			});
 			
-			if(Browser.isMobile) Viewport.tag.addEventListener("touchstart", singleton._queueFile);
-			else singleton._fileInPipe = true;
+			if(!Browser.isMobile) singleton._fileInPipe = true;
 		};
 		
 		/**
@@ -130,8 +129,6 @@
 			}
 			else singleton.play('empty');
 			singleton._queue = [];
-			
-			Viewport.tag.removeEventListener("touchstart", singleton._queueFile);
 		};
 		
 		/**

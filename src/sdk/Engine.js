@@ -390,6 +390,7 @@
 
 			if(Browser.isMobile){
 				numInputs = Math.min(Mouse.count(true), 5);
+				Sound._queueFile();
 			}
 			
 			if(target && target.children && target.children.length > 0){
