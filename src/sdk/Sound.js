@@ -175,19 +175,28 @@
 		 * @return {Object} Self reference, for chaining
 		 */
 		Sound.prototype.preload = function(id, playOnLoaded, props){
-			var req = new Request({
-				url:this.tracks[id].files[0],
-				caller:this,
-				cache:false,
-				track:true,
-				callback:function(){
-					this.tracks[id]._handle = new Howl({
-						urls:this.tracks[id].files,
-						loop:this.tracks[id].loop || false
-					});
-					if(playOnLoaded) singleton.play(id, props);
-				}
-			}).send();
+			if(Browser.isMobile){
+				this.tracks[id]._handle = new Howl({
+					urls:this.tracks[id].files,
+					loop:this.tracks[id].loop || false
+				});
+				if(playOnLoaded) singleton.play(id, props);
+			}
+			else{
+				var req = new Request({
+					url:this.tracks[id].files[0],
+					caller:this,
+					cache:false,
+					track:true,
+					callback:function(){
+						this.tracks[id]._handle = new Howl({
+							urls:this.tracks[id].files,
+							loop:this.tracks[id].loop || false
+						});
+						if(playOnLoaded) singleton.play(id, props);
+					}
+				}).send();
+			}
 			return singleton;
 		};
 		
