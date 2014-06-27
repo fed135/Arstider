@@ -2,6 +2,7 @@
  * Request
  * 
  * @version 1.1.3
+ * @status Stable
  * @author frederic charette <fredericcharette@gmail.com>
  */
 ;(function(){
@@ -47,7 +48,9 @@
 			"Upgrade",
 			"User-Agent",
 			"Via"
-		]
+		],
+
+		preloaderRef = null
 	;
 	
 	window.URL = window.URL || window.webkitURL || null;
@@ -74,7 +77,7 @@
 	 * @param {string} url The url of the call
 	 * @param {Object} preloaderRef The instance of the preloader singleton
 	 */
-	function updateInPending(url, preloaderRef){
+	function updateInPending(url){
 		var i = pending.length-1;
 		for(i;i>=0;i--){
 			if(url == pending[i].url){
@@ -156,11 +159,11 @@
 			 * @type {boolean}
 			 */
 			this.async = Arstider.checkIn(props.async, true);
-                        /**
-                         * Mime override
-                         * @type {string|null}
-                         */
-                        this.mimeOverride = Arstider.checkIn(props.mimeOverride, null);
+            /**
+             * Mime override
+             * @type {string|null}
+             */
+            this.mimeOverride = Arstider.checkIn(props.mimeOverride, null);
 			/**
 			 * Optional server user name
 			 * @type {string}
@@ -194,6 +197,22 @@
 			 * @type {boolean}
 			 */
 			this._parseRequired = false;
+
+			/**
+			 * For stanbdalone
+			 */
+			var thisRef = this;
+			if(this.track){
+				require(["Arstider/Preloader"],function(p){
+					preloaderRef = p;
+					if(thisRef._sendPending) thisRef.send.apply(thisRef);
+				});
+			}
+
+			/**
+			 * If a send request is pending
+			 */
+			this._sendPending = false;
 		}
 		
 		/**
@@ -202,116 +221,114 @@
 		 */
 		Request.prototype.send = function(){
 			
+			if(preloaderRef == null && this.track){
+				this._sendPending = true;
+				return;
+			}
+
 			var 
 				xhr,
 				thisRef = this,
 				header
 			;
 			
-			require(["Arstider/Preloader", "Arstider/Browser"], function(Preloader, Browser){
-			
-				function handleError(e){
-					if(thisRef.error){
-						thisRef.error.apply(thisRef.caller, [e]);
-					}
-					if(thisRef.track) Preloader.progress(thisRef.id, 100);
-				};
-			
-				if(thisRef.track) Preloader.progress(thisRef.id, 0);
-				
-				if(thisRef.cache){
-					if(cache[thisRef.url] !== undefined){
-						thisRef.callback.apply(thisRef.caller, [cache[thisRef.url]]);
-						updateInPending(thisRef.url);
-						if(thisRef.track) Preloader.progress(thisRef.id, 100);
-						return;
-					}
-					
-					if(findInPending(thisRef.url)){
-						pending.push(thisRef);
-						return;
-					}
-					else{
-						pending.push({url:thisRef.url});
-					}
+			function handleError(e){
+				if(thisRef.error){
+					thisRef.error.apply(thisRef.caller, [e]);
 				}
+				if(thisRef.track) preloaderRef.progress(thisRef.id, 100);
+			};
+			
+			if(this.track) preloaderRef.progress(this.id, 0);
 				
-				if(window.URL == null && thisRef.type == "blob"){
-					var tag;
-					if(thisRef.url.indexOf(".jpg") || thisRef.url.indexOf(".png") || thisRef.url.indexOf(".gif")){
-						tag = new Image();
-					}
-					else if(thisRef.url.indexOf(".mp3") || thisRef.url.indexOf(".ogg")){
-						tag = new Audio();
-					}
-					else if(thisRef.url.indexOf(".ttf") || thisRef.url.indexOf(".woff") || thisRef.url.indexOf(".otf") || thisRef.url.indexOf(".fon")|| thisRef.url.indexOf(".fnt")){
-						tag = new Image(); //What would be best for simply loading a font file ?
-					}
-					else{
-						if(Arstider.verbose > 0) console.warn("Arstider.Request.send: unsupported format, call aborted");
-						return;
-					}
-					tag.onload = function(){
-						if(thisRef.cache){
-							cache[thisRef.url] = tag;
-							updateInPending(thisRef.url, Preloader);
-						}
-						
-						if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [tag]);
-						if(thisRef.track) Preloader.progress(thisRef.id, 100);
-					};
+			if(this.cache){
+				if(cache[this.url] !== undefined){
+					this.callback.apply(this.caller, [cache[this.url]]);
+					updateInPending(this.url);
+					if(this.track) preloaderRef.progress(this.id, 100);
+					return;
+				}
 					
-					tag.onerror = handleError;
-					tag.src = thisRef.url;
+				if(findInPending(this.url)){
+					pending.push(this);
+					return;
 				}
 				else{
-					xhr = new XMLHttpRequest();
-						
-					xhr.open(thisRef.method, thisRef.url, thisRef.async, thisRef.user, thisRef.password); 
-					if((Browser.name == "safari" || Browser.name == "unknown") && thisRef.type == "json") thisRef._parseRequired = true;
-					else {
-                                            if(thisRef.async) xhr.responseType = thisRef.type;
-                                        }
-                                        
-                                        if(thisRef.mimeOverride != null) xhr.overrideMimeType(thisRef.mimeOverride);
-					
-					for(header in thisRef.headers){
-						if(refusedHeaders.indexOf(header) === -1){
-							xhr.setRequestHeader(header, thisRef.headers[header]);
-						}
-						else{
-							if(Arstider.verbose > 1) console.warn("Arstider.Request.send: header ",header," is not accepted and will be ignored");
-						}
+					pending.push({url:this.url});
+				}
+			}
+				
+			if(window.URL == null && thisRef.type == "blob"){
+
+				/**
+				 * Older browser, need to use Tag-loading method, not xhr
+				 */
+
+				var tag;
+				if(this.url.indexOf(".mp3") || this.url.indexOf(".ogg")) tag = new Audio();
+				else tag = new Image();
+				
+				tag.onload = function(){
+					if(thisRef.cache){
+						cache[thisRef.url] = tag;
+						updateInPending(thisRef.url, preloaderRef);
 					}
 					
-					xhr.onprogress = function(e) {
-						if(thisRef.progress) {
-							thisRef.progress.apply(thisRef.caller, [e]);
-						}
-						if(thisRef.track) Preloader.progress(thisRef.id, Math.round((e.loaded/e.total)*100));
-					};
-							
-					xhr.onload = function(){
-						if(this.status == 200){
-							var res;
-							if(thisRef._parseRequired) res = JSON.parse(this.responseText);
-							else res = this.response;
-							
-							if(thisRef.cache){
-								cache[thisRef.url] = res;
-								updateInPending(thisRef.url, Preloader);
-							}
-							
-							if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [res]);
-							if(thisRef.track) Preloader.progress(thisRef.id, 100);
-						}
-					};
-							
-					xhr.onerror = handleError;
-								
-					xhr.send(thisRef.postData);
+					if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [tag]);
+					if(thisRef.track) preloaderRef.progress(thisRef.id, 100);
+				};
+				
+				tag.onerror = handleError;
+				tag.src = this.url;
+			}
+			else{
+				xhr = new XMLHttpRequest();
+					
+				xhr.open(this.method, this.url, this.async, this.user, this.password);
+
+				if((navigator.userAgent.toLowerCase().indexOf('safari') != -1) && this.type == "json") this._parseRequired = true;
+				else {
+                    if(this.async) xhr.responseType = this.type;
+                }
+                                       
+               	if(this.mimeOverride != null) xhr.overrideMimeType(this.mimeOverride);
+				
+				for(header in this.headers){
+					if(refusedHeaders.indexOf(header) === -1){
+						xhr.setRequestHeader(header, this.headers[header]);
+					}
+					else{
+						if(Arstider.verbose > 1) console.warn("Arstider.Request.send: header ",header," is not accepted and will be ignored");
+					}
 				}
-			});
+				
+				xhr.onprogress = function(e) {
+					if(thisRef.progress) {
+						thisRef.progress.apply(thisRef.caller, [e]);
+					}
+					if(thisRef.track) preloaderRef.progress(thisRef.id, Math.round((e.loaded/e.total)*100));
+				};
+						
+				xhr.onload = function(){
+					if(this.status == 200){
+						var res;
+						if(thisRef._parseRequired) res = JSON.parse(this.responseText);
+						else res = this.response;
+						
+						if(thisRef.cache){
+							cache[thisRef.url] = res;
+							updateInPending(thisRef.url, preloaderRef);
+						}
+						
+						if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [res]);
+						if(thisRef.track) preloaderRef.progress(thisRef.id, 100);
+					}
+				};
+						
+				xhr.onerror = handleError;
+							
+				xhr.send(this.postData);
+			}
 		};
 		
 		return Request;

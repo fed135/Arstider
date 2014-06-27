@@ -2,6 +2,7 @@
  * Tween. 
  *
  * @version 1.1.3
+ * @status Stable
  * @author frederic charette <fredericcharette@gmail.com>
  */
 	

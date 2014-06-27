@@ -30,6 +30,8 @@
 		 */
 		function GlobalTimers(){
 			this.list = [];
+
+			this._roughStarted = false;
 		}
 				
 		/**
@@ -37,6 +39,10 @@
 		 * @type {function(this:GlobalTimers)}
 		 */
 		GlobalTimers.prototype.step = function(){
+			if(!require.defined("Arstider/Engine")){
+				Arstider.requestAnimFrame.apply(window, [singleton.step])
+			}
+
 			var i = this.list.length-1;
 			for(i; i>=0; i--){
 				if(this.list[i].running){
@@ -60,6 +66,13 @@
 		GlobalTimers.prototype.push = function(elem){
 			if(this.list.indexOf(elem) == -1){
 				this.list.push(elem);
+			}
+
+			if(!require.defined("Arstider/Engine")){
+				if(!this._roughStarted){
+					this._roughStarted = true;
+					Arstider.requestAnimFrame.apply(window, [singleton.step]);
+				}
 			}
 		};
 		
@@ -102,7 +115,7 @@
 				if(this.list[i] && this.list[i].resume) this.list[i].resume();
 			}
 		};
-			
+	
 		singleton = new GlobalTimers();
 		return singleton;	
 	});

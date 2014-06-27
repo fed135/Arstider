@@ -2,6 +2,7 @@
  * Telemetry
  * 
  * @version 1.1
+ * @status Stable
  * @author frederic charette <fredericcharette@gmail.com>
  */
 

@@ -419,8 +419,9 @@ Arstider.deepClone = function(obj) {
         }
         return copy;
     }
-
-    throw new Error("Unable to copy obj! Its type isn't supported.");
+    if(Arstider.verbose > 0){
+   		console.warn("Arstider.deepClone: Object type unsupported ",obj);
+   	}
 }
 
 /**
