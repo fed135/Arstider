@@ -21,7 +21,7 @@ define("Arstider/Screen", [
 	 * @class Screen
 	 * @constructor
 	 */
-	function Screen(screenObj, stage){
+	function Screen(screenObj, stage, hasMap){
 		
 		Arstider.Super(this, DisplayObject);
 		
@@ -40,9 +40,9 @@ define("Arstider/Screen", [
 		 */
 		this.stage = stage;
 
-		if(screenObj._screenData){
+		if(hasMap){
 			var req = new Request({
-				url:screenObj._screenData,
+				url:hasMap,
 				track:true,
 				type:"json",
 				caller:this,

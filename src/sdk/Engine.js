@@ -274,7 +274,7 @@
 		 * @type {function(this:Engine)}
 		 * @param {string} name The url of the screen to load (must match define!)
 		 */
-		Engine.prototype.loadScreen = function(name){
+		Engine.prototype.loadScreen = function(name, hasMap){
 			if(Arstider.savedStates[name] != undefined){
 				singleton.currentScreen = Arstider.savedStates[name];
 				singleton.currentScreen.__savedState = false;
@@ -299,7 +299,7 @@
 				if(Viewport.unsupportedOrientation){
                                     Events.bind("Viewport.rotate", function finishLoadScreen(){
                                         Events.unbind("Viewport.rotate", finishLoadScreen);
-                                        singleton.currentScreen = new Screen(_menu, singleton);
+                                        singleton.currentScreen = new Screen(_menu, singleton, hasMap);
 
                                         //singleton.currentScreen.stage = singleton;
                                         singleton.currentScreen.name = name;
@@ -309,7 +309,7 @@
                                     });
                                 }
                                 else{
-                                    singleton.currentScreen = new Screen(_menu, singleton);
+                                    singleton.currentScreen = new Screen(_menu, singleton, hasMap);
 
                                     singleton.currentScreen.stage = singleton;
                                     singleton.currentScreen.name = name;
