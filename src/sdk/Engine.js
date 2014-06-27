@@ -19,25 +19,22 @@
 	 * Defines Engine module
 	 */
 	define( "Arstider/Engine", [
-        "Arstider/commons/Ad",
 		"Arstider/Browser",
 		"Arstider/Screen",
-		"Arstider/Buffer", 
+		"Arstider/Buffer",
 		"Arstider/Events",
 		"Arstider/Background",
 		"Arstider/Watermark",
 		"Arstider/Preloader",
 		"Arstider/GlobalTimers",
 		"Arstider/core/Performance",
-		"Arstider/Debugger",
 		"Arstider/Mouse",
 		"Arstider/Viewport",
 		"Arstider/core/Renderer",
         "Arstider/core/WEBGLRenderer",
 		"Arstider/Telemetry",
-        "Arstider/Sound", 
-        "Arstider/Filters"
-	], /** @lends Engine */ function (Ad, Browser, Screen, Buffer, Events, Background, Watermark, Preloader, GlobalTimers, Performance, Debugger, Mouse, Viewport, Renderer, WEBGLRenderer, Telemetry, Sound, Filters){
+        "Arstider/Sound"
+	], /** @lends Engine */ function (Browser, Screen, Buffer, Events, Background, Watermark, Preloader, GlobalTimers, Performance, Mouse, Viewport, Renderer, WEBGLRenderer, Telemetry, Sound){
 		
 		if(singleton != null) return singleton;
 			
@@ -138,8 +135,10 @@
 		 */
 		Engine.prototype.start = function(tag, synchronous){
 			if(this.debug){
-				this.profiler = new Debugger(this);
-				this.profiler.init();
+				require(["Arstider/Debugger"], function(Debugger){
+					singleton.profiler = new Debugger(singleton);
+					singleton.profiler.init();
+				});
 			}
 			else{
 				Arstider.verbose = 0;
@@ -329,7 +328,7 @@
 			if(singleton.currentScreen != null){
 				Telemetry.log("system", "screenstop", {screen:singleton.currentScreen.name});
 				if(!preserve) singleton.currentScreen._unload();
-                Ad.closeAll();
+                //Ad.closeAll();
                 for(var i in Arstider.bufferPool){
                 	if(i.indexOf("_compatBuffer_") != -1){
                 		if(Background.data != Arstider.bufferPool[i] && Watermark.data != Arstider.bufferPool[i]){
