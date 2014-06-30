@@ -49,6 +49,12 @@
 			this.children = [];
 			
 			/**
+			 * Prevents loop in preloading sequence, prevents load stacks of the same element
+			 * @type {string|null}
+			 */
+			this._requestedAsset = null;
+
+			/**
 			 * If data is present, start loading the value
 			 */
 			if(props.bitmap !== undefined) this.loadBitmap(props.bitmap);
@@ -227,6 +233,11 @@
 		 */
 		DisplayObject.prototype.loadBitmap = function(url, success) {
 			var thisRef = this;
+
+			if(this._requestedAsset != null){
+				if(this._requestedAsset === url) return;
+			}
+			this._requestedAsset = url;
 			
 			if(!(typeof url === 'string') && !(url instanceof String)){
 				this.data = url;
