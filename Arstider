@@ -1,0 +1,25 @@
+#!/bin/sh
+
+echo "####################"
+echo "### Arstider SDK ###"
+echo "####################"
+echo " "
+
+DESTINATION=""
+if [ $# -eq 0 ] ; then
+  echo "Using default build path"
+  if [ -z "$BUILD_DEST" ] ; then
+    DESTINATION="$PWD/dist"
+    echo "Destination: $DESTINATION"
+    mkdir -p $DESTINATION
+    export BUILD_DEST=$DESTINATION
+  fi
+else
+  DESTINATION="$1"
+  if [ "$BUILD_DEST" != $DESTINATION ] ; then
+    echo "Exporting build destination variable: $DESTINATION"
+    export BUILD_DEST=$DESTINATION
+  fi
+fi
+
+ant
