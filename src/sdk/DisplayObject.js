@@ -273,13 +273,9 @@
 		 */
 		DisplayObject.prototype.loadSection = function(url, x,y,w,h, success) {
 			var thisRef = this;
-			this.width = w;
-			this.height = h;
-			this.loadBitmap(url,function(){
-				thisRef.dataWidth = w;
-				thisRef.dataHeight = h;
-				if(success) success();
-			});
+			this.width = this.dataWidth = w;
+			this.height = this.dataHeight = h;
+			this.loadBitmap(url, success);
 			this.largeData = true;
 			this.xOffset = x;
 			this.yOffset = y;
