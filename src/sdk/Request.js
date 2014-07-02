@@ -286,7 +286,7 @@
 					
 				xhr.open(this.method, this.url, this.async, this.user, this.password);
 
-				if((navigator.userAgent.toLowerCase().indexOf('safari') != -1) && this.type == "json") this._parseRequired = true;
+				if((navigator.userAgent.toLowerCase().indexOf('safari') != -1 || navigator.userAgent.toLowerCase().indexOf('trident') != -1) && this.type == "json") this._parseRequired = true;
 				else {
                     if(this.async) xhr.responseType = this.type;
                 }

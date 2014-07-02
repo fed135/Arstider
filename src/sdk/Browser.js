@@ -127,9 +127,14 @@
 				if (/firefox[\/\s](\d+\.\d+)/.test(uagent))
 					this.version = parseFloat(RegExp.$1);
 			}
-			else if(uagent.indexOf('msie') != -1){
+			else if(uagent.indexOf('msie') != -1 ){
 				this.name = 'ie';
 				this.version = parseFloat( (uagent.indexOf('msie') != -1) ? parseInt(uagent.split('msie')[1]) : false);
+			}
+			else if(uagent.indexOf('trident') != -1 && uagent.indexOf('msie') == -1){
+				//IE 10 and up
+				this.name = 'ie';
+				this.version = parseFloat(uagent.substring(uagent.indexOf('rv:')+3, uagent.indexOf(')')));
 			}
 			else if(uagent.indexOf('chrome') != -1){
 				this.name = 'chrome';

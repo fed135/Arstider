@@ -30,7 +30,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 			
 		if(this.url != ""){
 			if(Arstider.blobCache[this.url] != undefined) this.load(Arstider.blobCache[this.url].url);
-			else if(this.url.indexOf("data:image") != -1 || (Browser.name == "safari" && Browser.version < 7)) this.load(this.url);
+			else if(this.url.indexOf("data:image") != -1 || (Browser.name == "safari" && Browser.version < 7) || (Browser.name == "ie")) this.load(this.url);
 			else{
 				this.req = new Request({
 					url:this.url,
@@ -92,7 +92,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 	Bitmap.prototype.load = function(url, callback){
 		var thisRef = this;
 		
-		if(Browser.name == "safari" && Browser.version < 7){
+		if((Browser.name == "safari" && Browser.version < 7) || Browser.name == "ie"){
 			//need to save into a canvas
 			this.data = new Buffer({
 				name:"_compatBuffer_"+url+Arstider.timestamp()
@@ -141,13 +141,10 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 	};
 
 	Bitmap.prototype.kill = function(){
-		console.log("killing bitmap ", this.url);
-
 		if(this.data.kill) this.data.kill();
 		this.data = null;
 
 		if(this.url && this.url in Arstider.blobCache){
-			console.log("its in the blobCache!")
 			try{
 				if(Arstider.blobCache[this.url].url) window.URL.revokeObjectURL(Arstider.blobCache[this.url].url);
 			}
