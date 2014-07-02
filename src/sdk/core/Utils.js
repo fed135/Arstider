@@ -504,24 +504,6 @@ Arstider.fixedCancelAnimationFrame = function(ref){
 Arstider.blobCache = {empty:{url:Arstider.emptyImgSrc, size:0}};
 
 /**
- * Clears cached blobURLs
- * @memberof Arstider
- * @type {function}
- */
-Arstider.clearBlobUrls = function(){
-	for(var i in Arstider.blobCache){
-		try{
-			window.URL.revokeObjectURL(Arstider.blobCache[i].url);
-		}
-		catch(e){
-			if(Arstider.verbose > 2) console.log("Arstider.clearBlobUrls: could not revoke blob url '",i, "'");
-		}
-	}
-	
-	Arstider.blobCache = {empty:{url:Arstider.emptyImgSrc, size:0}};
-};
-
-/**
  * Sets the FPS of the game (max 60)
  * @memberof Arstider
  * @type {function} 
@@ -612,12 +594,13 @@ Arstider.getMemory = function(){
 	;
 	
 	for(i in Arstider.blobCache){
-		total += (Arstider.blobCache[i].size || 0);
+		total += ((Arstider.blobCache[i].size || 0) >> 10);
 	}
 	
 	for(i in Arstider.bufferPool){
-		total += (Arstider.bufferPool[i].getMemory());
+		total += ((Arstider.bufferPool[i].getMemory()) >> 20);
 	}
 	
-	return total >> 20;
+
+	return (total/1024).toFixed(2);
 };

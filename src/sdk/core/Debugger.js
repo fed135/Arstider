@@ -46,7 +46,7 @@
 	/**
 	 * Defines the Debugger module
 	 */	
-	define( "Arstider/Debugger", ["Arstider/core/Performance","Arstider/Keyboard","Arstider/core/Profiler", "Arstider/Events", "Arstider/Viewport"], function /** @lends Debugger */ (Performance, Keyboard, Profiler, Events, Viewport){
+	define( "Arstider/core/Debugger", ["Arstider/core/Performance","Arstider/Keyboard","Arstider/core/Profiler", "Arstider/Events", "Arstider/Viewport"], function /** @lends Debugger */ (Performance, Keyboard, Profiler, Events, Viewport){
 		
 		if(singleton != null) return singleton;
 
@@ -157,7 +157,7 @@
  			                           "<span style='color:#FFFF99;'>FPS:",Performance.frames ,"</span>",
  			                           "&nbsp;|&nbsp;",
  			                           //Buffer Memory
- 			                           "<span style='color:#99FF99;'>Memory:",Arstider.getMemory(),"</span>",
+ 			                           "<span style='color:#99FF99;'>Memory:",Arstider.getMemory(),"Mb</span>",
  			                           "&nbsp;|&nbsp;",
  			                           //Drawn Objects
  			                           "<span style='color:#FF9999;'>Draws:", Math.ceil(Performance.draws/Performance.frames) ,"/ Entities:",Math.ceil(Performance.elements/Performance.frames),"</span>",

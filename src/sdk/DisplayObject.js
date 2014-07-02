@@ -247,7 +247,7 @@
 			var req = new Bitmap({
 				url:url, 
 				callback:function(img){
-					thisRef.data = img.data;
+					thisRef.data = img;
 					
 					if(thisRef.dataWidth == 0) thisRef.dataWidth = img.width;
 					if(thisRef.dataHeight == 0) thisRef.dataHeight = img.height;

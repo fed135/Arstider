@@ -135,7 +135,7 @@
 		 */
 		Engine.prototype.start = function(tag, synchronous){
 			if(this.debug){
-				require(["Arstider/Debugger"], function(Debugger){
+				require(["Arstider/core/Debugger"], function(Debugger){
 					singleton.profiler = new Debugger(singleton);
 					singleton.profiler.init();
 				});
@@ -231,8 +231,6 @@
 			
 			//Check if canvas rendering is on/off
 			if(singleton.handbreak) return;
-			
-			console.log(dt);
 
 			if(dt <= 0) return;
 

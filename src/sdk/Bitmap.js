@@ -139,6 +139,24 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 		};
 		this.data.src = url;
 	};
+
+	Bitmap.prototype.kill = function(){
+		console.log("killing bitmap ", this.url);
+
+		if(this.data.kill) this.data.kill();
+		this.data = null;
+
+		if(this.url && this.url in Arstider.blobCache){
+			console.log("its in the blobCache!")
+			try{
+				if(Arstider.blobCache[this.url].url) window.URL.revokeObjectURL(Arstider.blobCache[this.url].url);
+			}
+			catch(e){
+				if(Arstider.verbose > 2) console.log("Arstider.Bitmap.kill: could not revoke blob url '",this.url, "'");
+			}
+			delete Arstider.blobCache[this.url];
+		}
+	};
 	
 	return Bitmap;
 });
