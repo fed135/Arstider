@@ -224,15 +224,20 @@
 		/**
 		 * Steps the logic of the game (GlobalTimers)
 		 * @type {function(this:Engine)}
+		 * @param {number} dt Delta time (delay between now and the last frame) 
 		 */
-		Engine.prototype.stepLogic = function(){
+		Engine.prototype.stepLogic = function(dt){
 			if(singleton === null) return;
 			
 			//Check if canvas rendering is on/off
 			if(singleton.handbreak) return;
 			
-			GlobalTimers.step();
-			if(singleton.currentScreen && singleton.currentScreen._update) singleton.currentScreen._update();
+			console.log(dt);
+
+			if(dt <= 0) return;
+
+			GlobalTimers.step(dt);
+			if(singleton.currentScreen && singleton.currentScreen._update) singleton.currentScreen._update(dt);
 		};
 		
 		/**
@@ -507,14 +512,17 @@
 				showFrames = false,
                 pencil
 			;
+
+			if(singleton._isSynchronous){
+				Performance.deltaTime = Arstider.timestamp() - Performance.lastFrame;
+				singleton.stepLogic(Performance.deltaTime);
+			} 
                         
             pencil = WEBGLRenderer;
             if(!pencil.enabled) pencil = Renderer;
             else{
                 if(pencil.program == null) return;
             }
-                        
-                        
 			
 			if(!singleton.debug && Arstider.verbose > 0) Arstider.verbose = 0;
 			
@@ -562,8 +570,6 @@
 			if(showFrames) singleton.profiler.drawFrames();
 			
 			singleton.removePending(singleton.currentScreen);
-			
-			if(singleton._isSynchronous) singleton.stepLogic();
 			
 			Performance.endStep();
 		};

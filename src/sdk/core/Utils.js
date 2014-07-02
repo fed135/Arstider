@@ -19,7 +19,7 @@ window.Arstider = {};
  * @return {number} the timestamp
  */
 Arstider.timestamp = function(){
-	return (new Date()).getTime();
+	return Date.now();
 };
 
 /**

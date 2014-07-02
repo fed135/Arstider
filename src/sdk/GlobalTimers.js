@@ -37,18 +37,21 @@
 		/**
 		 * Steps the timers in the list
 		 * @type {function(this:GlobalTimers)}
+		 * @param {number} dt Delta time
 		 */
-		GlobalTimers.prototype.step = function(){
+		GlobalTimers.prototype.step = function(dt){
 			if(!require.defined("Arstider/Engine")){
 				Arstider.requestAnimFrame.apply(window, [singleton.step])
 			}
+
+			dt = Arstider.checkIn(dt, Math.round(1000/Arstider.FPS));
 
 			var i = this.list.length-1;
 			for(i; i>=0; i--){
 				if(this.list[i].running){
 					(function(t){
 						setTimeout(function(){
-							t.delay -= Math.round(1000/Arstider.FPS);
+							t.delay -= dt;
 							
 							if(t.step) t.step.apply(t);
 							if(t.delay <= 0 && t.completed == false) t.finish();

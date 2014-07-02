@@ -485,8 +485,9 @@
 		 * Private logic with each frame updates (see core/Performance for draw vs update skips)
 		 * @protected
 		 * @type {function(this:Entity)}
+		 * @param {number} dt Delta time (the time spent since last frame)
 		 */
-		Entity.prototype._update = function(){
+		Entity.prototype._update = function(dt){
 			
 			/**
 			 * Check for docking options
@@ -506,13 +507,13 @@
 				}
 			}
 			
-			if(!this._skipUpdateBubble) this.update();
+			if(!this._skipUpdateBubble) this.update(dt);
 			
 			if(this.children && this.children.length > 0){
 				for(var i = 0; i<this.children.length; i++){
 					if(this.children[i] && this.children[i]._update){
 						if(this._skipUpdateBubble && this.children[i].cancelBubble) this.children[i].cancelBubble();
-						(function(t){setTimeout(function(){t._update.apply(t);},0);})(this.children[i]);
+						(function(t){setTimeout(function(){t._update.apply(t, [dt]);},0);})(this.children[i]);
 						//this.children[i]._update();
 					}
 				}

@@ -36,6 +36,13 @@
 		function Performance(){
 			
 			/**
+			 * Delta time
+			 * @private 
+			 * @type {number}
+			 */
+			this.deltaTime = 0;
+
+			/**
 			 * Number of canvas draws
 			 * @type {number}
 			 */
@@ -105,7 +112,7 @@
 			 * Maximum MS allowed between frames
 			 * @type {number}
 			 */
-			this.skipTreshold = 40; //ms
+			this.skipTreshold = 45; //ms
 			
 			/**
 			 * Tells whether the Engine is running at the proper speed (0-1-2)
@@ -131,7 +138,7 @@
 			
 			setTimeout(singleton._stepLogic, 1000/Arstider.FPS);
 			
-			singleton.updateLogic();
+			singleton.updateLogic(1000/Arstider.FPS);
 		};
 		
 		/**
@@ -156,7 +163,7 @@
 			singleton._onTrack = 1;
 			
 			if(allowSkip == true){
-				singleton.now = Date.now();
+				singleton.now = Arstider.timestamp();
 				
 				if(singleton.lastFrame == 0){
 					singleton.lastFrame = singleton.now;
