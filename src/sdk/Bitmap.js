@@ -8,7 +8,7 @@
 /**
  * Defines the Bitmap module
  */
-define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buffer"], /** @lends Bitmap */ function(Request, Browser, Buffer){
+define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buffer", "Arstider/Preloader"], /** @lends Bitmap */ function(Request, Browser, Buffer, Preloader){
 
 	window.URL = (window.URL != undefined && window.URL.createObjectURL)?window.URL:(window.webkitURL || {});
 
@@ -27,6 +27,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 		this.callback = props.callback || Arstider.emptyFunction;
 		this.width = Arstider.checkIn(props.width, 0);
 		this.height = Arstider.checkIn(props.height, 0);
+		this.id = this.url+Arstider.timestamp()+Math.random();
 			
 		if(this.url != ""){
 			if(Arstider.blobCache[this.url] != undefined) this.load(Arstider.blobCache[this.url].url);
@@ -93,9 +94,10 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 		var thisRef = this;
 		
 		if((Browser.name == "safari" && Browser.version < 7) || Browser.name == "ie"){
+			Preloader.progress(this.id, 0);
 			//need to save into a canvas
 			this.data = new Buffer({
-				name:"_compatBuffer_"+url+Arstider.timestamp()
+				name:"_compatBuffer_"+this.id
 			});
 			var img = new Image();
 			img.onload = function(){
@@ -105,8 +107,9 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 				thisRef.data.context.drawImage(img, 0,0);
 				img.onload = null;
 				img.src = Arstider.emptyImgSrc;
-				if(callback) callback(thisRef.data);
-				else thisRef.callback(thisRef.data);
+				if(callback) callback(thisRef.data.data);
+				else thisRef.callback(thisRef.data.data);
+				Preloader.progress(thisRef.id, 100);
 			};
 			img.src = url;
 

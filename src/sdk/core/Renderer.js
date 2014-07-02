@@ -205,15 +205,22 @@
 					
 					if (!isOffscreen) {
 						
-						if(curChild instanceof Sprite || curChild.largeData === true){
-							this._context.drawImage((curChild.data.data)?curChild.data.data:curChild.data, curChild.xOffset, curChild.yOffset, curChild.dataWidth, curChild.dataHeight, Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
+						var data = (curChild.data.data)?curChild.data.data:curChild.data;
+						if(data != null){
+							//console.log(data);
+							try{
+								if(curChild instanceof Sprite || curChild.largeData === true){
+									this._context.drawImage(data, curChild.xOffset, curChild.yOffset, curChild.dataWidth, curChild.dataHeight, Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
+								}
+								else{
+									this._context.drawImage(data, Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
+								}
+							}
+							catch(e){
+								console.warn("Render Error: ", data);
+							}
 						}
-						else{
-							this._context.drawImage((curChild.data.data)?curChild.data.data:curChild.data, Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
-						}
-						
 					}
-					
 				}
 			}
                         
@@ -277,7 +284,7 @@
 			this._preRender = pre;
 			this._postRender = post;
 			this._showBoxes = showBoxes;
-			
+
 			this.renderChild(rootChild, 0, 0);
 		};
 			

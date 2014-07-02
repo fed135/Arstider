@@ -312,7 +312,15 @@
 				xhr.onload = function(){
 					if(this.status == 200){
 						var res;
-						if(thisRef._parseRequired) res = JSON.parse(this.responseText);
+						if(thisRef._parseRequired){
+							try{
+								 res = JSON.parse(this.responseText);
+							}
+							catch(e){
+								console.error(e);
+								res = {};
+							}
+						}
 						else res = this.response;
 						
 						if(thisRef.cache){
