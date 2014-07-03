@@ -67,7 +67,7 @@
 		 * @type {function}
 		 * @param {Object} curChild Entity-type element to draw and call draw upon the children of
 		 */
-		Renderer.prototype.renderChild = function(curChild, _currentX, _currentY){
+		Renderer.prototype.renderChild = function(curChild, _currentX, _currentY, complexHierarchy){
 				
 			if(!curChild || curChild.__skip) return;
 				
@@ -98,6 +98,7 @@
 				) {
 					
 				isComplex = true;
+				complexHierarchy = true;
 				this._context.save();
 			}
 				
@@ -188,7 +189,7 @@
 					
 					var isOffscreen;
 					
-					if (isComplex) {
+					if (complexHierarchy) {
 						isOffscreen = false;
 					} else {
 						isOffscreen = true;
@@ -252,7 +253,7 @@
 					len = curChild.children.length;
 					for(li=0; li<len; li++){
 						if(curChild.children[li]){
-							this.renderChild(curChild.children[li], _currentX, _currentY);
+							this.renderChild(curChild.children[li], _currentX, _currentY, complexHierarchy);
 						}
 					}
 				}
