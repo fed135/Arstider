@@ -67,7 +67,7 @@ define( "Arstider/SpriteSheet", ["Arstider/Bitmap", "Arstider/Sequence"], /** @l
 		var req = new Bitmap({
 			url:url, 
 			callback:function(img){
-				thisRef.data = img.data;
+				thisRef.data = (img.data)?img.data:img;
 				if(thisRef.width == 0) thisRef.width = img.width;
 				if(thisRef.height == 0) thisRef.height = img.height;
 				
