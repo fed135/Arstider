@@ -111,6 +111,11 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 				else thisRef.callback(thisRef.data.data);
 				Preloader.progress(thisRef.id, 100);
 			};
+			img.onerror = function(){
+				console.warn("Could not load image ", thisRef.url);
+				Preloader.progress(thisRef.id, 100);
+			};
+
 			img.src = url;
 
 
