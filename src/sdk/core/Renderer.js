@@ -206,6 +206,7 @@
 					if (!isOffscreen) {
 						
 						var data = (curChild.data.data)?curChild.data.data:curChild.data;
+						data = (data.data)?data.data:data;
 						if(data != null){
 							//console.log(data);
 							try{

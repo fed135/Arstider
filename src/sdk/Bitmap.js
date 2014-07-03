@@ -149,7 +149,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 	};
 
 	Bitmap.prototype.kill = function(){
-		if(this.data.kill) this.data.kill();
+		if(this.data && this.data.kill) this.data.kill();
 		this.data = null;
 
 		if(this.url && this.url in Arstider.blobCache){
