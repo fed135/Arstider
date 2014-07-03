@@ -120,6 +120,7 @@
 		 * @type {function(this:Sound)}
 		 */
 		Sound.prototype._queueFile = function(){
+			if(singleton._fileInPipe==true) return;
 			singleton._fileInPipe = true;
 			
 			if(singleton._queue.length > 0){
