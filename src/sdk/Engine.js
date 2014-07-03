@@ -358,7 +358,7 @@
 				
 				if(Arstider.verbose > 2) console.warn("Arstider.Engine.play: playing...");
 				if(!singleton.isPreloading) singleton.handbreak = false;
-				if(singleton.frameRequest) Arstider.cancelAnimFrame.apply(window, [singleton.frameRequest]);
+				if(singleton.frameRequest || Arstider.__animTimer) Arstider.cancelAnimFrame.apply(window, [singleton.frameRequest]);
 				singleton.draw();
 				Events.broadcast("Engine.play", singleton);
 			}
