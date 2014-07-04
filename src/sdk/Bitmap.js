@@ -31,7 +31,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 			
 		if(this.url != ""){
 			if(Arstider.blobCache[this.url] != undefined) this.load(Arstider.blobCache[this.url].url);
-			else if(this.url.indexOf("data:image") != -1 || (Browser.name == "safari" && Browser.version < 7) || (Browser.name == "ie")) this.load(this.url);
+			else if(this.url.indexOf("data:image") != -1 || (Browser.name == "safari" && Browser.version < 7) || (Browser.name == "ie" && Browser.version < 10)) this.load(this.url);
 			else{
 				this.req = new Request({
 					url:this.url,
@@ -93,7 +93,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 	Bitmap.prototype.load = function(url, callback){
 		var thisRef = this;
 		
-		if((Browser.name == "safari" && Browser.version < 7) || Browser.name == "ie"){
+		if((Browser.name == "safari" && Browser.version < 7) || (Browser.name == "ie" && Browser.version < 10)){
 			Preloader.progress(this.id, 0);
 			//need to save into a canvas
 			this.data = new Buffer({
