@@ -232,6 +232,7 @@
 		Sprite.prototype.rewind = function(){
 			this.stop();
 			this.resume();
+			this.finish();
 			return this;
 		};
 
