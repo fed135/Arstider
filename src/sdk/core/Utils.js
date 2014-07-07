@@ -36,6 +36,19 @@ Arstider.guid = function() {
 }
 
 /**
+ * Disables the console element
+ * @memberof Arstider
+ * @type {function}
+ */
+Arstider.disableConsole = function(){
+	window.console = {
+		log:Arstider.emptyFunction,
+		warn:Arstider.emptyFunction,
+		error:Arstider.emptyFunction
+	};
+};
+
+/**
  * Indicates if the engine should remain with canvas2D context or attempt WebGl rendering
  * @memberof Arstider
  * @type {boolean}

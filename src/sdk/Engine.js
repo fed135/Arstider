@@ -142,6 +142,7 @@
 			}
 			else{
 				Arstider.verbose = 0;
+				Arstider.disableConsole();
 			}
 				
             WEBGLRenderer.test();
