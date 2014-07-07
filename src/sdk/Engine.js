@@ -173,8 +173,14 @@
 			Events.bind("Engine.showPopup", this.showPopup);
 			Events.bind("Engine.hidePopup", this.hidePopup);
 			
-			Events.bind("Viewport.pagehide", this.stop);
-			Events.bind("Viewport.pageshow", this.play);
+			Events.bind("Viewport.pagehide", function(){
+				singleton.stop();
+				Sound.pause("__emergency-stop__");
+			});
+			Events.bind("Viewport.pageshow", function(){
+				singleton.play();
+				Sound.resume("__emergency-stop__");
+			});
 			
 			if(!this.pausedByRequest) this.play();
 			

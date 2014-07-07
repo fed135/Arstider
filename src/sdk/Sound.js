@@ -394,8 +394,10 @@
 		 */
 		Sound.prototype.stopAllTracks = function(){
 			for(var id in singleton.tracks){
-				if(singleton.tracks[id]._handle) singleton.tracks[id]._handle.stop();
-				
+				if(singleton.tracks[id]._handle){
+					singleton.tracks[id]._handle.stop();
+					singleton.tracks[id]._handle._playStart = 0;
+				}
 				if(singleton.tracks[id].fadeOutTimer) singleton.tracks[id].fadeOutTimer.pause();
 			}
 			return singleton;
@@ -440,6 +442,23 @@
 		 * @return {Object} Self reference, for chaining
 		 */
 		Sound.prototype.pause = function(id){
+			if(id == "__emergency-stop__"){
+				for(var i in singleton.tracks){
+					console.log(i, ",", singleton.tracks[i]._handle);
+					if(singleton.tracks[i]._handle){
+						if(!singleton.tracks[i]._handle._audioNode[0].paused){
+							singleton.tracks[i]._handle.pause();
+							if(singleton.tracks[i].fadeOutTimer) singleton.tracks[i].fadeOutTimer.pause();
+						}
+						else{
+							singleton.tracks[i]._handle.pause();
+							singleton.tracks[i]._handle._playStart = 0;
+						}
+					}
+				}
+				return;
+			}
+
 			if(id in singleton.tracks){
 				if(singleton.tracks[id]._handle) singleton.tracks[id]._handle.pause();
 				
@@ -463,6 +482,18 @@
 		 * @return {Object} Self reference, for chaining
 		 */
 		Sound.prototype.resume = function(id){
+			if(id == "__emergency-stop__"){
+				for(var i in singleton.tracks){
+					if(singleton.tracks[i]._handle){
+						if(singleton.tracks[i]._handle._playStart != 0){
+							singleton.tracks[i]._handle.play();
+							if(singleton.tracks[i].fadeOutTimer) singleton.tracks[i].fadeOutTimer.resume();
+						}
+					}
+				}
+				return;
+			}
+
 			if(id in singleton.tracks){
 				if(singleton.tracks[id]._handle) singleton.tracks[id]._handle.play();
 				

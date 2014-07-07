@@ -212,6 +212,10 @@
 					visibilityChange = "webkitvisibilitychange";
 				}
 
+				//This is pretty intense... not sure you would want that...
+				//window.addEventListener('blur', this._pagehide);
+				//window.addEventListener('focus', this._pageshow);
+
 				document.addEventListener(visibilityChange, function(){
 					if(document[hidden]) thisRef._pagehide();
 					else thisRef._pageshow();
