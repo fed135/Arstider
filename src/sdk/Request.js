@@ -310,7 +310,7 @@
 				};
 						
 				xhr.onload = function(){
-					console.log("onload");
+					//console.log("onload");
 					if(this.status == 200){
 						var res;
 						if(thisRef._parseRequired){
