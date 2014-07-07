@@ -347,6 +347,8 @@
                 	}
                 }
 
+                GlobalTimers.removeTweens();
+
 				delete singleton.currentScreen;
 				if(Viewport.tagParentNode) Viewport.tagParentNode.innerHTML = "";
 			}

@@ -406,6 +406,12 @@
 			 * @type {number}
 			 */
 			this._dragOffsetY = 0;
+
+			/**
+			 * Called after disposal of data
+			 * @type {function(this:Entity)}
+			 */
+			this.onunload = Arstider.emptyFunction;
 		};
 		
 		/**
@@ -701,6 +707,8 @@
 			if(this.data && this.data.kill) this.data.kill();
 			
 			this.data = null;
+			
+			if(this.onunload) this.onunload();
 			
 			return this;
 		};

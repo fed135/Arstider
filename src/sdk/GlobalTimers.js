@@ -87,6 +87,18 @@
 				}
 			}
 		};
+
+		/**
+		 * Killing the tweens
+		 * @type {function(this:GlobalTimers)}
+		 */
+		GlobalTimers.prototype.removeTweens = function(){
+			for(var i = this.list.length-1; i>=0;i--){
+				if(this.list[i] && this.list[i].kill){
+					this.list[i].kill(); 
+				}
+			}
+		};
 		
 		/**
 		 * Removes a timer from the list
