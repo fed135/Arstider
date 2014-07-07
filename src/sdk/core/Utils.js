@@ -103,6 +103,18 @@ Arstider.FPS = 60;
 Arstider.savedStates = {};
 
 /**
+ * Disposes of a saved screen state
+ * @memberof Arstider
+ * @type {function}
+ */
+Arstider.disposeSavedState = function(name){
+	if(name in Arstider.savedStates){
+		if(Arstider.savedStates[name]._unload) Arstider.savedStates[name]._unload();
+		delete Arstider.savedStates[name];
+	}
+};
+
+/**
  * Degrees-to-radians constant
  * @memberof Arstider
  * @const
