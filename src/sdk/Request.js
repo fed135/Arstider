@@ -183,7 +183,7 @@
 			 * Post data to send
 			 * @type {*}
 			 */
-			this.postData = Arstider.checkIn(props.postData, null);
+			this.postData = Arstider.checkIn(props.postData, Arstider.checkIn(props.data, null));
 			
 			/**
 			 * Defines a unique call id
@@ -310,6 +310,7 @@
 				};
 						
 				xhr.onload = function(){
+					console.log("onload");
 					if(this.status == 200){
 						var res;
 						if(thisRef._parseRequired){
@@ -321,7 +322,12 @@
 								res = {};
 							}
 						}
-						else res = this.response;
+						else{
+							if(thisRef.type == "text"){
+								res = this.responseText;
+							}
+							else res = this.response;
+						} 
 						
 						if(thisRef.cache){
 							cache[thisRef.url] = res;
@@ -336,6 +342,8 @@
 				xhr.onerror = handleError;
 							
 				xhr.send(this.postData);
+
+				return xhr;
 			}
 		};
 		

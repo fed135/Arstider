@@ -228,15 +228,21 @@
 		 * @param {number} dt Delta time (delay between now and the last frame) 
 		 */
 		Engine.prototype.stepLogic = function(dt){
+			Performance.numUpdates = 0;
+
 			if(singleton === null) return;
-			
+
 			//Check if canvas rendering is on/off
 			if(singleton.handbreak) return;
 
 			if(dt <= 0) return;
 
+			Performance.numTimers = GlobalTimers.count();
 			GlobalTimers.step(dt);
-			if(singleton.currentScreen && singleton.currentScreen._update) singleton.currentScreen._update(dt);
+			if(singleton.currentScreen && singleton.currentScreen._update){
+				singleton.currentScreen._update(dt);
+				Performance.numUpdates++;
+			}
 		};
 		
 		/**

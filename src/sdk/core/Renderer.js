@@ -86,6 +86,7 @@
 				
 			Performance.elements++;
 			
+			if(!curChild._skipUpdateBubble && curChild.update) Performance.numUpdates++; 
 				
 			if(curChild.alpha <= 0) return;
 				

@@ -168,6 +168,12 @@
  			                           //Num Buffers
  			                           "<span style='color:#FFFFFF;'>Buffers:",Arstider.countBuffers(),"</span>",
  			                           "&nbsp;|&nbsp;",
+ 			                           //Num Updates
+ 			                           "<span style='color:#FFFFFF;'>Updates:",Performance.numUpdates,"</span>",
+ 			                           "&nbsp;|&nbsp;",
+ 			                           //Num Timers
+ 			                           "<span style='color:#FFFFFF;'>Timers:",Performance.numTimers,"</span>",
+ 			                           "&nbsp;|&nbsp;",
  			                           //Skips
  			                           "<span style='color:#FF0000;'>D-",Performance.skippedDraw,"</span>"].join("");
 			

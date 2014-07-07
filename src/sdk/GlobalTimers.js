@@ -60,6 +60,15 @@
 				}
 			}
 		};
+
+		/**
+		 * Returns the number of timers in the list
+		 * @type {function(this:GlobalTimers)}
+		 * @return {number} The number of timers
+		 */	
+		GlobalTimers.prototype.count = function(){
+			return this.list.length;
+		};
 			
 		/**
 		 * Pushes a timer in the timer list

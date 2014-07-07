@@ -31,7 +31,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 			
 		if(this.url != ""){
 			if(Arstider.blobCache[this.url] != undefined) this.load(Arstider.blobCache[this.url].url);
-			else if(this.url.indexOf("data:image") != -1 || (Browser.name == "safari" && Browser.version < 7) || (Browser.name == "ie" && Browser.version < 10)) this.load(this.url);
+			else if(this.url.indexOf("data:image") != -1 || (Browser.name == "safari" && Browser.version < 7) || Browser.name == "ie") this.load(this.url);
 			else{
 				this.req = new Request({
 					url:this.url,
@@ -93,7 +93,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 	Bitmap.prototype.load = function(url, callback){
 		var thisRef = this;
 		
-		if((Browser.name == "safari" && Browser.version < 7) || (Browser.name == "ie" && Browser.version < 10)){
+		if((Browser.name == "safari" && Browser.version < 7) || Browser.name == "ie"){
 			Preloader.progress(this.id, 0);
 			//need to save into a canvas
 			this.data = new Buffer({
@@ -157,6 +157,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 		if(this.data && this.data.kill) this.data.kill();
 		this.data = null;
 
+		//Shouldn't need to revoke... we'll see if this causes issues
 		if(this.url && this.url in Arstider.blobCache){
 			try{
 				if(Arstider.blobCache[this.url].url) window.URL.revokeObjectURL(Arstider.blobCache[this.url].url);

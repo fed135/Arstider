@@ -576,6 +576,24 @@ Arstider.defaultRenderStyle = "auto";
 Arstider.bufferPool = {};
 	
 /**
+ * Serializes Objects for XHR data 
+ * @memberof Arstider
+ * @type {function}
+ * @param {Object} obj The object to serialize
+ * @return {string} The serialized Object
+ */
+Arstider.serialize = function(obj, prefix) {
+  var str = [];
+  for(var p in obj) {
+    var k = prefix ? prefix + "[" + p + "]" : p, v = obj[p];
+    str.push(typeof v == "object" ?
+      serialize(v, k) :
+      encodeURIComponent(k) + "=" + encodeURIComponent(v));
+  }
+  return str.join("&");
+};
+
+/**
  * Counts the number of buffers in the system
  * @memberof Arstider
  * @type {function}
