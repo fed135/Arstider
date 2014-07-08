@@ -98,6 +98,7 @@ define( "Arstider/Timer", [], /** @lends Timer */ function () {
 	    if(this._clockBased && this._internalTimer == null){
 	    	var thisRef = this;
 	    	this._startTime = Arstider.timestamp();
+	    	clearTimeout(this._internalTimer);
 	    	this._internalTimer = setTimeout(function(){thisRef.finish.apply(thisRef);}, this.delay);
 	    }
 	    return this; 
