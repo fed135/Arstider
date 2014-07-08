@@ -253,6 +253,7 @@
 					singleton.sounds._handle.volume(Arstider.checkIn(props.volume, 1), howlId);
 					if(props.startCallback) props.startCallback(howlId);
 					if(props.endCallback) singleton._callbacks[howlId].push(props.endCallback);
+					if(singleton.sounds[id].loop) singleton._callbacks[howlId].push(function(){singleton.play(id);});
 				});
 			}
 			else{
