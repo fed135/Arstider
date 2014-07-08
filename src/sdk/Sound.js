@@ -30,6 +30,7 @@
 		 * @constructor
 		 */
 		function Sound(){
+
 			/**
 			 * Individual tracks Sounds list
 			 * @type {Object}
@@ -384,6 +385,7 @@
 				return singleton;
 			}
 			
+			singleton._removeInstance(id);
 			singleton.sounds._handle.stop(id);
 			return singleton;
 		};
@@ -445,7 +447,6 @@
 		Sound.prototype.pause = function(id){
 			if(id == "__emergency-stop__"){
 				for(var i in singleton.tracks){
-					console.log(i, ",", singleton.tracks[i]._handle);
 					if(singleton.tracks[i]._handle){
 						if(!singleton.tracks[i]._handle._audioNode[0].paused){
 							singleton.tracks[i]._handle.pause();
