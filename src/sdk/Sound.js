@@ -386,7 +386,7 @@
 			}
 			
 			singleton.sounds._handle.stop(id);
-			singleton._removeInstance(id);
+			singleton._killCallbacks(id);
 			return singleton;
 		};
 
