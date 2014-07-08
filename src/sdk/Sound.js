@@ -385,8 +385,8 @@
 				return singleton;
 			}
 			
-			singleton._removeInstance(id);
 			singleton.sounds._handle.stop(id);
+			singleton._removeInstance(id);
 			return singleton;
 		};
 
