@@ -123,6 +123,14 @@ Arstider.disposeSavedState = function(name){
 Arstider.degToRad = Math.PI/180;
 
 /**
+ * Radians to degrees constant
+ * @memberof Arstider
+ * @const
+ * @type {number}
+ */
+Arstider.radToDeg = 180/Math.PI;
+
+/**
  * Default composition mode constant
  * @memberof Arstider
  * @const
@@ -203,6 +211,38 @@ Arstider.isDefine = function(val){
  * @type {number}
  */
 Arstider.verbose = 0;
+
+/**
+ * Calculate the distance between 2 coordinates
+ * @memberof Arstider
+ * @type {function}
+ * @param {number} x1 The x coordinate of the first point
+ * @param {number} y1 The y coordinate of the first point
+ * @param {number} x2 The x coordinate of the second point
+ * @param {number} y2 The y coordinate of the second point
+ * @return {number} the distance between the 2 points
+ */
+Arstider.distance = function(x1, y1, x2, y2){
+	return Math.sqrt(Math.pow((x2 - x1),2) + Math.pow((y2 - y1),2));
+};
+
+/**
+ * Calculate direction in degrees with 2 points
+ * @memberof Arstider
+ * @type {function}
+ * @param {number} x1 The x coordinate of the first point
+ * @param {number} y1 The y coordinate of the first point
+ * @param {number} x2 The x coordinate of the second point
+ * @param {number} y2 The y coordinate of the second point
+ * @return {number} the distance between the 2 points
+ */
+Arstider.direction = function(x1, y1, x2, y2){
+	var relX = x2 - x1;
+	var relY = y2 - y1;
+	var theta = Math.atan2(-relY, relX);
+
+	return theta * Arstider.radToDeg;
+};
 
 /**
  * Removes duplicate entries from an array
