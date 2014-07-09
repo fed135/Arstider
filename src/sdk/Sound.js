@@ -88,7 +88,7 @@
 			;
 			
 			for(i in this.sounds){
-				sprite[i] = [this.sounds[i].offset, this.sounds[i].duration];
+				sprite[i] = [this.sounds[i].offset, this.sounds[i].duration, this.sounds[i].loop];
 			}
 			
 			this.sounds['empty'] = {};
@@ -254,7 +254,6 @@
 					singleton.sounds._handle.volume(Arstider.checkIn(props.volume, 1), howlId);
 					if(props.startCallback) props.startCallback(howlId);
 					if(props.endCallback) singleton._callbacks[howlId].push(props.endCallback);
-					if(singleton.sounds[id].loop) singleton._callbacks[howlId].push(function(){singleton.play(id);});
 				});
 			}
 			else{
@@ -287,6 +286,27 @@
 			singleton.sounds._handle.fade(singleton.sounds._handle._volume, to, duration, callback || Arstider.emptyFunction, id);
 			return singleton;
 		};
+
+		/**
+		 * Sets the position of a sound instance, does not alter the playing property
+		 * @type {function(this:Sound)}
+		 * @param {string|number} id The name/howlerId of the sound
+		 * @param {number} pos The position (in ms) to go to
+		 */
+		Sound.prototype.setPosition = function(id, pos){
+			if(id in singleton.tracks){
+				if(singleton.tracks[id]._handle) singleton.tracks[id]._handle.pos(pos);
+				return singleton;
+			}
+			
+			if(!singleton.sounds._handle){
+				if(Arstider.verbose > 0) console.warn("Arstider.Sound.setPosition: sounds disabled, Howler not loaded");
+				return singleton;
+			}
+			
+			singleton.sounds._handle.pos(pos, id);
+			return singleton;
+		};
 		
 		/**
 		 * Adds a sound instance for an Id
@@ -310,11 +330,12 @@
 		 */
 		Sound.prototype._removeInstance = function(howlId){
 			var cbList = singleton._callbacks[howlId];
-			for(var i = 0; i<cbList.length; i++){
-				cbList[i]();
+			if(cbList && cbList.length){
+				for(var i = 0; i<cbList.length; i++){
+					cbList[i]();
+				}
 			}
 			
-			singleton._killCallbacks(howlId);
 			var i, s;
 			
 			for(s in singleton.sounds){
@@ -322,11 +343,13 @@
 					for(i = 0; i<singleton.sounds[s].instances.length; i++){
 						if(singleton.sounds[s].instances[i] == howlId){
 							singleton.sounds[s].instances.splice(i, 1);
-							return;
+							break;
 						}
 					}
 				}
 			}
+
+			singleton._killCallbacks(howlId);
 		};
 		
 		
@@ -386,7 +409,6 @@
 			}
 			
 			singleton.sounds._handle.stop(id);
-			singleton._killCallbacks(id);
 			return singleton;
 		};
 
