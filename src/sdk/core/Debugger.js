@@ -61,7 +61,7 @@
 			this.engine = eng;
 			
 			this.profiler = Profiler;
-			document.body.appendChild(this.profiler);
+			window.document.body.appendChild(this.profiler);
 				
 			this.showFrames = false;
 			this.stepTimer = null;
@@ -119,7 +119,7 @@
 						currPos += Math.round((numComposition/total)*maxHeight);
 						newCol.appendChild(compSection);
 						
-						var fpsBar = document.createElement("div");
+						var fpsBar = window.document.createElement("div");
 						fpsBar.title = Performance.frames;
 						fpsBar.style.width = "100%";
 						fpsBar.style.height = "4px";
@@ -213,7 +213,7 @@
 		 * @return {HTMLDivElement}
 		 */
 		Debugger.prototype.createColumn = function(name){
-			var ret = document.createElement("div");
+			var ret = window.document.createElement("div");
 			ret.id = name;
 			ret.style.width = "4px";
 			ret.style.height = "300px";
@@ -238,7 +238,7 @@
 		 * @return {HTMLDivElement}
 		 */
 		Debugger.prototype.createSection = function(title, top, height, color){
-			var ret = document.createElement("div");
+			var ret = window.document.createElement("div");
 			ret.title = title;
 			ret.style.width = "100%";
 			ret.style.height = height + "px";
@@ -259,7 +259,7 @@
 		 * @return {HTMLDivElement}
 		 */
 		Debugger.prototype.createBar = function(name, size, color){
-			var ret = document.createElement("div");
+			var ret = window.document.createElement("div");
 			ret.title = name + ":" + size + "mb";
 			ret.style.width = (25 +((size/24)*75)) + "%";
 			ret.style.height = "16px";
@@ -335,11 +335,11 @@
 			
 			var 
 				ctx = null,
-				win = document.getElementById("debugWindow")
+				win = window.document.getElementById("debugWindow")
 			;
 				
 			if(!win){
-				win = document.createElement('canvas');
+				win = window.document.createElement('canvas');
 				win.width=300;
 				win.height=300;
 				win.id = "debugWindow";
@@ -351,7 +351,7 @@
 				win.style.bottom = "0px";
 				win.style.right = "0px";
 				win.style.zIndex = 999;
-				document.body.appendChild(win);
+				window.document.body.appendChild(win);
 			}
 			ctx = win.getContext('2d');
 			ctx.clearRect(0,0,300,300);

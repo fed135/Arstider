@@ -30,7 +30,7 @@
 		 */
 		function Buffer(props){
             props = props || {};
-			this.data = document.createElement("canvas");
+			this.data = window.document.createElement("canvas");
             if(props.webgl) this.context = this.data.getContext("webgl") || this.data.getContext("experimental-webgl") || null;
             else this.context = this.data.getContext("2d");
 			

@@ -51,7 +51,7 @@
 	/**
 	 * Add document event listener for keydown
 	 */
-	document.addEventListener("keydown", function(event){
+	window.document.addEventListener("keydown", function(event){
 		var key = keyCodeToCharName(event.keyCode);
 		
 		keyMap[key] = 1;
@@ -69,7 +69,7 @@
 	/**
 	 * Add document event listener for key release
 	 */
-	document.addEventListener("keyup", function(event){
+	window.document.addEventListener("keyup", function(event){
 		var key = keyCodeToCharName(event.keyCode);
 		
 		keyMap[key] = 0;

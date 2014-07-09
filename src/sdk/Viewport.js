@@ -179,7 +179,7 @@
 			var thisRef = this;
 			
 			if(tag.appendChild) this.container = tag;
-			else this.container = document.getElementById(tag);
+			else this.container = window.document.getElementById(tag);
 			if(this.container){
 				this.container.appendChild(canvas);
 				this.tag = canvas;
@@ -198,16 +198,16 @@
 				window.addEventListener('pagehide', this._pagehide);
 
 				var hidden, visibilityChange;
-				if (typeof document.hidden !== "undefined"){
+				if (typeof window.document.hidden !== "undefined"){
 					hidden = "hidden";
 					visibilityChange = "visibilitychange";
-				} else if (typeof document.mozHidden !== "undefined"){
+				} else if (typeof window.document.mozHidden !== "undefined"){
 					hidden = "mozHidden";
 					visibilityChange = "mozvisibilitychange";
-				} else if (typeof document.msHidden !== "undefined"){
+				} else if (typeof window.document.msHidden !== "undefined"){
 					hidden = "msHidden";
 					visibilityChange = "msvisibilitychange";
-				} else if (typeof document.webkitHidden !== "undefined"){
+				} else if (typeof window.document.webkitHidden !== "undefined"){
 					hidden = "webkitHidden";
 					visibilityChange = "webkitvisibilitychange";
 				}
@@ -216,8 +216,8 @@
 				//window.addEventListener('blur', this._pagehide);
 				//window.addEventListener('focus', this._pageshow);
 
-				document.addEventListener(visibilityChange, function(){
-					if(document[hidden]) thisRef._pagehide();
+				window.document.addEventListener(visibilityChange, function(){
+					if(window.document[hidden]) thisRef._pagehide();
 					else thisRef._pageshow();
 				}, false);
 				
@@ -284,12 +284,12 @@
 		Viewport.prototype._resize = function(e){
 			if(Browser.isMobile){
 				if(singleton.orientation == LANDSCAPE){
-					document.body.style.width = window.innerWidth + "px";
-					document.body.style.height = window.innerHeight +"px";
+					window.document.body.style.width = window.innerWidth + "px";
+					window.document.body.style.height = window.innerHeight +"px";
 				}
 				else{
-					document.body.style.height = window.innerWidth + "px";
-					document.body.style.width = window.innerHeight +"px";
+					window.document.body.style.height = window.innerWidth + "px";
+					window.document.body.style.width = window.innerHeight +"px";
 				}
 			}
 
@@ -348,9 +348,9 @@
 			singleton.visibleWidth = Math.min(singleton.visibleWidth, singleton.maxWidth)/this.globalScale;
 			singleton.visibleHeight = Math.min(singleton.visibleHeight, singleton.maxHeight)/this.globalScale;
 			
-            singleton.tagParentNode = document.getElementById("Arstider_tag_overlay");
+            singleton.tagParentNode = window.document.getElementById("Arstider_tag_overlay");
             if(!singleton.tagParentNode){
-            	singleton.tagParentNode = document.createElement("div");
+            	singleton.tagParentNode = window.document.createElement("div");
 				singleton.tagParentNode.id = "Arstider_tag_overlay";
 				singleton.tag.parentNode.appendChild(singleton.tagParentNode);
             	singleton.tagParentNode.style.position = "absolute";
@@ -366,7 +366,7 @@
                         
 			Events.broadcast("Viewport.resize", singleton);
                         
-			if(Browser.isMobile) document.body.scrollTop=0;
+			if(Browser.isMobile) window.document.body.scrollTop=0;
 		};
 		
 		/**

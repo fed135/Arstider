@@ -11,7 +11,7 @@ define("Arstider/commons/Input", ["Arstider/Tag"], /** @lends commons/Input */ f
 		var txtField;
 		if(props.label){
 			this._tag.innerHTML = props.label;
-			txtField = document.createElement("input");
+			txtField = window.document.createElement("input");
 			txtField.id = this.name + "_input";
 			this._tag.appendChild(txtField); 
 		}

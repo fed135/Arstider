@@ -101,9 +101,9 @@
 				this.currentNetwork = FACEBOOK;
 				require(["facebook"], function(){
 					if(!thisRef._facebookSetupped){
-						var fbBase = document.createElement("div");
+						var fbBase = window.document.createElement("div");
 						fbBase.id = "fb-root";
-						document.body.appendChild(fbBase);
+						window.document.body.appendChild(fbBase);
 						FB.init({
 							appId:props.appId,
 							cookie:props.cookie,
