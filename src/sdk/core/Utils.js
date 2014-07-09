@@ -35,6 +35,15 @@ Arstider.guid = function() {
   return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 }
 
+//IE9 iframe fallback
+if(Object.create == undefined){
+	Object.create = function(parent){
+		function F () {}  // An empty constructor.
+    	F.prototype = parent;  // Set its prototype to the parent object.
+    	return new F;  // Instantiate it to get an empty object that inherits `parent`.
+	};
+}
+
 /**
  * Disables the console element
  * @memberof Arstider

@@ -263,7 +263,7 @@ else{
 
 		window.loadedModules[className] = data;
 
-		if(className.indexOf("core/") != -1) return;
+		//if(className.indexOf("core/") != -1) return;
 
 		//Description
 		if(data.indexOf("@constructor") != -1){
@@ -292,7 +292,7 @@ else{
 		//Status
 		if(data.indexOf("@status") != -1){
 			cut = data.substring(data.indexOf("@status ") + 8);
-			className = cut.substring(0, cut.indexOf("."));
+			status = cut.substring(0, cut.indexOf("."));
 		}
 
 		var c={
