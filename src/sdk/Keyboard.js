@@ -177,6 +177,19 @@
 				}
 			}
 		};
+
+		/**
+		 * Disables the spacebar page scrolling
+		 * @type {function(this:Keyboard)}
+		 */
+		Keyboard.prototype.disablePageScroll = function()
+		{
+			// http://stackoverflow.com/questions/2343573/pressing-spacebar-moves-page-down
+			window.onkeydown = function(e) { 
+			  return !(e.keyCode == 32);
+			};
+			return this;
+		}
 		
 		singleton = new Keyboard();
 		return singleton;
