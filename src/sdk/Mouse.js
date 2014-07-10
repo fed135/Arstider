@@ -277,7 +277,7 @@
 		 * @param {string} style The style rule to apply to the cursor
 		 */
 		Mouse.prototype.setCursor = function(style){
-			document.body.style.cursor = style;
+			window.document.body.style.cursor = style;
 		};
 		
 		/**

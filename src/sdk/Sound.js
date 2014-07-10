@@ -88,7 +88,7 @@
 			;
 			
 			for(i in this.sounds){
-				sprite[i] = [this.sounds[i].offset, this.sounds[i].duration];
+				sprite[i] = [this.sounds[i].offset, this.sounds[i].duration, this.sounds[i].loop];
 			}
 			
 			this.sounds['empty'] = {};
@@ -254,7 +254,6 @@
 					singleton.sounds._handle.volume(Arstider.checkIn(props.volume, 1), howlId);
 					if(props.startCallback) props.startCallback(howlId);
 					if(props.endCallback) singleton._callbacks[howlId].push(props.endCallback);
-					if(singleton.sounds[id].loop) singleton._callbacks[howlId].push(function(){singleton.play(id);});
 				});
 			}
 			else{
@@ -284,7 +283,28 @@
 				return singleton;
 			}
 			
-			singleton.sounds._handle.fade(singleton.sounds._handle._volume, to, duration, callback || Arstider.emptyFunction, id);
+			if(singleton.checkInstance(id)) singleton.sounds._handle.fade(singleton.sounds._handle._volume, to, duration, callback || Arstider.emptyFunction, id);
+			return singleton;
+		};
+
+		/**
+		 * Sets the position of a sound instance, does not alter the playing property
+		 * @type {function(this:Sound)}
+		 * @param {string|number} id The name/howlerId of the sound
+		 * @param {number} pos The position (in ms) to go to
+		 */
+		Sound.prototype.setPosition = function(id, pos){
+			if(id in singleton.tracks){
+				if(singleton.tracks[id]._handle) singleton.tracks[id]._handle.pos(pos);
+				return singleton;
+			}
+			
+			if(!singleton.sounds._handle){
+				if(Arstider.verbose > 0) console.warn("Arstider.Sound.setPosition: sounds disabled, Howler not loaded");
+				return singleton;
+			}
+			
+			if(singleton.checkInstance(id)) singleton.sounds._handle.pos(pos, id);
 			return singleton;
 		};
 		
@@ -310,11 +330,12 @@
 		 */
 		Sound.prototype._removeInstance = function(howlId){
 			var cbList = singleton._callbacks[howlId];
-			for(var i = 0; i<cbList.length; i++){
-				cbList[i]();
+			if(cbList && cbList.length){
+				for(var i = 0; i<cbList.length; i++){
+					cbList[i]();
+				}
 			}
 			
-			singleton._killCallbacks(howlId);
 			var i, s;
 			
 			for(s in singleton.sounds){
@@ -322,11 +343,13 @@
 					for(i = 0; i<singleton.sounds[s].instances.length; i++){
 						if(singleton.sounds[s].instances[i] == howlId){
 							singleton.sounds[s].instances.splice(i, 1);
-							return;
+							break;
 						}
 					}
 				}
 			}
+
+			singleton._killCallbacks(howlId);
 		};
 		
 		
@@ -385,8 +408,7 @@
 				return singleton;
 			}
 			
-			singleton.sounds._handle.stop(id);
-			singleton._killCallbacks(id);
+			if(singleton.checkInstance(id)) singleton.sounds._handle.stop(id);
 			return singleton;
 		};
 
@@ -473,7 +495,7 @@
 				return singleton;
 			}
 			
-			singleton.sounds._handle.pause(id);
+			if(singleton.checkInstance(id)) singleton.sounds._handle.pause(id);
 			return singleton
 		};
 		
@@ -508,8 +530,27 @@
 				return singleton;
 			}
 			
-			singleton.sounds._handle.play(id);
+			if(singleton.checkInstance(id)) singleton.sounds._handle.play(id);
 			return singleton;
+		};
+
+		/**
+		 * Checks the state of a sfx instance
+		 * @type {function(this:Sound)}
+		 * @param {string} id The howl id of the sound to check
+		 * @return {boolean} True if instance is live false if it doesn't exist
+		 */
+		Sound.prototype.checkInstance = function(id){
+			var s;
+
+			for(s in singleton.sounds){
+				if(singleton.sounds[s].instances && singleton.sounds[s].instances.length != 0){
+					if(singleton.sounds[s].instances.indexOf(id) != -1) return true;
+				}
+			}
+			if(Arstider.verbose > 0) console.warn("Arstider.Sound.checkInstance: sound instance doesn't exist");
+
+			return false;			
 		};
 		
 		/**
@@ -530,7 +571,7 @@
 				return singleton;
 			}
 			
-			singleton.sounds._handle.volume(val, id);
+			if(singleton.checkInstance(id)) singleton.sounds._handle.volume(val, id);
 			return singleton;
 		};
 

@@ -20,7 +20,7 @@ define("Arstider/Tag", ["Arstider/Entity", "Arstider/Viewport"], /** @lends Tag 
 	function Tag(props){
 		Arstider.Super(this, Entity, props);
 		
-		this._tag = document.createElement(props.tag || "input");
+		this._tag = window.document.createElement(props.tag || "input");
 		
 		if(props.type) this._tag.type = props.type;
 		if(props.value) this._tag.value = props.value;

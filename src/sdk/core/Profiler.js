@@ -54,7 +54,7 @@ define("Arstider/core/Profiler", ["Arstider/Browser"], /** @lends core/Profiler 
 	/**
 	 * Profiler bar
 	 */
-	var profiler = document.createElement("div");
+	var profiler = window.document.createElement("div");
 	profiler.id = "_ArstiderProfiler";
 	profiler.style.position = "fixed";
 	profiler.style.display = "block";
@@ -71,13 +71,13 @@ define("Arstider/core/Profiler", ["Arstider/Browser"], /** @lends core/Profiler 
 	profiler.style.cursor = "default";
 	profiler.collapsed = true;
 	profiler.currentTab = "draw";
-	profiler.minibar = document.createElement("div");
+	profiler.minibar = window.document.createElement("div");
 	
 	if(!Browser.isMobile){
 		/**
 		 * Close button
 		 */
-		var closeProfiler = document.createElement("div");
+		var closeProfiler = window.document.createElement("div");
 		closeProfiler.id = "_ArstiderProfilerCloseBtn";
 		styleAsButton(closeProfiler);
 		closeProfiler.onclick = function(){profiler.style.display = "none";};
@@ -87,7 +87,7 @@ define("Arstider/core/Profiler", ["Arstider/Browser"], /** @lends core/Profiler 
 		/**
 		 * Toggle button
 		 */
-		var toggleProfiler = document.createElement("div");
+		var toggleProfiler = window.document.createElement("div");
 		toggleProfiler.id = "_ArstiderProfilerToggleBtn";
 		styleAsButton(toggleProfiler);
 		toggleProfiler.onclick = function(){
@@ -107,7 +107,7 @@ define("Arstider/core/Profiler", ["Arstider/Browser"], /** @lends core/Profiler 
 		/**
 		 * Drawing tab
 		 */
-		var drawTab = document.createElement("div");
+		var drawTab = window.document.createElement("div");
 		drawTab.id = "_ArstiderProfilerDrawTab";
 		styleAsButton(drawTab);
 		drawTab.style.cssFloat = "left";
@@ -121,7 +121,7 @@ define("Arstider/core/Profiler", ["Arstider/Browser"], /** @lends core/Profiler 
 		/**
 		 * Memory tab
 		 */
-		var memTab = document.createElement("div");
+		var memTab = window.document.createElement("div");
 		memTab.id = "_ArstiderProfilerMemoryTab";
 		styleAsButton(memTab);
 		memTab.style.cssFloat = "left";
@@ -132,7 +132,7 @@ define("Arstider/core/Profiler", ["Arstider/Browser"], /** @lends core/Profiler 
 		memTab.innerHTML = "Memory";
 		profiler.appendChild(memTab);
 	
-		var details = document.createElement("div");
+		var details = window.document.createElement("div");
 		details.style.width = "100%";
 		details.style.height = "300px";
 		details.style.overflowY = "auto";
