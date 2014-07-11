@@ -299,9 +299,35 @@
 				return;
 			}
 
+			var params;
+			if(typeof(name) != "string")
+			{
+				params = name;
+				name = params.name;
+			}
+			// Default params
+			else {
+				params = {};
+			}
 
-			Events.unbind("Preloader.loadingCompleted", singleton.startScreen);
-			Events.bind("Preloader.loadingCompleted", singleton.startScreen);
+			Events.unbind("Preloader.loadingCompleted", singleton.onScreenLoaded);
+			Events.bind("Preloader.loadingCompleted", singleton.onScreenLoaded);
+
+			// Wait for user actions in preloader
+			// for interactions, stories, choose level options, etc.
+			if(params.waitForUser)
+			{
+				singleton.waitForUser = true;
+				Events.unbind("Preloader.userCompleted", singleton.startScreen);
+				Events.bind("Preloader.userCompleted", function() {
+					singleton.startScreen();
+				});
+			}
+			// Change when screen is loaded
+			else
+			{
+				singleton.waitForUser = false;
+			}
 			
 			singleton.stop();
 			singleton.isPreloading = true;
@@ -310,30 +336,36 @@
 
 			singleton.killScreen((singleton.currentScreen && singleton.currentScreen.__savedState));
 			
-			require([name], function(_menu){
-				
+			require([name], function(_menu)
+			{
 				if(Viewport.unsupportedOrientation){
-                                    Events.bind("Viewport.rotate", function finishLoadScreen(){
-                                        Events.unbind("Viewport.rotate", finishLoadScreen);
-                                        singleton.currentScreen = new Screen(_menu, singleton, hasMap);
+					Events.bind("Viewport.rotate", function finishLoadScreen(){
+						Events.unbind("Viewport.rotate", finishLoadScreen);
+						singleton.currentScreen = new Screen(_menu, singleton, hasMap);
 
-                                        //singleton.currentScreen.stage = singleton;
-                                        singleton.currentScreen.name = name;
-                                        setTimeout(function(){
-                                                Preloader.progress("__screen__", 100);
-                                        },100);
-                                    });
-                                }
-                                else{
-                                    singleton.currentScreen = new Screen(_menu, singleton, hasMap);
+						//singleton.currentScreen.stage = singleton;
+						singleton.currentScreen.name = name;
+						setTimeout(function(){
+							Preloader.progress("__screen__", 100);
+						},100);
+					});
+				}
+				else
+				{
+					singleton.currentScreen = new Screen(_menu, singleton, hasMap);
 
-                                    singleton.currentScreen.stage = singleton;
-                                    singleton.currentScreen.name = name;
-                                    setTimeout(function(){
-                                            Preloader.progress("__screen__", 100);
-                                    },100);
-                               }
+					singleton.currentScreen.stage = singleton;
+					singleton.currentScreen.name = name;
+					setTimeout(function(){
+						Preloader.progress("__screen__", 100);
+					},100);
+				}
 			});
+		};
+
+		Engine.prototype.onScreenLoaded = function() {
+			if(singleton.waitForUser) return;
+			singleton.startScreen();
 		};
 			
 		/**
