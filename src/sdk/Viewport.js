@@ -214,7 +214,8 @@
 
 				//This is pretty intense... not sure you would want that...
 				//window.addEventListener('blur', this._pagehide);
-				//window.addEventListener('focus', this._pageshow);
+				//Not automatically triggered when device locks
+				window.addEventListener('focus', this._pageshow);
 
 				window.document.addEventListener(visibilityChange, function(){
 					if(window.document[hidden]) thisRef._pagehide();
