@@ -290,7 +290,18 @@
 		 * @type {function(this:Engine)}
 		 * @param {string} name The url of the screen to load (must match define!)
 		 */
-		Engine.prototype.loadScreen = function(name, hasMap){
+		Engine.prototype.loadScreen = function(params, hasMap)
+		{
+			var name;
+			
+			// Simple screen name param
+			if(typeof(params) == "string") {
+				name = params;
+				params = {};
+			} else {
+				name = params.name;
+			}
+			
 			if(Arstider.savedStates[name] != undefined){
 				singleton.currentScreen = Arstider.savedStates[name];
 				singleton.currentScreen.__savedState = false;
@@ -299,35 +310,14 @@
 				return;
 			}
 
-			var params;
-			if(typeof(name) != "string")
-			{
-				params = name;
-				name = params.name;
-			}
-			// Default params
-			else {
-				params = {};
-			}
-
 			Events.unbind("Preloader.loadingCompleted", singleton.onScreenLoaded);
 			Events.bind("Preloader.loadingCompleted", singleton.onScreenLoaded);
 
-			// Wait for user actions in preloader
-			// for interactions, stories, choose level options, etc.
-			if(params.waitForUser)
-			{
-				singleton.waitForUser = true;
-				Events.unbind("Preloader.userCompleted", singleton.startScreen);
-				Events.bind("Preloader.userCompleted", function() {
-					singleton.startScreen();
-				});
-			}
-			// Change when screen is loaded
-			else
-			{
-				singleton.waitForUser = false;
-			}
+			// Preloader options
+			var preloaderParams = (params.preloader) ? params.preloader : {};
+			console.log(preloaderParams)
+			Preloader.interactive = Arstider.checkIn(preloaderParams.interactive, false);
+			Preloader.animated = Arstider.checkIn(preloaderParams.animated, false);
 			
 			singleton.stop();
 			singleton.isPreloading = true;
@@ -363,8 +353,19 @@
 			});
 		};
 
-		Engine.prototype.onScreenLoaded = function() {
-			if(singleton.waitForUser) return;
+		Engine.prototype.onScreenLoaded = function()
+		{
+			// Wait for user actions in preloader
+			// for interactions, stories, choose level options, etc.
+			if(Preloader.interactive)
+			{
+				Events.bind("Preloader.userCompleted", function() {
+					singleton.startScreen();
+					Events.unbind("Preloader.userCompleted", singleton.startScreen);
+				});
+				return;
+			}
+
 			singleton.startScreen();
 		};
 			
@@ -430,7 +431,7 @@
 		 */
 		Engine.prototype.applyTouch = function(e, target){
 			
-			target = target || singleton.currentScreen;
+			if(!target) target = (singleton.handbreak) ? Preloader._screen : singleton.currentScreen;
 			
 			var 
 				i,
@@ -488,6 +489,7 @@
 				inputId = null
 			;
 
+
 			if(Browser.isMobile){
 				for(i=0; i< inputs.length; i++){
 					if(target.isTouched(inputs[i].x, inputs[i].y) && inputs[i].pressed){
@@ -506,6 +508,7 @@
 			}
 			else{
 				if(target.isTouched(mouseX, mouseY)){
+					
 					if(!target._hovered) target._onhover();
 					if(!Mouse.isPressed()) target._preclick = true;
 				}
@@ -576,18 +579,16 @@
 			
 			if(Arstider.defaultRenderStyle == "sharp") singleton.canvas.updateRenderStyle(Arstider.defaultRenderStyle);
 
-			//Check if canvas rendering is on/off
+			// Preloader rendering
 			if(singleton.handbreak){
-				if(Preloader._queue.length > 0){
+				if(Preloader.interactive || Preloader.animated || Preloader._queue.length > 0){
                     if(pencil == WEBGLRenderer) singleton.context.clear(singleton.context.COLOR_BUFFER_BIT);
 					else singleton.context.clearRect(0,0,Viewport.maxWidth,Viewport.maxHeight);
 					//Preloader._screen.cancelBubble();
 					//Preloader._screen._update();
-					pencil.draw(singleton, Preloader._screen, null, null, false);
+					pencil.draw(singleton, Preloader._screen, function(e){singleton.applyRelease(e, ((Browser.isMobile)?Mouse._ongoingTouches:[{x:Mouse.x(), y:Mouse.y(), pressed:Mouse.pressed}]));}, null, showFrames);
 					if(Viewport.tagParentNode) Viewport.tagParentNode.style.display = "none";
-				}
-				else{
-					console.log("Nope", singleton.pausedByRequest);
+					Mouse.cleanTouches();
 				}
 				return;
 			}
