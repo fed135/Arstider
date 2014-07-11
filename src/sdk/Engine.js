@@ -293,7 +293,7 @@
 		Engine.prototype.loadScreen = function(params, hasMap)
 		{
 			var name;
-			
+
 			// Simple screen name param
 			if(typeof(params) == "string") {
 				name = params;
@@ -315,7 +315,6 @@
 
 			// Preloader options
 			var preloaderParams = (params.preloader) ? params.preloader : {};
-			console.log(preloaderParams)
 			Preloader.interactive = Arstider.checkIn(preloaderParams.interactive, false);
 			Preloader.animated = Arstider.checkIn(preloaderParams.animated, false);
 			
