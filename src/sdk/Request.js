@@ -293,6 +293,12 @@
                                        
                	if(this.mimeOverride != null) xhr.overrideMimeType(this.mimeOverride);
 				
+               	if(this.method.toLowerCase() == "post"){
+               		//check for content-type header
+               		if(this.headers === Arstider.emptyObj) this.headers = {};
+               		if(this.headers["Content-Type"] == undefined) this.headers["Content-Type"] = "application/x-www-form-urlencoded";
+               	}
+
 				for(header in this.headers){
 					if(refusedHeaders.indexOf(header) === -1){
 						xhr.setRequestHeader(header, this.headers[header]);
@@ -341,7 +347,7 @@
 						
 				xhr.onerror = handleError;
 							
-				xhr.send(this.postData);
+				xhr.send(Arstider.serialize(this.postData));
 
 				return xhr;
 			}

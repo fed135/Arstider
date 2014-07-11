@@ -644,14 +644,16 @@ Arstider.bufferPool = {};
  * @return {string} The serialized Object
  */
 Arstider.serialize = function(obj, prefix) {
-  var str = [];
-  for(var p in obj) {
-    var k = prefix ? prefix + "[" + p + "]" : p, v = obj[p];
-    str.push(typeof v == "object" ?
-      serialize(v, k) :
-      encodeURIComponent(k) + "=" + encodeURIComponent(v));
-  }
-  return str.join("&");
+	if(typeof obj === "string" || obj == null) return obj;
+
+	var str = [];
+	for(var p in obj){
+		var k = prefix ? prefix + "[" + p + "]" : p, v = obj[p];
+    	str.push(typeof v == "object" ?
+      	Arstider.serialize(v, k) :
+		encodeURIComponent(k) + "=" + encodeURIComponent(v));
+  	}
+  	return str.join("&");
 };
 
 /**
