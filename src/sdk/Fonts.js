@@ -206,7 +206,6 @@
 				cache:false,
 				callback:function(file){
 					var fontList = file;
-					console.log(fontList)
 					for(var i in fontList){
 						fontList[i].name = i;
 						this.create(fontList[i]);
