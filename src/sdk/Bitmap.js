@@ -94,6 +94,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 		var thisRef = this;
 		
 		if((Browser.name == "safari" && Browser.version < 7) || Browser.name == "ie"){
+			Arstider.__retroAssetLoader = true;
 			Preloader.progress(this.id, 0);
 			//need to save into a canvas
 			this.data = new Buffer({

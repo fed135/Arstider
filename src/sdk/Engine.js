@@ -369,6 +369,27 @@
 
 			singleton.startScreen();
 		};
+
+		Engine.prototype.protectData = function(obj){
+			//add protected flag to buffer tags of background/watermark 
+			if(obj.data!= null){
+				while(obj.data.toDataURL == undefined){
+					if(obj.data.data) obj = obj.data.data;
+					else break;
+				}
+
+				if(obj.data.toDataURL){
+					console.log("protecting ", obj.data.id);
+					obj.data._protected = true;
+				}
+			}
+
+			if(obj.children && obj.children.length > 0){
+				for(var i = 0; i<obj.children.length; i++){
+					singleton.protectData(obj.children[i]);
+				}
+			}
+		};
 			
 		/**
 		 * Kills the current screen
@@ -378,14 +399,18 @@
 			if(singleton.currentScreen != null){
 				Telemetry.log("system", "screenstop", {screen:singleton.currentScreen.name});
 				if(!preserve) singleton.currentScreen._unload();
-                //Ad.closeAll();
-                for(var i in Arstider.bufferPool){
-                	if(i.indexOf("_compatBuffer_") != -1){
-                		if(Background.data != Arstider.bufferPool[i] && Watermark.data != Arstider.bufferPool[i]){
-                			Arstider.bufferPool[i].kill();
-                		}
-                	}
-                }
+                
+                if(Arstider.__retroAssetLoader){
+					singleton.protectData(Background);
+					singleton.protectData(Watermark);
+
+					for(var i in Arstider.bufferPool){
+	                	if(i.indexOf("_compatBuffer_") != -1 && Arstider.bufferPool[i].data && !Arstider.bufferPool[i].data._protected){
+	                		console.log("Killing compat buffer ", Arstider.bufferPool[i].name);
+	                		Arstider.bufferPool[i].kill();
+	                	}
+	                }
+				}
 
                 GlobalTimers.removeTweens();
 
