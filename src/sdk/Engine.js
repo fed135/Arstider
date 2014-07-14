@@ -125,6 +125,13 @@
 			 * @type {boolean} 
 			 */
 			this._isSynchronous = false;
+
+			/**
+			 * If sounds where stopped in a hurry
+			 * @private
+			 * @type {boolean}
+			 */
+			this._emergencySoundMute = false;
 		}
 		
 		/**
@@ -175,11 +182,17 @@
 			
 			Events.bind("Viewport.pagehide", function(){
 				singleton.stop();
-				Sound.pause("__emergency-stop__");
+				if(!singleton._emergencySoundMute){
+					singleton._emergencySoundMute = true;
+					Sound.pause("__emergency-stop__");
+				}
 			});
 			Events.bind("Viewport.pageshow", function(){
 				singleton.play();
-				Sound.resume("__emergency-stop__");
+				if(singleton._emergencySoundMute){
+					singleton._emergencySoundMute = false;
+					Sound.resume("__emergency-stop__");
+				}
 			});
 			
 			if(!this.pausedByRequest) this.play();
@@ -379,7 +392,6 @@
 				}
 
 				if(obj.data.toDataURL){
-					console.log("protecting ", obj.data.id);
 					obj.data._protected = true;
 				}
 			}
@@ -406,7 +418,6 @@
 
 					for(var i in Arstider.bufferPool){
 	                	if(i.indexOf("_compatBuffer_") != -1 && Arstider.bufferPool[i].data && !Arstider.bufferPool[i].data._protected){
-	                		console.log("Killing compat buffer ", Arstider.bufferPool[i].name);
 	                		Arstider.bufferPool[i].kill();
 	                	}
 	                }
