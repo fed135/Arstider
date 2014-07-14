@@ -304,6 +304,8 @@
 			
 			if(Arstider.savedStates[name] != undefined){
 				singleton.currentScreen = Arstider.savedStates[name];
+				GlobalTimers.list = GlobalTimers.list.concat(Arstider.savedStates[name].__tweens);
+				delete singleton.currentScreen.__tweens;
 				singleton.currentScreen.__savedState = false;
 				if(singleton.currentScreen.onresume) singleton.currentScreen.onresume();
 				delete Arstider.savedStates[name];

@@ -12,8 +12,9 @@ define("Arstider/Screen", [
 	"Arstider/DisplayObject", 
 	"Arstider/Viewport", 
 	"Arstider/Events", 
-	"Arstider/Request"
-	], /** @lends Screen */ function(DisplayObject, Viewport, Events, Request){
+	"Arstider/Request",
+	"Arstider/GlobalTimers"
+	], /** @lends Screen */ function(DisplayObject, Viewport, Events, Request, GlobalTimers){
 	
 	/**
 	 * Screen constructor
@@ -182,6 +183,14 @@ define("Arstider/Screen", [
 	Screen.prototype.saveStateAs = function(name, save){
 		this.__savedState = true;
 		Arstider.savedStates[name] = this;
+		Arstider.savedStates[name].__tweens = [];
+
+		for(var i = GlobalTimers.list.length-1; i>=0;i--){
+			if(GlobalTimers.list[i] && GlobalTimers.list[i].kill){
+				Arstider.savedStates[name].__tweens.push(Arstider.clone(GlobalTimers.list[i], true));
+				//Arstider.savedStates[name].__tweens.push(GlobalTimers.list[i]);
+			}
+		}
 	};
 
 	/**

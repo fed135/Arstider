@@ -67,6 +67,8 @@
 		 * @return {number} The memory footprint of the buffer
 		 */
 		Buffer.prototype.getMemory = function(){
+			if(!this.data) return 0;
+
 			return (this.height * this.width) << 3;
 		};
 		
@@ -77,10 +79,14 @@
 		 * @param {number} height The desired height to apply
 		 */
 		Buffer.prototype.setSize = function(width, height){
+			if(!this.data) return;
+
 			this.width = this.data.width = width;
 			this.height = this.data.height = height;
 			
 			this.updateRenderStyle();
+
+			return this;
 		};
 		
 		/**
@@ -89,6 +95,8 @@
 		 * @param {string|null} style Optional rendering style change
 		 */
 		Buffer.prototype.updateRenderStyle = function(style){
+			if(!this.data) return;
+
 			if(style) this.renderStyle = style;
 			
 			if(this.renderStyle === "sharp"){
@@ -108,6 +116,8 @@
 
 			var attr = 'imageSmoothingEnabled', uc = attr.charAt(0).toUpperCase() + attr.substr(1);
 			this.context[attr] = this.context['ms'+uc] = this.context['moz'+uc] = this.context['webkit'+uc] = this.context['o'+uc] = (this.renderStyle == "auto");
+			
+			return this;
 		};
 		
 		/**
@@ -117,6 +127,8 @@
 		 * @return {string} The blobUrl
 		 */
 		Buffer.prototype.getURL = function(type){
+			if(!this.data) return;
+
 			return this.data.toDataURL(type || "image/png");
 		};
 		
@@ -128,6 +140,8 @@
 		 * @return {Pixel} The pixel object for the inputed location
 		 */
 		Buffer.prototype.getPixelAt = function(x, y){
+			if(!this.data) return;
+
 			var 
 				imgd = this.context.getImageData(x, y, 1, 1),
 				pix = imgd.data,
@@ -150,6 +164,8 @@
 		 * @return {number} The pixel alpha for the inputed location
 		 */
 		Buffer.prototype.getAlphaAt = function(x, y){
+			if(!this.data) return;
+
 			var 
 				imgd = this.context.getImageData(x, y, 1, 1),
 				pix = imgd.data
@@ -166,6 +182,8 @@
 		 * @param {Pixel} The pixel object to place at the inputed location
 		 */
 		Buffer.prototype.setPixelAt = function(x, y, pixel){
+			if(!this.data) return;
+
 			var 
 				imgd = this.context.getImageData(x, y, 1, 1),
 				pix = imgd.data
@@ -177,6 +195,8 @@
 			pix[3] = pixel.a; // alpha
 			
 			this.context.putImageData(imgd, x, y);
+
+			return this;
 		};
 
 		/**
