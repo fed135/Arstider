@@ -541,7 +541,7 @@
 				if(Arstider.verbose > 0) console.warn("Arstider.Entity.startDrag: cannot drag an element with no parent");
 			}
 			
-			require(["Arstider/Mouse"], function(Mouse){
+			requirejs(["Arstider/Mouse"], function(Mouse){
 				var mouseX = Mouse.x();
 				var mouseY = Mouse.y();
 				

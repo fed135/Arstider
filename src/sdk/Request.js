@@ -203,7 +203,7 @@
 			 */
 			var thisRef = this;
 			if(this.track){
-				require(["Arstider/Preloader"],function(p){
+				requirejs(["Arstider/Preloader"],function(p){
 					preloaderRef = p;
 					if(thisRef._sendPending) thisRef.send.apply(thisRef);
 				});

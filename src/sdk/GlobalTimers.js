@@ -40,7 +40,7 @@
 		 * @param {number} dt Delta time
 		 */
 		GlobalTimers.prototype.step = function(dt){
-			if(!require.defined("Arstider/Engine")){
+			if(!requirejs.defined("Arstider/Engine")){
 				Arstider.requestAnimFrame.apply(window, [singleton.step])
 			}
 
@@ -80,7 +80,7 @@
 				this.list.push(elem);
 			}
 
-			if(!require.defined("Arstider/Engine")){
+			if(!requirejs.defined("Arstider/Engine")){
 				if(!this._roughStarted){
 					this._roughStarted = true;
 					Arstider.requestAnimFrame.apply(window, [singleton.step]);

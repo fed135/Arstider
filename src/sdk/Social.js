@@ -25,20 +25,6 @@
 	;
 	
 	/**
-	 * Creates requirejs shim for facebook
-	 */
-	require.config({
-		shim:{
-			"facebook":{
-				exports:"FB"
-			}
-		},
-		paths:{
-			"facebook": "//connect.facebook.net/en_US/all"
-		}
-	});
-	
-	/**
 	 * Defines the Social module
 	 */
 	define("Arstider/Social", ["Arstider/Request"], /** @lends Social */ function(Request){
@@ -98,8 +84,22 @@
 			var thisRef = this;
 			
 			if(network == FACEBOOK){
+				/**
+				 * Creates requirejs shim for facebook
+				 */
+				requirejs.config({
+					shim:{
+						"facebook":{
+							exports:"FB"
+						}
+					},
+					paths:{
+						"facebook": "//connect.facebook.net/en_US/all"
+					}
+				});
+
 				this.currentNetwork = FACEBOOK;
-				require(["facebook"], function(){
+				requirejs(["facebook"], function(){
 					if(!thisRef._facebookSetupped){
 						var fbBase = window.document.createElement("div");
 						fbBase.id = "fb-root";

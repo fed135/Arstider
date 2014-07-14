@@ -150,7 +150,7 @@ define("Arstider/Screen", [
 	Screen.prototype._spawnElement = function(element, callback){
 		var thisRef = this;
 
-		require([element._type], function(c){
+		requirejs([element._type], function(c){
 			var e = new c(element);
 			if(element._export === true){
 				thisRef[e.name] = e;

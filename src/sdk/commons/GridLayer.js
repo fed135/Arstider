@@ -151,7 +151,7 @@
 						Preloader.progress("_mapSpawn"+_i+"_"+_x+"_"+_y+_spawns[_i].module, 0);
 						
 						try{
-							require([_spawns[_i].module], function(spwn){
+							requirejs([_spawns[_i].module], function(spwn){
 								if(_ret.spawns == undefined) _ret.spawns = [];
 								
 								if(_spawns[_i].props == undefined) _spawns[_i].props = {};

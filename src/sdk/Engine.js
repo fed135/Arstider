@@ -135,7 +135,7 @@
 		 */
 		Engine.prototype.start = function(tag, synchronous){
 			if(this.debug){
-				require(["Arstider/core/Debugger"], function(Debugger){
+				requirejs(["Arstider/core/Debugger"], function(Debugger){
 					singleton.profiler = new Debugger(singleton);
 					singleton.profiler.init();
 				});
@@ -325,7 +325,7 @@
 
 			singleton.killScreen((singleton.currentScreen && singleton.currentScreen.__savedState));
 			
-			require([name], function(_menu)
+			requirejs([name], function(_menu)
 			{
 				if(Viewport.unsupportedOrientation){
 					Events.bind("Viewport.rotate", function finishLoadScreen(){
