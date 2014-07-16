@@ -154,7 +154,13 @@
 		 * @return {number|null} The status of the key (1 for pressed, 0 or null for released)
 		 */
 		Keyboard.prototype.getKey = function(key){
-			return keyMap[key];
+			if(key=="any"){
+				for(var i in keyMap){
+					if(keyMap[i] == 1) return 1;
+				}
+				return 0;
+			}
+			else return keyMap[key];
 		};
 		
 		/**
