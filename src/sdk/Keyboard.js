@@ -101,6 +101,16 @@
 				}
 			}
 		}
+
+		if(binds["any"] != undefined){
+			for(var i = 0; i<binds["any"].length; i++){
+				if(action === binds["any"][i][0]){
+					if(binds["any"][i][1] && (binds["any"][i][1] instanceof Function || typeof binds["any"][i][1] === 'function')){
+						binds["any"][i][1]();
+					}
+				}
+			}
+		}
 	}
 	
 	/**
