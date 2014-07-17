@@ -137,8 +137,6 @@ function ()
 				};
 			}
 
-			console.log(animation)
-
 			n = animationData.frames.length;
 			for (i = 0; i < n; i++) {
 				frameIndex = animationData.frames[i];

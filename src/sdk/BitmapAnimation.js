@@ -39,6 +39,8 @@ function (DisplayObject, SpriteSheetManager)
 		// Default variables
 		this.position = 0;
 		this.isPlaying = true;
+		this.nextAnim = null;
+		this.nextAnimParams = null;
 
 		// Collection of bitmaps
 		this.bitmaps = {};
@@ -49,8 +51,18 @@ function (DisplayObject, SpriteSheetManager)
 		// Go spritesheet?
 		if(props.spritesheet)
 		{
-			SpriteSheetManager.get(props.spritesheet, props, function(spritesheet) {
-				context.setSpritesheet(spritesheet)
+			SpriteSheetManager.get(props.spritesheet, props, function(spritesheet)
+			{
+				context._setSpritesheet(spritesheet);
+
+				// Overrides?
+				if(props.overrides)
+				{
+					// TODO
+				}
+
+				// Callback?
+				if(props.onComplete) props.onComplete();
 			});
 		}
 	};
@@ -59,15 +71,16 @@ function (DisplayObject, SpriteSheetManager)
 	 * Handle a new spritesheet
 	 * @type {function(this:Sprite)}
 	 */
-	BitmapAnimation.prototype.setSpritesheet = function(spritesheet)
+	BitmapAnimation.prototype._setSpritesheet = function(spritesheet)
 	{
-		console.log(spritesheet);
-
 		this.spritesheet = spritesheet;
 
-		if(spritesheet.defaultAnim)
+		var anim = this.nextAnim || spritesheet.defaultAnim;
+		var animParams = (this.nextAnimParams) || null;
+
+		if(anim)
 		{
-			this.gotoAnim(spritesheet.defaultAnim);
+			this.gotoAnim(anim, animParams);
 		}
 	};
 	
@@ -115,6 +128,29 @@ function (DisplayObject, SpriteSheetManager)
 		return this;
     };
 
+
+    /**
+	 * Called each frame
+	 * @param {Number} dt The delta time
+	 */
+	BitmapAnimation.prototype.update = function(dt)
+	{
+		if(!this.animation) return;
+
+        /*if (Std.int(_newFrame) >= this.frames.length) {
+            this.position = 0; //this.position % this.animation.duration;
+        }*/
+
+		if (this.isPlaying)
+		{
+			this.position += this.speed * dt/1000;
+
+			_newFrame = this.position * this.animation.fps + 1;
+
+			this.gotoFrame(_newFrame);
+		}
+	};
+
 	/**
 	 * Go to a specific animation or frame of the current animation
 	 * @param {Object} frameOrAnim Animation name or frame number of current sequence
@@ -124,6 +160,7 @@ function (DisplayObject, SpriteSheetManager)
 	 */
 	BitmapAnimation.prototype.gotoAndPlay = function(frameOrAnim, params)
 	{
+		// Frame number
 		if(frameOrAnim > 0)
 		{
 			this.gotoFrame(frameOrAnim)
@@ -131,6 +168,7 @@ function (DisplayObject, SpriteSheetManager)
 			this.gotoAnim(frameOrAnim, params);
 		}
 		this.isPlaying = true;
+
 		return this;
 	};
 
@@ -160,23 +198,49 @@ function (DisplayObject, SpriteSheetManager)
 	{
 		if(!this.spritesheet)
 		{
-			console.log("BitmapAnimation.gotoAnim ERROR: no spritesheet loaded");
+			//console.log("BitmapAnimation.gotoAnim ERROR: no spritesheet loaded");
+			this.nextAnim = animName;
+			this.nextAnimParams = params;
 			return this;
 		}
 
-		var anim = this.spritesheet.getAnim(animName);
+		// Release next anim
+		this.nextAnim = null;
+		this.nextAnimParams = null;
+
+		this.animName = animName;
+
+		var animation = this.spritesheet.getAnim(animName);
 		var frameNum = 1;
 		if(params>1) frameNum = params;
 
-		if(anim)
+		if(animation)
 		{
-			this.currentAnimation = anim;
-			this.frames = anim.frames;
-			this.position = (frameNum>1) ? frameNum/anim.frames : 0;
-			this.gotoFrame(frameNum);
+			this.animation = animation;
+
+			// Looping
+			this.loop = true;
+			if(animation.loop===false) this.loop = false;
+
+			// Specific speed
+			if(animation.speed>0) this.speed = animation.speed;
+
+			// Set frames and position
+			this.frames = animation.frames;
+			this.position = (frameNum>1) ? frameNum/animation.frames : 0;
+
+			// Additional parameters
+			if(params)
+			{
+				if(params.next) this.nextAnim = params.next;
+			}
+
+
+			// Kick-in animation
+			return this.gotoFrame(frameNum, params);
 
 		} else {
-			console.log("BitmapAnimation.gotoAnim ERROR: anim not found '"+animName+"'");
+			console.log("BitmapAnimation ERROR: anim '"+animName+"' not found.");
 		}
 
 		return this;
@@ -203,8 +267,13 @@ function (DisplayObject, SpriteSheetManager)
 		// Last frame?
 		if (this.currentFrame >= this.frames.length)
 		{
+			// Next chained anim?
+			if(this.nextAnim)
+			{
+				this.gotoAnim(this.nextAnim, this.nextAnimParams);
+			}
 			// Stop?
-			if (!this.loop || this.frames.length<=1)
+			else if (!this.loop || this.frames.length<=1)
 			{
 				this.currentFrame = this.frames.length;
 				stop();
@@ -214,6 +283,8 @@ function (DisplayObject, SpriteSheetManager)
 				this.currentFrame = 1;
 				this.position = 0;
 			}
+
+			// Anim complete signal
 			//animComplete.emit(this);
 		}
 
@@ -222,32 +293,22 @@ function (DisplayObject, SpriteSheetManager)
 		// Frame specific bitmap?
 		if(_newFrame.image)
 		{
-			this.setImage(_newFrame.image)
+			this._setImage(_newFrame.image)
 		}
 
-		this.setFrame(_newFrame);
+		this._setFrame(_newFrame);
 
-	};
-
-	BitmapAnimation.prototype.update = function(dt)
-	{
-		if(!this.currentAnimation) return;
-
-        /*if (Std.int(_newFrame) >= this.frames.length) {
-            this.position = 0; //this.position % this.currentAnimation.duration;
-        }*/
-
-		if (this.isPlaying)
+		// Additional parameters
+		if(params)
 		{
-			this.position += this.speed * dt/1000;
-
-			_newFrame = this.position * this.currentAnimation.fps + 1;
-
-			this.gotoFrame(_newFrame);
+			if(params.loop===true || params.loop===false) this.loop = params.loop;
+			if(params.speed>0) this.speed = params.speed;
 		}
+
+		return this;
 	};
 
-	BitmapAnimation.prototype.setFrame = function(frameData)
+	BitmapAnimation.prototype._setFrame = function(frameData)
 	{
 		if(this.frame == frameData) return;
 		this.frame = frameData;
@@ -269,7 +330,7 @@ function (DisplayObject, SpriteSheetManager)
 		
 	};
 
-	BitmapAnimation.prototype.setImage = function(imageUrl)
+	BitmapAnimation.prototype._setImage = function(imageUrl)
 	{
 		if(this.currentImageUrl == imageUrl) return;
 		this.currentImageUrl = imageUrl;
