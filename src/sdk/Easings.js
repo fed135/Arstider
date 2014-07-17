@@ -396,7 +396,7 @@
 			 * @param {number} progress Current progress
 			 * @return {number} Modified progress
 			 */
-			this.BACK_IN = function (p){
+			this.BACK_IN = this.BACKSWING = function (p){
 				return p * p * ( ( tc + 1 ) * p - tc );
 			};
 			/**
@@ -407,7 +407,7 @@
 			 * @param {number} progress Current progress
 			 * @return {number} Modified progress
 			 */
-			this.BACK_OUT = this.BACKSWING = function (p){
+			this.BACK_OUT = function (p){
 				return --p * p * ( ( tc + 1 ) * p + tc ) + 1;
 			};
 
