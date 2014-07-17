@@ -500,16 +500,20 @@
 			 */
 			if(this.parent != null){
 				if(this._fillX != null){
-					this.width = this.parent.global.width * this._fillX;
+					if((this._fillX + "").indexOf("px") !== -1) this.width = parseFloat(this._fillX);
+					else this.width = this.parent.global.width * parseFloat(this._fillX);
 				}
 				if(this._fillY != null){
-					this.height = this.parent.global.height * this._fillY;
+					if((this._fillY + "").indexOf("px") !== -1) this.height = parseFloat(this._fillY);
+					else this.height = this.parent.global.height * parseFloat(this._fillY);
 				}
 				if(this._dockX != null){
-					this.x = (this.parent.global.width * this._dockX) - (this.global.width * this._dockX);
+					if((this._dockX + "").indexOf("px") !== -1) this.x = parseFloat(this._dockX);
+					else this.x = (this.parent.global.width * parseFloat(this._dockX)) - (this.global.width * parseFloat(this._dockX));
 				}
 				if(this._dockY != null){
-					this.y = (this.parent.global.height * this._dockY) - (this.global.height * this._dockY);
+					if((this._dockY + "").indexOf("px") !== -1) this.y = parseFloat(this._dockY);
+					else this.y = (this.parent.global.height * parseFloat(this._dockY)) - (this.global.height * parseFloat(this._dockY));
 				}
 			}
 			
