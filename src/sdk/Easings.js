@@ -12,112 +12,56 @@
 		 * @private
 		 * @type {Easings|null}
 		 */
-		singleton = null
+		singleton = null,
+
+		/**
+		 * 10% bounce math constant
+		 * @const
+		 * @private
+		 * @type {number}
+		 */
+		tc = 1.70158,
+
+		/**
+		 * 10% return swing
+		 * @const
+		 * @private
+		 * @type {number}
+		 */
+		tr = tc * 1.525,
+
+		/**
+		 * Initial bounce factor
+		 * @const
+		 * @private
+		 * @type {number}
+		 */
+		inib = 7.5625,
+
+		/**
+		 * Bounce friction factor
+		 * @const
+		 * @private
+		 * @type {Array}
+		 */
+		bff = [1/2.75, 2/2.75, 2.5/2.75],
+
+		/**
+		 * Rebounce friction factor
+		 * @const
+		 * @private
+		 * @type {Array}
+		 */
+		rff = [1.5/2.75, 2.25/2.75, 2.625/2.75],
+
+		/**
+		 * Rebounce friction factor
+		 * @const
+		 * @private
+		 * @type {Array}
+		 */
+		rbff = [0.75, 0.9375, 0.984375]
 	;
-	
-	/**
-	 * Linear progress curve
-	 * @const
-	 * @private
-	 * @type {function}
-	 * @param {number} progress Current progress
-	 * @return {number} Modified progress
-	 */
-	function linear(progress){
-		return progress;
-	}
-	
-	/**
-	 * Quadratic progress curve
-	 * @const
-	 * @private
-	 * @type {function}
-	 * @param {number} progress Current progress
-	 * @return {number} Modified progress
-	 */
-	function quad(progress){
-		return Math.pow(progress, 2);
-	}
-	
-	/**
-	 * Circular progress curve
-	 * @const
-	 * @private
-	 * @type {function}
-	 * @param {number} progress Current progress
-	 * @return {number} Modified progress
-	 */
-	function circ(progress){
-		return 1 - Math.sin(Math.acos(progress));
-	}
-	
-	/**
-	 * Backswing progress curve
-	 * @const
-	 * @private
-	 * @type {function}
-	 * @param {number} progress Current progress
-	 * @return {number} Modified progress
-	 */
-	function back(progress, x){
-		return Math.pow(progress, 2) * ((x + 1) * progress - x);
-	}
-	
-	/**
-	 * Bouncing progress curve
-	 * @const
-	 * @private
-	 * @type {function}
-	 * @param {number} progress Current progress
-	 * @return {number} Modified progress
-	 */
-	function bounce(progress){
-		for(var a = 0, b = 1, result; 1; a += b, b /= 2) {
-			if(progress >= (7 - 4 * a) / 11) return -Math.pow((11 - 6 * a - 11 * progress) / 4, 2) + Math.pow(b, 2);
-		}
-	}
-	
-	/**
-	 * Elastic progress curve
-	 * @const
-	 * @private
-	 * @type {function}
-	 * @param {number} progress Current progress
-	 * @param {number} x Extra parameter
-	 * @return {number} Modified progress
-	 */
-	function elastic(progress, x){
-		return Math.pow(2, 10 * (progress-1)) * Math.cos(20*Math.PI*x/3*progress);
-	}
-	
-	/**
-	 * Reversed out progress curve
-	 * @const
-	 * @private
-	 * @type {function}
-	 * @param {number} delta Current progress
-	 * @return {number} Modified progress
-	 */
-	function easeOut(delta){ 
-		return function(progress, x){
-			return 1-delta(1-progress, x);
-		};
-	}
-	
-	/**
-	 * In, then reversed out progress curve
-	 * @const
-	 * @private
-	 * @type {function}
-	 * @param {number} delta Current progress
-	 * @param {number} x Extra parameter
-	 */
-	function easeInOut(delta){ 
-		return function(progress, x){
-			if (progress < 0.5) return delta(2*progress, x) * 0.5;
-			else return (2 - delta(2*(1-progress), x)) * 0.5;
-		};
-	}
 	
 	/**
 	 * Defines the Easings module
@@ -137,77 +81,385 @@
 		 */
 		function Easings(){
 			/**
-			 * Basic linear transition, no easing.
-			 * @type {function()}
+			 * Linear progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
 			 */
-			this.LINEAR = linear;
+			this.LINEAR = function (p){
+				return p;
+			};
 			
 			/**
-			 * Quad easing start, linear end.
-			 * @type {function()}
+			 * Quadratic progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
 			 */
-			this.QUAD_IN = quad;
+			this.QUAD_IN = function (p){
+				return p*p;
+			};
 			/**
-			 * Quad easing end, linear start.
-			 * @type {function()}
+			 * Quadratic progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
 			 */
-			this.QUAD_OUT = easeOut(quad);
+			this.QUAD_OUT = function (p){
+				return p*(2-p);
+			};
 			/**
-			 * Quad easing start, quad easing end.
-			 * @type {function()}
+			 * Quadratic progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
 			 */
-			this.QUAD_IN_OUT = easeInOut(quad);
+			this.QUAD_IN_OUT = function (p){
+				if ((p *= 2) < 1) return 0.5 * p * p;
+				return - 0.5 * (--p * (p - 2) - 1);
+			};
 			
 			/**
-			 * Circular easing pattern.
-			 * @type {function()}
+			 * Cubic progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
 			 */
-			this.CIRC = circ,
+			this.CUBIC_IN = function (p){
+				return p*p*p;
+			};
+			/**
+			 * Cubic progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
+			 */
+			this.CUBIC_OUT = function (p){
+				return --p*p*p + 1;
+			};
+			/**
+			 * Cubic progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
+			 */
+			this.CUBIC_IN_OUT = function (p){
+				if ( ( p *= 2 ) < 1 ) return 0.5 * p * p * p;
+				return 0.5 * ( ( p -= 2 ) * p * p + 2 );
+			};
+
+			/**
+			 * Quartic progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
+			 */
+			this.QUART_IN = function (p){
+				return p*p*p*p;
+			};
+			/**
+			 * Quartic progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
+			 */
+			this.QUART_OUT = function (p){
+				return 1-(--p*p*p*p);
+			};
+			/**
+			 * Quartic progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
+			 */
+			this.QUART_IN_OUT = function (p){
+				if ( ( p *= 2 ) < 1) return 0.5 * p * p * p * p;
+				return - 0.5 * ( ( p -= 2 ) * p * p * p - 2 );
+			};
+
+			/**
+			 * Quintic progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
+			 */
+			this.QUINT_IN = function (p){
+				return p*p*p*p*p;
+			};
+			/**
+			 * Quintic progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
+			 */
+			this.QUINT_OUT = function (p){
+				return --p*p*p*p*p+1;
+			};
+			/**
+			 * Quintic progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
+			 */
+			this.QUINT_IN_OUT = function (p){
+				if ( ( p *= 2 ) < 1 ) return 0.5 * p * p * p * p * p;
+				return 0.5 * ( ( p -= 2 ) * p * p * p * p + 2 );
+			};
+
+			/**
+			 * Sinusoidal progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
+			 */
+			this.SIN_IN = function (p){
+				return 1 - Math.cos( p * Math.PI / 2 );
+			};
+			/**
+			 * Sinusoidal progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
+			 */
+			this.SIN_OUT = function (p){
+				return Math.sin( p * Math.PI / 2 );
+			};
+			/**
+			 * Sinusoidal progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
+			 */
+			this.SIN_IN_OUT = function (p){
+				return 0.5 * ( 1 - Math.cos( Math.PI * p ) );
+			};
+
+			/**
+			 * Exponential progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
+			 */
+			this.EXP_IN = function (p){
+				return p === 0 ? 0 : Math.pow( 1024, p - 1 );
+			};
+			/**
+			 * Exponential progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
+			 */
+			this.EXP_OUT = function (p){
+				return p === 1 ? 1 : 1 - Math.pow( 2, - 10 * p );
+			};
+			/**
+			 * Exponential progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
+			 */
+			this.EXP_IN_OUT = function (p){
+				if ( p === 0 ) return 0;
+				if ( p === 1 ) return 1;
+				if ( ( p *= 2 ) < 1 ) return 0.5 * Math.pow( 1024, p - 1 );
+				return 0.5 * ( - Math.pow( 2, - 10 * ( p - 1 ) ) + 2 );
+			};
+
+			/**
+			 * Circular progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
+			 */
+			this.CIRC_IN = function (p){
+				return 1 - Math.sqrt( 1 - p * p);
+			};
+			/**
+			 * Circular progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
+			 */
+			this.CIRC_OUT = function (p){
+				return Math.sqrt( 1 - ( --p * p ) );
+			};
+			/**
+			 * Circular progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
+			 */
+			this.CIRC_IN_OUT = function (p){
+				if ( ( p *= 2 ) < 1) return - 0.5 * ( Math.sqrt( 1 - p * p) - 1);
+				return 0.5 * ( Math.sqrt( 1 - ( p -= 2) * p) + 1);
+			};
+
+			/**
+			 * Elastic progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
+			 */
+			this.ELASTIC_IN = function (p){
+				var s, a = 0.1, o = 0.4;
+				if ( p === 0 ) return 0;
+				if ( p === 1 ) return 1;
+				if ( !a || a < 1 ) { a = 1; s = o / 4; }
+				else s = o * Math.asin( 1 / a ) / ( 2 * Math.PI );
+				return - ( a * Math.pow( 2, 10 * ( p -= 1 ) ) * Math.sin( ( p - s ) * ( 2 * Math.PI ) / o ) );
+			};
+			/**
+			 * Elastic progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
+			 */
+			this.ELASTIC_OUT = function (p){
+				var s, a = 0.1, o = 0.4;
+				if ( p === 0 ) return 0;
+				if ( p === 1 ) return 1;
+				if ( !a || a < 1 ) { a = 1; s = o / 4; }
+				else s = o * Math.asin( 1 / a ) / ( 2 * Math.PI );
+				return ( a * Math.pow( 2, - 10 * p) * Math.sin( ( p - s ) * ( 2 * Math.PI ) / o ) + 1 );
+			};
+			/**
+			 * Elastic progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
+			 */
+			this.ELASTIC_IN_OUT = function (p){
+				var s, a = 0.1, o = 0.4;
+				if ( p === 0 ) return 0;
+				if ( p === 1 ) return 1;
+				if ( !a || a < 1 ) { a = 1; s = o / 4; }
+				else s = o * Math.asin( 1 / a ) / ( 2 * Math.PI );
+				if ( ( p *= 2 ) < 1 ) return - 0.5 * ( a * Math.pow( 2, 10 * ( p -= 1 ) ) * Math.sin( ( p - s ) * ( 2 * Math.PI ) / o ) );
+				return a * Math.pow( 2, -10 * ( p -= 1 ) ) * Math.sin( ( p - s ) * ( 2 * Math.PI ) / o ) * 0.5 + 1;
+			};
 			
 			/**
-			 * Swing backwards before linear completion.
-			 * Requires force extra parameter 
-			 * @type {function()}
+			 * Backswing progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
 			 */
-			this.BACKSWING = back,
-			
+			this.BACK_IN = function (p){
+				return p * p * ( ( tc + 1 ) * p - tc );
+			};
 			/**
-			 * Bounce before linear completion.
-			 * Requires force extra parameter 
-			 * @type {function()}
+			 * Backswing progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
 			 */
-			this.BOUNCE_IN = bounce,
+			this.BACK_OUT = function (p){
+				return --p * p * ( ( tc + 1 ) * p + tc ) + 1;
+			};
 			/**
-			 * Linear progression, then bounces out.
-			 * Requires force extra parameter 
-			 * @type {function()}
+			 * Backswing progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
 			 */
-			this.BOUNCE_OUT = easeOut(bounce),
+			this.BACK_IN_OUT = function (p){
+				if ( ( p *= 2 ) < 1 ) return 0.5 * ( p * p * ( ( tr + 1 ) * p - tr ) );
+				return 0.5 * ( ( p -= 2 ) * p * ( ( tr + 1 ) * p + tr ) + 2 );
+			};
+
 			/**
-			 * Bounce before linear completion, then bounces out.
-			 * Requires force extra parameter 
-			 * @type {function()}
+			 * Bouncing progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
 			 */
-			this.BOUNCE_IN_OUT = easeInOut(bounce),
-			
+			this.BOUNCE_IN = function (p){
+				return 1 - this.BOUNCE_OUT( 1 - p );
+			};
 			/**
-			 * Elastic swing, then linear completion.
-			 * Requires force extra parameter 
-			 * @type {function()}
+			 * Bouncing progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
 			 */
-			this.ELASTIC_IN = elastic,
+			this.BOUNCE_OUT = function (p){
+				if ( p < ( bff[0] ) ) return inib * p * p;
+				else if ( p < ( bff[1] ) ) return inib * ( p -= ( rff[0] ) ) * p + rbff[0];
+				else if ( p < ( bff[2] ) ) return inib * ( p -= ( rff[1] ) ) * p + rbff[1];
+				else return inib * ( p -= ( rff[2] ) ) * p + rbff[2];
+			};
 			/**
-			 * Linear progression, then Elastic swing out.
-			 * Requires force extra parameter 
-			 * @type {function()}
+			 * Bouncing progress curve
+			 * @const
+			 * @private
+			 * @type {function}
+			 * @param {number} progress Current progress
+			 * @return {number} Modified progress
 			 */
-			this.ELASTIC_OUT = easeOut(elastic),
-			/**
-			 * Elastic swing, Linear progression, then Elastic swing out.
-			 * Requires force extra parameter 
-			 * @type {function()}
-			 */
-			this.ELASTIC_IN_OUT = easeInOut(elastic)
+			this.BOUNCE_IN_OUT = function (p){
+				if ( p < 0.5 ) return this.BOUNCE_IN( p * 2 ) * 0.5;
+				return this.BOUNCE_OUT( p * 2 - 1 ) * 0.5 + 0.5;
+			};
 		}
 		
 		singleton = new Easings();
