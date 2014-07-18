@@ -75,5 +75,7 @@ define("Arstider/commons/Signal", [], /** @lends commons/Signal */ function(){
             if (arr[i] === listener) return i;
         }
         return -1;
-    }
+    };
+
+    return Signal;
 });
