@@ -79,11 +79,9 @@
 				i = 0,
 				x1 = this.xOffset + (this.x1*this.width),
 				x2 = this.xOffset + (this.x2*this.width),
-				y1 = this.xOffset + (this.y1*this.height),
-				y2 = this.xOffset + (this.y2*this.height)
+				y1 = this.yOffset + (this.y1*this.height),
+				y2 = this.yOffset + (this.y2*this.height)
 			;
-
-			y2 = (Browser.name === "firefox") ? -y2 : y2;
 
 			if(this.type == "linear") this.pattern = this.grad.context.createLinearGradient(x1,y1,x2,y2);
             else if(this.type == "radial") this.pattern = this.grad.context.createRadialGradient(x1,y1,this.r1,x2,y2,this.r2);
@@ -118,9 +116,11 @@
 		};
 
 		Gradient.prototype.changeOffset = function(x, y){
-			this.xOffset = x;
-			this.yOffset = y;
-			this.render();
+			if(x != this.xOffset || y != this.yOffset){
+				this.xOffset = x;
+				this.yOffset = y;
+				this.render();
+			}
 			return this;
 		};
 		
