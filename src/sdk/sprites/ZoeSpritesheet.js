@@ -1,7 +1,10 @@
 /**
  * Create JS or Texture Packer "Easel JS" Spritesheet model 
  *
- * Example spritesheet: http://pastie.org/9255064
+ * @see  http://www.createjs.com/#!/Zoe
+ * 
+ * Example spritesheet with animation names and multiple images:
+ * http://pastie.org/9255064
  *
  * TexturePacker configuration:
  * - Data-Format : "Easel JS"
@@ -42,7 +45,6 @@ function ()
 		// Parse the JSON data to fill animations
 		this.parseJSON(data, fileInfo.path);
 	};
-
 
 	ZoeSpritesheet.prototype.getAnim = function(animName)
 	{
