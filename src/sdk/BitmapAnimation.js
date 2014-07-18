@@ -39,8 +39,6 @@ function (DisplayObject, SpriteSheetManager)
 		// Default variables
 		this.position = 0;
 		this.isPlaying = true;
-		this.nextAnim = null;
-		this.nextAnimParams = null;
 
 		// Collection of bitmaps
 		this.bitmaps = {};
@@ -163,13 +161,45 @@ function (DisplayObject, SpriteSheetManager)
 		// Frame number
 		if(frameOrAnim > 0)
 		{
+			this.playlist = null;
 			this.gotoFrame(frameOrAnim)
-		} else {
+		} 
+		// Animation name
+		else if(typeof(frameOrAnim)=="String")
+		{
+			this.playlist = null;
 			this.gotoAnim(frameOrAnim, params);
+		}
+		// Playlist animation names
+		else if(frameOrAnim.length>0)
+		{
+			this.playlist = frameOrAnim;
+			this._next(params);
 		}
 		this.isPlaying = true;
 
 		return this;
+	};
+
+	/**
+	 * [next description]
+	 * @param  {[type]}   params
+	 * @return {Function}
+	 */
+	BitmapAnimation.prototype._next = function(params)
+	{
+		if(!this.playlist || this.playlist.length<=0) return;
+
+		var animName = this.playlist.shift();
+
+		this.gotoAnim(animName, params);
+
+		if(this.playlist.length<=0)
+		{
+			this.playlist = null;
+		}
+
+		// TODO: Playlist complete event
 	};
 
 	/**
@@ -203,10 +233,6 @@ function (DisplayObject, SpriteSheetManager)
 			this.nextAnimParams = params;
 			return this;
 		}
-
-		// Release next anim
-		this.nextAnim = null;
-		this.nextAnimParams = null;
 
 		this.animName = animName;
 
@@ -263,30 +289,6 @@ function (DisplayObject, SpriteSheetManager)
 
 		if(_newFrame==this.currentFrame) return;
 		this.currentFrame = _newFrame;
-		
-		// Last frame?
-		if (this.currentFrame >= this.frames.length)
-		{
-			// Next chained anim?
-			if(this.nextAnim)
-			{
-				this.gotoAnim(this.nextAnim, this.nextAnimParams);
-			}
-			// Stop?
-			else if (!this.loop || this.frames.length<=1)
-			{
-				this.currentFrame = this.frames.length;
-				stop();
-			} 
-			// Loop
-			else {
-				this.currentFrame = 1;
-				this.position = 0;
-			}
-
-			// Anim complete signal
-			//animComplete.emit(this);
-		}
 
 		_newFrame = this.frames[this.currentFrame-1];
 
@@ -305,8 +307,49 @@ function (DisplayObject, SpriteSheetManager)
 			if(params.speed>0) this.speed = params.speed;
 		}
 
+		// Last frame reached?
+		if(this.currentFrame >= this.frames.length-1)
+		{
+			this._onAnimComplete();
+		}
+
 		return this;
 	};
+
+
+	BitmapAnimation.prototype._onAnimComplete = function()
+	{
+		// Playlist to proceed?
+		if(this.playlist)
+		{
+			this._next();
+		}
+		// Next chained anim?
+		else if(this.nextAnim)
+		{
+			this.gotoAnim(this.nextAnim, this.nextAnimParams);
+			// Release next anim
+			this.nextAnim = null;
+			this.nextAnimParams = null;
+
+		}
+		// Stop?
+		else if (!this.loop || this.frames.length<=1)
+		{
+			this.currentFrame = this.frames.length;
+			this.stop();
+		} 
+		// Loop
+		else {
+			this.currentFrame = 0;
+			this.position = 0;
+		}
+
+		// Anim complete signal
+		//animComplete.emit(this);
+	};
+
+
 
 	BitmapAnimation.prototype._setFrame = function(frameData)
 	{

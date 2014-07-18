@@ -1,5 +1,7 @@
 /**
- * Spritesheet Manager Singleton
+ * 
+ * Spritesheet Manager SINGLETON
+ * 
  * @author Jo Simard <josimard@meetfidel.com>
  */
 define("Arstider/sprites/SpritesheetManager", 
