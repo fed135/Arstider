@@ -51,6 +51,9 @@
 
 			this.colors = props.colors || [];
 
+			this.xOffset = props.x || 0;
+			this.yOffset = props.y || 0;
+
 			/**
 			 * Gradient data
 			 * @private
@@ -74,10 +77,10 @@
 
 			var 
 				i = 0,
-				x1 = this.x1*this.width,
-				x2 = this.x2*this.width,
-				y1 = this.y1*this.height,
-				y2 = this.y2*this.height
+				x1 = this.xOffset + (this.x1*this.width),
+				x2 = this.xOffset + (this.x2*this.width),
+				y1 = this.xOffset + (this.y1*this.height),
+				y2 = this.xOffset + (this.y2*this.height)
 			;
 
 			y2 = (Browser.name === "firefox") ? -y2 : y2;
@@ -110,6 +113,13 @@
 
 		Gradient.prototype.changeSize = function(width, height){
 			this.grad.setSize(width, height);
+			this.render();
+			return this;
+		};
+
+		Gradient.prototype.changeOffset = function(x, y){
+			this.xOffset = x;
+			this.yOffset = y;
 			this.render();
 			return this;
 		};

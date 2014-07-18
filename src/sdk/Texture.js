@@ -44,7 +44,7 @@
 			 * @private
 			 * @type {nsIDOMCanvasPattern}
 			 */
-			this._pattern = null;
+			this.pattern = null;
 			
 			/**
 			 * Url/data, saved for reference and in case we resize the texture and need to re-render
@@ -93,7 +93,7 @@
 		 * @param {Image|HTMLCanvasElement} data The data to create a texture from
 		 */
 		Texture.prototype._createPattern = function(data, callback){
-			this._pattern = cnv.context.createPattern(data, 'repeat');
+			this.pattern = cnv.context.createPattern(data, 'repeat');
             if(callback) callback.apply(this);
             else this.callback(this);
 		};

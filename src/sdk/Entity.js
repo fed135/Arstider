@@ -291,13 +291,6 @@
 			this.onload = Arstider.checkIn(props.onload, Arstider.emptyFunction);
 			
 			/**
-			 * User defined behavior for synchronous logic before a draw
-			 * @override
-			 * @type {function(this:Entity)}
-			 */
-			this.draw = Arstider.emptyFunction;
-			
-			/**
 			 * Whether or not to display de debug outline
 			 * @type {boolean}
 			 */
