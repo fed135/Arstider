@@ -6,6 +6,17 @@
  */
 ;(function(){
 
+	var 
+		SHAPES = {
+			RECT:"rect",
+			TRIANGLE:"triangle",
+			CIRCLE:"circ",
+			ROUNDED_RECT:"roundRect",
+			STAR:"star",
+			CUSTOM:"custom"
+		}
+	;
+
 	/**
 	 * Defines the Shape Module
 	 */	
@@ -27,42 +38,61 @@
 			 */
 			props = props || Arstider.emptyObject;	
 			
-			/**
-			 * List of steps to recreate the shape
-			 * @type {Array}
-			 */
-			this.steps = Arstider.checkIn(props.steps, []);
+			this.shape = props.shape || SHAPES.RECT;
+
+			this.points = props.points || [];
 			
-			/**
-			 * If data is present,assign it
-			 */
-			this.data = Arstider.checkIn(props.data, Arstider.checkIn(props.bitmap, null));
+			this.fillStyle = props.fillStyle || Arstider.defaultColor;
+			this.strokeStyle = props.strokeStyle || Arstider.defaultColor;
+			this.lineWidth = props.lineWidth || 0;
+			this.lineCap = props.lineCap || "square";
 		};
 		
 		/**
 		 * Defines parent module
 		 */
 		Arstider.Inherit(Shape, Entity);
-		
-                /**
-                 * Adds a render instruction to draw the shape
-                 * @type {function(this:Shape)}
-                 * @param {*} cmd Draw command
-                 */
-                Shape.prototype.addStep = function(cmd){
-                    this.steps.push(arguments);
-                };
                 
-                /**
-                 * Renders the shape, step by step on the given context
-                 * @type {function(this:Shape)}
-                 * @param {type} ctx The context to draw on
-                 */
-		Shape.prototype.render = function(ctx){
-                    for(var i = 0; i<this.steps.length; i++){
-                        ctx[this.steps[i][0]](this.steps[i].slice(1));
-                    }
-                };
+        /**
+         * Renders the shape, step by step on the given context
+         * @type {function(this:Shape)}
+         * @param {type} ctx The context to draw on
+         */
+		Shape.prototype.draw = function(ctx, _x, _y){
+			var i;
+
+			if(this.fillStyle.changeOffset) this.fillStyle.changeOffset(_x, _y);
+			if(this.strokeStyle.changeOffset) this.strokeStyle.changeOffset(_x, _y);
+
+			ctx.fillStyle = (this.fillStyle.pattern)?this.fillStyle.pattern:this.fillStyle;
+			ctx.strokeStyle = (this.strokeStyle.pattern)?this.strokeStyle.pattern:this.strokeStyle;
+			ctx.lineWidth = this.lineWidth;
+			ctx.lineCap = this.lineCap;
+
+			ctx.beginPath();
+            switch(this.shape){
+            	case SHAPES.RECT:
+            		ctx.rect(_x, _y, this.width, this.height);
+            		break;
+            	case SHAPES.CIRCLE:
+            		ctx.arc(_x + this.width*0.5, _y + this.height*0.5, this.width*0.5, 0, 2*Math.PI, false);
+            		break;
+            	case SHAPES.CUSTOM:
+            		if(this.points.length > 0){
+            			ctx.moveTo(_x + this.points[0].x, _y + this.points[0].y);
+            			for(i = 1;i<this.points.length; i++){
+            				if(this.points[i].cpX != undefined && this.points[i].cpY != undefined){
+            					ctx.quadraticCurveTo(_x + this.points[i].cpX, _y + this.points[0].cpY, _x + this.points[i].x, _y + this.points[0].y);
+            				}
+            				else ctx.lineTo(_x + this.points[i].x, _y + this.points[0].y);
+            			}
+            		}
+            		break;
+            }
+            ctx.closePath();
+            if(this.fillStyle != Arstider.defaultColor) ctx.fill();
+            if(this.strokeStyle != Arstider.defaultColor) ctx.stroke();
+        };
 		
 		return Shape; 
 	});

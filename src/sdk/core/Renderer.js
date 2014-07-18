@@ -173,17 +173,10 @@
 			}
 				
 			//Render
-			if(curChild.data){
+			if(curChild.data || curChild.draw){
 				Performance.draws++;
-				if(curChild.data._pattern || curChild instanceof Shape){
-					prevFill = this._context.fillStyle;
-					this._context.fillStyle = curChild.data._pattern;
-                                        if(curChild instanceof Shape){
-                                            curChild.render();
-                                            this._context.fill();
-                                        }
-					else this._context.fillRect(Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
-					this._context.fillStyle = prevFill;
+				if(curChild.draw){
+					curChild.draw.apply(curChild, [this._context, Math.round(_currentX), Math.round(_currentY)]);
 				}
 				else{
 					//instanceof is pretty fast,  we want to leverage data offset rather than having an extra buffer for sprites.
@@ -226,8 +219,6 @@
 					}
 				}
 			}
-                        
-                        if(curChild.draw) curChild.draw();
 				
 			if(this._showBoxes || curChild.showOutline === true){
 				shadowSafe = this._context.shadowColor;
