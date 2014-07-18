@@ -30,7 +30,7 @@
 		 * @param {number} y1 The y value of the first gradient line point (0 to 1)
 		 * @param {number} x2 The x value of the second gradient line point (0 to 1)
 		 * @param {number} y2 The y value of the second gradient line point (0 to 1)
-                 * @param {number} r1 The radius value of the first gradient point
+         * @param {number} r1 The radius value of the first gradient point
 		 * @param {number} r2 The radius value of the second gradient point
 		 */
 		function Gradient(props){
