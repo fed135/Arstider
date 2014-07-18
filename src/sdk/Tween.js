@@ -17,6 +17,17 @@ define( "Arstider/Tween", [
 	"Arstider/core/Action"
 	], /** @lends Tween */ function (Easings, GlobalTimers, Transformation, Animation, Action){
 	
+
+	/**
+	 * Default Easing method static variable
+	 */
+	Tween.DEFAULT_EASING = Easings.LINEAR;
+
+	/**
+	 * Default Easing time static variable
+	 */
+	Tween.DEFAULT_TIME = 1000;
+
 	/**
 	 * Tween constructor
 	 * Used to create smooth animations
@@ -24,36 +35,130 @@ define( "Arstider/Tween", [
 	 * @constructor
 	 * @param {Object} target The object to apply the tween on
 	 * @param {Object} changes The list of changes to apply
-	 * @param {number} time The time to complete the changes
+	 * @param {number} options Easing options OR easing time
 	 * @param {function|null} easing The easing method to use
 	 * @param {number|null} easeOpt Optional easing option (for bounce, backswing and elastic)
 	 */
-	function Tween(target, changes, time, easing, easeOpt){
+	function Tween(target, changes, options, easing, easeOpt){
 		this.target = target;
 		this.running = false;
 		this.completed = false;
 			
 		this._stack = [];
 		this._currentStep = 0;
-				
+		
+		// To keep receiving step() from GlobalTimers
 		this.delay = 512;
 				
-		this._addAnimation(changes, time, easing, easeOpt);
+		if(changes) this._addAnimation(changes, options, easing, easeOpt);
 	}
+
+	/**
+	 * Tween.to static constructor
+	 * Ease the creation of tweens and make them auto-run
+	 * @param {Object} target The object to apply the tween on
+	 * @param {Object} changes The list of changes to apply
+	 * @param {number} options Easing options OR easing time
+	 * @param {function|null} easing The easing method to use (optional)
+	 * @return {Tween}
+	 */
+	Tween.to = function(target, changes, options, easing) 
+	{
+		return new Tween(target).to(target, changes, options, easing).play();
+	}
+
+	/**
+	 * Tween.from static constructor
+	 * Ease the creation of tweens and make them auto-run
+	 * @param {Object} target The object to apply the tween on
+	 * @param {Object} changes The list of changes to apply
+	 * @param {number} options Easing options OR easing time
+	 * @param {function|null} easing The easing method to use (optional)
+	 * @return {Tween}
+	 */
+	Tween.from = function(target, changes, options, easing) 
+	{
+		return new Tween(target).from(target, changes, options, easing).play();
+	}
+
+	/**
+	 * A tween to a destination point
+	 * @param {Object} target The object to apply the tween on
+	 * @param {Object} changes The list of changes to apply
+	 * @param {number} options Easing options OR easing time
+	 * @param {function|null} easing The easing method to use (optional)
+	 * @return {Tween}
+	 */
+	Tween.prototype.to = function(target, changes, options, easing)
+	{
+		this._addAnimation(changes, options, easing);
+
+		return this;
+	};
+
+	/**
+	 * A tween from an origin 
+	 * @param {Object} target The object to apply the tween on
+	 * @param {Object} changes The list of changes to apply
+	 * @param {number} options Easing options OR easing time
+	 * @param {function|null} easing The easing method to use (optional)
+	 * @return {Tween}
+	 */
+	Tween.prototype.from = function(target, changes, options, easing)
+	{
+		var val;
+		var p;
+
+		// Reverse origin and destination
+		var newChanges = {};
+		for(p in changes)
+		{
+			val = changes[p];
+			newChanges[p] = target[p];
+			target[p]=val;
+		}
+
+		this._addAnimation(newChanges, options, easing);
+
+		return this;
+	};
+
 	
 	/**
 	 * Adds an animation step to the tween chain
 	 * @private
 	 * @type {function(this:Tween)}
 	 * @param {Object} changes The list of changes
-	 * @param {number} time The time to complete the changes
+	 * @param {number} options Easing options OR easing time
 	 * @param {function|null} easing The easing method to use
 	 * @param {number|null} easeOpt Optional easing option (for bounce, backswing and elastic)
 	 */
-	Tween.prototype._addAnimation = function(changes, time, easing, easeOpt){
+	Tween.prototype._addAnimation = function(changes, options, easing, easeOpt)
+	{
+		// Time validation
+		var time;
+
+		// Options is time
+		if(options>0 || options===0)
+		{
+			time = options;
+		}
+		// Options is object
+		else if(options)
+		{
+			time = options.time;
+			easing = options.easing;
+		}
+
+		// Time validation
+		if(!time && time!==0) time = Tween.DEFAULT_TIME;
+
+		// Easing validation
+		if(!easing) easing = Tween.DEFAULT_EASING;
+
 		this._stack.push(new Animation(this.target, changes, time, easing, easeOpt));
 	};
-	
+
 	/**
 	 * Adds an action step to the tween chain
 	 * @private
@@ -98,7 +203,9 @@ define( "Arstider/Tween", [
 	 * Performs timed step, from engine global timers
 	 * @type {function(this:Tween)}
 	 */	
-	Tween.prototype.step = function(){
+	Tween.prototype.step = function()
+	{
+		// To keep receiving step() from GlobalTimers
 		this.delay = 512;
 				
 		if(this._currentStep < this._stack.length){
