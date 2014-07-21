@@ -31,7 +31,7 @@ function ()
 		// defaults
 		this.name = params.name;
 		this.defaultAnim = params.defaultAnim;
-		this.fps = (params.fps>0) ? params.fps : 30;
+		this.fps = (params.fps>0) ? params.fps : 15;
 		this.animations = {};
 
 		// Parse the JSON data to fill animations
