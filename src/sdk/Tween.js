@@ -91,6 +91,9 @@ define( "Arstider/Tween", [
 	 */
 	Tween.prototype.to = function(target, changes, options, easing)
 	{
+		// Got delay before the animation?
+		if(options && options.delay>0) this.sleep(options.delay);
+
 		this._addAnimation(changes, options, easing);
 
 		return this;
@@ -118,9 +121,7 @@ define( "Arstider/Tween", [
 			target[p]=val;
 		}
 
-		this._addAnimation(newChanges, options, easing);
-
-		return this;
+		return this.to(target, newChanges, options, easing);
 	};
 
 	
