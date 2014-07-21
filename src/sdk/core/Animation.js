@@ -23,11 +23,19 @@ define("Arstider/core/Animation", ["Arstider/core/Transformation", "Arstider/Eas
 	 */
 	function Animation(target, changes, time, easing, easeOpt){
 		this.changes = [];
-		var prop;
+		var prop, propIsColor;
 		for(prop in changes){
+			propIsColor = false;
 			if(!(target[prop] instanceof Function)){
 				if(!(prop in target)) target[prop] = 0;
-				this.changes.push(new Transformation(prop, target[prop], changes[prop]));
+				if(typeof target[prop] == 'string' && target[prop].indexOf("#") != -1 && typeof changes[prop] == 'string' && changes[prop].indexOf("#") != -1) propIsColor = true;
+				
+				this.changes.push(new Transformation({
+					property:prop, 
+					start:target[prop], 
+					end:changes[prop],
+					isColor:propIsColor
+				}));
 			}
 		}
 				
@@ -57,8 +65,39 @@ define("Arstider/core/Animation", ["Arstider/core/Transformation", "Arstider/Eas
 		
 		for(i; i>= 0; i--){
 			this.changes[i].lastStep = target.target[this.changes[i].property];
-			target.target[this.changes[i].property] = this.changes[i].end - ((this.changes[i].end - this.changes[i].start) * this.easing(progress, this.easeOpt));
+			if(this.changes[i].isColor){
+				target.target[this.changes[i].property] = this._stepColor(this.changes[i].end, this.changes[i].start, this.easing(progress));
+			}
+			else{
+				target.target[this.changes[i].property] = this.changes[i].end - ((this.changes[i].end - this.changes[i].start) * this.easing(progress, this.easeOpt));
+			}
 		}
+	};
+
+	/**
+	 * Animates from one color to another
+	 * @private
+	 * @type {function(this:Animation)}
+	 * @param {string} start The starting color
+	 * @param {string} end The end color
+	 * @param {number} progress The current progress percentage
+	 * @return {string} The current color step
+	 */
+	Animation.prototype._stepColor = function(start, end, progress){
+		var 
+			f = parseInt(start.slice(1),16),
+			t = parseInt(end.slice(1),16),
+
+			R1 = f>>16,
+			G1 = f>>8&0xFF,
+			B1 = f&0xFF,
+
+			R2 = t>>16,
+			G2 = t>>8&0xFF,
+			B2 = t&0xFF
+		;
+		
+    	return "#"+(0x1000000+(Math.round((R2-R1)*progress)+R1)*0x10000+(Math.round((G2-G1)*progress)+G1)*0x100+(Math.round((B2-B1)*progress)+B1)).toString(16).slice(1);
 	};
 	
 	/**
