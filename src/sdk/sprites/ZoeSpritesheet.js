@@ -39,7 +39,7 @@ function ()
 		this.frames = [];
 		this.name = params.name;
 		this.defaultAnim = params.defaultAnim;
-		this.fps = (params.fps>0) ? params.fps : 30;
+		this.fps = (params.fps>0) ? params.fps : 15;
 		this.animations = {};
 
 		// Parse the JSON data to fill animations
@@ -101,6 +101,7 @@ function ()
 			
 			// Create frameInfo
 			frame = {
+				index:i,
 				image:imageUrl,
 				rect: [frameData[0], frameData[1], frameData[2], frameData[3]],
 				origin: [-frameData[5], -frameData[6]]

@@ -14,6 +14,7 @@ function (DisplayObject, SpriteSheetManager)
 
 	// Temporary single-use variables
 	var _newFrame;
+	var _stepFrame;
 	var _rect;
 
 	/**
@@ -37,7 +38,6 @@ function (DisplayObject, SpriteSheetManager)
 		this.loop = Arstider.checkIn(props.loop, true);
 
 		// Default variables
-		this.position = 0;
 		this.isPlaying = true;
 
 		// Collection of bitmaps
@@ -135,17 +135,17 @@ function (DisplayObject, SpriteSheetManager)
 	{
 		if(!this.animation) return;
 
-        /*if (Std.int(_newFrame) >= this.frames.length) {
-            this.position = 0; //this.position % this.animation.duration;
-        }*/
-
 		if (this.isPlaying)
 		{
-			this.position += this.speed * dt/1000;
+			_stepFrame = (dt/1000 * this.animation.fps) * this.speed;
 
-			_newFrame = this.position * this.animation.fps + 1;
+			this.gotoFrame(this.currentFrame + _stepFrame);
 
-			this.gotoFrame(_newFrame);
+			// Last frame reached?
+			if(this.currentFrame >= this.frames.length)
+			{
+				this._onAnimComplete();
+			}
 		}
 	};
 
@@ -165,7 +165,7 @@ function (DisplayObject, SpriteSheetManager)
 			this.gotoFrame(frameOrAnim)
 		} 
 		// Animation name
-		else if(typeof(frameOrAnim)=="String")
+		else if(typeof(frameOrAnim)=="string")
 		{
 			this.playlist = null;
 			this.gotoAnim(frameOrAnim, params);
@@ -249,21 +249,20 @@ function (DisplayObject, SpriteSheetManager)
 			if(animation.loop===false) this.loop = false;
 
 			// Specific speed
-			if(animation.speed>0) this.speed = animation.speed;
+			//if(animation.speed>0) this.speed = animation.speed;
 
-			// Set frames and position
+			// Set frames
 			this.frames = animation.frames;
-			this.position = (frameNum>1) ? frameNum/animation.frames : 0;
 
 			// Additional parameters
 			if(params)
 			{
 				if(params.next) this.nextAnim = params.next;
+				if(params.loop===true || params.loop===false) this.loop = params.loop;
 			}
 
-
 			// Kick-in animation
-			return this.gotoFrame(frameNum, params);
+			return this.gotoFrame(frameNum);
 
 		} else {
 			console.log("BitmapAnimation ERROR: anim '"+animName+"' not found.");
@@ -275,22 +274,25 @@ function (DisplayObject, SpriteSheetManager)
 	/**
 	 * Set the playhead of the current animation, should not be used directly: 
 	 * gotoAndPlay() and gotoAndStop() should be used.
-	 * @param {Object} frame Frame number, first frame is "1"
+	 * @param {Object} frame Frame number, first frame BASE "1"
 	 * @param {Object} params Additional parameters
 	 * @type {function(this:BitmapAnimation)}
 	 * @return {BitmapAnimation} Returns self reference for chaining
 	 */
-	BitmapAnimation.prototype.gotoFrame = function(frame, params)
+	BitmapAnimation.prototype.gotoFrame = function(frame)
 	{
 		if(!frame) frame=1;
 
-		//this.position = frame / this.frames.length;
-		_newFrame = parseInt(frame);
+		// Min/max
+		if(frame<1) frame=1;
+		if(frame>this.frames.length) frame = this.frames.length;
 
-		if(_newFrame==this.currentFrame) return;
-		this.currentFrame = _newFrame;
+		// Need to change?
+		if(frame==this.currentFrame) return;
+		this.currentFrame = frame;
 
-		_newFrame = this.frames[this.currentFrame-1];
+		// First frame is one
+		_newFrame = this.frames[Math.round(frame)-1];
 
 		// Frame specific bitmap?
 		if(_newFrame.image)
@@ -299,19 +301,6 @@ function (DisplayObject, SpriteSheetManager)
 		}
 
 		this._setFrame(_newFrame);
-
-		// Additional parameters
-		if(params)
-		{
-			if(params.loop===true || params.loop===false) this.loop = params.loop;
-			if(params.speed>0) this.speed = params.speed;
-		}
-
-		// Last frame reached?
-		if(this.currentFrame >= this.frames.length-1)
-		{
-			this._onAnimComplete();
-		}
 
 		return this;
 	};
@@ -342,7 +331,6 @@ function (DisplayObject, SpriteSheetManager)
 		// Loop
 		else {
 			this.currentFrame = 0;
-			this.position = 0;
 		}
 
 		// Anim complete signal
