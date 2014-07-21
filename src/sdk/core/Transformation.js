@@ -19,11 +19,12 @@ define("Arstider/core/Transformation", [], /** @lends core/Transformation */ fun
 	 * @param {Object} start The starting value
 	 * @param {Object} end The end value
 	 */
-	function Transformation(property, start, end){
-		this.property = property;
-		this.start = start;
-		this.end = end;
-		this.lastStep = start;
+	function Transformation(props){
+		this.property = Arstider.checkIn(props.property, null);
+		this.start = Arstider.checkIn(props.start, 0);
+		this.end = Arstider.checkIn(props.end, 1);
+		this.lastStep = Arstider.checkIn(props.start, 0);
+		this.isColor = Arstider.checkIn(props.isColor, false);
 	}
 
 	return Transformation;
