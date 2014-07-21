@@ -116,6 +116,7 @@ function ()
 
 			// Create frameInfo
 			frame = {
+				index:i,
 				image:imageUrl,
 				rect: [frameData.frame.x, frameData.frame.y, frameData.frame.w, frameData.frame.h],
 				origin: [frameData.spriteSourceSize.x, frameData.spriteSourceSize.y]

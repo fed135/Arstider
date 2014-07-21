@@ -101,6 +101,7 @@ function ()
 			
 			// Create frameInfo
 			frame = {
+				index:i,
 				image:imageUrl,
 				rect: [frameData[0], frameData[1], frameData[2], frameData[3]],
 				origin: [-frameData[5], -frameData[6]]
