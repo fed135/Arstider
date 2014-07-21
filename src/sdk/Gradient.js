@@ -37,8 +37,8 @@
 
 			props = props || {};
 
-			this.name = props.name || ("Gradient" + (gradNum++));
 			this.type = props.type || "linear";
+			this.name = props.name || (this.type+"_gradient" + (gradNum++));
 			this.x1 = Arstider.checkIn(props.x1, 0);
 			this.y1 = Arstider.checkIn(props.y1, 0);
 			this.x2 = Arstider.checkIn(props.x2, 1);
@@ -65,7 +65,7 @@
 			 * If the gradient buffer wasn't initialized, do it here
 			 */
 			this.grad = new Buffer({
-				name:'Arstider_gradient_'+this.name,
+				name:'Arstider_Gradient_'+this.name,
 				width:this.width,
 				height:this.height
 			});

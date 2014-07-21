@@ -8,7 +8,7 @@
 /**
  * Defines the Timer module
  */
-define( "Arstider/Timer", [], /** @lends Timer */ function () {
+define( "Arstider/Timer", ["Arstider/GlobalTimers"], /** @lends Timer */ function (GlobalTimers) {
 		
 	/**
 	 * Timer constructor
@@ -69,6 +69,9 @@ define( "Arstider/Timer", [], /** @lends Timer */ function () {
 	    if(this._clockBased){
 	    	this.resume();
 	    }
+	    else{
+	    	GlobalTimers.push(this);
+	    }
 	}
 	
 	/**
@@ -85,6 +88,16 @@ define( "Arstider/Timer", [], /** @lends Timer */ function () {
 	    	this.delay -= (Arstider.timestamp() - this._startTime);
 	    }
 	    return this;
+	};
+
+	Timer.prototype.kill = function(){
+		if(!this._clockBased){
+			this.running = false;
+			GlobalTimers.remove(this);
+		}
+		else{
+			this.pause();
+		}
 	};
 	
 	/**

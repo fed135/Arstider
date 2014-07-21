@@ -78,8 +78,7 @@
 		 * @type {function(this:Sprite)}
 		 */
 		Sprite.prototype.killBuffer = function(){
-			this.stop();
-			GlobalTimers.remove(this);
+			this.kill();
 
 			if(this.data && this.data.kill) this.data.kill();
 			this.data = null;
@@ -87,6 +86,11 @@
 			if(this.currentAnim && this.currentAnim.sheet.url && Arstider.bufferPool[this.currentAnim.sheet.url]) Arstider.bufferPool[this.currentAnim.sheet.url].kill();
 		};
 
+		Sprite.prototype.kill = function(){
+			this.running = false;
+			GlobalTimers.remove(this);
+			return this;
+		};
 
 		Sprite.prototype.step = function(){
 			if(this.currentAnim == null){
@@ -218,6 +222,7 @@
 		 * @return {Sprite} Returns self reference for chaining
 		 */
         Sprite.prototype.resume = function(){
+        	GlobalTimers.push(this);
             this.running = true;
 			this.completed = false;
 			this.stopped = false;

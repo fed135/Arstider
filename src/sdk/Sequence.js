@@ -20,10 +20,11 @@ define( "Arstider/Sequence", [], /** @lends Sequence */ function () {
 	 * @param {array} frames The frames in order for the sequence
 	 * @param {boolean|number} stop Whether the animation should stop at the end or loop - if int the amount of loops (TODO).
 	 */
-	var Sequence = function(sheet, time, frames, stop){
+	var Sequence = function(sheet, name, time, frames, stop){
 		this.sheet = sheet;
 		this.time = time*1000;
 		this.frames = frames || [0];
+		this.name = name;
 
 		//Completed loops
 		this.loops = 0;
