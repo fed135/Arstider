@@ -247,6 +247,8 @@
 		 * @param {number} dt Delta time (delay between now and the last frame) 
 		 */
 		Engine.prototype.stepLogic = function(dt){
+			if(Arstider.skipUpdate) return;
+
 			Performance.numUpdates = 0;
 
 			if(singleton === null) return;
@@ -507,7 +509,10 @@
 		 */
 		Engine.prototype.applyTouch = function(e, target){
 			
-			if(!target) target = (singleton.handbreak) ? Preloader._screen : singleton.currentScreen;
+			if(!target){
+				Arstider.__cancelBubble = {};
+				target = (singleton.handbreak) ? Preloader._screen : singleton.currentScreen;
+			}
 			
 			var 
 				i,
@@ -524,23 +529,24 @@
 				for(i = target.children.length-1; i>=0; i--){
 					if(target && target.children && target.children[i] && !target.children[i].__skip){
 						for(u=0; u<numInputs;u++){
-
-							if(target.children[i].isTouched(Mouse.x(u), Mouse.y(u))){
-								if(Mouse.isPressed(u)){
-									if(!target.children[i]._pressed) target.children[i]._onpress(e);
-									if(Browser.isMobile) target.children[i]._preclick = true;
-								}
-								else{
-									if(target.children[i]._pressed) target.children[i]._onrelease(e);
-								}
-								
-								if(target && target.children && target.children[i] && !target.children[i].__skip){
-									if(Mouse.rightPressed) target.children[i]._rightPressed = true;
-									else{
-										if(target.children[i]._rightPressed) target.children[i]._onrightclick(e);
+							if(Arstider.__cancelBubble[u] !== true){
+								if(target.children[i].isTouched(Mouse.x(u), Mouse.y(u))){
+									if(Mouse.isPressed(u)){
+										if(!target.children[i]._pressed) target.children[i]._onpress(e);
+										if(Browser.isMobile) target.children[i]._preclick = true;
 									}
+									else{
+										if(target.children[i]._pressed) target.children[i]._onrelease(e);
+									}
+									
+									if(target && target.children && target.children[i] && !target.children[i].__skip){
+										if(Mouse.rightPressed) target.children[i]._rightPressed = true;
+										else{
+											if(target.children[i]._rightPressed) target.children[i]._onrightclick(e);
+										}
+									}
+									break;
 								}
-								break;
 							}
 						}
 					
@@ -568,11 +574,13 @@
 
 			if(Browser.isMobile){
 				for(i=0; i< inputs.length; i++){
-					if(target.isTouched(inputs[i].x, inputs[i].y) && inputs[i].pressed){
-						inputId = i;
-						mouseX = inputs[i].x;
-						mouseY = inputs[i].y;
-						break;
+					if(Arstider.__cancelBubble[i] !== true){
+						if(target.isTouched(inputs[i].x, inputs[i].y) && inputs[i].pressed){
+							inputId = i;
+							mouseX = inputs[i].x;
+							mouseY = inputs[i].y;
+							break;
+						}
 					}
 				}
 
@@ -583,14 +591,16 @@
 				}
 			}
 			else{
-				if(target.isTouched(mouseX, mouseY)){
-					
-					if(!target._hovered) target._onhover();
-					if(!Mouse.isPressed()) target._preclick = true;
-				}
-				else{
-					if(target._hovered) target._onleave();
-					target._pressed = false;
+				if(Arstider.__cancelBubble[0] !== true){
+					if(target.isTouched(mouseX, mouseY)){
+						
+						if(!target._hovered) target._onhover();
+						if(!Mouse.isPressed()) target._preclick = true;
+					}
+					else{
+						if(target._hovered) target._onleave();
+						target._pressed = false;
+					}
 				}
 			}
 
