@@ -637,6 +637,8 @@
                 pencil
 			;
 
+			if(Viewport.unsupportedOrientation) return;
+
 			if(singleton._isSynchronous){
 				Performance.deltaTime = Arstider.timestamp() - Performance.lastFrame;
 				singleton.stepLogic(Performance.deltaTime);
