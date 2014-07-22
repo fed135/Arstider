@@ -555,6 +555,8 @@
 					}
 				}
 			}
+
+			Arstider.__cancelBubble = {};
 		};
 
 		/**
