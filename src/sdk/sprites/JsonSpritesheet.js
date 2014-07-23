@@ -49,7 +49,7 @@ function ()
 	 * @type {function(this:BitmapAnimation)}
 	 * @return {BitmapAnimation} Returns self reference for chaining
 	 */
-    JsonSpritesheet.prototype.parseJSON = function(data, path, frameRate, nameSeparator)
+    JsonSpritesheet.prototype.parseJSON = function(data, path, nameSeparator)
 	{
 		if(!nameSeparator) nameSeparator = "/";
 
@@ -124,9 +124,6 @@ function ()
 
 			animation.frames.push(frame);
 		}
-
-		// Set animations duration?
-		// duration:_frames.length / frameRate,
 	}
 
 	return JsonSpritesheet;

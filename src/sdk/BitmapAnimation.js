@@ -80,6 +80,12 @@ function (DisplayObject, SpriteSheetManager)
 		{
 			this.gotoAnim(anim, animParams);
 		}
+
+		// Spritesheet specific bitmap?
+		if(spritesheet.imageUrl)
+		{
+			this._setImage(spritesheet.imageUrl)
+		}
 	};
 	
 	/**
@@ -243,6 +249,12 @@ function (DisplayObject, SpriteSheetManager)
 		if(animation)
 		{
 			this.animation = animation;
+
+			// Animation specific bitmap?
+			if(animation.image)
+			{
+				this._setImage(animation.image)
+			}
 
 			// Looping
 			this.loop = true;
