@@ -52,13 +52,14 @@ define( "Arstider/Sequence", [], /** @lends Sequence */ function () {
 	 * @return {Sequence} The instance of Sequence, for chaining purpose
 	 */
 	Sequence.prototype.then = function(parA, frames, stop){
+		var thisRef = this;
 		if(parA instanceof Function || typeof parA === "function") this.callbacks.push(parA);
 		else if(parA instanceof String || typeof parA === "string") this.callbacks.push(function(){
-			this.currentAnim = this.currentAnim.sheet[parA];
-			this.rewind();
+			thisRef.currentAnim = thisRef.currentAnim.sheet[parA];
+			thisRef.rewind();
 		});
 		else this.chainedAnim = new Sequence(this.sheet, parA, frames, stop);
-		return this.chainedAnim;
+		return this;
 	};
 
 	/**
