@@ -219,11 +219,11 @@
 						var now, lastFired = Arstider.timestamp();
 						setInterval(function() {
 						    now = Arstider.timestamp();
-						    if(now - lastFired > 3000) {
+						    if(now - lastFired > 120){	//lowest value
 						        singleton._pageshow();
 						    }
 						    lastFired = now;
-						}, 500);
+						}, 50);
 					})();
 				}
 				else{
