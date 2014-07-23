@@ -8,9 +8,10 @@ define("Arstider/sprites/SpritesheetManager",
 [
 	"Arstider/Request",
 	"Arstider/sprites/JsonSpritesheet",
-	"Arstider/sprites/ZoeSpritesheet"
+	"Arstider/sprites/ZoeSpritesheet",
+	"Arstider/sprites/GridSpritesheet"
 ],
-function (Request, JsonSpritesheet, ZoeSpritesheet)
+function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 {
 	var context = this;
 
@@ -41,6 +42,12 @@ function (Request, JsonSpritesheet, ZoeSpritesheet)
 			if(data.images && data.images.length>=1)
 			{
 				spritesheet = new ZoeSpritesheet(data, params, fileInfo);
+
+				// Assign to cache
+				spritesheets[name] = spritesheet;
+
+				// Return to callback
+				onComplete(spritesheet);
 			}
 			
 			// Texture packer JSON Array format
@@ -48,18 +55,33 @@ function (Request, JsonSpritesheet, ZoeSpritesheet)
 			{
 				spritesheet = new JsonSpritesheet(data, params, fileInfo);
 
+				// Assign to cache
+				spritesheets[name] = spritesheet;
+
+				// Return to callback
+				onComplete(spritesheet);
 			} 
+
+			// Grid format (OLD SDK2 format)
+			else if(data.frameWidth>0)
+			{
+				spritesheet = new GridSpritesheet(data, params, fileInfo, function() {
+
+					// Assign to cache
+					spritesheets[name] = spritesheet;
+
+					// Return to callback
+					onComplete(spritesheet);
+				});
+			} 
+
 			// Not supported
 			else {
 				console.log("SpritesheetManager ERROR: Unkown spritesheet format.");
 				console.log(data)
 			}
 
-			// Assign to cache
-			spritesheets[name] = spritesheet;
-
-			// Return to callback
-			onComplete(spritesheet);
+			
 		});
 	}
 
