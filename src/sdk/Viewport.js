@@ -212,10 +212,23 @@
 					visibilityChange = "webkitvisibilitychange";
 				}
 
-				//This is pretty intense... not sure you would want that...
-				//window.addEventListener('blur', this._pagehide);
-				//Not automatically triggered when device locks
-				window.addEventListener('focus', this._pageshow);
+				//Safari doesn't support page visibility properly when switching apps.
+				//We have to resort to this primitive check
+				if(Browser.name == "safari" && Browser.isMobile){
+					(function(){
+						var now, lastFired = Arstider.timestamp();
+						setInterval(function() {
+						    now = Arstider.timestamp();
+						    if(now - lastFired > 3000) {
+						        singleton._pageshow();
+						    }
+						    lastFired = now;
+						}, 500);
+					})();
+				}
+				else{
+					window.addEventListener('focus', this._pageshow);
+				}
 
 				window.document.addEventListener(visibilityChange, function(){
 					if(window.document[hidden]) thisRef._pagehide();
