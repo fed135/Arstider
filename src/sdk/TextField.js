@@ -287,7 +287,7 @@
 				fullStr = ""
 			;
 
-			if (this.data == null) this.data = new Buffer({name:"TextField_"+this.name});
+			if (this.data == null) this.data = new Buffer({name:"Arstider_TextField_"+this.name});
 
 			if(this.width === 0){
 				if(this._font.textWrap){

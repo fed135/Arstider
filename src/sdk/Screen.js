@@ -185,10 +185,12 @@ define("Arstider/Screen", [
 		Arstider.savedStates[name] = this;
 		Arstider.savedStates[name].__tweens = [];
 
+		this.stage.protectData(this);
+
 		for(var i = GlobalTimers.list.length-1; i>=0;i--){
 			if(GlobalTimers.list[i] && GlobalTimers.list[i].kill){
+				GlobalTimers.list[i].__running = GlobalTimers.list[i].running;
 				Arstider.savedStates[name].__tweens.push(Arstider.clone(GlobalTimers.list[i], true));
-				//Arstider.savedStates[name].__tweens.push(GlobalTimers.list[i]);
 			}
 		}
 	};

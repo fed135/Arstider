@@ -44,7 +44,7 @@ define( "Arstider/SpriteSheet", ["Arstider/Bitmap", "Arstider/Sequence"], /** @l
 	 * @return {Sequence} The newly created Sequence
 	 */
 	SpriteSheet.prototype.addSequence = function(name, time, frames, stop){
-		this[name] = new Sequence(this, time, frames, stop);
+		this[name] = new Sequence(this, name, time, frames, stop);
 		return this[name];
 	};
 	

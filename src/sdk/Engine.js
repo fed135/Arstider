@@ -247,6 +247,8 @@
 		 * @param {number} dt Delta time (delay between now and the last frame) 
 		 */
 		Engine.prototype.stepLogic = function(dt){
+			if(Arstider.skipUpdate) return;
+
 			Performance.numUpdates = 0;
 
 			if(singleton === null) return;
@@ -315,8 +317,16 @@
 				name = params.name;
 			}
 			
+			singleton.killScreen((singleton.currentScreen && singleton.currentScreen.__savedState));
+
 			if(Arstider.savedStates[name] != undefined){
 				singleton.currentScreen = Arstider.savedStates[name];
+
+				singleton.releaseData(singleton.currentScreen);
+				for(var i = 0; i< Arstider.savedStates[name].__tweens.length; i++){
+					Arstider.savedStates[name].__tweens[i].running = Arstider.savedStates[name].__tweens[i].__running;
+					if(Arstider.savedStates[name].__tweens[i].running && Arstider.savedStates[name].__tweens[i].resume) Arstider.savedStates[name].__tweens[i].resume();
+				}
 				GlobalTimers.list = GlobalTimers.list.concat(Arstider.savedStates[name].__tweens);
 				delete singleton.currentScreen.__tweens;
 				singleton.currentScreen.__savedState = false;
@@ -337,8 +347,6 @@
 			singleton.isPreloading = true;
 			Preloader.set(name);
 			Preloader.progress("__screen__", 0);
-
-			singleton.killScreen((singleton.currentScreen && singleton.currentScreen.__savedState));
 			
 			requirejs([name], function(_menu)
 			{
@@ -384,21 +392,51 @@
 		};
 
 		Engine.prototype.protectData = function(obj){
-			//add protected flag to buffer tags of background/watermark 
-			if(obj.data!= null){
-				while(obj.data.toDataURL == undefined){
-					if(obj.data.data) obj = obj.data.data;
-					else break;
+			var orig = obj;
+			if(orig){
+				//add protected flag to buffer tags of background/watermark 
+				if(obj.data){
+					while(obj.data.nodeName == undefined){
+						if(obj.data.data){
+							obj = obj.data;
+						}
+						else break;
+					}
+
+					if(obj.data.toDataURL){
+						obj._protected = true;
+					}
 				}
 
-				if(obj.data.toDataURL){
-					obj.data._protected = true;
+				if(orig.children && orig.children.length > 0){
+					for(var i = 0; i<orig.children.length; i++){
+						singleton.protectData(orig.children[i]);
+					}
 				}
 			}
+		};
 
-			if(obj.children && obj.children.length > 0){
-				for(var i = 0; i<obj.children.length; i++){
-					singleton.protectData(obj.children[i]);
+		Engine.prototype.releaseData = function(obj){
+			var orig = obj;
+			if(orig){
+				//add protected flag to buffer tags of background/watermark 
+				if(obj.data){
+					while(obj.data.nodeName == undefined){
+						if(obj.data.data){
+							obj = obj.data;
+						}
+						else break;
+					}
+
+					if(obj.data.toDataURL){
+						obj._protected = false;
+					}
+				}
+
+				if(orig.children && orig.children.length > 0){
+					for(var i = 0; i<orig.children.length; i++){
+						singleton.releaseData(orig.children[i]);
+					}
 				}
 			}
 		};
@@ -412,16 +450,19 @@
 				Telemetry.log("system", "screenstop", {screen:singleton.currentScreen.name});
 				if(!preserve) singleton.currentScreen._unload();
                 
-                if(Arstider.__retroAssetLoader){
+                //if(Arstider.__retroAssetLoader){
+					singleton.protectData(Preloader._screen);
 					singleton.protectData(Background);
 					singleton.protectData(Watermark);
 
 					for(var i in Arstider.bufferPool){
-	                	if(i.indexOf("_compatBuffer_") != -1 && Arstider.bufferPool[i].data && !Arstider.bufferPool[i].data._protected){
-	                		Arstider.bufferPool[i].kill();
+	                	if(i.indexOf("_compatBuffer_") != -1 || i.indexOf("Arstider_Gradient") != -1 || i.indexOf("Arstider_TextField") != -1){
+	                		if(Arstider.bufferPool[i].data && !Arstider.bufferPool[i]._protected){
+	                			Arstider.bufferPool[i].kill();
+	                		}
 	                	}
 	                }
-				}
+				//}
 
                 GlobalTimers.removeTweens();
 
@@ -468,7 +509,10 @@
 		 */
 		Engine.prototype.applyTouch = function(e, target){
 			
-			if(!target) target = (singleton.handbreak) ? Preloader._screen : singleton.currentScreen;
+			if(!target){
+				Arstider.__cancelBubble = {};
+				target = (singleton.handbreak) ? Preloader._screen : singleton.currentScreen;
+			}
 			
 			var 
 				i,
@@ -485,23 +529,24 @@
 				for(i = target.children.length-1; i>=0; i--){
 					if(target && target.children && target.children[i] && !target.children[i].__skip){
 						for(u=0; u<numInputs;u++){
-
-							if(target.children[i].isTouched(Mouse.x(u), Mouse.y(u))){
-								if(Mouse.isPressed(u)){
-									if(!target.children[i]._pressed) target.children[i]._onpress(e);
-									if(Browser.isMobile) target.children[i]._preclick = true;
-								}
-								else{
-									if(target.children[i]._pressed) target.children[i]._onrelease(e);
-								}
-								
-								if(target && target.children && target.children[i] && !target.children[i].__skip){
-									if(Mouse.rightPressed) target.children[i]._rightPressed = true;
-									else{
-										if(target.children[i]._rightPressed) target.children[i]._onrightclick(e);
+							if(Arstider.__cancelBubble[u] !== true){
+								if(target.children[i].isTouched(Mouse.x(u), Mouse.y(u))){
+									if(Mouse.isPressed(u)){
+										if(!target.children[i]._pressed) target.children[i]._onpress(e);
+										if(Browser.isMobile) target.children[i]._preclick = true;
 									}
+									else{
+										if(target.children[i]._pressed) target.children[i]._onrelease(e);
+									}
+									
+									if(target && target.children && target.children[i] && !target.children[i].__skip){
+										if(Mouse.rightPressed) target.children[i]._rightPressed = true;
+										else{
+											if(target.children[i]._rightPressed) target.children[i]._onrightclick(e);
+										}
+									}
+									break;
 								}
-								break;
 							}
 						}
 					
@@ -510,6 +555,8 @@
 					}
 				}
 			}
+
+			Arstider.__cancelBubble = {};
 		};
 
 		/**
@@ -529,11 +576,13 @@
 
 			if(Browser.isMobile){
 				for(i=0; i< inputs.length; i++){
-					if(target.isTouched(inputs[i].x, inputs[i].y) && inputs[i].pressed){
-						inputId = i;
-						mouseX = inputs[i].x;
-						mouseY = inputs[i].y;
-						break;
+					if(Arstider.__cancelBubble[i] !== true){
+						if(target.isTouched(inputs[i].x, inputs[i].y) && inputs[i].pressed){
+							inputId = i;
+							mouseX = inputs[i].x;
+							mouseY = inputs[i].y;
+							break;
+						}
 					}
 				}
 
@@ -544,14 +593,16 @@
 				}
 			}
 			else{
-				if(target.isTouched(mouseX, mouseY)){
-					
-					if(!target._hovered) target._onhover();
-					if(!Mouse.isPressed()) target._preclick = true;
-				}
-				else{
-					if(target._hovered) target._onleave();
-					target._pressed = false;
+				if(Arstider.__cancelBubble[0] !== true){
+					if(target.isTouched(mouseX, mouseY)){
+						
+						if(!target._hovered) target._onhover();
+						if(!Mouse.isPressed()) target._preclick = true;
+					}
+					else{
+						if(target._hovered) target._onleave();
+						target._pressed = false;
+					}
 				}
 			}
 
@@ -597,6 +648,8 @@
 				showFrames = false,
                 pencil
 			;
+
+			if(Viewport.unsupportedOrientation) return;
 
 			if(singleton._isSynchronous){
 				Performance.deltaTime = Arstider.timestamp() - Performance.lastFrame;

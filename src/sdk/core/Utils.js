@@ -89,6 +89,29 @@ Arstider.emptyFunction = function(){};
 Arstider.emptyString = "";
 
 /**
+ * Skip update logic flag
+ * memberof Arstider
+ * @type {boolean}
+ */
+Arstider.skipUpdate = false;
+
+/**
+ * Cancel bubbleFlag
+ * @type {Object}
+ */
+Arstider.__cancelBubble = {};
+
+/**
+ * Cancels input Bubble for the selected input
+ * @memberof Arstider
+ * @type {function}
+ */
+Arstider.cancelBubble = function(id){
+	id = Arstider.checkIn(id, 0);
+	Arstider.__cancelBubble[id] = true;
+};
+
+/**
  * Re-usable empty images url
  * @memberof Arstider
  * @const
