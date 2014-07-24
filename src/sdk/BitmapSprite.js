@@ -121,7 +121,9 @@ function (DisplayObject, SpriteSheetManager)
 		// loadSection = function(url, x,y,w,h, success) 
 		this.currentBitmap.alpha = 1;
 		this.currentBitmap.loadSection(this.currentImageUrl, _rect[0], _rect[1], _rect[2], _rect[3]);
-
+		this.width = _rect[2];
+		this.height = _rect[3];
+		
 		if(frameData.origin)
 		{
 			this.currentBitmap.x = frameData.origin[0];
