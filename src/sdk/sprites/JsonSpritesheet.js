@@ -33,16 +33,57 @@ function ()
 		this.defaultAnim = params.defaultAnim;
 		this.fps = (params.fps>0) ? params.fps : 15;
 		this.animations = {};
+		this.images = {};
 
-		// Parse the JSON data to fill animations
-		this.parseJSON(data, fileInfo.path);
+		if(params.isImage){
+			// Parse the JSON data to fill animations
+			this.parseJSONImage(data, fileInfo.path);
+		}else{
+			// Parse the JSON data to fill animations
+			this.parseJSON(data, fileInfo.path);
+		}
 	};
 
+	JsonSpritesheet.prototype.getImage = function(imageName)
+	{
+		if(!this.images[imageName])
+		{
+			console.log("Unable to get image "+imageName+" from the Spritesheet");
+		}
+		return this.images[imageName];
+	}
 
 	JsonSpritesheet.prototype.getAnim = function(animName)
 	{
 		return this.animations[animName];
 	}
+
+    JsonSpritesheet.prototype.parseJSONImage = function(data, path)
+    {
+		// Spritesheet image in the meta object
+		var imageUrl = path + data.meta.image;
+		
+		var frame;
+		var frameData;
+		var rotateWarning = false;
+		// Parse frames
+		var n = data.frames.length;
+		for (var i = 0; i < n; i++)
+		{
+			frameData =  data.frames[i];
+
+			if(!rotateWarning && frameData.rotated)
+			{
+				rotateWarning = true;
+				console.log("JsonSpritesheet ERROR for "+this.name+": rotated frames are not supported, please uncheck this options before exporting");
+			}
+
+			// Create frameInfo
+			frame = this.createFrame(imageUrl, frameData);
+			frameData.filename = frameData.filename.replace(".png", "");
+			this.images[frameData.filename] = frame;
+		}	
+    }
 
     /**
 	 * Resumes the playing of the current Animation sheet
@@ -115,15 +156,20 @@ function ()
 			}
 
 			// Create frameInfo
-			frame = {
-				index:i,
-				image:imageUrl,
-				rect: [frameData.frame.x, frameData.frame.y, frameData.frame.w, frameData.frame.h],
-				origin: [frameData.spriteSourceSize.x, frameData.spriteSourceSize.y]
-			}
+			frame = this.createFrame(imageUrl, frameData);
+			frame.index = i;
 
 			animation.frames.push(frame);
 		}
+	}
+
+	JsonSpritesheet.prototype.createFrame = function(url, frameData){
+		var frame = {
+			image:url,
+			rect: [frameData.frame.x, frameData.frame.y, frameData.frame.w, frameData.frame.h],
+			origin: [frameData.spriteSourceSize.x, frameData.spriteSourceSize.y]
+		}
+		return frame;
 	}
 
 	return JsonSpritesheet;
