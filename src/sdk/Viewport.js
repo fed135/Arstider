@@ -297,6 +297,8 @@
 		 */
 		Viewport.prototype._resize = function(e){
 			if(Browser.isMobile){
+				singleton._rotate();
+
 				if(singleton.orientation == LANDSCAPE){
 					window.document.body.style.width = window.innerWidth + "px";
 					window.document.body.style.height = window.innerHeight +"px";
@@ -390,15 +392,17 @@
 		 * @param {event} e Event from the browser
 		 */
 		Viewport.prototype._rotate = function(e){
+			var prevOrientation = singleton.orientation;
+
 			if(window.orientation){
 				if (window.orientation === -90 || window.orientation === 90) singleton.orientation = LANDSCAPE;
 				else singleton.orientation = PORTRAIT;
 			}
 			else singleton.orientation = (window.innerHeight>window.innerWidth)?PORTRAIT:LANDSCAPE;
 			
-			singleton._resize();
-			
-			Events.broadcast("Viewport.rotate", singleton);
+			if(singleton.orientation != prevOrientation){
+				Events.broadcast("Viewport.rotate", singleton);
+			}
 		};
 		
 		/**
