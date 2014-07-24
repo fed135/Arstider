@@ -56,7 +56,7 @@
 			 * Callback when texture is loaded
 			 * @type {string|Image|HTMLCanvasElement}
 			 */
-			this.callback = props.callback || Arstider.emptyFunction;
+			this.callback = props.callback || Arstider.emptyFunction;
 
 			if(this.url != "") this.loadBitmap(this.url);
 		}

@@ -711,7 +711,7 @@ Arstider.getMemory = function(){
 	;
 	
 	for(i in Arstider.blobCache){
-		total += ((Arstider.blobCache[i].size || 0) >> 10);
+		total += ((Arstider.blobCache[i].size || 0) >> 10);
 	}
 	
 	for(i in Arstider.bufferPool){

@@ -44,7 +44,7 @@ define("Arstider/core/Action", [], /** @lends core/Action */ function(){
 	 * @param {Tween} target The tween chain holding the animation
 	 */	
 	Action.prototype.step = function(target){
-		if(this.timesToRun > this.timesRan || this.timesToRun == -1){
+		if(this.timesToRun > this.timesRan || this.timesToRun == -1){
 			this.callback.apply(target, this.callbackOption);
 			this.timesRan++;
 		}

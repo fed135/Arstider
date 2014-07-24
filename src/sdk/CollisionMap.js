@@ -66,7 +66,7 @@ define("Arstider/CollisionMap", ["Arstider/Bitmap", "Arstider/Entity"], /** @len
 				thisRef._maskData = Arstider.saveToCanvas("CollisionMap_"+thisRef._collMaskUrl, img.data).context2D().getImageData(0,0,img.width,img.height);
 				thisRef._parseMap();
 				if(thisRef.width == 0) thisRef.width = thisRef.dataWidth = img.width;
-				if(thisRef.height == 0) thisRef.height = thisRef.dataHeight = img.height;
+				if(thisRef.height == 0) thisRef.height = thisRef.dataHeight = img.height;
 				
 				if(thisRef._debugDraw) thisRef._drawShape.apply(thisRef);
 			}
