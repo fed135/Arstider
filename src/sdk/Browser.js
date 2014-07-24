@@ -172,7 +172,7 @@
 			
 			for(i; i < requirements.length; i++){
 				if(requirements[i].name == this.name){
-					if(requirements[i].minVersion == undefined || parseFloat(this.version) >= requirements[i].minVersion) return true;
+					if(requirements[i].minVersion == undefined || parseFloat(this.version) >= requirements[i].minVersion) return true;
 					
 					if(Arstider.verbose > 0) console.warn("Arstider.Browser: browser version not supported");
 					return false;

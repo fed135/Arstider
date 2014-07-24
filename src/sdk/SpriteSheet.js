@@ -69,7 +69,7 @@ define( "Arstider/SpriteSheet", ["Arstider/Bitmap", "Arstider/Sequence"], /** @l
 			callback:function(img){
 				thisRef.data = (img.data)?img.data:img;
 				if(thisRef.width == 0) thisRef.width = img.width;
-				if(thisRef.height == 0) thisRef.height = img.height;
+				if(thisRef.height == 0) thisRef.height = img.height;
 				
 				thisRef.onload();
 			}
