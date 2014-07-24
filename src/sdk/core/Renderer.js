@@ -176,7 +176,7 @@
 			if(curChild.data || curChild.draw){
 				Performance.draws++;
 				if(curChild.draw){
-					curChild.draw.apply(curChild, [this._context, Math.round(_currentX), Math.round(_currentY)]);
+					curChild.draw.apply(curChild, [this._context, Math.ceil(_currentX), Math.ceil(_currentY)]);
 				}
 				else{
 					//instanceof is pretty fast,  we want to leverage data offset rather than having an extra buffer for sprites.
@@ -206,10 +206,10 @@
 							//console.log(data);
 							try{
 								if(curChild instanceof Sprite || curChild.largeData === true){
-									this._context.drawImage(data, curChild.xOffset, curChild.yOffset, curChild.dataWidth, curChild.dataHeight, Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
+									this._context.drawImage(data, Math.round(curChild.xOffset), Math.round(curChild.yOffset), Math.round(curChild.dataWidth), Math.round(curChild.dataHeight), Math.ceil(_currentX), Math.ceil(_currentY), Math.ceil(curChild.width), Math.ceil(curChild.height));
 								}
 								else{
-									this._context.drawImage(data, Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
+									this._context.drawImage(data, Math.ceil(_currentX), Math.ceil(_currentY), Math.ceil(curChild.width), Math.ceil(curChild.height));
 								}
 							}
 							catch(e){
@@ -231,7 +231,7 @@
 				else if(curChild instanceof DisplayObject) this._context.strokeStyle = "red";
 				else this._context.strokeStyle = "yellow";
 					
-				this._context.strokeRect(Math.round(_currentX), Math.round(_currentY), curChild.width, curChild.height);
+				this._context.strokeRect(Math.ceil(_currentX), Math.ceil(_currentY), Math.ceil(curChild.width), Math.ceil(curChild.height));
 				this._context.globalAlpha = prevAlpha;
 				this._context.shadowColor = shadowSafe;
 			}
