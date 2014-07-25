@@ -211,6 +211,10 @@
 					hidden = "webkitHidden";
 					visibilityChange = "webkitvisibilitychange";
 				}
+				else{
+					hidden = "body";
+					visibilitychange = "blur";
+				}
 
 				//Safari doesn't support page visibility properly when switching apps.
 				//We have to resort to this primitive check
