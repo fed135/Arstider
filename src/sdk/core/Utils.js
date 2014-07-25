@@ -522,6 +522,58 @@ Arstider.deepClone = function(obj) {
 }
 
 /**
+ * Utility function to merge two objects recursively
+ * @memberof Arstider
+ * @const
+ * @param {Object} src The object to copy from
+ * @param {Object} target The object to copy to
+ * @param {Boolean} clone Clones the source object first when true
+ */
+Arstider.deepMerge = function(src, target, clone)
+{
+	if(clone) src = Arstider.deepClone(src);
+
+	var isArray = Array.isArray(src);
+	
+	if (isArray)
+	{
+		target = target || [];
+
+		src.forEach(function(val, i)
+		{
+			if (typeof src[i] === 'undefined') {
+				target[i] = val;
+			} else if (typeof val === 'object') {
+				target[i] = Arstider.deepMerge(val, target[i]);
+			} else {
+				if (target.indexOf(e) === -1) {
+					target.push(e);
+				}
+			}
+		});
+	} 
+	else
+	{
+		Object.keys(src).forEach(function (key)
+		{
+			if (typeof src[key] !== 'object' || !src[key]) {
+				target[key] = src[key];
+			}
+			else {
+				target[key] = target[key] || {};
+				if (!src[key]) {
+					target[key] = src[key];
+				} else {
+					target[key] = Arstider.deepMerge(src[key], target[key]);
+				}
+			}
+		});
+	}
+
+	return target;
+}
+
+/**
  * Supers the values of a module to it's parent module
  * @memberof Arstider
  * @param {*} child The child that will super to a defined inherited parent - requires the constructor to have been Inherited at least once
