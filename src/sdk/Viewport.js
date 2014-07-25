@@ -211,6 +211,10 @@
 					hidden = "webkitHidden";
 					visibilityChange = "webkitvisibilitychange";
 				}
+				else{
+					hidden = "body";
+					visibilitychange = "blur";
+				}
 
 				//Safari doesn't support page visibility properly when switching apps.
 				//We have to resort to this primitive check
@@ -394,11 +398,7 @@
 		Viewport.prototype._rotate = function(e){
 			var prevOrientation = singleton.orientation;
 
-			if(window.orientation){
-				if (window.orientation === -90 || window.orientation === 90) singleton.orientation = LANDSCAPE;
-				else singleton.orientation = PORTRAIT;
-			}
-			else singleton.orientation = (window.innerHeight>window.innerWidth)?PORTRAIT:LANDSCAPE;
+			singleton.orientation = (window.innerHeight>window.innerWidth)?PORTRAIT:LANDSCAPE;
 			
 			if(singleton.orientation != prevOrientation){
 				Events.broadcast("Viewport.rotate", singleton);
