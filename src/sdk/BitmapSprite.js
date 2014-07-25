@@ -81,7 +81,7 @@ function (DisplayObject, SpriteSheetManager)
 	 */
 	BitmapSprite.prototype.killBuffer = function()
 	{
-		this.stop();
+		
 	};
 
 	/**
