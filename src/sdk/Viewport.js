@@ -198,11 +198,11 @@
 				window.addEventListener('pagehide', this._pagehide);
 
 				var hidden, visibilityChange;
-				if(Browser.platform == "android"){
+				/*if(Browser.platform == "android"){
 					hidden = "body";
 					visibilitychange = "blur";
 				}
-				else{
+				else{*/
 					if (typeof window.document.hidden !== "undefined"){
 						hidden = "hidden";
 						visibilityChange = "visibilitychange";
@@ -220,7 +220,7 @@
 						hidden = "body";
 						visibilitychange = "blur";
 					}
-				}
+				//}
 
 				//Safari doesn't support page visibility properly when switching apps.
 				//We have to resort to this primitive check
@@ -428,6 +428,7 @@
 		 * @param {event} e Event from the browser
 		 */
 		Viewport.prototype._pagehide = function(e){
+			Arstider.pageHidden = true;
 			Events.broadcast("Viewport.pagehide", singleton);
 		};
 
@@ -438,6 +439,7 @@
 		 * @param {event} e Event from the browser
 		 */
 		Viewport.prototype._pageshow = function(e){
+			Arstider.pageHidden = false;
 			Events.broadcast("Viewport.pageshow", singleton);
 		};
 		

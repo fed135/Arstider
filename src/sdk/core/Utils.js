@@ -23,6 +23,13 @@ Arstider.timestamp = function(){
 };
 
 /**
+ * Global access to check if page is visible or not
+ * @memberof Arstider
+ * @type {boolean}
+ */
+Arstider.pageHidden = false;
+
+/**
  * Generates a Unique UID string
  * @memberof Arstider
  * @type {function}

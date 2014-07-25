@@ -81,6 +81,8 @@
 				if(Arstider.verbose > 0) console.warn("Arstider.Sound._init: sounds disabled, Howler not loaded");
 				return;
 			}
+
+			if(Browser.name == "android") Howler.usingWebAudio = false;
 			
 			var 
 				i,
