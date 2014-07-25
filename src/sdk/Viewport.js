@@ -195,7 +195,7 @@
 				}
 				
 				window.onbeforeunload = this._unload;
-				window.addEventListener('pagehide', this._pagehide, true);
+				window.addEventListener('pagehide', this._pagehide);
 
 				var hidden, visibilityChange;
 				if(Browser.platform == "android"){
@@ -237,13 +237,13 @@
 					})();
 				}
 				else{
-					window.addEventListener('focus', this._pageshow, true);
+					window.addEventListener('focus', this._pageshow);
 				}
 
 				window.document.addEventListener(visibilityChange, function(){
 					if(window.document[hidden]) thisRef._pagehide();
 					else thisRef._pageshow();
-				}, true);
+				});
 				
 				this._requestFullscreenEvent = (this.tag.requestFullScreen)?"requestFullScreen":(this.tag.mozRequestFullScreen)?"mozRequestFullScreen":(this.tag.webkitRequestFullScreenWithKeys)?"webkitRequestFullScreenWithKeys":(this.tag.webkitRequestFullScreen)?"webkitRequestFullScreen":"FullscreenError";
 				this._cancelFullscreenEvent =  (window.document.cancelFullScreen)?"cancelFullScreen":(window.document.mozCancelFullScreen)?"mozCancelFullScreen":(window.document.webkitCancelFullScreen)?"webkitCancelFullScreen":"FullscreenError";
