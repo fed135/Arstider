@@ -1,3 +1,9 @@
+/**
+ * Simple signal implementation
+ * For more info about signals: http://millermedeiros.github.io/js-signals/
+ *
+ * @author Jo Simard <josimard@meetfidel.com>
+ */
 define("Arstider/Signal", [], function()
 {
 	function Signal()
