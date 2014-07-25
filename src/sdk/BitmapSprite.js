@@ -41,8 +41,9 @@ function (DisplayObject, SpriteSheetManager)
 		// Go spritesheet?
 		if(props.spritesheet)
 		{
-			SpriteSheetManager.get(props.spritesheet, {isImage:true}, function(spritesheet)
+			var spritesheet = SpriteSheetManager.get(props.spritesheet, {isImage:true}, function(spritesheet)
 			{
+				// First execution
 				context._setSpritesheet(spritesheet);
 
 				// Overrides?
@@ -57,6 +58,15 @@ function (DisplayObject, SpriteSheetManager)
 				// Callback?
 				if(props.onComplete) props.onComplete();
 			});
+
+			// Spritesheet was in cache
+			if(spritesheet){
+				this._setSpritesheet(spritesheet);
+				if(props.frame){
+					this.gotoFrame(props.frame);
+				}
+				if(props.onComplete) props.onComplete();
+			}
 		}
 	};
 
@@ -149,6 +159,7 @@ function (DisplayObject, SpriteSheetManager)
 		{
 			this.currentBitmap = new DisplayObject();
 			this.addChild(this.currentBitmap);
+			this.currentBitmap.setIndex(0);
 			this.bitmaps[imageUrl] = this.currentBitmap;
 		}
 	};
