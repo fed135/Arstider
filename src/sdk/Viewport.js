@@ -195,25 +195,31 @@
 				}
 				
 				window.onbeforeunload = this._unload;
-				window.addEventListener('pagehide', this._pagehide);
+				window.addEventListener('pagehide', this._pagehide, true);
 
 				var hidden, visibilityChange;
-				if (typeof window.document.hidden !== "undefined"){
-					hidden = "hidden";
-					visibilityChange = "visibilitychange";
-				} else if (typeof window.document.mozHidden !== "undefined"){
-					hidden = "mozHidden";
-					visibilityChange = "mozvisibilitychange";
-				} else if (typeof window.document.msHidden !== "undefined"){
-					hidden = "msHidden";
-					visibilityChange = "msvisibilitychange";
-				} else if (typeof window.document.webkitHidden !== "undefined"){
-					hidden = "webkitHidden";
-					visibilityChange = "webkitvisibilitychange";
-				}
-				else{
+				if(Browser.platform == "android"){
 					hidden = "body";
 					visibilitychange = "blur";
+				}
+				else{
+					if (typeof window.document.hidden !== "undefined"){
+						hidden = "hidden";
+						visibilityChange = "visibilitychange";
+					} else if (typeof window.document.mozHidden !== "undefined"){
+						hidden = "mozHidden";
+						visibilityChange = "mozvisibilitychange";
+					} else if (typeof window.document.msHidden !== "undefined"){
+						hidden = "msHidden";
+						visibilityChange = "msvisibilitychange";
+					} else if (typeof window.document.webkitHidden !== "undefined"){
+						hidden = "webkitHidden";
+						visibilityChange = "webkitvisibilitychange";
+					}
+					else{
+						hidden = "body";
+						visibilitychange = "blur";
+					}
 				}
 
 				//Safari doesn't support page visibility properly when switching apps.
@@ -231,13 +237,13 @@
 					})();
 				}
 				else{
-					window.addEventListener('focus', this._pageshow);
+					window.addEventListener('focus', this._pageshow, true);
 				}
 
 				window.document.addEventListener(visibilityChange, function(){
 					if(window.document[hidden]) thisRef._pagehide();
 					else thisRef._pageshow();
-				}, false);
+				}, true);
 				
 				this._requestFullscreenEvent = (this.tag.requestFullScreen)?"requestFullScreen":(this.tag.mozRequestFullScreen)?"mozRequestFullScreen":(this.tag.webkitRequestFullScreenWithKeys)?"webkitRequestFullScreenWithKeys":(this.tag.webkitRequestFullScreen)?"webkitRequestFullScreen":"FullscreenError";
 				this._cancelFullscreenEvent =  (window.document.cancelFullScreen)?"cancelFullScreen":(window.document.mozCancelFullScreen)?"mozCancelFullScreen":(window.document.webkitCancelFullScreen)?"webkitCancelFullScreen":"FullscreenError";
