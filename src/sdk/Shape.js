@@ -46,6 +46,8 @@
 			this.strokeStyle = props.strokeStyle || Arstider.defaultColor;
 			this.lineWidth = props.lineWidth || 0;
 			this.lineCap = props.lineCap || "square";
+			this.lineDash = props.lineDash || [];
+			this.lineDashOffset = props.lineDashOffset || 0;
 		};
 		
 		/**
@@ -68,6 +70,10 @@
 			ctx.strokeStyle = (this.strokeStyle.pattern)?this.strokeStyle.pattern:this.strokeStyle;
 			ctx.lineWidth = this.lineWidth;
 			ctx.lineCap = this.lineCap;
+			if(ctx.setLineDash){
+				ctx.setLineDash(this.lineDash);
+				ctx.lineDashOffset = this.lineDashOffset;
+			}
 
 			ctx.beginPath();
             switch(this.shape){
