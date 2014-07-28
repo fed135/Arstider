@@ -21,15 +21,36 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 	// Loaded spritesheets dictionnary, indexed by name
 	var spritesheets = {};
 
+	var loadingSpritesheetsCallbacks = {};
+
 	// Spritesheets overrides, indexed by name
 	var overrides = {};
+
 
 	function get(nameOrPath, params, onComplete)
 	{
 		var fileInfo = getFileInfo(nameOrPath, "{{name}}.json");
 
 		var name = getName(fileInfo.name);
-		if(spritesheets[name]) return spritesheets[name];
+
+		// Cached or loading?
+		if(spritesheets[name])
+		{
+			// Loading?
+			if(loadingSpritesheetsCallbacks[name]) 
+			{
+				loadingSpritesheetsCallbacks[name].push(onComplete);
+				return;
+			}
+			onComplete( spritesheets[name] );
+			return;
+		} 
+		// New spritesheet
+		else
+		{
+			if(!loadingSpritesheetsCallbacks[name]) loadingSpritesheetsCallbacks[name] = [];
+			loadingSpritesheetsCallbacks[name].push(onComplete);
+		}
 
 		// Append params to name
 		params.name = name;
@@ -43,11 +64,8 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 			{
 				spritesheet = new ZoeSpritesheet(data, params, fileInfo);
 
-				// Assign to cache
-				spritesheets[name] = spritesheet;
-
 				// Return to callback
-				onComplete(spritesheet);
+				onSpritesheetLoaded(name, spritesheet);
 			}
 			
 			// Texture packer JSON Array format
@@ -55,11 +73,8 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 			{
 				spritesheet = new JsonSpritesheet(data, params, fileInfo);
 
-				// Assign to cache
-				spritesheets[name] = spritesheet;
-
 				// Return to callback
-				onComplete(spritesheet);
+				onSpritesheetLoaded(name, spritesheet);
 			} 
 
 			// Grid format (OLD SDK2 format)
@@ -67,22 +82,36 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 			{
 				spritesheet = new GridSpritesheet(data, params, fileInfo, function() {
 
-					// Assign to cache
-					spritesheets[name] = spritesheet;
-
 					// Return to callback
-					onComplete(spritesheet);
+					onSpritesheetLoaded(name, spritesheet);
 				});
 			} 
 
 			// Not supported
 			else {
 				console.log("SpritesheetManager ERROR: Unkown spritesheet format.");
-				console.log(data)
+				console.log(data);
 			}
-
-			
 		});
+	}
+
+	function onSpritesheetLoaded(name, spritesheet)
+	{
+		// Assign to cache
+		spritesheets[name] = spritesheet;
+
+		if(loadingSpritesheetsCallbacks[name])
+		{
+			var n = loadingSpritesheetsCallbacks[name].length;
+			
+			for (var i = 0; i < n; i++) {
+				var callback = loadingSpritesheetsCallbacks[name][i];
+				if(callback) callback(spritesheet);
+			};
+
+			// Flush callbacks
+			loadingSpritesheetsCallbacks[name] = null;
+		}
 	}
 
 	function loadJSON(url, onComplete)

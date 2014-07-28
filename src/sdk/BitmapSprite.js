@@ -41,7 +41,7 @@ function (DisplayObject, SpriteSheetManager)
 		// Go spritesheet?
 		if(props.spritesheet)
 		{
-			var spritesheet = SpriteSheetManager.get(props.spritesheet, {isImage:true}, function(spritesheet)
+			SpriteSheetManager.get(props.spritesheet, {isImage:true}, function(spritesheet)
 			{
 				// First execution
 				context._setSpritesheet(spritesheet);
@@ -58,15 +58,6 @@ function (DisplayObject, SpriteSheetManager)
 				// Callback?
 				if(props.onComplete) props.onComplete();
 			});
-
-			// Spritesheet was in cache
-			if(spritesheet){
-				this._setSpritesheet(spritesheet);
-				if(props.frame){
-					this.gotoFrame(props.frame);
-				}
-				if(props.onComplete) props.onComplete();
-			}
 		}
 	};
 
