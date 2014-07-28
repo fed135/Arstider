@@ -553,8 +553,8 @@ Arstider.deepMerge = function(src, target, clone)
 			} else if (typeof val === 'object') {
 				target[i] = Arstider.deepMerge(val, target[i]);
 			} else {
-				if (target.indexOf(e) === -1) {
-					target.push(e);
+				if (target.indexOf(val) === -1) {
+					target.push(val);
 				}
 			}
 		});

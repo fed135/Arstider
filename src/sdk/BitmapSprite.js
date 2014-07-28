@@ -43,6 +43,7 @@ function (DisplayObject, SpriteSheetManager)
 		{
 			SpriteSheetManager.get(props.spritesheet, {isImage:true}, function(spritesheet)
 			{
+				// First execution
 				context._setSpritesheet(spritesheet);
 
 				// Overrides?
@@ -81,7 +82,7 @@ function (DisplayObject, SpriteSheetManager)
 	 */
 	BitmapSprite.prototype.killBuffer = function()
 	{
-		this.stop();
+		
 	};
 
 	/**
@@ -149,6 +150,7 @@ function (DisplayObject, SpriteSheetManager)
 		{
 			this.currentBitmap = new DisplayObject();
 			this.addChild(this.currentBitmap);
+			this.currentBitmap.setIndex(0);
 			this.bitmaps[imageUrl] = this.currentBitmap;
 		}
 	};

@@ -46,6 +46,8 @@
 			this.strokeStyle = props.strokeStyle || Arstider.defaultColor;
 			this.lineWidth = props.lineWidth || 0;
 			this.lineCap = props.lineCap || "square";
+			this.lineDash = props.lineDash || [];
+			this.lineDashOffset = props.lineDashOffset || 0;
 		};
 		
 		/**
@@ -59,6 +61,8 @@
          * @param {type} ctx The context to draw on
          */
 		Shape.prototype.draw = function(ctx, _x, _y){
+			ctx.save();
+
 			var i;
 
 			if(this.fillStyle.changeOffset) this.fillStyle.changeOffset(_x, _y);
@@ -68,6 +72,10 @@
 			ctx.strokeStyle = (this.strokeStyle.pattern)?this.strokeStyle.pattern:this.strokeStyle;
 			ctx.lineWidth = this.lineWidth;
 			ctx.lineCap = this.lineCap;
+			if(ctx.setLineDash){
+				ctx.setLineDash(this.lineDash);
+				ctx.lineDashOffset = this.lineDashOffset;
+			}
 
 			ctx.beginPath();
             switch(this.shape){
@@ -92,6 +100,8 @@
             ctx.closePath();
             if(this.fillStyle != Arstider.defaultColor) ctx.fill();
             if(this.strokeStyle != Arstider.defaultColor) ctx.stroke();
+
+            ctx.restore();
         };
 		
 		return Shape; 
