@@ -96,12 +96,10 @@
 		HowlerInterface.prototype.pause = function(handle, id){
 			if(handle){
 				if(singleton._nodePlaying(handle)){
-					console.log("pausing : ", id, " because it was playing");
 					handle.pause();
 					if(id && singleton.managerRef.tracks[id] && singleton.managerRef.tracks[id].fadeOutTimer) singleton.managerRef.tracks[id].fadeOutTimer.pause();
 				}
 				else{
-					console.log("rewinding : ", id, " because it wasn't playing");
 					handle.pause();
 					handle._playStart = 0;
 				}
@@ -159,7 +157,6 @@
 		HowlerInterface.prototype._nodePlaying = function(handle){
 			if(handle){
 				for(var i = 0; i<handle._audioNode.length; i++){
-					console.log("checking node ", i, " : (paused) ", handle._audioNode[i].paused);
 					if(!handle._audioNode[i].paused) return true;
 				}
 				return false;
