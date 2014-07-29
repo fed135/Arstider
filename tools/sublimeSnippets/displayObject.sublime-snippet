@@ -1,0 +1,14 @@
+<snippet>
+	<content><![CDATA[
+this.$1 = new DisplayObject({
+	name: "$1",
+	data:"media/images/${2:screens/}.${3:png}",
+	x: $4,
+	y: $5
+});
+this.addChild(this.$1);
+]]></content>
+	<tabTrigger>displayobject</tabTrigger>
+	<scope>source.js</scope>
+	<description>Basic DisplayObject</description>
+</snippet>

@@ -1,0 +1,18 @@
+<snippet>
+	<content><![CDATA[
+this.$1 = new DisplayObject({
+	name: "$1",
+	data:"media/images/buttons/$1.png",
+	x: $2,
+	y: $3,
+	onclick:function(){},
+    onpress:function(){this.loadBitmap("media/images/buttons/$1Press.png")},
+	onrelease:function(){this.loadBitmap("media/images/buttons/$1.png")},
+	onleave:function(){this.loadBitmap("media/images/buttons/$1.png")}
+});
+this.addChild(this.btnPlay);
+]]></content>
+	<tabTrigger>button</tabTrigger>
+	<scope>source.js</scope>
+	<description>DisplayObject as button</description>
+</snippet>
