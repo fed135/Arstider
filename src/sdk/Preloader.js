@@ -119,7 +119,7 @@
 						if(this._queue[i].name == key){
 							if(this._queue[i].timer != null) clearTimeout(this._queue[i].timer);
 							
-							this._queue[i].timer = setTimeout(function(){
+							this._queue[i].timer = setTimeout(function queueProgressRelay(){
 								thisRef.progress.apply(thisRef, [key, value, true]);
 							}, 100);
 							return;

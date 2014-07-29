@@ -357,7 +357,7 @@
 
 						//singleton.currentScreen.stage = singleton;
 						singleton.currentScreen.name = name;
-						setTimeout(function(){
+						setTimeout(function screenProgressRelay(){
 							Preloader.progress("__screen__", 100);
 						},100);
 					});
@@ -368,7 +368,7 @@
 
 					singleton.currentScreen.stage = singleton;
 					singleton.currentScreen.name = name;
-					setTimeout(function(){
+					setTimeout(function screenProgressRelay(){
 						Preloader.progress("__screen__", 100);
 					},100);
 				}

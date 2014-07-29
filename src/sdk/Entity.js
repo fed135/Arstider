@@ -564,7 +564,7 @@
 		 */
 		Entity.prototype.stopDrag = function(){
 			var thisRef = this;
-			setTimeout(function(){
+			setTimeout(function stopDragRelay(){
 				thisRef._dragged = false;
 				thisRef._dragOffsetX = 0;
 				thisRef._dragOffsetY = 0;

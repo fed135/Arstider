@@ -103,18 +103,20 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 			var img = new Image();
 			img.onload = function(){
 				//Added a padding for IE's innacurate onload...
-				setTimeout(function(){
+				setTimeout(function bitmapLoadDelay(){
 					thisRef.data.setSize(img.width, img.height)
 					thisRef.data.width = thisRef.width = img.width;
 					thisRef.data.height = thisRef.height = img.height;
 					thisRef.data.context.drawImage(img, 0,0);
 					//fetches data - another IE safety measure
-					thisRef.data.context.getImageData(1,1,1,1);
+					var bucket = thisRef.data.context.getImageData(1,1,1,1);
 					img.onload = null;
 					img.src = Arstider.emptyImgSrc;
 					if(callback) callback(thisRef.data.data);
 					else thisRef.callback(thisRef.data.data);
 					Preloader.progress(thisRef.id, 100);
+					img = null;
+					bucket = null;
 				},50);
 			};
 			img.onerror = function(){
