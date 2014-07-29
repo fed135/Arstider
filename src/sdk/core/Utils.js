@@ -561,6 +561,8 @@ Arstider.deepMerge = function(src, target, clone)
 	} 
 	else
 	{
+		target = target || {};
+
 		Object.keys(src).forEach(function (key)
 		{
 			if (typeof src[key] !== 'object' || !src[key]) {
