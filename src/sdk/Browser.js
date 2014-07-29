@@ -84,39 +84,42 @@
 			/**
 			 * Platform
 			 */
-			if(navigator.platform.indexOf('iPhone') != -1){
+			if(uagent.indexOf('iphone') != -1){
 				this.isMobile = true;
 				this.platform = 'iphone';
 				this.platformVersion = detect_iOS_version();
 			}
-			else if(navigator.platform.indexOf('iPod') != -1){
+			else if(uagent.indexOf('ipod') != -1){
 				this.isMobile = true;
 				this.platform = 'ipod';
 				this.platformVersion = detect_iOS_version();
 			}
-			else if(navigator.platform.indexOf('iPad') != -1){
+			else if(uagent.indexOf('ipad') != -1){
 				this.isMobile = true;
 				this.platform = 'ipad';
 				this.platformVersion = detect_iOS_version();
 			}
-			else if(navigator.userAgent.indexOf('Android') != -1){
+			else if(uagent.indexOf('android') != -1){
 				this.isMobile = true;
 				this.platform = 'android';
 				if (/android (\d+\.\d+)/.test(uagent)) {
 					this.platformVersion = parseFloat(RegExp.$1);
 				}
 			}
-			else if(navigator.platform.indexOf('Win') != -1){
+			else if(uagent.indexOf('win') != -1){
 				this.platform = 'windows';
 				this.platformVersion = 0;
 			}
-			else if(navigator.platform.indexOf('Mac') != -1){
+			else if(uagent.indexOf('mac') != -1){
 				this.platform = 'mac';
 				if(/os x (\d+\_\d+)/.test(uagent)){
 					var ver = RegExp.$1;
 					ver = ver.replace('_', '.');
 					this.platformVersion = parseFloat(ver);
 				}
+			}
+			if(uagent.indexOf("mobile") != -1){
+				this.isMobile = true;
 			}
 				
 			/**
