@@ -557,6 +557,7 @@
 			}
 
 			Arstider.__cancelBubble = {};
+			i = u = numInputs = null;
 		};
 
 		/**
@@ -619,6 +620,8 @@
 					}
 				}
 			}
+
+			mouseX = mouseY = i = inputId = null;
 		};
 		
 		/**
@@ -708,6 +711,9 @@
 			singleton.removePending(singleton.currentScreen);
 			
 			Performance.endStep();
+
+			showFrames = null;
+            pencil = null;
 		};
 
 		/**

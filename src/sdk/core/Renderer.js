@@ -71,6 +71,12 @@
 				
 			if(!curChild || curChild.__skip) return;
 				
+			Performance.elements++;
+			
+			if(!curChild._skipUpdateBubble && curChild.update) Performance.numUpdates++; 
+				
+			if(curChild.alpha <= 0) return;
+
 			var 
 				isComplex = false,	//Determines if geometrical transformations have been applied
 				oldAlpha = null,	//Stores the old alpha of the context, if need be
@@ -81,14 +87,11 @@
 				oldShadowOffsetX,
 				oldShadowOffsetY,
 				shadowSafe,
-				prevFill
+				prevFill,
+				isOffscreen,
+				data,
+				prevAlpha
 			;
-				
-			Performance.elements++;
-			
-			if(!curChild._skipUpdateBubble && curChild.update) Performance.numUpdates++; 
-				
-			if(curChild.alpha <= 0) return;
 				
 			if(
 				(curChild.scaleX != 1) ||
@@ -181,8 +184,6 @@
 				else{
 					//instanceof is pretty fast,  we want to leverage data offset rather than having an extra buffer for sprites.
 					
-					var isOffscreen;
-					
 					if (complexHierarchy) {
 						isOffscreen = false;
 					} else {
@@ -200,7 +201,7 @@
 					
 					if (!isOffscreen) {
 						
-						var data = (curChild.data.data)?curChild.data.data:curChild.data;
+						data = (curChild.data.data)?curChild.data.data:curChild.data;
 						data = (data.data)?data.data:data;
 						if(data != null){
 							//console.log(data);
@@ -223,7 +224,7 @@
 			if(this._showBoxes || curChild.showOutline === true){
 				shadowSafe = this._context.shadowColor;
 				this._context.shadowColor = "transparent";
-				var prevAlpha = this._context.globalAlpha;
+				prevAlpha = this._context.globalAlpha;
 				this._context.globalAlpha = 0.7;
 				this._context.lineWidth = 1;
 				if(curChild instanceof Sprite) this._context.strokeStyle = "blue";
@@ -263,6 +264,20 @@
 					this._context.shadowOffsetY = oldShadowOffsetY;
 				}
 			}
+
+			isComplex = null,	//Determines if geometrical transformations have been applied
+			oldAlpha = null,	//Stores the old alpha of the context, if need be
+			li = null,			//To loop through the element's children, if need be
+			len = null,
+			oldShadowColor = null,
+			oldShadowBlur = null,
+			oldShadowOffsetX = null,
+			oldShadowOffsetY = null,
+			shadowSafe = null,
+			prevFill = null,
+			isOffscreen = null,
+			data = null,
+			prevAlpha = null
 		};
 			
 		/**

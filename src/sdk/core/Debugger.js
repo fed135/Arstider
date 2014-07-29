@@ -82,7 +82,7 @@
 		 */
 		Debugger.prototype.step = function(){
 			var thisRef = this;
-			this.stepTimer = setTimeout(function(){thisRef.step.apply(thisRef);}, 1000);
+			this.stepTimer = setTimeout(function debuggerStep(){thisRef.step.apply(thisRef);}, 1000);
 			
 			this.loggedFrames++;
 			

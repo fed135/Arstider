@@ -50,7 +50,7 @@
 			for(i; i>=0; i--){
 				if(this.list[i].running){
 					(function(t){
-						setTimeout(function(){
+						setTimeout(function relayTimer(){
 							t.delay -= dt;
 							
 							if(t.step) t.step.apply(t);
@@ -59,6 +59,7 @@
 					})(this.list[i]);
 				}
 			}
+			i = null;
 		};
 
 		/**
