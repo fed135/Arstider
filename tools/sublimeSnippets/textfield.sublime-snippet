@@ -1,0 +1,19 @@
+<snippet>
+	<content><![CDATA[
+this.$1 = new TextField(
+{
+	name: $1,
+    text:Dictionary.translate("$2"),
+    x:$3,
+    y:$4,
+    width:$5,
+    height:$6,
+    strokeText: ${7:false}
+});
+this.addChild(this.$1);
+this.$1.setFont("$8",{$9})
+]]></content>
+	<tabTrigger>textfield</tabTrigger>
+	<scope>source.js</scope>
+	<description>Basic TextField</description>
+</snippet>

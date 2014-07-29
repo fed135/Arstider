@@ -1,0 +1,8 @@
+<snippet>
+	<content><![CDATA[
+Events.broadcast("Engine.gotoScreen", 'screens/$1');
+]]></content>
+	<tabTrigger>gotoScreen</tabTrigger>
+	<scope>source.js</scope>
+	<description>Event that changes screen</description>
+</snippet>

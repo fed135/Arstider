@@ -1,0 +1,22 @@
+<snippet>
+	<content><![CDATA[
+"$1":
+{
+	"url": "media/fonts/$2.woff",
+	"size": "$3px",
+	"fontOffsetY": $4,
+	"textAlign": "${5:center}",
+	"fillStyle":"#$6",
+	"strokeStyle":"#$7",
+	"lineWidth":$8,
+	"style":"${9:normal}",
+	"miterLimit":2,
+	"shadowColor":"#$10",
+	"shadowOffsetX":${11:1},
+	"shadowOffsetY":${12:1}
+},
+]]></content>
+	<tabTrigger>font</tabTrigger>
+	<scope>source.js</scope>
+	<description>General font</description>
+</snippet>

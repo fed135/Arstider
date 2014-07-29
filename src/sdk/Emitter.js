@@ -173,7 +173,7 @@
 			
 			if(!this.canonActivated) return;
 			
-			this.canonTimers[type.name] = setTimeout(function(){
+			this.canonTimers[type.name] = setTimeout(function emmitterSpawnRelay(){
 				thisRef.spawn.apply(thisRef, [type]);
 			}, type.options.spawnRate || 150);
 			

@@ -117,7 +117,7 @@
   							if(response.authResponse){
 								thisRef._token = response.authResponse.accessToken;
 								clearTimeout(thisRef._sessionTimeout);
-								thisRef._sessionTimeout = setTimeout(function(){thisRef.login.apply(thisRef, [FACEBOOK]);}, response.authResponse.expiresIn*1000);
+								thisRef._sessionTimeout = setTimeout(function facebookSessionTimeoutRelay(){thisRef.login.apply(thisRef, [FACEBOOK]);}, response.authResponse.expiresIn*1000);
 							}
   							FB.api('/me', function(response){
 								thisRef.user = response;

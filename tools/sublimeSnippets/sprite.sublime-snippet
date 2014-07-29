@@ -1,0 +1,18 @@
+<snippet>
+	<content><![CDATA[
+this.$1 = new Sprite({
+	x:$2,
+	y:$3
+});
+this.$1.sheet = new SpriteSheet({
+	bitmap: 'media/images/sprites/$4.png',
+	width: $5,
+	height: $6
+});
+this.$1.sheet.addSequence("idle", 0.1, [0,1,2]);
+this.$1.currentAnim = $1.sheet.idle;
+]]></content>
+	<tabTrigger>sprite</tabTrigger>
+	<scope>source.js</scope>
+	<description>Basic Sprite and SpriteSheet</description>
+</snippet>

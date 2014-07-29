@@ -53,10 +53,10 @@ define("Arstider/core/Font", ["Arstider/Request"], /** @lends core/Font */ funct
 				callback:function(){
 					var div = window.document.getElementById("Arstider_font_loader_"+this.name);
 					div.value += ".";
-					setTimeout(function(){
+					setTimeout(function fontLoadRelay(){
 						thisRef.loaded = true;
 						thisRef._runCallbacks.apply(thisRef);
-						setTimeout(function(){
+						setTimeout(function fontFinishLoadRelay(){
 							thisRef._runCallbacks.apply(thisRef, [true]);
 							if(div) div.parentNode.removeChild(div);
 						}, 150);

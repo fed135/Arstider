@@ -1,0 +1,8 @@
+<snippet>
+	<content><![CDATA[
+this.$1 = new Tween($2, {$3}, $4, ${5:Easings.$6}).play();
+]]></content>
+	<tabTrigger>tween</tabTrigger>
+	<scope>source.js</scope>
+	<description>Basic Tween</description>
+</snippet>
