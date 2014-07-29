@@ -59,6 +59,12 @@
 			 * @type {boolean}
 			 */
 			this._showBoxes = false;
+
+			/**
+			 * Offscreen padding
+			 * @type {number}
+			 */
+			this.padding = 1;
 		}
 			
 		/**
@@ -88,7 +94,7 @@
 				oldShadowOffsetY,
 				shadowSafe,
 				prevFill,
-				isOffscreen,
+				isOffscreen = true,
 				data,
 				prevAlpha
 			;
@@ -177,17 +183,24 @@
 				
 			//Render
 			if(curChild.data || curChild.draw){
-				Performance.draws++;
+				
 				if(curChild.draw){
+					Performance.draws++;
 					curChild.draw.apply(curChild, [this._context, Math.ceil(_currentX), Math.ceil(_currentY)]);
 				}
 				else{
-					//instanceof is pretty fast,  we want to leverage data offset rather than having an extra buffer for sprites.
-					
 					if (complexHierarchy) {
-						isOffscreen = false;
-					} else {
-						isOffscreen = true;
+						if (_currentX - ((curChild.width*this.padding)*0.5)< Viewport.maxWidth) {
+							if (_currentY - ((curChild.height*this.padding)*0.5)< Viewport.maxHeight) {
+								if (_currentX + (curChild.width*this.padding) >= 0) {
+									if (_currentY + (curChild.height*this.padding) >= 0) {
+										isOffscreen = false;
+									}
+								}
+							}
+						}
+					} 
+					else {
 						if (_currentX < Viewport.maxWidth) {
 							if (_currentY < Viewport.maxHeight) {
 								if (_currentX + curChild.width >= 0) {
@@ -204,7 +217,7 @@
 						data = (curChild.data.data)?curChild.data.data:curChild.data;
 						data = (data.data)?data.data:data;
 						if(data != null){
-							//console.log(data);
+							Performance.draws++;
 							try{
 								if(curChild instanceof Sprite || curChild.largeData === true){
 									this._context.drawImage(data, Math.round(curChild.xOffset), Math.round(curChild.yOffset), Math.round(curChild.dataWidth), Math.round(curChild.dataHeight), Math.ceil(_currentX), Math.ceil(_currentY), Math.ceil(curChild.width), Math.ceil(curChild.height));
