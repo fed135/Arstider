@@ -141,7 +141,7 @@
 				if (/chrome[\/\s](\d+\.\d+)/.test(uagent))
 					this.version = parseFloat(RegExp.$1);
 			}
-			else if(uagent.indexOf('safari') != -1){
+			else if(uagent.indexOf('applewebkit') != -1){
 				this.name = 'safari';
 				if (/version[\/\s](\d+\.\d+)/.test(uagent))
 					this.version = parseFloat(RegExp.$1);
