@@ -92,7 +92,7 @@
             				if(this.points[i].cpX != undefined && this.points[i].cpY != undefined){
             					ctx.quadraticCurveTo(_x + this.points[i].cpX, _y + this.points[0].cpY, _x + this.points[i].x, _y + this.points[0].y);
             				}
-            				else ctx.lineTo(_x + this.points[i].x, _y + this.points[0].y);
+            				else ctx.lineTo(_x + this.points[i].x, _y + this.points[i].y);
             			}
             		}
             		break;
