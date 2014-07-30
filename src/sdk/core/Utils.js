@@ -1,6 +1,6 @@
 /**
  * Arstider Utilities and namespace wrapper
- * 
+ *
  * @version 1.1
  * @author frederic charette <fredericcharette@gmail.com>
  */
@@ -199,7 +199,7 @@ Arstider.delegate = function(fn, selfObj, var_args){
 };
 
 /**
- * Quick if-exist method 
+ * Quick if-exist method
  * @memberof Arstider
  * @const
  * @param {*} val The value to check against undefined
@@ -241,7 +241,7 @@ Arstider.isDefine = function(val){
 
 /**
  * Indicates whether or not to output full verbose warnings
- * 
+ *
  * 0 = nothing,
  * 1 = important warnings
  * 2 = notices
@@ -291,7 +291,7 @@ Arstider.direction = function(x1, y1, x2, y2){
  * @return {Array} The shuffled array
  */
 Arstider.trimDuplicates = function(arr){
-    var 
+    var
     	o = {},
         i = 0,
         l = arr.length,
@@ -355,12 +355,12 @@ Arstider.isWindow = function(obj){
  * @memberof Arstider
  * @const
  * @param {*} obj The object to find the length of
- * @return {number} The length 
+ * @return {number} The length
  */
 Arstider.lengthOf = function(obj){
     if(typeof obj === "array") return obj.length;
     else if(Arstider.isObject(obj)){
-        var 
+        var
         	l = 0,
             i
         ;
@@ -433,7 +433,7 @@ Arstider.randomSort = function(arr){
 	while ( --i ) {
 	   j = Math.floor( Math.random() * ( i + 1 ) );
 	   temp = arr[i];
-	   arr[i] = arr[j]; 
+	   arr[i] = arr[j];
 	   arr[j] = temp;
 	}
 	return arr;
@@ -451,7 +451,7 @@ Arstider.chop = function(i){
 };
 
 /**
- * Generic, simple mixin function. Replaces undefined elements in obj A with properties of obj B 
+ * Generic, simple mixin function. Replaces undefined elements in obj A with properties of obj B
  * @memberof Arstider
  * @const
  * @param {Object} objA The object that will receive the new properties
@@ -461,7 +461,7 @@ Arstider.chop = function(i){
  * @return {Object} Returns the updated objA
  */
 Arstider.mixin = function(objA, objB, force, includeMethods, prefix){
-	
+
 	for(var i in objB){
 		if(objA[i] == undefined || force){
 			if(objB[i] instanceof Function || typeof objB[i] === 'function'){
@@ -472,7 +472,7 @@ Arstider.mixin = function(objA, objB, force, includeMethods, prefix){
 			else objA[(prefix || "") + i] = objB[i];
 		}
 	}
-	
+
 	return objA;
 };
 
@@ -481,7 +481,7 @@ Arstider.mixin = function(objA, objB, force, includeMethods, prefix){
  * @memberof Arstider
  * @const
  * @param {Object} obj The object to copy
- * @param {boolean} includeMethods Whether or not to include functions, defaults to false 
+ * @param {boolean} includeMethods Whether or not to include functions, defaults to false
  * @return {Object} The newly created object
  */
 Arstider.clone = function(obj, includeMethods, prefix){
@@ -541,40 +541,44 @@ Arstider.deepMerge = function(src, target, clone)
 	if(clone) src = Arstider.deepClone(src);
 
 	var isArray = Array.isArray(src);
-	
 	if (isArray)
 	{
 		target = target || [];
-
 		src.forEach(function(val, i)
 		{
+			console.log(i, val);
+			var val = src[i];
 			if (typeof src[i] === 'undefined') {
 				target[i] = val;
 			} else if (typeof val === 'object') {
 				target[i] = Arstider.deepMerge(val, target[i]);
+			} else if (Array.isArray(val)){
+				target[i] = Arstider.deepMerge(val, target[i]);
 			} else {
-				if (target.indexOf(val) === -1) {
-					target.push(val);
-				}
+				target[i] = val;
 			}
 		});
-	} 
+	}
 	else
 	{
 		target = target || {};
 
 		Object.keys(src).forEach(function (key)
 		{
-			if (typeof src[key] !== 'object' || !src[key]) {
-				target[key] = src[key];
+			var val = src[key];
+			if(Array.isArray(val)){
+				target[key] = Arstider.deepMerge(val, target[key]);
 			}
-			else {
+			else if(typeof val === 'object'){
 				target[key] = target[key] || {};
 				if (!src[key]) {
-					target[key] = src[key];
+					target[key] = val;
 				} else {
-					target[key] = Arstider.deepMerge(src[key], target[key]);
+					target[key] = Arstider.deepMerge(val, target[key]);
 				}
+			}
+			else{
+				target[key] = val;
 			}
 		});
 	}
@@ -616,7 +620,7 @@ Arstider.URIEncode = function(val){
 		encodedVal = encodedVal.replace(/'/g, '%27');
 	}
 	/* clean up the spaces and return */
-	return encodedVal.replace(/\%20/g,'+'); 
+	return encodedVal.replace(/\%20/g,'+');
 };
 
 /**
@@ -664,7 +668,7 @@ Arstider.blobCache = {empty:{url:Arstider.emptyImgSrc, size:0}};
 /**
  * Sets the FPS of the game (max 60)
  * @memberof Arstider
- * @type {function} 
+ * @type {function}
  */
 Arstider.setFPS = function(val){
 	val = val || 60;
@@ -677,10 +681,10 @@ Arstider.setFPS = function(val){
 		 * @const
 		 */
 		Arstider.requestAnimFrame = (function(){
-			return window.requestAnimationFrame    || 
-				window.webkitRequestAnimationFrame || 
-				window.mozRequestAnimationFrame    || 
-				window.oRequestAnimationFrame      || 
+			return window.requestAnimationFrame    ||
+				window.webkitRequestAnimationFrame ||
+				window.mozRequestAnimationFrame    ||
+				window.oRequestAnimationFrame      ||
 				window.msRequestAnimationFrame     ||
 				Arstider.fixedAnimationFrame;
 		})();
@@ -691,11 +695,11 @@ Arstider.setFPS = function(val){
 		 * @const
 		 */
 		Arstider.cancelAnimFrame = (function(){
-			return	window.cancelAnimationFrame    || 
-				window.webkitCancelAnimationFrame  || 
-				window.mozCancelAnimationFrame     || 
-				window.oCancelAnimationFrame       || 
-				window.msCancelAnimationFrame      || 
+			return	window.cancelAnimationFrame    ||
+				window.webkitCancelAnimationFrame  ||
+				window.mozCancelAnimationFrame     ||
+				window.oCancelAnimationFrame       ||
+				window.msCancelAnimationFrame      ||
 				Arstider.fixedCancelAnimationFrame;
 		})();
 	}
@@ -705,23 +709,23 @@ Arstider.setFPS = function(val){
 		Arstider.cancelAnimFrame = Arstider.fixedCancelAnimationFrame;
 	}
 };
-	
+
 /**
  * Default rendering style
  * @memberof Arstider
  * @type {string}
  */
 Arstider.defaultRenderStyle = "auto";
-	
+
 /**
  * Collection of the intantiated buffers
  * @memberof Arstider
  * @type {Object}
  */
 Arstider.bufferPool = {};
-	
+
 /**
- * Serializes Objects for XHR data 
+ * Serializes Objects for XHR data
  * @memberof Arstider
  * @type {function}
  * @param {Object} obj The object to serialize
@@ -747,18 +751,18 @@ Arstider.serialize = function(obj, prefix) {
  * @return {number} The number of buffers
  */
 Arstider.countBuffers = function(){
-	var 
-		i, 
+	var
+		i,
 		total = 0
 	;
-	
+
 	for(i in Arstider.bufferPool){
 		total ++;
 	}
-	
+
 	return total;
 };
-	
+
 /**
  * Returns the total size of assets in memory
  * @memberof Arstider
@@ -766,19 +770,19 @@ Arstider.countBuffers = function(){
  * @return {number} memory (in MB)
  */
 Arstider.getMemory = function(){
-	var 
-		i, 
+	var
+		i,
 		total = 0
 	;
-	
+
 	for(i in Arstider.blobCache){
 		total += ((Arstider.blobCache[i].size || 0) >> 10);
 	}
-	
+
 	for(i in Arstider.bufferPool){
 		total += ((Arstider.bufferPool[i].getMemory()) >> 20);
 	}
-	
+
 
 	return (total/1024).toFixed(2);
 };
