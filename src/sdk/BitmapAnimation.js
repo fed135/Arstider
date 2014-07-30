@@ -232,8 +232,12 @@ function (DisplayObject, SpriteSheetManager)
 	 */
 	BitmapAnimation.prototype.gotoAnim = function(animName, params)
 	{
-		if(!this.spritesheet)
+		var waitForTimedAnim = ( this.timedAnim && !(params && !params.force) );
+
+		if(!this.spritesheet || waitForTimedAnim )
 		{
+			if(waitForTimedAnim && animName==this.timedAnim) return;
+
 			//console.log("BitmapAnimation.gotoAnim ERROR: no spritesheet loaded");
 			this.nextAnim = animName;
 			this.nextAnimParams = params;
@@ -246,9 +250,14 @@ function (DisplayObject, SpriteSheetManager)
 		var frameNum = 1;
 		if(params>1) frameNum = params;
 
+
 		if(animation)
 		{
 			this.animation = animation;
+
+			// Clear next anim time
+			clearTimeout(this.nextTimeout);
+			this.timedAnim = null;
 
 			// Animation specific bitmap?
 			if(animation.image)
@@ -269,11 +278,20 @@ function (DisplayObject, SpriteSheetManager)
 			// Additional parameters
 			if(params)
 			{
+				// Play anim for a certain time?
+				if(params.time>0)
+				{
+					this.timedAnim = animName;
+					this.nextTimeout = setTimeout(this._onTimedAnimComplete.bind(this), params.time);
+					if(!params.next) params.next = this.defaultAnim;
+				}
+
 				if(params.next) this.nextAnim = params.next;
 				if(params.loop===true || params.loop===false) this.loop = params.loop;
 			}
 
 			// Kick-in animation
+			this.currentFrame = 0;
 			return this.gotoFrame(frameNum);
 
 		} else {
@@ -318,6 +336,13 @@ function (DisplayObject, SpriteSheetManager)
 	};
 
 
+	BitmapAnimation.prototype._onTimedAnimComplete = function()
+	{
+		this.timedAnim = null;
+		this.nextTimeout = null;
+		this._onAnimComplete();
+	}
+
 	BitmapAnimation.prototype._onAnimComplete = function()
 	{
 		// Playlist to proceed?
@@ -326,7 +351,7 @@ function (DisplayObject, SpriteSheetManager)
 			this._next();
 		}
 		// Next chained anim?
-		else if(this.nextAnim)
+		else if(this.nextAnim && !this.timedAnim)
 		{
 			this.gotoAnim(this.nextAnim, this.nextAnimParams);
 			// Release next anim
