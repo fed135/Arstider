@@ -6,7 +6,7 @@
  */
 ;(function(){
 
-	var 
+	var
 		SHAPES = {
 			RECT:"rect",
 			TRIANGLE:"triangle",
@@ -19,9 +19,9 @@
 
 	/**
 	 * Defines the Shape Module
-	 */	
+	 */
 	define( "Arstider/Shape", ["Arstider/Entity"], /** @lends Shape */ function (Entity) {
-		
+
 		/**
 		 * Shape constructor
 		 * The basic vector shape display element
@@ -32,16 +32,16 @@
 		 */
 		function Shape(props) {
 			Arstider.Super(this, Entity, props);
-			
+
 			/**
 			 * If props is undefined, use the Engine's empty object constant
 			 */
-			props = props || Arstider.emptyObject;	
-			
+			props = props || Arstider.emptyObject;
+
 			this.shape = props.shape || SHAPES.RECT;
 
 			this.points = props.points || [];
-			
+
 			this.fillStyle = props.fillStyle || Arstider.defaultColor;
 			this.strokeStyle = props.strokeStyle || Arstider.defaultColor;
 			this.lineWidth = props.lineWidth || 0;
@@ -49,12 +49,12 @@
 			this.lineDash = props.lineDash || [];
 			this.lineDashOffset = props.lineDashOffset || 0;
 		};
-		
+
 		/**
 		 * Defines parent module
 		 */
 		Arstider.Inherit(Shape, Entity);
-                
+
         /**
          * Renders the shape, step by step on the given context
          * @type {function(this:Shape)}
@@ -103,7 +103,7 @@
 
             ctx.restore();
         };
-		
-		return Shape; 
+
+		return Shape;
 	});
 })();

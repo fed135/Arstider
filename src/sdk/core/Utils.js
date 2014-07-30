@@ -546,7 +546,6 @@ Arstider.deepMerge = function(src, target, clone)
 		target = target || [];
 		src.forEach(function(val, i)
 		{
-			console.log(i, val);
 			var val = src[i];
 			if (typeof src[i] === 'undefined') {
 				target[i] = val;
