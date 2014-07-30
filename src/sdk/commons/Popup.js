@@ -1,4 +1,4 @@
-define("Arstider/Popup",[
+define("Arstider/commons/Popup",[
 	"Arstider/DisplayObject",
 	"Arstider/Viewport", 
 	], /** @lends commons/Popup */
