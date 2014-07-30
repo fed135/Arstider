@@ -351,6 +351,18 @@ Arstider.isWindow = function(obj){
 };
 
 /**
+ * Detects if an object is a function
+ * @memberof Arstider
+ * @const
+ * @param {*} obj The object or function to analyse
+ * @return {boolean}
+ */
+Arstider.isFunction = function(functionToCheck) {
+	var getType = {};
+	return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
+}
+
+/**
  * Find the length of an Object or array
  * @memberof Arstider
  * @const
