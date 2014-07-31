@@ -376,51 +376,29 @@
 		};
 
 		Engine.prototype.protectData = function(obj){
-			var orig = obj;
-			if(orig){
-				//add protected flag to buffer tags of background/watermark 
-				if(obj.data){
-					while(obj.data.nodeName == undefined){
-						if(obj.data.data){
-							obj = obj.data;
-						}
-						else break;
-					}
+			var orig = Arstider.getNode(obj);
 
-					if(obj.data.toDataURL){
-						obj._protected = true;
-					}
-				}
+			if(orig.data.toDataURL){
+				orig._protected = true;
+			}
 
-				if(orig.children && orig.children.length > 0){
-					for(var i = 0; i<orig.children.length; i++){
-						singleton.protectData(orig.children[i]);
-					}
+			if(obj.children && obj.children.length > 0){
+				for(var i = 0; i<obj.children.length; i++){
+					singleton.protectData(obj.children[i]);
 				}
 			}
 		};
 
 		Engine.prototype.releaseData = function(obj){
-			var orig = obj;
-			if(orig){
-				//add protected flag to buffer tags of background/watermark 
-				if(obj.data){
-					while(obj.data.nodeName == undefined){
-						if(obj.data.data){
-							obj = obj.data;
-						}
-						else break;
-					}
+			var orig = Arstider.getNode(obj);
 
-					if(obj.data.toDataURL){
-						obj._protected = false;
-					}
-				}
+			if(orig.data.toDataURL){
+				orig._protected = false;
+			}
 
-				if(orig.children && orig.children.length > 0){
-					for(var i = 0; i<orig.children.length; i++){
-						singleton.releaseData(orig.children[i]);
-					}
+			if(obj.children && obj.children.length > 0){
+				for(var i = 0; i<obj.children.length; i++){
+					singleton.releaseData(obj.children[i]);
 				}
 			}
 		};

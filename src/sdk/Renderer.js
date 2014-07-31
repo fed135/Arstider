@@ -135,8 +135,7 @@
 					
 					if (!element.__isOffscreen) {
 						
-						var data = (element.data.data)?element.data.data:element.data;
-						data = (data.data)?data.data:data;
+						var data = Arstider.getNode(element);
 						if(data != null){
 							Performance.draws++;
 							if(element.largeData === true){

@@ -30,6 +30,37 @@ Arstider.timestamp = function(){
 Arstider.pageHidden = false;
 
 /**
+ * Get Node from Arstider Element
+ * @memberof Arstider
+ * @type {function}
+ */
+Arstider.getNode = function(obj, maxDepth){
+	maxDepth = Arstider.checkIn(maxDepth, 5);
+
+	var 
+		orig = obj,
+		depth = 0
+	;
+
+	if(orig){
+		//add protected flag to buffer tags of background/watermark 
+		if(orig.data){
+			while(orig.data.nodeName == undefined){
+				depth++;
+				if(depth > maxDepth) break;
+
+				if(orig.data.data){
+					orig = orig.data;
+				}
+				else break;
+			}
+		}
+	}
+
+	return orig;
+};
+
+/**
  * Generates a Unique UID string
  * @memberof Arstider
  * @type {function}

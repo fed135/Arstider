@@ -54,7 +54,7 @@
 		};
 
 		Canvas2d.prototype.transform = function(scX, skX, skY, scY, tX, tY){
-			this.context.transform(scX, skX, skY, scY, tX, tY);
+			//this.context.transform(scX, skX, skY, scY, tX, tY);
 		};
 
 		Canvas2d.prototype.rotate = function(angle){
@@ -84,7 +84,18 @@
 		};
 			
 		Canvas2d.prototype.renderAt = function(data, x, y, width, height, pX, pY, destWidth, destHeight){
-			this.context.drawImage(data, x, y, width, height, pX, pY, destWidth, destHeight);
+			if(data){
+				console.log("'"+data+"'");
+			}
+			else{
+				console.log("no data");
+			}
+			pX = Arstider.checkIn(pX, x);
+            py = Arstider.checkIn(pY, y);
+            destWidth = Arstider.checkIn(destWidth, width);
+            destHeight = Arstider.checkIn(destHeight, height);
+
+			this.context.drawImage(data, pX, pY, destWidth, destHeight, x, y, width, height);
 		};
 
 		Canvas2d.prototype.debugOutline = function(x, y, w, h){
