@@ -78,6 +78,8 @@
 			 * Sets the name of the preloader object
 			 */
 			this.name = "_Arstider_Preloader";
+
+			this.visible = false;
 		}
 			
 		/**
@@ -88,6 +90,7 @@
 		Preloader.prototype.set = function(name){
 			this.reset();
 			Events.broadcast("Preloader.showPreloader", name);
+			this.visible = true;
 		};
 		
 		/**
@@ -107,6 +110,9 @@
 		 * @param {boolean|null} force Whether to force the update of an item's value or not
 		 */
 		Preloader.prototype.progress = function(key, value, force){
+
+			if(!this.visible) return false;
+
 			var
 				i,
 				len = this._queue.length,
@@ -203,6 +209,7 @@
 		 */
 		Preloader.prototype.hide = function(){
 			Events.broadcast("Preloader.loadingCompleted");
+			this.visible = false;
 			this.reset();
 		};
 		

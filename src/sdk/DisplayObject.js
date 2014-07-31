@@ -247,14 +247,15 @@
 			var req = new Bitmap({
 				url:url, 
 				callback:function(img){
-					thisRef.data = img;
+					if(img){
+						thisRef.data = img;
+						
+						if(thisRef.dataWidth == 0) thisRef.dataWidth = img.width;
+						if(thisRef.dataHeight == 0) thisRef.dataHeight = img.height;
 					
-					if(thisRef.dataWidth == 0) thisRef.dataWidth = img.width;
-					if(thisRef.dataHeight == 0) thisRef.dataHeight = img.height;
-				
-					if(thisRef.width == 0) thisRef.width = img.width;
-					if(thisRef.height == 0) thisRef.height = img.height;
-					
+						if(thisRef.width == 0) thisRef.width = img.width;
+						if(thisRef.height == 0) thisRef.height = img.height;
+					}
 					if(success) success(img);
 					else thisRef.onload();
 				}

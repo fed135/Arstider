@@ -22,6 +22,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 	function Bitmap(props){
 		props = props || {};
 
+		this.attempt = 0;
 		this.url = Arstider.checkIn(props.data, (props.url || ""));
 		this.data = new Image();
 		this.callback = props.callback || Arstider.emptyFunction;
@@ -29,9 +30,28 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 		this.height = Arstider.checkIn(props.height, 0);
 		this.id = this.url+Arstider.timestamp()+Math.random();
 			
+		this.load();
+	}
+
+	Bitmap.prototype.load = function(){
 		if(this.url != ""){
-			if(Arstider.blobCache[this.url] != undefined) this.load(Arstider.blobCache[this.url].url);
-			else if(this.url.indexOf("data:image") != -1 || (Browser.name == "safari" && Browser.version < 7) || Browser.name == "ie") this.load(this.url);
+			this.attempt++;
+			if(Arstider.blobCache[this.url] != undefined) this._fetchUrl(Arstider.blobCache[this.url].url);
+			else if(this.url.indexOf("data:image") != -1){
+				this._fetchUrl(this.url);
+			}
+			else if((Browser.name == "safari" && Browser.version < 7) || Browser.name == "ie"){
+				if(Arstider.bufferPool["_compatBuffer_"+this.url]){
+					this.data = Arstider.bufferPool["_compatBuffer_"+this.url];
+					if(this.callback) this.callback(this.data.data);
+				}
+				else{
+					this.data = new Buffer({
+						name:"_compatBuffer_"+this.id
+					});
+					this._fetchUrl(this.url);
+				}
+			}
 			else{
 				this.req = new Request({
 					url:this.url,
@@ -44,12 +64,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 				this.req.send();
 			}
 		}
-			
-		this.data.onerror = function(){
-			if(Arstider.verbose > 1) console.warn("Arstider.Bitmap.onerror: error loading asset");
-			this.url = Arstider.emptyImgSrc;
-		};
-	}
+	};
 	
 	/**
 	 * Parses the received image and adds it to the blobCache
@@ -74,7 +89,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 				reader.readAsDataURL(e); 
 				reader.onloadend = function(){
 				    Arstider.blobCache[thisRef.url] = {url:reader.result, size:e.size}; 
-				    thisRef.load.apply(thisRef, [Arstider.blobCache[thisRef.url].url]);          
+				    thisRef._fetchUrl.apply(thisRef, [Arstider.blobCache[thisRef.url].url]);          
 				}
 				return;
 			}
@@ -82,7 +97,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 		}
 		
 		//loads the element into bitmap data
-		this.load(Arstider.blobCache[this.url].url);
+		this._fetchUrl(Arstider.blobCache[this.url].url);
 	};
 	
 	/**
@@ -90,16 +105,13 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 	 * @type {function(this:Bitmap)}
 	 * @param {string} url URL to load
 	 */
-	Bitmap.prototype.load = function(url, callback){
+	Bitmap.prototype._fetchUrl = function(url, callback){
 		var thisRef = this;
 		
 		if((Browser.name == "safari" && Browser.version < 7) || Browser.name == "ie"){
 			Arstider.__retroAssetLoader = true;
 			Preloader.progress(this.id, 0);
 			//need to save into a canvas
-			this.data = new Buffer({
-				name:"_compatBuffer_"+this.id
-			});
 			var img = new Image();
 			img.onload = function(){
 				//Added a padding for IE's innacurate onload...
@@ -114,14 +126,20 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 					img.src = Arstider.emptyImgSrc;
 					if(callback) callback(thisRef.data.data);
 					else thisRef.callback(thisRef.data.data);
+					thisRef.attempt = 0;
 					Preloader.progress(thisRef.id, 100);
 					img = null;
 					bucket = null;
 				},50);
 			};
-			img.onerror = function(){
-				console.warn("Could not load image ", thisRef.url);
-				Preloader.progress(thisRef.id, 100);
+			img.onerror = function(e){
+				//if(thisRef.attempt > 3){
+					console.warn("Could not load image ", thisRef.url, ":", e);
+					Preloader.progress(thisRef.id, 100);
+				//}
+				//else{
+				//	thisRef.load.apply(thisRef);
+				//}
 			};
 
 			img.src = url;
