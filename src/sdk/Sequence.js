@@ -55,8 +55,10 @@ define( "Arstider/Sequence", [], /** @lends Sequence */ function () {
 		var thisRef = this;
 		if(parA instanceof Function || typeof parA === "function") this.callbacks.push(parA);
 		else if(parA instanceof String || typeof parA === "string") this.callbacks.push(function(){
-			thisRef.currentAnim = thisRef.currentAnim.sheet[parA];
-			thisRef.rewind();
+			if(thisRef.currentAnim && thisRef.currentAnim.sheet && thisRef.currentAnim.sheet[parA]){
+				thisRef.currentAnim = thisRef.currentAnim.sheet[parA];
+				thisRef.rewind();
+			}
 		});
 		else this.chainedAnim = new Sequence(this.sheet, parA, frames, stop);
 		return this;

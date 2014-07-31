@@ -218,17 +218,17 @@
 						data = (data.data)?data.data:data;
 						if(data != null){
 							Performance.draws++;
-							try{
+							//try{
 								if(curChild instanceof Sprite || curChild.largeData === true){
 									this._context.drawImage(data, Math.round(curChild.xOffset), Math.round(curChild.yOffset), Math.round(curChild.dataWidth), Math.round(curChild.dataHeight), Math.ceil(_currentX), Math.ceil(_currentY), Math.ceil(curChild.width), Math.ceil(curChild.height));
 								}
 								else{
 									this._context.drawImage(data, Math.ceil(_currentX), Math.ceil(_currentY), Math.ceil(curChild.width), Math.ceil(curChild.height));
 								}
-							}
-							catch(e){
-								console.warn("Render Error: ", data);
-							}
+							//}
+							//catch(e){
+							//	console.warn("Render Error: ", data);
+							//}
 						}
 					}
 				}
