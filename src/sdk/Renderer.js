@@ -43,8 +43,10 @@
 		 * @type {function}
 		 * @param {Object} curChild Entity-type element to draw and call draw upon the children of
 		 */
-		Renderer.prototype.renderChild = function(context, element, currX, currY, pre, post, debug, isComplex){
+		Renderer.prototype.renderChild = function(context, element, currX, currY, pre, post, debug, complexParent){
 				
+			var isComplex = false;
+
 			if(!element || element.__skip) return;
 				
 			Performance.elements++;
@@ -68,15 +70,24 @@
 				element.global.alpha = element.alpha * element.parent.alpha;
 			}
 
-			//Check for transformations
-			if(element.scaleX != 1 || element.scaleY != 1 || element.skewX != 0 || element.skewY != 0){
+			if(element.scaleX != 1 || element.scaleY != 1 || element.skewX != 0 || element.skewY != 0 || element.rotation != 0){
+				//Check for transformations
+			
 				isComplex = true;
+				complexParent = true;
 				Performance.transforms++;
 				this.pencil.save();
 			}
+
+			if(isComplex){
+				this.pencil.translate(currX + (element.width * element.rpX), currY + (element.height * element.rpY));
+				currX = -(element.width * element.rpX);
+				currY = -(element.height * element.rpY);
+			}
+
 			//batch transforms for better performance
-			this.pencil.transform(element.scaleX, element.skewX, element.skewY, element.scaleY, currX, currY);
-			
+			this.pencil.transform(element.scaleX, element.skewX, element.skewY, element.scaleY, 0, 0);
+
 			//Rotation
 			if(element.rotation != 0){
 				Performance.transforms++;
@@ -117,7 +128,7 @@
 				}
 				else{
 					element.__isOffscreen = true;
-					if(isComplex){
+					if(complexParent){
 						//TODO: need more performant and permissive algorythm for complex offscreen elements
 						if (currX - ((element.width*this.padding)*0.5)< Viewport.maxWidth) {
 							if (currY - ((element.height*this.padding)*0.5)< Viewport.maxHeight) {
@@ -162,9 +173,9 @@
 			if(element.children){
 				if(element.children.length > 0) {
 					var len = element.children.length;
-					for(li=0; li<len; li++){
+					for(var li=0; li<len; li++){
 						if(element.children[li]){
-							this.renderChild(context, element.children[li], currX, currY, pre, post, debug, isComplex);
+							this.renderChild(context, element.children[li], currX, currY, pre, post, debug, complexParent);
 						}
 					}
 					len = null;
@@ -182,17 +193,22 @@
 		};
 
 		Renderer.prototype._recoverContextPencil = function(context, callback){
-			var pencil;
+			if(context && context.canvas.buffer.contextType == "canvas2d"){
+ 				this.pencil = Canvas2d;
+ 			}
+ 			else{
+ 				this.pencil = Webgl;
+ 			}
 
 			if(!context.__init){
 				context.__init = true;
 				if(context && context.canvas.buffer.contextType == "canvas2d"){
-					pencil = Canvas2d;
+					this.pencil = Canvas2d;
 				}
 				else{
-					pencil = Webgl;
+					this.pencil = Webgl;
 				}
-				pencil.init(context, callback);
+				this.pencil.init(context, callback);
 			}
 			else{
 				callback();

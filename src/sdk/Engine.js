@@ -378,7 +378,7 @@
 		Engine.prototype.protectData = function(obj){
 			var orig = Arstider.getNode(obj);
 
-			if(orig.data.toDataURL){
+			if(orig.data && orig.data.toDataURL){
 				orig._protected = true;
 			}
 
@@ -392,7 +392,7 @@
 		Engine.prototype.releaseData = function(obj){
 			var orig = Arstider.getNode(obj);
 
-			if(orig.data.toDataURL){
+			if(orig.data && orig.data.toDataURL){
 				orig._protected = false;
 			}
 

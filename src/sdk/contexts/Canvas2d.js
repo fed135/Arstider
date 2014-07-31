@@ -40,7 +40,7 @@
 			this.context = null;
 		}
 
-		Canvas2d.prototype.init = function(context, v, f, callback){
+		Canvas2d.prototype.init = function(context, callback){
 			this.context = context.canvas.buffer.getContext();
 			if(callback) callback();
 		};
@@ -51,10 +51,15 @@
 
 		Canvas2d.prototype.restore = function(){
 			this.context.restore();
+			this.context.globalAlpha = 1;
 		};
 
 		Canvas2d.prototype.transform = function(scX, skX, skY, scY, tX, tY){
-			//this.context.transform(scX, skX, skY, scY, tX, tY);
+			this.context.transform(scX, skX, skY, scY, tX, tY);
+		};
+
+		Canvas2d.prototype.translate = function(x, y){
+			this.context.translate(x, y);
 		};
 
 		Canvas2d.prototype.rotate = function(angle){
@@ -62,7 +67,7 @@
 		};
 
 		Canvas2d.prototype.alpha = function(opacity){
-			this.context.globalAlpha = opacity;
+			this.context.globalAlpha *= opacity;
 		};
 
 		Canvas2d.prototype.setCompositionMode = function(mode){
@@ -84,16 +89,10 @@
 		};
 			
 		Canvas2d.prototype.renderAt = function(data, x, y, width, height, pX, pY, destWidth, destHeight){
-			if(data){
-				console.log("'"+data+"'");
-			}
-			else{
-				console.log("no data");
-			}
-			pX = Arstider.checkIn(pX, x);
-            py = Arstider.checkIn(pY, y);
-            destWidth = Arstider.checkIn(destWidth, width);
-            destHeight = Arstider.checkIn(destHeight, height);
+			pX = Arstider.checkIn(pX, 0);
+            pY = Arstider.checkIn(pY, 0);
+            destWidth = Arstider.checkIn(destWidth, data.width);
+            destHeight = Arstider.checkIn(destHeight, data.height);
 
 			this.context.drawImage(data, pX, pY, destWidth, destHeight, x, y, width, height);
 		};
