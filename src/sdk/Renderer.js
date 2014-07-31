@@ -182,17 +182,17 @@
 		};
 
 		Renderer.prototype._recoverContextPencil = function(context, callback){
-			
-			
-			if(context && context.canvas.buffer.contextType == "canvas2d"){
-				this.pencil = Canvas2d;
-			}
-			else{
-				this.pencil = Webgl;
-			}
+			var pencil;
 
-			if(this.pencil.context != context){
-				this.pencil.init(context, callback);
+			if(!context.__init){
+				context.__init = true;
+				if(context && context.canvas.buffer.contextType == "canvas2d"){
+					pencil = Canvas2d;
+				}
+				else{
+					pencil = Webgl;
+				}
+				pencil.init(context, callback);
 			}
 			else{
 				callback();

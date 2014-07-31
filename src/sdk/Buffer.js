@@ -73,6 +73,8 @@
 				this.context = this.data.getContext("2d");
 			} 
 
+			this.context.__init = false;
+
             this.updateRenderStyle();
 		};
 		
