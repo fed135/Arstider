@@ -260,6 +260,10 @@
 				}
 			});
 		};
+
+		DisplayObject.prototype.flatten = function(){
+			//TODO
+		};
 		
 		/**
 		 * Loads a Bitmap into the DisplayObject from an atlas

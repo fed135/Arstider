@@ -30,11 +30,10 @@
 		"Arstider/core/Performance",
 		"Arstider/Mouse",
 		"Arstider/Viewport",
-		"Arstider/core/Renderer",
-        "Arstider/core/WEBGLRenderer",
+		"Arstider/Renderer",
 		"Arstider/Telemetry",
         "Arstider/Sound"
-	], /** @lends Engine */ function (Browser, Screen, Buffer, Events, Background, Watermark, Preloader, GlobalTimers, Performance, Mouse, Viewport, Renderer, WEBGLRenderer, Telemetry, Sound){
+	], /** @lends Engine */ function (Browser, Screen, Buffer, Events, Background, Watermark, Preloader, GlobalTimers, Performance, Mouse, Viewport, Renderer, Telemetry, Sound){
 		
 		if(singleton != null) return singleton;
 			
@@ -140,7 +139,7 @@
 		 * @param {HTMLDivElement} tag The div to start the engine in
 		 * @param {boolean} synchronous Makes the logic run at the same speed as render
 		 */
-		Engine.prototype.start = function(tag, synchronous){
+		Engine.prototype.start = function(tag, synchronous, vertex, fragment){
 			if(this.debug){
 				requirejs(["Arstider/core/Debugger"], function(Debugger){
 					singleton.profiler = new Debugger(singleton);
@@ -152,14 +151,14 @@
 				Arstider.disableConsole();
 			}
 				
-            WEBGLRenderer.test();
             this.canvas = new Buffer({
                 name:"Arstider_main",
                 id:"Arstider_main_canvas",
-                webgl:WEBGLRenderer.enabled
+                webgl:false
+                //webgl:true,
+                //vertexShader:vertex
+                //fragmentShader:fragment
             });
-            Arstider.usingWebGl = WEBGLRenderer.enabled;
-            WEBGLRenderer._context = this.canvas.context;
                         
 			this.context = this.canvas.context;
                         
@@ -225,21 +224,6 @@
 			Preloader.setScreen(new Screen(preloaderScreen));
 			Preloader._screen.stage = singleton;
 		};
-                
-        /**
-         * Quick-access method to change the shaders of the WebGl Renderer
-         * @type {function(this:Engine)}
-         * @param {string} vertex The url of the vertex shader
-         * @param {string} fragment The url of the fragment shader
-         */
-        Engine.prototype.setShaders = function(vertex, fragment){
-            if(WEBGLRenderer.enabled){
-                WEBGLRenderer.setShaders(vertex, fragment);
-            }
-            else{
-                if(Arstider.verbose > 1) console.warn("Arstider.Engine.setShaders: ignored because WebGl is not enabled");
-            }
-        };
 		
 		/**
 		 * Steps the logic of the game (GlobalTimers)
@@ -648,8 +632,7 @@
 		Engine.prototype.draw = function(){
 			//Declare vars
 			var
-				showFrames = false,
-                pencil
+				showFrames = false
 			;
 
 			if(Viewport.unsupportedOrientation) return;
@@ -657,13 +640,7 @@
 			if(singleton._isSynchronous){
 				Performance.deltaTime = Arstider.timestamp() - Performance.lastFrame;
 				singleton.stepLogic(Performance.deltaTime);
-			} 
-                        
-            pencil = WEBGLRenderer;
-            if(!pencil.enabled) pencil = Renderer;
-            else{
-                if(pencil.program == null) return;
-            }
+			}      
 			
 			if(!singleton.debug && Arstider.verbose > 0) Arstider.verbose = 0;
 			
@@ -675,11 +652,8 @@
 			// Preloader rendering
 			if(singleton.handbreak){
 				if(Preloader.interactive || Preloader.animated || Preloader._queue.length > 0){
-                    if(pencil == WEBGLRenderer) singleton.context.clear(singleton.context.COLOR_BUFFER_BIT);
-					else singleton.context.clearRect(0,0,Viewport.maxWidth,Viewport.maxHeight);
-					//Preloader._screen.cancelBubble();
-					//Preloader._screen._update();
-					pencil.draw(singleton, Preloader._screen, function(e){singleton.applyRelease(e, ((Browser.isMobile)?Mouse._ongoingTouches:[{x:Mouse.x(), y:Mouse.y(), pressed:Mouse.pressed}]));}, null, showFrames);
+                    Renderer.clear(singleton.context, 0,0, Viewport.maxWidth,Viewport.maxHeight);
+					Renderer.draw(singleton.context, Preloader._screen, function(e){singleton.applyRelease(e, ((Browser.isMobile)?Mouse._ongoingTouches:[{x:Mouse.x(), y:Mouse.y(), pressed:Mouse.pressed}]));}, null, showFrames);
 					if(Viewport.tagParentNode) Viewport.tagParentNode.style.display = "none";
 					Mouse.cleanTouches();
 				}
@@ -699,9 +673,9 @@
 				
 			if(singleton.profiler) showFrames = singleton.profiler.showFrames;
 			
-			pencil.draw(singleton, Background, null, null, showFrames);  
-			pencil.draw(singleton, singleton.currentScreen, function(e){singleton.applyRelease(e, ((Browser.isMobile)?Mouse._ongoingTouches:[{x:Mouse.x(), y:Mouse.y(), pressed:Mouse.pressed}]));}, null, showFrames);
-			pencil.draw(singleton, Watermark, null, null, showFrames);
+			Renderer.draw(singleton.context, Background, null, null, showFrames);  
+			Renderer.draw(singleton.context, singleton.currentScreen, function(e){singleton.applyRelease(e, ((Browser.isMobile)?Mouse._ongoingTouches:[{x:Mouse.x(), y:Mouse.y(), pressed:Mouse.pressed}]));}, null, showFrames);
+			Renderer.draw(singleton.context, Watermark, null, null, showFrames);
 			Performance.frames++;
 
 			Mouse.cleanTouches();
@@ -713,7 +687,6 @@
 			Performance.endStep();
 
 			showFrames = null;
-            pencil = null;
 		};
 
 		/**
