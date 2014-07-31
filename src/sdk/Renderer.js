@@ -135,17 +135,17 @@
 					
 					if (!element.__isOffscreen) {
 						
-						var data = Arstider.getNode(element);
-						if(data != null){
+						var node = Arstider.getNode(element);
+						if(node && node.data){
 							Performance.draws++;
 							if(element.largeData === true){
-								this.pencil.renderAt(data, currX, currY, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
+								this.pencil.renderAt(node.data, currX, currY, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
 							}
 							else{
-								this.pencil.renderAt(data, currX, currY, element.width, element.height);
+								this.pencil.renderAt(node.data, currX, currY, element.width, element.height);
 							}
 						}
-						data = null;
+						node = null;
 					}
 				}
 			}
@@ -182,6 +182,8 @@
 		};
 
 		Renderer.prototype._recoverContextPencil = function(context, callback){
+			
+			
 			if(context && context.canvas.buffer.contextType == "canvas2d"){
 				this.pencil = Canvas2d;
 			}
