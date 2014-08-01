@@ -67,6 +67,8 @@ define("Arstider/contexts/webgl/Program", ["Arstider/contexts/webgl/Shader", "Ar
 
         this.program.texture = new Texture(this.context, this.program);
 
+        this.context.clearColor(0.0, 0.0, 0.0, 1.0);
+
         this.compileCallback();
     };
 

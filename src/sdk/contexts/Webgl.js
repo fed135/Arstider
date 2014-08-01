@@ -71,6 +71,22 @@
                 x2, y1,
                 x2, y2]), this.context.STATIC_DRAW);
         };
+
+        Webgl.prototype.setCompositionMode = function(){
+
+        };
+
+        Webgl.prototype.debugOutline = function(){
+
+        };
+
+        Webgl.prototype.dropShadow = function(){
+
+        };
+
+        Webgl.prototype.transform = function(){
+
+        };
                 
         Webgl.prototype.translate = function(){
 
@@ -80,16 +96,20 @@
 
         };
 
-        Webgl.prototype.scale = function(){
-
-        };
-
-        Webgl.prototype.skew = function(){
-
-        };
-
         Webgl.prototype.alpha = function(){
 
+        };
+
+        Webgl.prototype.save = function(){
+
+        };
+
+        Webgl.prototype.restore = function(){
+
+        };
+
+        Webgl.prototype.clear = function(){
+            this.context.clear(this.context.COLOR_BUFFER_BIT);
         };
                 
         Webgl.prototype.renderAt = function(data, x, y, width, height, pX, pY, destWidth, destHeight){
@@ -100,7 +120,7 @@
 
             this.context.texImage2D(this.context.TEXTURE_2D, 0, this.context.RGBA, this.context.RGBA, this.context.UNSIGNED_BYTE, data);
             this._setRectangle(pX, pY, destWidth, destHeight);
-            this._context.drawArrays(this._context.TRIANGLES, 0, 6);
+            this.context.drawArrays(this.context.TRIANGLES, 0, 6);
 		};
                 
         singleton = new Webgl();

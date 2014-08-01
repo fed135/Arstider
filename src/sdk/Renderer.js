@@ -130,10 +130,10 @@
 					element.__isOffscreen = true;
 					if(complexParent){
 						//TODO: need more performant and permissive algorythm for complex offscreen elements
-						if (currX - ((element.width*this.padding)*0.5)< Viewport.maxWidth) {
-							if (currY - ((element.height*this.padding)*0.5)< Viewport.maxHeight) {
-								if (currX + (element.width*this.padding) >= 0) {
-									if (currY + (element.height*this.padding) >= 0) {
+						if (element.global.x - ((element.global.width*this.padding)*0.5)< Viewport.maxWidth) {
+							if (element.global.y - ((element.global.height*this.padding)*0.5)< Viewport.maxHeight) {
+								if (element.global.x + (element.global.width*this.padding) >= 0) {
+									if (element.global.y + (element.global.height*this.padding) >= 0) {
 										element.__isOffscreen = false;
 									}
 								}

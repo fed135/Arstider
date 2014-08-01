@@ -23,7 +23,7 @@ define("Arstider/contexts/webgl/Texture", ["Arstider/Viewport"], function(Viewpo
         this.context.vertexAttribPointer(this.texCoordLocation, 2, this.context.FLOAT, false, 0, 0);
 
         // Create a texture.
-        this.texture = this.this.context.createTexture();
+        this.texture = this.context.createTexture();
         this.context.bindTexture(this.context.TEXTURE_2D, this.texture);
 
         // Set the parameters so we can render any size image.
@@ -38,17 +38,21 @@ define("Arstider/contexts/webgl/Texture", ["Arstider/Viewport"], function(Viewpo
         // Create a buffer for the position of the rectangle corners.
         this.buffer = this.context.createBuffer();
         this.context.bindBuffer(this.context.ARRAY_BUFFER, this.buffer);
-      	
-        this.setResolution(Viewport.maxWidth, Viewport.maxHeight);
-	}
 
-	Texture.prototype.setResolution = function(w, h){
-		// set the resolution
-        this.context.uniform2f(this.resolutionLocation, w, h);
+        this.context.uniform2f(this.resolutionLocation, Viewport.maxWidth, Viewport.maxHeight);
 
         this.context.enableVertexAttribArray(this.positionLocation);
         this.context.vertexAttribPointer(this.positionLocation, 2, this.context.FLOAT, false, 0, 0);
-	};
+
+        this.vertices = new Float32Array([0.0, 0.0, 0.0]);
+        this.vertexBuffer = this.context.createBuffer();
+        
+        this.context.bindBuffer(this.context.ARRAY_BUFFER, this.vertexBuffer);
+        this.context.bufferData(this.context.ARRAY_BUFFER, this.vertices, this.context.STATIC_DRAW);
+        this.context.bindAttribLocation(this.program, 0, 'a_Position');
+        this.context.vertexAttribPointer(0, 3, this.context.FLOAT, false, 0, 0);
+        this.context.enableVertexAttribArray(0);
+	}
 
 	return Texture;
 });

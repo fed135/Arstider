@@ -131,6 +131,14 @@
 			 * @type {boolean}
 			 */
 			this._emergencySoundMute = false;
+
+			/**
+			 * Delta time reset required - on resume
+			 * @private
+			 * @type {boolean}
+			 */
+			this._deltaTimeReset = false;
+
 		}
 		
 		/**
@@ -154,10 +162,10 @@
             this.canvas = new Buffer({
                 name:"Arstider_main",
                 id:"Arstider_main_canvas",
-                webgl:false
-                //webgl:true,
-                //vertexShader:vertex
-                //fragmentShader:fragment
+                //webgl:false
+                webgl:true,
+                vertexShader:vertex,
+                fragmentShader:fragment
             });
                         
 			this.context = this.canvas.context;
@@ -180,6 +188,7 @@
 			Events.bind("Engine.hidePopup", this.hidePopup);
 			
 			Events.bind("Viewport.pagehide", function(){
+				this._deltaTimeReset = true;
 				singleton.stop();
 				if(!singleton._emergencySoundMute){
 					singleton._emergencySoundMute = true;
@@ -187,6 +196,7 @@
 				}
 			});
 			Events.bind("Viewport.pageshow", function(){
+				this._deltaTimeReset = true;
 				singleton.play();
 				if(singleton._emergencySoundMute){
 					singleton._emergencySoundMute = false;
@@ -239,6 +249,11 @@
 
 			//Check if canvas rendering is on/off
 			if(singleton.handbreak) return;
+
+			if(singleton._deltaTimeReset){
+				singleton._deltaTimeReset = false;
+				return;
+			}
 
 			if(dt <= 0) return;
 
