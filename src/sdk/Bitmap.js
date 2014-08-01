@@ -34,6 +34,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 	}
 
 	Bitmap.prototype.load = function(){
+		var thisRef = this;
 		if(this.url != ""){
 			this.attempt++;
 			if(Arstider.blobCache[this.url] != undefined) this._fetchUrl(Arstider.blobCache[this.url].url);
@@ -43,11 +44,20 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 			else if((Browser.name == "safari" && Browser.version < 7) || Browser.name == "ie"){
 				if(Arstider.bufferPool["_compatBuffer_"+this.url]){
 					this.data = Arstider.bufferPool["_compatBuffer_"+this.url];
-					if(this.callback) this.callback(this.data.data);
+					if(this.callback){
+						if(this.data._loaded){
+							setTimeout(function retroLoadDelay(){thisRef.callback(thisRef.data.data);},0);
+						}
+						else{
+							this.data.onchange.addOnce(function(){
+								thisRef.callback(thisRef.data.data);
+							});
+						}
+					}
 				}
 				else{
 					this.data = new Buffer({
-						name:"_compatBuffer_"+this.id
+						name:"_compatBuffer_"+this.url
 					});
 					this._fetchUrl(this.url);
 				}
@@ -126,6 +136,8 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 					img.src = Arstider.emptyImgSrc;
 					if(callback) callback(thisRef.data.data);
 					else thisRef.callback(thisRef.data.data);
+					thisRef.data._loaded = true;
+					thisRef.data.onchange.dispatch(thisRef.data.data);
 					thisRef.attempt = 0;
 					Preloader.progress(thisRef.id, 100);
 					img = null;
@@ -133,13 +145,13 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 				},50);
 			};
 			img.onerror = function(e){
-				//if(thisRef.attempt > 3){
+				if(thisRef.attempt > 3){
 					console.warn("Could not load image ", thisRef.url, ":", e);
 					Preloader.progress(thisRef.id, 100);
-				//}
-				//else{
-				//	thisRef.load.apply(thisRef);
-				//}
+				}
+				else{
+					if(thisRef && thisRef.load) thisRef.load.apply(thisRef);
+				}
 			};
 
 			img.src = url;

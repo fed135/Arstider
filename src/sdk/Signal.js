@@ -1,75 +1,81 @@
 /**
- * Simple signal implementation
- * For more info about signals: http://millermedeiros.github.io/js-signals/
- *
- * @author Jo Simard <josimard@meetfidel.com>
+ * Signal
+ * 
+ * @version 1.5
+ * @author frederic charette <fredericcharette@gmail.com>
  */
-define("Arstider/Signal", [], function()
-{
-	function Signal()
-	{
-		this.listeners = [];
-		this.listenersOnce = [];
-	};
 
-	Signal.prototype.dispose = function()
-	{
-		this.listeners=[];
-		this.listenersOnce=[];
-	};
+/**
+ * Defines the Signal module
+ */
+define("Arstider/Signal", [], /** @lends commons/Signal */ function(){
 
-	Signal.prototype.add = function(listener, prioritize, once)
-	{
-		if(this.listeners.indexOf(listener)<0)
-		{
-			this.listeners.push(listener);
-		}
+    /**
+     * Signal constructor
+     * Based on the implamentation of colorhook's JPE Signal implementation
+     * https://github.com/colorhook/JPE/wiki/Signal
+     * @class commons/Signal
+     * @constructor
+     */
+    function Signal(){
+        this.__bindings = [];
+        this.__bindingsOnce = [];
+    }
 
-		if (once && this.listenersOnce.indexOf(listener)<0)
-		{
-			this.listenersOnce.push(listener);
-		}
+    Signal.prototype.add = function(listener) {
+         return this.registerListener(listener);
+    };
 
-		return this;
-	};
+    Signal.prototype.addOnce = function(listener) {
+        return this.registerListener(listener, true);
+    };
 
-	Signal.prototype.addOnce = function(listener, prioritize)
-	{
-		return this.add(listener, prioritize, true);
-	};
+    Signal.prototype.remove = function(listener) {
+        var index = this.find(listener), oIndex = this.find(listener, this.__bindingsOnce);
+        if(index >= 0) this.__bindings.splice(index, 1);
+        if(oIndex >= 0) this.__bindingsOnce.splice(oIndex, 1);
+    };
 
-	Signal.prototype.remove = function(listener)
-	{
-		var index = this.listeners.indexOf(listener);
-		if (index >= 0) {
-			this.listeners.splice(index, 1);
-		}
+    Signal.prototype.removeAll = function() {
+        this.__bindings.length = 0;
+        this.__bindingsOnce.length = 0;
+    };
 
-		// once() listener?
-		var onceIndex = this.listenersOnce.indexOf(listener);
-		if (onceIndex >= 0) {
-			this.listenersOnce.splice(onceIndex, 1);
-		}
-	};
+    Signal.prototype.dispatch = function() {
+        var 
+            args = Array.prototype.slice.call(arguments),
+            list = this.__bindings,
+            copyList = list.concat(),
+            listener
+        ;
 
-	Signal.prototype.dispatch = function()
-	{
-		var args = Array.prototype.slice.call(arguments);
-		var n = this.listeners.length;
-		var listener;
+        for (var i = 0, l = copyList.length; i < l; i++) {
+            listener = copyList[i];
+            listener.apply(null, args);
+            if (this.find(listener, this.__bindingsOnce) != -1) this.remove(listener);
+        }
+    };
 
-		for (var i = 0; i < n; i++)
-		{
-			listener = this.listeners[i];
-			listener.apply(null, args);
+    Signal.prototype.getNumListeners = function() {
+        return this.__bindings.length;
+    };
 
-			// once() listener?
-			var onceIndex = this.listenersOnce.indexOf(listener);
-			if (onceIndex >= 0) {
-				this.remove(listener);
-			}
-		};
-	};
+    Signal.prototype.registerListener = function(listener, once) {
+        var index = this.find(listener);
+        if (index == -1 || !once) {
+            this.__bindings.push(listener);
+            if (once) this.__bindingsOnce.push(listener);
+        }
+    };
 
-	return Signal;
+    Signal.prototype.find = function(listener, arr) {
+        arr = arr || this.__bindings;
+        if (arr.indexOf) return arr.indexOf(listener);
+        for (var i = 0, l = arr.length; i < l; i++) {
+            if (arr[i] === listener) return i;
+        }
+        return -1;
+    };
+
+    return Signal;
 });

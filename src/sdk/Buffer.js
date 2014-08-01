@@ -19,7 +19,7 @@
 	/**
 	 * Defines the Buffer module
 	 */
-	define("Arstider/Buffer", ["Arstider/Browser", "Arstider/core/Pixel"], /** @lends Buffer */ function(Browser, Pixel){
+	define("Arstider/Buffer", ["Arstider/Browser", "Arstider/core/Pixel", "Arstider/Signal"], /** @lends Buffer */ function(Browser, Pixel, Signal){
 
 		/**
 		 * Buffer constructor
@@ -48,6 +48,8 @@
 			}
 			
 			Arstider.bufferPool[this.name] = this;
+
+			this.onchange = new Signal();
 		}
 		
 		/**

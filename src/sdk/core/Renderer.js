@@ -189,6 +189,7 @@
 					curChild.draw.apply(curChild, [this._context, Math.ceil(_currentX), Math.ceil(_currentY)]);
 				}
 				else{
+					isOffscreen = false;
 					if (complexHierarchy) {
 						if (_currentX - ((curChild.width*this.padding)*0.5)< Viewport.maxWidth) {
 							if (_currentY - ((curChild.height*this.padding)*0.5)< Viewport.maxHeight) {
@@ -233,6 +234,7 @@
 					}
 				}
 			}
+
 				
 			if(this._showBoxes || curChild.showOutline === true){
 				shadowSafe = this._context.shadowColor;
