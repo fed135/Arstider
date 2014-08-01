@@ -10,7 +10,7 @@ this.$1 = new DisplayObject({
 	onrelease:function(){this.loadBitmap("media/images/buttons/$1.png")},
 	onleave:function(){this.loadBitmap("media/images/buttons/$1.png")}
 });
-this.addChild(this.btnPlay);
+this.addChild(this.$1);
 ]]></content>
 	<tabTrigger>button</tabTrigger>
 	<scope>source.js</scope>
