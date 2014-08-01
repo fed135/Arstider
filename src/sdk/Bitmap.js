@@ -44,9 +44,12 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 			else if((Browser.name == "safari" && Browser.version < 7) || Browser.name == "ie"){
 				if(Arstider.bufferPool["_compatBuffer_"+this.url]){
 					this.data = Arstider.bufferPool["_compatBuffer_"+this.url];
-					this.data.onchange.addOnce(function(){
-						if(thisRef.callback) thisRef.callback(thisRef.data.data);
-					});
+					if(this.data._loaded) if(thisRef.callback) thisRef.callback(thisRef.data.data);
+					else{
+						this.data.onchange.addOnce(function(){
+							if(thisRef.callback) thisRef.callback(thisRef.data.data);
+						});
+					}
 				}
 				else{
 					this.data = new Buffer({
@@ -129,6 +132,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 					img.src = Arstider.emptyImgSrc;
 					if(callback) callback(thisRef.data.data);
 					else thisRef.callback(thisRef.data.data);
+					thisRef.data._loaded = true;
 					thisRef.data.onchange.dispatch(thisRef.data.data);
 					thisRef.attempt = 0;
 					Preloader.progress(thisRef.id, 100);
