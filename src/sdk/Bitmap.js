@@ -44,11 +44,15 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 			else if((Browser.name == "safari" && Browser.version < 7) || Browser.name == "ie"){
 				if(Arstider.bufferPool["_compatBuffer_"+this.url]){
 					this.data = Arstider.bufferPool["_compatBuffer_"+this.url];
-					if(this.data._loaded) if(thisRef.callback) thisRef.callback(thisRef.data.data);
-					else{
-						this.data.onchange.addOnce(function(){
-							if(thisRef.callback) thisRef.callback(thisRef.data.data);
-						});
+					if(this.callback){
+						if(this.data._loaded){
+							setTimeout(function retroLoadDelay(){thisRef.callback(thisRef.data.data);},0);
+						}
+						else{
+							this.data.onchange.addOnce(function(){
+								thisRef.callback(thisRef.data.data);
+							});
+						}
 					}
 				}
 				else{
