@@ -46,16 +46,16 @@ function (Shape, Buffer, Texture)
 
 	BitmapTexture.prototype.drawWithTexture = function(img)
 	{
-		console.log("texture loaded! - "+this.width+"x"+this.height);
-		console.log(img);
+		//console.log("texture loaded! - "+this.width+"x"+this.height);
+		//console.log(img);
 
 		this.fillStyle = this.texture;
 	}
 
 	BitmapTexture.prototype.drawWithBuffer = function(img)
 	{
-		console.log("bitmap loaded! - "+this.width+"x"+this.height);
-		console.log(img);
+		//console.log("bitmap loaded! - "+this.width+"x"+this.height);
+		//console.log(img);
 
 		var buffer = new Buffer({name:"ctn", width:this.width, height:this.height});
 
