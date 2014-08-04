@@ -162,10 +162,10 @@
             this.canvas = new Buffer({
                 name:"Arstider_main",
                 id:"Arstider_main_canvas",
-                //webgl:false
-                webgl:true,
-                vertexShader:vertex,
-                fragmentShader:fragment
+                webgl:false
+                //webgl:true,
+                //vertexShader:vertex,
+                //fragmentShader:fragment
             });
                         
 			this.context = this.canvas.context;
@@ -241,10 +241,10 @@
 		 * @param {number} dt Delta time (delay between now and the last frame) 
 		 */
 		Engine.prototype.stepLogic = function(dt){
-			if(Arstider.skipUpdate) return;
 
 			Performance.numUpdates = 0;
 
+			if(Arstider.skipUpdate) return;
 			if(singleton === null) return;
 
 			//Check if canvas rendering is on/off

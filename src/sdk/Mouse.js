@@ -296,7 +296,7 @@
 			else singleton.pressed = true;
 			
 			singleton._handleMouseMove(e);
-			singleton._touchRelay(e);
+			if(singleton._touchRelay) singleton._touchRelay(e);
 		};
 		
 		/**
@@ -315,7 +315,7 @@
 			else singleton.pressed = false;
 			
 			singleton._handleMouseMove(e);
-			singleton._touchRelay(e);
+			if(singleton._touchRelay) singleton._touchRelay(e);
 		};
 		
 		/**

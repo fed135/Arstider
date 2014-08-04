@@ -51,7 +51,22 @@
 
 		Canvas2d.prototype.restore = function(){
 			this.context.restore();
+
 			this.context.globalAlpha = 1;
+
+			if(this.context.__savedShadowColor) this.context.shadowColor = this.context.__savedShadowColor;
+			if(this.context.__savedShadowBlur) this.context.shadowBlur = this.context.__savedShadowBlur;
+			if(this.context.__savedShadowOffsetX) this.context.shadowOffsetX = this.context.__savedShadowOffsetX;
+			if(this.context.__savedShadowOffsetY) this.context.shadowOffsetY = this.context.__savedShadowOffsetY;
+
+			if(this.context.__savedGlobalCompositeOperation) this.context.globalCompositeOperation = this.context.__savedGlobalCompositeOperation;
+
+			this.context.__savedShadowColor = null;
+			this.context.__savedShadowBlur = null;
+			this.context.__savedShadowOffsetX = null;
+			this.context.__savedShadowOffsetY = null;
+
+			this.context.__savedGlobalCompositeOperation = null;
 		};
 
 		Canvas2d.prototype.transform = function(scX, skX, skY, scY, tX, tY){
@@ -71,16 +86,16 @@
 		};
 
 		Canvas2d.prototype.setCompositionMode = function(mode){
-			//this.context.__savedGlobalCompositeOperation = this.context.globalCompositeOperation;
+			this.context.__savedGlobalCompositeOperation = this.context.globalCompositeOperation;
 			this.context.globalCompositeOperation = mode;
 		};
 
 		Canvas2d.prototype.dropShadow = function(x, y, blur, color){
 			//save old properties
-			/*this.context.__savedShadowColor = this.context.shadowColor;
+			this.context.__savedShadowColor = this.context.shadowColor;
 			this.context.__savedShadowBlur = this.context.shadowBlur;
 			this.context.__savedShadowOffsetX = this.context.shadowOffsetX;
-			this.context.__savedShadowOffsetY = this.context.shadowOffsetY;*/
+			this.context.__savedShadowOffsetY = this.context.shadowOffsetY;
 					
 			this.context.shadowColor = color;
 			this.context.shadowBlur = blur;
