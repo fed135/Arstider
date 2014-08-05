@@ -24,7 +24,7 @@
 	/**
 	 * Defines the DisplayObject Module
 	 */	
-	define( "Arstider/DisplayObject", ["Arstider/Entity", "Arstider/Bitmap"], /** @lends DisplayObject */ function (Entity, Bitmap) {
+	define( "Arstider/DisplayObject", ["Arstider/Entity", "Arstider/Bitmap", "Arstider/Renderer", "Arstider/Buffer"], /** @lends DisplayObject */ function (Entity, Bitmap, Renderer, Buffer) {
 		
 		/**
 		 * DisplayObject constructor
@@ -262,8 +262,36 @@
 			});
 		};
 
-		DisplayObject.prototype.flatten = function(){
-			//TODO
+		DisplayObject.prototype.flatten = function(callback){
+			if(!this.data){
+				this.data = new Buffer({
+					width:this.width,
+					height:this.height,
+					name:this.name+"_flattened"
+				});
+			}
+
+			if(!this.data.context){
+				this.data = Arstider.saveToBuffer(this.name+"_flattened", this.data, this.width, this.height);
+			}
+
+			var 
+				thisRef = this
+				savedX = this.x,
+				savedY = this.y
+			;
+
+			this.x = 0;
+			this.y = 0;
+
+			Renderer.draw(this.data.context, this, null, null, false, function(){
+				thisRef.removeChildren.apply(thisRef);
+
+				thisRef.x = savedX;
+				thisRef.y = savedY;
+
+				if(callback) callback.apply(thisRef);
+			});
 		};
 		
 		/**

@@ -43,7 +43,7 @@
 		 * @type {function}
 		 * @param {Object} curChild Entity-type element to draw and call draw upon the children of
 		 */
-		Renderer.prototype.renderChild = function(context, element, currX, currY, pre, post, debug, complexParent){
+		Renderer.prototype.renderChild = function(context, element, currX, currY, pre, post, debug, complexParent, callback){
 				
 			var isComplex = false;
 
@@ -76,44 +76,44 @@
 				isComplex = true;
 				complexParent = true;
 				Performance.transforms++;
-				this.pencil.save();
+				this.pencil.save(context);
 			}
 
 			if(isComplex){
-				this.pencil.translate(currX + (element.width * element.rpX), currY + (element.height * element.rpY));
+				this.pencil.translate(context, currX + (element.width * element.rpX), currY + (element.height * element.rpY));
 				currX = -(element.width * element.rpX);
 				currY = -(element.height * element.rpY);
 			}
 
 			//batch transforms for better performance
-			this.pencil.transform(element.scaleX, element.skewX, element.skewY, element.scaleY, 0, 0);
+			this.pencil.transform(context, element.scaleX, element.skewX, element.skewY, element.scaleY, 0, 0);
 
 			//Rotation
 			if(element.rotation != 0){
 				Performance.transforms++;
-				this.pencil.rotate(element.rotation);
+				this.pencil.rotate(context, element.rotation);
 			}
 
 			//Alpha
 			if(element.alpha != 1){
 				Performance.transforms++;
-				this.pencil.alpha(element.alpha);
+				this.pencil.alpha(context, element.alpha);
 			}
 			
 			//Composite Mode / Mask
 			if(element.compositeMode != Arstider.defaultComposition){
 				Performance.transforms++;
-				this.pencil.setCompositionMode(element.compositeMode);
+				this.pencil.setCompositionMode(context, element.compositeMode);
 			} 
 			else if(element.mask === true){
 				Performance.transforms++;
-				this.pencil.setCompositionMode("destination-in");
+				this.pencil.setCompositionMode(context, "destination-in");
 			}
 				
 			//Shadow
 			if(element.shadowColor != Arstider.defaultColor){
 				Performance.transforms++;
-				this.pencil.dropShadow(element.shadowOffsetX, element.shadowOffsetY, element.shadowBlur, element.shadowColor);
+				this.pencil.dropShadow(context, element.shadowOffsetX, element.shadowOffsetY, element.shadowBlur, element.shadowColor);
 			}
 
 			//Runs pre-render method:
@@ -150,10 +150,10 @@
 						if(node && node.data){
 							Performance.draws++;
 							if(element.largeData === true){
-								this.pencil.renderAt(node.data, currX, currY, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
+								this.pencil.renderAt(context, node.data, currX, currY, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
 							}
 							else{
-								this.pencil.renderAt(node.data, currX, currY, element.width, element.height);
+								this.pencil.renderAt(context, node.data, currX, currY, element.width, element.height);
 							}
 						}
 						node = null;
@@ -163,7 +163,7 @@
 				
 			//debug outlines
 			if(debug || element.showOutline === true){
-				this.pencil.debugOutline(currX, currY, element.width, element.height);
+				this.pencil.debugOutline(context, currX, currY, element.width, element.height);
 			}
 				
 			//runs post-render methods
@@ -183,12 +183,14 @@
 			}
 				
 			//Restore
-			this.pencil.restore();
+			this.pencil.restore(context);
+
+			if(callback) callback();
 		};
 
 		Renderer.prototype.clear = function(context, x, y, width, height){
 			this._recoverContextPencil(context, function(){
-				singleton.pencil.clear(x,y,width,height);
+				singleton.pencil.clear(context, x,y,width,height);
 			});
 		};
 
@@ -223,9 +225,9 @@
 		 * @param {Object} post Post-render operation
 		 * @param {Object} showBoxes Whether or not to show the debug outlines
 		 */
-		Renderer.prototype.draw = function(context, element, pre, post, debug){
+		Renderer.prototype.draw = function(context, element, pre, post, debug, callback){
 			this._recoverContextPencil(context, function(){
-				singleton.renderChild.apply(singleton, [context, element, 0, 0, pre, post, debug]);
+				singleton.renderChild.apply(singleton, [context, element, 0, 0, pre, post, debug, false, callback]);
 			});
 		};
 			

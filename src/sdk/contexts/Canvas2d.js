@@ -30,106 +30,98 @@
 	     * @name contexts/Canvas2d
 		 * @constructor 
 		 */
-		function Canvas2d(){
-			
-			/**
-			 * Current frame rendering context target
-			 * @private
-			 * @type {CanvasRenderingContext2D|null}
-			 */
-			this.context = null;
-		}
+		function Canvas2d(){}
 
 		Canvas2d.prototype.init = function(context, callback){
-			this.context = context.canvas.buffer.getContext();
+			//context = context.canvas.buffer.getContext();
 			if(callback) callback();
 		};
 
-		Canvas2d.prototype.save = function(){
-			this.context.save();
+		Canvas2d.prototype.save = function(context){
+			context.save();
 		};
 
-		Canvas2d.prototype.restore = function(){
-			this.context.restore();
+		Canvas2d.prototype.restore = function(context){
+			context.restore();
 
-			this.context.globalAlpha = 1;
+			context.globalAlpha = 1;
 
-			if(this.context.__savedShadowColor) this.context.shadowColor = this.context.__savedShadowColor;
-			if(this.context.__savedShadowBlur) this.context.shadowBlur = this.context.__savedShadowBlur;
-			if(this.context.__savedShadowOffsetX) this.context.shadowOffsetX = this.context.__savedShadowOffsetX;
-			if(this.context.__savedShadowOffsetY) this.context.shadowOffsetY = this.context.__savedShadowOffsetY;
+			if(context.__savedShadowColor) context.shadowColor = context.__savedShadowColor;
+			if(context.__savedShadowBlur) context.shadowBlur = context.__savedShadowBlur;
+			if(context.__savedShadowOffsetX) context.shadowOffsetX = context.__savedShadowOffsetX;
+			if(context.__savedShadowOffsetY) context.shadowOffsetY = context.__savedShadowOffsetY;
 
-			if(this.context.__savedGlobalCompositeOperation) this.context.globalCompositeOperation = this.context.__savedGlobalCompositeOperation;
+			if(context.__savedGlobalCompositeOperation) context.globalCompositeOperation = context.__savedGlobalCompositeOperation;
 
-			this.context.__savedShadowColor = null;
-			this.context.__savedShadowBlur = null;
-			this.context.__savedShadowOffsetX = null;
-			this.context.__savedShadowOffsetY = null;
+			context.__savedShadowColor = null;
+			context.__savedShadowBlur = null;
+			context.__savedShadowOffsetX = null;
+			context.__savedShadowOffsetY = null;
 
-			this.context.__savedGlobalCompositeOperation = null;
+			context.__savedGlobalCompositeOperation = null;
 		};
 
-		Canvas2d.prototype.transform = function(scX, skX, skY, scY, tX, tY){
-			this.context.transform(scX, skX, skY, scY, tX, tY);
+		Canvas2d.prototype.transform = function(context, scX, skX, skY, scY, tX, tY){
+			context.transform(scX, skX, skY, scY, tX, tY);
 		};
 
-		Canvas2d.prototype.translate = function(x, y){
-			this.context.translate(x, y);
+		Canvas2d.prototype.translate = function(context, x, y){
+			context.translate(x, y);
 		};
 
-		Canvas2d.prototype.rotate = function(angle){
-			this.context.rotate(angle * Arstider.degToRad);
+		Canvas2d.prototype.rotate = function(context, angle){
+			context.rotate(angle * Arstider.degToRad);
 		};
 
-		Canvas2d.prototype.alpha = function(opacity){
-			this.context.globalAlpha *= opacity;
+		Canvas2d.prototype.alpha = function(context, opacity){
+			context.globalAlpha *= opacity;
 		};
 
-		Canvas2d.prototype.setCompositionMode = function(mode){
-			this.context.__savedGlobalCompositeOperation = this.context.globalCompositeOperation;
-			this.context.globalCompositeOperation = mode;
+		Canvas2d.prototype.setCompositionMode = function(context, mode){
+			context.__savedGlobalCompositeOperation = context.globalCompositeOperation;
+			context.globalCompositeOperation = mode;
 		};
 
-		Canvas2d.prototype.dropShadow = function(x, y, blur, color){
+		Canvas2d.prototype.dropShadow = function(context, x, y, blur, color){
 			//save old properties
-			this.context.__savedShadowColor = this.context.shadowColor;
-			this.context.__savedShadowBlur = this.context.shadowBlur;
-			this.context.__savedShadowOffsetX = this.context.shadowOffsetX;
-			this.context.__savedShadowOffsetY = this.context.shadowOffsetY;
+			context.__savedShadowColor = context.shadowColor;
+			context.__savedShadowBlur = context.shadowBlur;
+			context.__savedShadowOffsetX = context.shadowOffsetX;
+			context.__savedShadowOffsetY = context.shadowOffsetY;
 					
-			this.context.shadowColor = color;
-			this.context.shadowBlur = blur;
-			this.context.shadowOffsetX = x;
-			this.context.shadowOffsetY = y;
+			context.shadowColor = color;
+			context.shadowBlur = blur;
+			context.shadowOffsetX = x;
+			context.shadowOffsetY = y;
 		};
 			
-		Canvas2d.prototype.renderAt = function(data, x, y, width, height, pX, pY, destWidth, destHeight){
+		Canvas2d.prototype.renderAt = function(context, data, x, y, width, height, pX, pY, destWidth, destHeight){
 			pX = Arstider.checkIn(pX, 0);
             pY = Arstider.checkIn(pY, 0);
             destWidth = Arstider.checkIn(destWidth, data.width);
             destHeight = Arstider.checkIn(destHeight, data.height);
 
-			this.context.drawImage(data, pX, pY, destWidth, destHeight, x, y, width, height);
+			context.drawImage(data, pX, pY, destWidth, destHeight, x, y, width, height);
 		};
 
-		Canvas2d.prototype.debugOutline = function(x, y, w, h){
+		Canvas2d.prototype.debugOutline = function(context, x, y, w, h){
 				
-			var shadowSafe = this.context.shadowColor;
-			var prevAlpha = this.context.globalAlpha;
+			var shadowSafe = context.shadowColor;
+			var prevAlpha = context.globalAlpha;
 
-			this.context.shadowColor = "transparent";
-			this.context.globalAlpha = 0.8;
-			this.context.lineWidth = 1;
-			this.context.strokeStyle = "red";
+			context.shadowColor = "transparent";
+			context.globalAlpha = 0.8;
+			context.lineWidth = 1;
+			context.strokeStyle = "red";
 				
-			this.context.strokeRect(x, y, w, h);
+			context.strokeRect(x, y, w, h);
 
-			this.context.globalAlpha = prevAlpha;
-			this.context.shadowColor = shadowSafe;
+			context.globalAlpha = prevAlpha;
+			context.shadowColor = shadowSafe;
 		};
 
-		Canvas2d.prototype.clear = function(x,y,w,h){
-			this.context.clearRect(x,y,w,h);
+		Canvas2d.prototype.clear = function(context, x,y,w,h){
+			context.clearRect(x,y,w,h);
 		};
 			
 		singleton = new Canvas2d();

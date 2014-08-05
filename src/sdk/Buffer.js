@@ -242,13 +242,13 @@
 		 * @param {Image|HTMLCanvasElement} img The graphic resource to draw onto the canvas
 		 * @return {Buffer} The newly created Buffer
 		 */
-		Arstider.saveToBuffer = function(name, img){
+		Arstider.saveToBuffer = function(name, img, w, h){
 			
 			var
 				canvas = new Buffer({
 					name:name,
-					width:img.width,
-					height:img.height
+					width:Arstider.firstOf([w, img.width], 1),
+					height:Arstider.firstOf([h, img.height], 1)
 				})
 			;
 			
