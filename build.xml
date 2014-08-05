@@ -41,7 +41,8 @@
 						
 		<copy toFile="${dest}/_temp.parsed.js" file="${dest}/_temp.js" filtering="true" />
 		
-		<antcall target="-build.minify.${network}">
+		<!--<antcall target="-build.minify.${network}"> -->
+		<antcall target="-build.minify.offline">
 			<param name="target" value="min"/>
 		    <param name="compiler.level" value="SIMPLE_OPTIMIZATIONS"/>
 		</antcall>
@@ -65,7 +66,10 @@
 	</target>
 	
 	<target name="-build.minify.offline">
-		<echo>ERROR: Offline compiling not available. </echo>
+		<echo> - minifying game code</echo>
+        <exec executable="java" failonerror="false">
+			<arg line='-jar ./tools/compiler.jar --js "${dest}/_temp.parsed.js"  --js_output_file "${dest}/Arstider.${target}.js" --compilation_level ${compiler.level}' />
+		</exec>
 	</target>
 	
 	<target name="-build.minify.online">

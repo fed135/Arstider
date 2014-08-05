@@ -13,7 +13,12 @@
 		 * @private
 		 * @type {number}
 		 */
-		anonymousBuffers = 0
+		anonymousBuffers = 0,
+
+		CONTEXT = {
+			webgl:"webgl",
+			canvas2d:"canvas2d"
+		}
 	;
 	
 	/**
@@ -31,16 +36,21 @@
 		function Buffer(props){
             props = props || {};
 			this.data = window.document.createElement("canvas");
-            if(props.webgl) this.context = this.data.getContext("webgl") || this.data.getContext("experimental-webgl") || null;
-            else this.context = this.data.getContext("2d");
+			this.preferedContext = (props.webgl)?CONTEXT.webgl:CONTEXT.canvas2d;
+           	this.renderStyle = Arstider.checkIn(props.renderStyle, Arstider.defaultRenderStyle);
+           	this.contextType = null;
 			
 			this.name = props.name || ("buffer"+(anonymousBuffers++));
 			this.data.id = props.id || this.name;
-			this.renderStyle = Arstider.checkIn(props.renderStyle, Arstider.defaultRenderStyle); 
+			
 			this.width = this.data.width = Arstider.checkIn(props.width, 1);
 			this.height = this.data.height = Arstider.checkIn(props.height, 1);
+			this.data.buffer = this;
+
+			this.vertexShader = props.vertexShader;
+			this.fragmentShader = props.fragmentShader;
 			
-			this.updateRenderStyle();
+			this.getContext();
 			
 			if(Arstider.bufferPool[this.name] != undefined){
 				if(Arstider.verbose > 1) console.warn("Arstider.Buffer: buffer ", this.name, " already exists, it will be ovewritten");
@@ -51,6 +61,24 @@
 
 			this.onchange = new Signal();
 		}
+
+		Buffer.prototype.getContext = function(){
+			if(this.context && this.preferedContext == this.contextType) return this.context;
+
+			if(this.preferedContext == CONTEXT.webgl){
+				this.contextType = CONTEXT.webgl;
+				this.context = this.data.getContext("webgl") || this.data.getContext("experimental-webgl") || null;
+			} 
+
+			if(this.preferedContext == CONTEXT.canvas2d || this.context == null){
+				this.contextType = CONTEXT.canvas2d;
+				this.context = this.data.getContext("2d");
+			} 
+
+			this.context.__init = false;
+
+            this.updateRenderStyle();
+		};
 		
 		/**
 		 * Destroys the buffer from memory
@@ -132,6 +160,12 @@
 			if(!this.data) return;
 
 			return this.data.toDataURL(type || "image/png");
+		};
+
+		Buffer.prototype.setShaders = function(vertex, fragment){
+			this.vertexShader = vertex;
+			this.fragmentShader = fragment;
+			if(this.context && this.context.__program) this.context.__program = null;
 		};
 		
 		/**
