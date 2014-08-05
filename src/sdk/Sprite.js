@@ -30,7 +30,7 @@
 	/**
 	 * Defines the Sprite module
 	 */
-	define( "Arstider/Sprite", ["Arstider/Entity", "Arstider/GlobalTimers"], /** @lends Sprite */ function (Entity, GlobalTimers) {
+	define( "Arstider/Sprite", ["Arstider/DisplayObject", "Arstider/GlobalTimers"], /** @lends Sprite */ function (DisplayObject, GlobalTimers) {
 
 		/**
 		 * Sprite constructor
@@ -43,7 +43,7 @@
 
 			props = props || {};
 
-			Arstider.Super(this, Entity, props);
+			Arstider.Super(this, DisplayObject, props);
 
 			/**
 			 * Current animation sequence
@@ -71,7 +71,7 @@
 			GlobalTimers.push(this);
 		};
 
-		Arstider.Inherit(Sprite, Entity);
+		Arstider.Inherit(Sprite, DisplayObject);
 
 		/**
 		 * Kills the Sprite's Buffer(s).
@@ -180,10 +180,7 @@
 			if(animSheet.frameHeight != 0) this.height = animSheet.frameHeight;
 
 			var theFrame = getFrame(animSheet, frameNum, this.width, this.height);
-			this.dataWidth = this.width;
-			this.dataHeight = this.height;
-			this.xOffset = theFrame[0];
-			this.yOffset = theFrame[1];
+			this.loadSection(animSheet.data, theFrame[0], theFrame[1], this.width, this.height)
 
 			for (var i = this.currentAnim.frameCallbacks.length - 1; i >= 0; i--) {
 				if(this.currentAnim.frameCallbacks[i]) this.currentAnim.frameCallbacks[i].apply(this, [frameNum]);

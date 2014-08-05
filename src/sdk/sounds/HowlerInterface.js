@@ -13,7 +13,7 @@
 		HowlerInterface.prototype.init = function(s, url){
 			singleton.managerRef = s;
 
-			if(!singleton.checkStatus()) return;
+			if(!singleton.test()) return;
 
 			if(Browser.name == "android") Howler.usingWebAudio = false;
 
@@ -35,9 +35,9 @@
 			});
 		};
 
-		HowlerInterface.prototype.checkStatus = function(){
+		HowlerInterface.prototype.test = function(){
 			if(!Howl){
-				if(Arstider.verbose > 0) console.warn("Arstider.HowlerInterface.checkStatus: sounds disabled, Howler not loaded");
+				if(Arstider.verbose > 0) console.warn("Arstider.HowlerInterface.test: sounds disabled, Howler not loaded");
 				return false;
 			}
 			return true;

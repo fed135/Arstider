@@ -126,27 +126,40 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 			img.onload = function(){
 				//Added a padding for IE's innacurate onload...
 				setTimeout(function bitmapLoadDelay(){
-					thisRef.data.setSize(img.width, img.height)
-					thisRef.data.width = thisRef.width = img.width;
-					thisRef.data.height = thisRef.height = img.height;
-					thisRef.data.context.drawImage(img, 0,0);
-					//fetches data - another IE safety measure
-					var bucket = thisRef.data.context.getImageData(1,1,1,1);
-					img.onload = null;
-					img.src = Arstider.emptyImgSrc;
-					if(callback) callback(thisRef.data.data);
-					else thisRef.callback(thisRef.data.data);
-					thisRef.data._loaded = true;
-					thisRef.data.onchange.dispatch(thisRef.data.data);
-					thisRef.attempt = 0;
-					Preloader.progress(thisRef.id, 100);
+					if(thisRef && thisRef.data){
+						if(!thisRef.data.setSize){
+							thisRef.data = new Buffer({
+								name:"_compatBuffer_"+thisRef.url
+							});
+						}
+
+						if(thisRef.data.setSize){
+							thisRef.data.setSize(img.width, img.height)
+							thisRef.data.width = thisRef.width = img.width;
+							thisRef.data.height = thisRef.height = img.height;
+							thisRef.data.context.drawImage(img, 0,0);
+							//fetches data - another IE safety measure
+							var bucket = thisRef.data.context.getImageData(1,1,1,1);
+							img.onload = null;
+							img.src = Arstider.emptyImgSrc;
+							if(callback) callback(thisRef.data.data);
+							else thisRef.callback(thisRef.data.data);
+							thisRef.data._loaded = true;
+							thisRef.data.onchange.dispatch(thisRef.data.data);
+							thisRef.attempt = 0;
+							Preloader.progress(thisRef.id, 100);
+							bucket = null;
+						}
+					}
+					else{
+						console.warn("Arstider.Bitmap._fetchUrl: Entity or data no longer available");
+					}
 					img = null;
-					bucket = null;
 				},50);
 			};
 			img.onerror = function(e){
 				if(thisRef.attempt > 3){
-					console.warn("Could not load image ", thisRef.url, ":", e);
+					console.warn("Arstider.Bitmap._fetchUrl: could not load image ", thisRef.url, ":", e);
 					Preloader.progress(thisRef.id, 100);
 				}
 				else{
