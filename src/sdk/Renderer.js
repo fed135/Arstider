@@ -127,10 +127,10 @@
 					element.draw.apply(element, [context, currX, currY]);
 				}
 				else{
-					element.__isOffscreen = true;
+					//element.__isOffscreen = true;
 					if(complexParent){
 						//TODO: need more performant and permissive algorythm for complex offscreen elements
-						if (element.global.x - ((element.global.width*this.padding)*0.5)< Viewport.maxWidth) {
+						/*if (element.global.x - ((element.global.width*this.padding)*0.5)< Viewport.maxWidth) {
 							if (element.global.y - ((element.global.height*this.padding)*0.5)< Viewport.maxHeight) {
 								if (element.global.x + (element.global.width*this.padding) >= 0) {
 									if (element.global.y + (element.global.height*this.padding) >= 0) {
@@ -138,7 +138,7 @@
 									}
 								}
 							}
-						}
+						}*/
 					} 
 					else {
 						if (currX < Viewport.maxWidth && currY < Viewport.maxHeight && currX + element.width >= 0 && currY + element.height >= 0) element.__isOffscreen = false;
