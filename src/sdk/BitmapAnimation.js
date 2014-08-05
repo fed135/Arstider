@@ -309,7 +309,7 @@ function (DisplayObject, SpriteSheetManager)
 	 * @type {function(this:BitmapAnimation)}
 	 * @return {BitmapAnimation} Returns self reference for chaining
 	 */
-	BitmapAnimation.prototype.gotoFrame = function(frame)
+	BitmapAnimation.prototype.gotoFrame = function(frame, force)
 	{
 		if(!frame) frame=1;
 
@@ -318,7 +318,7 @@ function (DisplayObject, SpriteSheetManager)
 		if(frame>this.frames.length) frame = this.frames.length;
 
 		// Need to change?
-		if(frame==this.currentFrame) return;
+		if(frame==this.currentFrame && !force) return;
 		this.currentFrame = frame;
 
 		// First frame is one
@@ -328,9 +328,9 @@ function (DisplayObject, SpriteSheetManager)
 		if(_newFrame.image)
 		{
 			this._setImage(_newFrame.image)
+		} else {
+			this._setFrame(_newFrame, force);
 		}
-
-		this._setFrame(_newFrame);
 
 		return this;
 	};
@@ -376,14 +376,15 @@ function (DisplayObject, SpriteSheetManager)
 
 
 
-	BitmapAnimation.prototype._setFrame = function(frameData)
+	BitmapAnimation.prototype._setFrame = function(frameData, force)
 	{
-		if(this.frame == frameData) return;
+		if(this.frame == frameData && !force) return;
 		this.frame = frameData;
 
 		// Rectangle array [x, y, w, h]
 		_rect = frameData.rect;
 
+		// No image to draw?
 		if(!this.currentBitmap) return;
 
 		// loadSection = function(url, x,y,w,h, success) 
@@ -417,6 +418,8 @@ function (DisplayObject, SpriteSheetManager)
 			this.addChild(this.currentBitmap);
 			this.bitmaps[imageUrl] = this.currentBitmap;
 		}
+
+		this.gotoFrame(this.currentFrame, true);
 	};
 
 
