@@ -45,6 +45,8 @@
 			 * @type {nsIDOMCanvasPattern}
 			 */
 			this.pattern = null;
+
+			this.repeat = Arstider.checkIn(props.repeat, 'repeat');
 			
 			/**
 			 * Url/data, saved for reference and in case we resize the texture and need to re-render
@@ -93,7 +95,13 @@
 		 * @param {Image|HTMLCanvasElement} data The data to create a texture from
 		 */
 		Texture.prototype._createPattern = function(data, callback){
-			this.pattern = cnv.context.createPattern(data, 'repeat');
+			if(data){
+				this.pattern = cnv.context.createPattern(data, this.repeat);
+			}
+			else{
+				console.warn("Arstider.Texture.createPattern: no data");
+			}
+
             if(callback) callback.apply(this);
             else this.callback(this);
 		};
