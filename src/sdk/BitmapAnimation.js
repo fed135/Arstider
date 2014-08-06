@@ -52,13 +52,7 @@ function (DisplayObject, SpriteSheetManager)
 			SpriteSheetManager.get(props.spritesheet, props, function(spritesheet)
 			{
 				context._setSpritesheet(spritesheet);
-
-				// Overrides?
-				if(props.overrides)
-				{
-					// TODO
-				}
-
+				
 				// Callback?
 				if(props.onComplete) props.onComplete();
 			});
@@ -250,7 +244,6 @@ function (DisplayObject, SpriteSheetManager)
 		var frameNum = 1;
 		if(params>1) frameNum = params;
 
-
 		if(animation)
 		{
 			this.animation = animation;
@@ -294,8 +287,15 @@ function (DisplayObject, SpriteSheetManager)
 			this.currentFrame = 0;
 			return this.gotoFrame(frameNum);
 
-		} else {
-			console.log("BitmapAnimation ERROR: anim '"+animName+"' not found.");
+		}
+		// Anim not found
+		else
+		{
+			this.frame = null;
+
+			console.error("BitmapAnimation: anim '"+animName+"' not found.");
+
+			this.gotoAnim(this.defaultAnim, params);
 		}
 
 		return this;
@@ -324,13 +324,15 @@ function (DisplayObject, SpriteSheetManager)
 		// First frame is one
 		_newFrame = this.frames[Math.round(frame)-1];
 
+		
 		// Frame specific bitmap?
-		if(_newFrame.image)
+		if(_newFrame.image && _newFrame.image != this.currentImageUrl)
 		{
 			this._setImage(_newFrame.image)
 		} else {
 			this._setFrame(_newFrame, force);
 		}
+
 
 		return this;
 	};
@@ -418,6 +420,9 @@ function (DisplayObject, SpriteSheetManager)
 			this.addChild(this.currentBitmap);
 			this.bitmaps[imageUrl] = this.currentBitmap;
 		}
+
+		// Check spritesheet if needed
+		//this.addChild(new DisplayObject({bitmap:imageUrl}));
 
 		this.gotoFrame(this.currentFrame, true);
 	};

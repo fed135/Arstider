@@ -90,10 +90,8 @@ function ()
 	 * @type {function(this:BitmapAnimation)}
 	 * @return {BitmapAnimation} Returns self reference for chaining
 	 */
-    JsonSpritesheet.prototype.parseJSON = function(data, path, nameSeparator)
+    JsonSpritesheet.prototype.parseJSON = function(data, path)
 	{
-		if(!nameSeparator) nameSeparator = "/";
-
 		// Spritesheet image in the meta object
 		var imageUrl = path + data.meta.image;
 	
@@ -126,7 +124,7 @@ function ()
 				console.log("JsonSpritesheet ERROR for "+this.name+": rotated frames are not supported, please uncheck this options before exporting");
 			}
 
-			sepIndex = (nameSeparator != "") ? frameData.filename.lastIndexOf(nameSeparator) : -1;
+			sepIndex = frameData.filename.lastIndexOf("/");
 			
 			// No separator found, set to default animation name
 			if (sepIndex <= 0)
