@@ -23,7 +23,10 @@ define("Arstider/commons/Input", ["Arstider/Tag"], /** @lends commons/Input */ f
 
 		if(props.className) txtField.className = props.className;
 		if(props.placeholder) txtField.placeholder = props.placeholder;
-		if(!this.enabled) this.disable();
+		if(!this.enabled) {
+			this.enabled = true;
+			this.disable();
+		}
 	}
 
 	Arstider.Inherit(Input, Tag);
@@ -43,6 +46,7 @@ define("Arstider/commons/Input", ["Arstider/Tag"], /** @lends commons/Input */ f
 			var txtField = this.getField();
 			txtField.classList.add("disabled");
 			txtField.readonly = "readonly";
+			txtField.disabled = true;
 		}
 	};
 
