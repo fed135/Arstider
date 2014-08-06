@@ -10,7 +10,7 @@ define("Arstider/commons/Slider",[
 
 		Arstider.Super(this, DisplayObject, props);
 
-		thisRef = this;
+		var thisRef = this;
 			
 		var mouseX = Mouse.x();
 		var mouseY = Mouse.y();
