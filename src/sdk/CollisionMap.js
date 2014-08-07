@@ -91,13 +91,12 @@ define("Arstider/CollisionMap", ["Arstider/Bitmap", "Arstider/Entity"], /** @len
 	 */
 	CollisionMap.prototype._parseMap = function(){
 		var 
-			ret = []
-			i = 0,
+			ret = [],
 			len = this._maskData.data.length,
 			thisRef = this
 		;
 		
-		for(i; i<len; i+=4){
+		for(var i = 0; i<len; i+=4){
 			ret[ret.length] = (this._maskData.data[i] === 0)?1:null;
 		}
 		

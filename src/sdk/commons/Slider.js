@@ -129,7 +129,7 @@ define("Arstider/commons/Slider",[
 			}
 
 			var containerDrag = new DisplayObject({
-				name: "containerDrag"+id,
+				name: "containerDrag"+id
 			});
 			this.addChild(containerDrag);
 

@@ -7,7 +7,7 @@
 ;(function(){
 
 	var 
-		/*
+		/**
 		 * Singleton static
 		 * @private
 		 * @type {Easings|null}

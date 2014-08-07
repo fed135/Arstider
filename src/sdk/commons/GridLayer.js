@@ -16,9 +16,7 @@
 	 * @return {Object|null} The tile, if it was found, or null
 	 */
 	function findTile(x, y, data){
-		var i = data.length-1;
-		
-		for(i; i>=0; i--){
+		for(var i = data.length-1; i>=0; i--){
 			if(data[i].x === x && data[i].y === y) return data[i];	
 		}
 		

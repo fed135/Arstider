@@ -77,7 +77,7 @@ function (Bitmap)
 		{
 			this.anchor = {
 				x: data.anchor.x,
-				y: data.anchor.x,
+				y: data.anchor.y
 			}
 		}
 

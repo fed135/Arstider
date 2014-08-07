@@ -178,8 +178,7 @@
 			else{
 				if(callback == undefined){
 					//keep stuff linked to other actions
-					var i = binds[key.toLowerCase()].length;
-					for(i; i>=0; i--){
+					for(var i = binds[key.toLowerCase()].length; i>=0; i--){
 						if(binds[key.toLowerCase()][i][0] == action){
 							binds[key.toLowerCase()].splice(i,1);
 						}

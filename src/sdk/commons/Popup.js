@@ -1,6 +1,6 @@
 define("Arstider/commons/Popup",[
 	"Arstider/DisplayObject",
-	"Arstider/Viewport", 
+	"Arstider/Viewport"
 	], /** @lends commons/Popup */
 	function(DisplayObject, Viewport){
 			
