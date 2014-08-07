@@ -14,7 +14,7 @@ function (DisplayObject, SpriteSheetManager)
 
 	// Temporary single-use variables
 	var _newFrame;
-	var _stepFrame;
+	var _frameStep;
 	var _rect;
 
 	/**
@@ -52,7 +52,7 @@ function (DisplayObject, SpriteSheetManager)
 			SpriteSheetManager.get(props.spritesheet, props, function(spritesheet)
 			{
 				context._setSpritesheet(spritesheet);
-				
+
 				// Callback?
 				if(props.onComplete) props.onComplete();
 			});
@@ -137,12 +137,12 @@ function (DisplayObject, SpriteSheetManager)
 
 		if (this.isPlaying)
 		{
-			_stepFrame = (dt/1000 * this.animation.fps) * this.speed;
+			_frameStep = (dt/1000 * this.animation.fps) * this.speed;
 
-			this.gotoFrame(this.currentFrame + _stepFrame);
-
+			this.gotoFrame(this.framePosition + _frameStep);
+			
 			// Last frame reached?
-			if(this.currentFrame >= this.frames.length)
+			if(this.framePosition-1 + _frameStep > this.frames.length)
 			{
 				this._onAnimComplete();
 			}
@@ -284,18 +284,17 @@ function (DisplayObject, SpriteSheetManager)
 			}
 
 			// Kick-in animation
-			this.currentFrame = 0;
+			this.currentFrame = this.framePosition = 0;
 			return this.gotoFrame(frameNum);
 
 		}
 		// Anim not found
 		else
 		{
-			this.frame = null;
-
 			console.error("BitmapAnimation: anim '"+animName+"' not found.");
 
-			this.gotoAnim(this.defaultAnim, params);
+			//this.frame = null;
+			//this.gotoAnim(this.defaultAnim, params);
 		}
 
 		return this;
@@ -313,16 +312,19 @@ function (DisplayObject, SpriteSheetManager)
 	{
 		if(!frame) frame=1;
 
-		// Min/max
-		if(frame<1) frame=1;
-		if(frame>this.frames.length) frame = this.frames.length;
-
 		// Need to change?
-		if(frame==this.currentFrame && !force) return;
-		this.currentFrame = frame;
+		if(frame==this.framePosition && !force) return;
+		this.framePosition = frame;
+
+		// Current frame index
+		this.currentFrame = Math.floor(frame);
+
+		// Min/max
+		if(this.currentFrame<1) this.currentFrame=1;
+		if(this.currentFrame>this.frames.length) this.currentFrame = this.frames.length;
 
 		// First frame is one
-		_newFrame = this.frames[Math.round(frame)-1];
+		_newFrame = this.frames[this.currentFrame-1];
 
 		
 		// Frame specific bitmap?
@@ -369,7 +371,7 @@ function (DisplayObject, SpriteSheetManager)
 		} 
 		// Loop
 		else {
-			this.currentFrame = 0;
+			this.currentFrame = this.framePosition = 1;
 		}
 
 		// Anim complete signal
