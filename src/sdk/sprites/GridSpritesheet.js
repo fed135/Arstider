@@ -87,11 +87,12 @@ function (Bitmap)
 		var animation;
 		var animName;
 		var frameIndex;
+		var frameList;
+		var fps;
 
 		for(animName in data.animations)
 		{
 			var animationData =  data.animations[animName];
-			var fps = (animationData.fps>0) ? animationData.fps : this.fps;
 
 			animation = this.animations[animName];
 
@@ -103,12 +104,12 @@ function (Bitmap)
 
 			// New animation?
 			if(!animation) {
-				animation = this.animations[animName] = {
-					name:animName,
-					fps: fps,
-					spritesheet:this,
-					frames:[]
-				};
+				animation = this.animations[animName] = Arstider.clone(animationData);
+
+				// Write or re-write BitmapAnimation variables
+				animation.name = animName;
+				animation.spritesheet = this;
+				animation.frames = [];
 			}
 
 			n = animationData.frames.length;

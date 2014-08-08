@@ -5,10 +5,11 @@
 define( "Arstider/BitmapAnimation",
 [
 	"Arstider/DisplayObject",
-	"Arstider/sprites/SpritesheetManager"
+	"Arstider/sprites/SpritesheetManager",
+	"Arstider/Signal"
 ], 
 /** @lends BitmapAnimation */
-function (DisplayObject, SpriteSheetManager)
+function (DisplayObject, SpriteSheetManager, Signal)
 {
 	Arstider.Inherit(BitmapAnimation, DisplayObject);
 
@@ -36,6 +37,9 @@ function (DisplayObject, SpriteSheetManager)
 		// Default properties
 		this.speed = Arstider.checkIn(props.speed, 1);
 		this.loop = Arstider.checkIn(props.loop, true);
+
+		// Signals
+		this.animCompleteSignal = new Signal();
 
 		// Default variables
 		this.isPlaying = true;
@@ -140,7 +144,7 @@ function (DisplayObject, SpriteSheetManager)
 			_frameStep = (dt/1000 * this.animation.fps) * this.speed;
 
 			this.gotoFrame(this.framePosition + _frameStep);
-			
+
 			// Last frame reached?
 			if(this.framePosition-1 + _frameStep > this.frames.length)
 			{
@@ -248,6 +252,9 @@ function (DisplayObject, SpriteSheetManager)
 		{
 			this.animation = animation;
 
+			// No fps in animation, set to spritesheet fps
+			if(!animation.fps) animation.fps = this.spritesheet.fps;
+
 			// Clear next anim time
 			clearTimeout(this.nextTimeout);
 			this.timedAnim = null;
@@ -349,6 +356,10 @@ function (DisplayObject, SpriteSheetManager)
 
 	BitmapAnimation.prototype._onAnimComplete = function()
 	{
+		var animName = this.animation.name;
+
+		//console.log("Anim complete: "+animName, this.loop);
+
 		// Playlist to proceed?
 		if(this.playlist)
 		{
@@ -375,7 +386,7 @@ function (DisplayObject, SpriteSheetManager)
 		}
 
 		// Anim complete signal
-		//animComplete.emit(this);
+		this.animCompleteSignal.dispatch(animName, this);
 	};
 
 

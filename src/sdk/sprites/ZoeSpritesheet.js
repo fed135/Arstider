@@ -121,8 +121,6 @@ function ()
 
 			animation = this.animations[animName];
 
-			animSpeed = (animationData.speed>0) ? animationData.speed : 1;
-
 			// Set default animation if not set
 			if(!this.defaultAnim || animName == "idle")
 			{
@@ -131,13 +129,12 @@ function ()
 
 			// New animation?
 			if(!animation) {
-				animation = this.animations[animName] = {
-					name:animName,
-					fps: fps*animSpeed,
-					speed:animSpeed,
-					spritesheet:this,
-					frames:[]
-				};
+				animation = this.animations[animName] = Arstider.clone(animationData);
+
+				// Write or re-write BitmapAnimation variables
+				animation.name = animName;
+				animation.spritesheet = this;
+				animation.frames = [];
 			}
 
 			n = animationData.frames.length;

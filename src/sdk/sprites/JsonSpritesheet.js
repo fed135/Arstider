@@ -145,12 +145,12 @@ function ()
 
 			// New animation?
 			if(!animation) {
-				animation = this.animations[animName] = {
-					name:animName,
-					fps:fps,
-					spritesheet:this,
-					frames:[]
-				};
+				animation = this.animations[animName] = Arstider.clone(animationData);
+
+				// Write or re-write BitmapAnimation variables
+				animation.name = animName;
+				animation.spritesheet = this;
+				animation.frames = [];
 			}
 
 			// Create frameInfo
