@@ -19,7 +19,7 @@
 	 /**
 	 * Defines performance module
 	 */	
-	define( "Arstider/contexts/Webgl", ["Arstider/contexts/webgl/Program"], /** @lends contexts/Webgl */ function (Program){
+	define( "Arstider/contexts/Webgl", ["Arstider/contexts/webgl/Program"], /** @lends contexts/Webgl */ function (Program, Viewport){
 		
 		if(singleton != null) return singleton;
 			
@@ -33,43 +33,36 @@
 		function Webgl(){
 			
             this.enabled = true;
-
-            this.program;
-
-            this.context;
         }
 
         Webgl.prototype.init = function(context, callback){
 
-            this.context = context.canvas.buffer.getContext();
-
-            if(!this.context.__program){
-                this.program = new Program(context);
-                this.program.setShaders(context.canvas.buffer.vertexShader, context.canvas.buffer.fragmentShader, callback);
+            if(!context.__program){
+                context.__program = new Program(context);
+                context.__program.setShaders(context.canvas.buffer.vertexShader, context.canvas.buffer.fragmentShader, callback);
             }
             else{
-                this.program = this.context.__program;
-                if(callback) callback();
+                if(!context.__program.ready){
+                    context.__program.compileCallback = callback;
+                }
+                else{
+                    if(callback) callback();
+                }
             }
         };
                 
-        Webgl.prototype._setRectangle = function(x, y, width, height) {
-            if(!this.context){
-                if(Arstider.verbose > 0) console.warn("Arstider.Webgl.setRectangle: no context initialized");
-                return;
-            }
-                    
+        Webgl.prototype._setRectangle = function(context, x, y, width, height) {
             var x1 = x;
             var x2 = x + width;
             var y1 = y;
             var y2 = y + height;
-            this.context.bufferData(this.context.ARRAY_BUFFER, new Float32Array([
+            context.bufferData(context.ARRAY_BUFFER, new Float32Array([
                 x1, y1,
                 x2, y1,
                 x1, y2,
                 x1, y2,
                 x2, y1,
-                x2, y2]), this.context.STATIC_DRAW);
+                x2, y2]), context.STATIC_DRAW);
         };
 
         Webgl.prototype.setCompositionMode = function(){
@@ -85,7 +78,10 @@
         };
 
         Webgl.prototype.transform = function(){
-
+            //gl.uniformMatrix3fv(shader.translationMatrix, false, this.worldTransform.toArray(true));
+            //gl.uniform2f(shader.projectionVector, projection.x, -projection.y);
+            //gl.uniform2f(shader.offsetVector, -offset.x, -offset.y);
+            //gl.uniform1f(shader.alpha, 1);
         };
                 
         Webgl.prototype.translate = function(){
@@ -108,19 +104,51 @@
 
         };
 
-        Webgl.prototype.clear = function(){
-            this.context.clear(this.context.COLOR_BUFFER_BIT);
+        Webgl.prototype.clear = function(context){
+            context.clear(context.COLOR_BUFFER_BIT);
+        };
+
+        Webgl.prototype._prepareAttribs = function(context){
+            var resolutionLocation = context.getUniformLocation(context.__program.program, "u_resolution");
+            context.uniform2f(resolutionLocation, context.canvas.width, context.canvas.height);
+
+            // look up where the vertex data needs to go.
+            var positionLocation = context.getAttribLocation(context.__program.program, "a_position");
+
+            // Create a buffer and put a single clipspace rectangle in
+            // it (2 triangles)
+            var buffer = context.createBuffer();
+            context.bindBuffer(context.ARRAY_BUFFER, buffer);
+            context.bufferData(
+                context.ARRAY_BUFFER, 
+                new Float32Array([
+                    -1.0, -1.0, 
+                     1.0, -1.0, 
+                    -1.0,  1.0, 
+                    -1.0,  1.0, 
+                     1.0, -1.0, 
+                     1.0,  1.0]), 
+                context.STATIC_DRAW);
+            context.enableVertexAttribArray(positionLocation);
+            context.vertexAttribPointer(positionLocation, 2, context.FLOAT, false, 0, 0);
+
+            
         };
                 
-        Webgl.prototype.renderAt = function(data, x, y, width, height, pX, pY, destWidth, destHeight){
+        Webgl.prototype.renderAt = function(context, data, x, y, width, height, pX, pY, destWidth, destHeight){
+            //context.viewport(0,0,context.canvas.width, context.canvas.height);
+
+            this._prepareAttribs(context);
+
             pX = Arstider.checkIn(pX, x);
             py = Arstider.checkIn(pY, y);
             destWidth = Arstider.checkIn(destWidth, width);
             destHeight = Arstider.checkIn(destHeight, height);
 
-            this.context.texImage2D(this.context.TEXTURE_2D, 0, this.context.RGBA, this.context.RGBA, this.context.UNSIGNED_BYTE, data);
-            this._setRectangle(pX, pY, destWidth, destHeight);
-            this.context.drawArrays(this.context.TRIANGLES, 0, 6);
+            context.__program.texture.update(data, destWidth, destHeight);
+
+            this._setRectangle(context, pX, pY, destWidth, destHeight);
+            context.drawArrays(context.TRIANGLES, 0, 6);
 		};
                 
         singleton = new Webgl();

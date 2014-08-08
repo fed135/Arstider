@@ -163,9 +163,9 @@
                 name:"Arstider_main",
                 id:"Arstider_main_canvas",
                 webgl:false
-                //webgl:true,
-                //vertexShader:vertex,
-                //fragmentShader:fragment
+                /*webgl:true,
+                vertexShader:vertex,
+                fragmentShader:fragment*/
             });
                         
 			this.context = this.canvas.context;

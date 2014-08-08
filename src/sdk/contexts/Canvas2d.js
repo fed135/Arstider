@@ -65,10 +65,6 @@
 			context.transform(scX, skX, skY, scY, tX, tY);
 		};
 
-		Canvas2d.prototype.translate = function(context, x, y){
-			context.translate(x, y);
-		};
-
 		Canvas2d.prototype.rotate = function(context, angle){
 			context.rotate(angle * Arstider.degToRad);
 		};
@@ -104,20 +100,24 @@
 			context.drawImage(data, pX, pY, destWidth, destHeight, x, y, width, height);
 		};
 
-		Canvas2d.prototype.debugOutline = function(context, x, y, w, h){
+		Canvas2d.prototype.debugOutline = function(context, x, y, w, h, fill){
 				
 			var shadowSafe = context.shadowColor;
 			var prevAlpha = context.globalAlpha;
+			var strokeSafe = context.strokeStyle;
+			var lineSafe = context.lineWidth;
 
 			context.shadowColor = "transparent";
 			context.globalAlpha = 0.8;
 			context.lineWidth = 1;
-			context.strokeStyle = "red";
+			context.strokeStyle = fill;
 				
 			context.strokeRect(x, y, w, h);
 
 			context.globalAlpha = prevAlpha;
 			context.shadowColor = shadowSafe;
+			context.strokeStyle = strokeSafe;
+			context.lineWidth = lineSafe;
 		};
 
 		Canvas2d.prototype.clear = function(context, x,y,w,h){

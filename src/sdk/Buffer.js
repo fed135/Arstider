@@ -127,7 +127,7 @@
 		Buffer.prototype.updateRenderStyle = function(style){
 			if(!this.data) return;
 
-			if(style) this.renderStyle = style;
+			if(style) this.renderStyle = this.context.renderStyle = style;
 			
 			if(this.renderStyle === "sharp"){
 				if(Browser.name == "firefox") this.data.style.imageRendering = '-moz-crisp-edges';

@@ -44,8 +44,9 @@
 		 * @param {Object} curChild Entity-type element to draw and call draw upon the children of
 		 */
 		Renderer.prototype.renderChild = function(context, element, currX, currY, pre, post, debug, complexParent, callback){
-				
-			var isComplex = false;
+
+			var tX = 0;
+			var tY = 0;
 
 			if(!element || element.__skip) return;
 				
@@ -58,35 +59,46 @@
 			currX += element.x;
 			currY += element.y;
 
-			//Update globals
-			if(element.global && element.parent){
-				element.global.x = (isComplex)?(element.parent.global.x + element.x):currX;
-				element.global.y = (isComplex)?(element.parent.global.y + element.y):currY;
-				element.global.scaleX = element.scaleX * element.parent.scaleX;
-				element.global.scaleY = element.scaleY * element.parent.scaleY;
-				element.global.width = element.width * element.global.scaleX;
-				element.global.height = element.height * element.global.scaleY;
-				element.global.rotation = element.rotation + element.parent.rotation;
-				element.global.alpha = element.alpha * element.parent.alpha;
-			}
-
 			if(element.scaleX != 1 || element.scaleY != 1 || element.skewX != 0 || element.skewY != 0 || element.rotation != 0){
 				//Check for transformations
 			
-				isComplex = true;
 				complexParent = true;
 				Performance.transforms++;
 				this.pencil.save(context);
 			}
 
-			if(isComplex){
-				this.pencil.translate(context, currX + (element.width * element.rpX), currY + (element.height * element.rpY));
-				currX = -(element.width * element.rpX);
-				currY = -(element.height * element.rpY);
+			//Update globals
+			if(element.global && element.parent){
+				element.global.x = currX;
+				element.global.y = currY;
+				element.global.scaleX = element.scaleX * element.parent.scaleX;
+				element.global.scaleY = element.scaleY * element.parent.scaleY;
+				element.global.width = element.width * ((element.global.scaleX<0)?(element.global.scaleX*-1):element.global.scaleX);
+				element.global.height = element.height * ((element.global.scaleY<0)?(element.global.scaleY*-1):element.global.scaleY);
+				element.global.rotation = element.rotation + element.parent.rotation;
+				element.global.alpha = element.alpha * element.parent.alpha;
+			}
+
+			if(complexParent){
+				tX = (element.width * element.rpX);
+				tY = (element.height * element.rpY);
+
+				currX = -tX;
+				currY = -tY;
+
+				element.global.x = element.parent.global.x + element.global.x - currX - (element.global.width * element.rpX);
+				element.global.y = element.parent.global.y + element.global.y - currY - (element.global.height * element.rpY);
 			}
 
 			//batch transforms for better performance
-			this.pencil.transform(context, element.scaleX, element.skewX, element.skewY, element.scaleY, 0, 0);
+			this.pencil.transform(context, 
+				element.scaleX, 
+				element.skewX, 
+				element.skewY, 
+				element.scaleY,
+				(complexParent)?(element.x + tX):0, 
+				(complexParent)?(element.y + tY):0
+			);
 
 			//Rotation
 			if(element.rotation != 0){
@@ -163,7 +175,7 @@
 				
 			//debug outlines
 			if(debug || element.showOutline === true){
-				this.pencil.debugOutline(context, currX, currY, element.width, element.height);
+				this.pencil.debugOutline(context, currX, currY, element.width, element.height, "red");
 			}
 				
 			//runs post-render methods
@@ -184,6 +196,9 @@
 				
 			//Restore
 			this.pencil.restore(context);
+			if(debug || element.showOutline === true){
+				this.pencil.debugOutline(context, element.global.x, element.global.y, element.global.width, element.global.height, "green");
+			}
 
 			if(callback) callback();
 		};
@@ -226,7 +241,7 @@
 		 * @param {Object} showBoxes Whether or not to show the debug outlines
 		 */
 		Renderer.prototype.draw = function(context, element, pre, post, debug, callback){
-			this._recoverContextPencil(context, function(){
+			this._recoverContextPencil(context, function recoverContext(){
 				singleton.renderChild.apply(singleton, [context, element, 0, 0, pre, post, debug, false, callback]);
 			});
 		};
