@@ -109,6 +109,18 @@ function (DisplayObject, SpriteSheetManager, Signal)
 	};
 
 	/**
+	 * To check if we have a specific anim in it's spritesheet
+	 * @param  {String}  animName The animation name
+	 * @return {Boolean}
+	 */
+	BitmapAnimation.prototype.hasAnim = function(animName)
+	{
+		if(!this.spritesheet) return false;
+		if(this.spritesheet.getAnim(animName)) return true;
+		return false;
+	};
+
+	/**
 	 * Pauses the stepping, will resume at the exact smae frame, with the exact same delay before the next step
 	 * @type {function(this:BitmapAnimation)}
 	 * @return {BitmapAnimation} Returns self reference for chaining
