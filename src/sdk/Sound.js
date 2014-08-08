@@ -130,8 +130,8 @@
 					callback:function(file){
 						this.sounds = file.sounds || {};
 						this.tracks = file.tracks || {};
-						if(callback) callback();
 						this._init(url);
+						if(callback) callback();
 					}
 				}).send();
 			}
@@ -139,6 +139,7 @@
 				singleton.sounds = obj.sounds || {};
 				singleton.tracks = obj.tracks || {};
 				singleton._init(url);
+				if(callback) callback();
 			}
 			return singleton;
 		};
