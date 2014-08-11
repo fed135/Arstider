@@ -137,18 +137,30 @@
 			var lineSafe = context.lineWidth;
 
 			context.shadowColor = "transparent";
-			context.globalAlpha = 0.8;
+			context.globalAlpha = 0.9;
 			context.lineWidth = 1;
 			context.strokeStyle = fill;
 
 			context.beginPath();
-			context.moveTo(x + points[0], y + points[1]);
-			context.lineTo(x + points[2], y + points[3]);
-			context.lineTo(x + points[4], y + points[5]);
-			context.lineTo(x + points[6], y + points[7]);
-			context.lineTo(x + points[0], y + points[1]);
+			context.moveTo(points[0], points[1]);
+			context.lineTo(points[2], points[3]);
+			context.lineTo(points[4], points[5]);
+			context.lineTo(points[6], points[7]);
+			context.lineTo(points[0], points[1]);
 			context.stroke();
 			context.closePath();
+
+			//RP
+			context.lineWidth = 3;
+			context.strokeStyle = "white";
+
+			context.beginPath();
+			context.moveTo(x - 5, y);
+			context.lineTo(x + 5, y);
+			context.moveTo(x, y - 5);
+			context.lineTo(x, y + 5);
+			context.stroke();
+			context.closePath();	
 
 			context.globalAlpha = prevAlpha;
 			context.shadowColor = shadowSafe;

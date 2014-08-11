@@ -294,7 +294,7 @@
 			 * Whether or not to display de debug outline
 			 * @type {boolean}
 			 */
-			this.showOutline = false;
+			this.showOutline = Arstider.checkIn(props.showOutline, false);
 			
 			/**
 			 * Whenever the element is hovered
@@ -622,9 +622,39 @@
 		 * @return {boolean} Are the coordinates within the zone of the Entity
 		 */
 		Entity.prototype.isTouched = function(x,y){
-			if(x > this.global.x && x < this.global.x + (this.width * this.global.scaleX)){
-				if(y > this.global.y && y < this.global.y + (this.height * this.global.scaleY)) return true;
+			if(!this.global || !this.global.points){
+				// --Simple version
+				if(x > this.global.x && x < this.global.x + (this.width * this.global.scaleX)){
+					if(y > this.global.y && y < this.global.y + (this.height * this.global.scaleY)) return true;
+				}
+				return false;
 			}
+
+			//-- Complex version, let's see how expensive this is.
+			var 
+				distAP = Arstider.distance(this.global.points[0], this.global.points[1], x, y),
+				distBP = Arstider.distance(this.global.points[2], this.global.points[3], x, y),
+				distCP = Arstider.distance(this.global.points[4], this.global.points[5], x, y),
+				distDP = Arstider.distance(this.global.points[6], this.global.points[7], x, y),
+
+				quad1 = ((distAP + distBP + this.global.width) * 0.5),
+				quad1 = Math.sqrt(quad1 * (quad1 - distAP) * (quad1 - distBP) * (quad1 - this.global.width)) || 0;
+
+				quad2 = ((distBP + distDP + this.global.height) * 0.5),
+				quad2 = Math.sqrt(quad2 * (quad2 - distBP) * (quad2 - distDP) * (quad2 - this.global.height)) || 0;
+
+				quad3 = ((distCP + distDP + this.global.width) * 0.5),
+				quad3 = Math.sqrt(quad3 * (quad3 - distCP) * (quad3 - distDP) * (quad3 - this.global.width)) || 0;
+
+				quad4 = ((distAP + distCP + this.global.height) * 0.5),
+				quad4 = Math.sqrt(quad4 * (quad4 - distAP) * (quad4 - distCP) * (quad4 - this.global.height)) || 0;
+
+				sum = quad1 + quad2 + quad3 + quad4,
+				total = this.global.width * this.global.height
+			;
+
+			if(sum >= total - 100 && sum <= total + 100) return true;
+			
 			return false;
 		};
                 

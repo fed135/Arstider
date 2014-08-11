@@ -60,31 +60,6 @@ Arstider.getNode = function(obj, maxDepth){
 	return orig;
 };
 
-Arstider.applyMatrix = function(matrix, points){
-	if(matrix.length === 2){
-		//In the case of a translation 
-		points[0] = (matrix[0] + points[0]);
-		points[1] = (matrix[1] + points[1]);
-		points[2] = (matrix[0] + points[2]);
-		points[3] = (matrix[1] + points[3]);
-		points[4] = (matrix[0] + points[4]);
-		points[5] = (matrix[1] + points[5]);
-		points[6] = (matrix[0] + points[6]);
-		points[7] = (matrix[1] + points[7]);
-		return;
-	}
-
-	//rotation, skew, scale (including reflection)
-	points[0] = Math.round((matrix[0]*points[0])+(matrix[1]*points[0]));
-	points[1] = Math.round((matrix[0]*points[1])+(matrix[1]*points[1]));
-	points[2] = Math.round((matrix[2]*points[2])+(matrix[3]*points[2]));
-	points[3] = Math.round((matrix[2]*points[3])+(matrix[3]*points[3]));
-	points[4] = Math.round((matrix[0]*points[4])+(matrix[1]*points[4]));
-	points[5] = Math.round((matrix[0]*points[5])+(matrix[1]*points[5]));
-	points[6] = Math.round((matrix[2]*points[6])+(matrix[3]*points[6]));
-	points[7] = Math.round((matrix[2]*points[7])+(matrix[3]*points[7]));
-};
-
 Arstider.powerOf2 = function(num){
 	return (num > 0 && (num & (num - 1)) === 0);
 };

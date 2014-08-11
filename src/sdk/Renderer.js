@@ -19,7 +19,7 @@
 	 /**
 	 * Defines performance module
 	 */	
-	define( "Arstider/Renderer", ["Arstider/contexts/Webgl", "Arstider/contexts/Canvas2d", "Arstider/core/Performance", "Arstider/Viewport", "Arstider/contexts/MatrixTransform"], /** @lends core/Renderer */ function (Webgl, Canvas2d, Performance, Viewport, MatrixTransform){
+	define( "Arstider/Renderer", ["Arstider/contexts/Webgl", "Arstider/contexts/Canvas2d", "Arstider/core/Performance", "Arstider/contexts/MatrixTransform"], /** @lends core/Renderer */ function (Webgl, Canvas2d, Performance, MatrixTransform){
 		
 		if(singleton != null) return singleton;
 			
@@ -46,8 +46,8 @@
 		Renderer.prototype.renderChild = function(context, element, currX, currY, pre, post, debug, complexParent, callback){
 
 			var 
-				xAnchor,
-				yAnchor
+				xAnchor = 0,
+				yAnchor = 0
 			;
 
 			if(!element || element.__skip) return;
@@ -67,16 +67,15 @@
 				complexParent = true;
 				Performance.transforms++;
 				this.pencil.save(context);
+				xAnchor = (element.width * element.rpX);
+				yAnchor = (element.height * element.rpY);
 			}
-
-			xAnchor = (element.width * element.rpX);
-			yAnchor = (element.height * element.rpY);
 
 			//Update globals
 			if(element.global && element.parent){
 
-				element.global.x = currX;
-				element.global.y = currY;
+				element.global.x = element.parent.global.x + element.x;
+				element.global.y = element.parent.global.y + element.y;
 				element.global.scaleX = element.scaleX * element.parent.scaleX;
 				element.global.scaleY = element.scaleY * element.parent.scaleY;
 				element.global.skewX = element.skewX * element.parent.skewX;
@@ -89,12 +88,12 @@
 				element.global.points = [
 					- xAnchor, 
 					- yAnchor, 
-					element.width - xAnchor, 
+					element.global.width - xAnchor, 
 					- yAnchor,
 					- xAnchor,
-					element.height - yAnchor,
-					element.width - xAnchor,
-					element.height - yAnchor
+					element.global.height - yAnchor,
+					element.global.width - xAnchor,
+					element.global.height - yAnchor
 				];
 			}
 
@@ -103,32 +102,35 @@
 
 				currX = -xAnchor;
 				currY = -yAnchor;
+
+
+				MatrixTransform.scaling(element.global.scaleX, element.global.scaleY, element.global.points);
+				MatrixTransform.skewing(element.global.skewX, element.global.skewY, element.global.points);
+				MatrixTransform.rotation(element.global.rotation * Arstider.degToRad, element.global.points);
 			}
 
 			if(element.rotation != 0){
 				Performance.transforms++;
-				Arstider.applyMatrix(MatrixTransform.rotation(element.rotation), element.global.points);
 				this.pencil.rotate(context, element.rotation);
 			}
 
 			if(element.scaleX != 1 || element.scaleY != 1){
 				Performance.transforms++;
-				Arstider.applyMatrix(MatrixTransform.scaling(element.scaleX, element.scaleY), element.global.points);
 				this.pencil.scale(context, element.scaleX, element.scaleY);
 			}
 				
 			if(element.skewX != 0 || element.skewY != 0){
 				Performance.transforms++;
-				Arstider.applyMatrix(MatrixTransform.skewing(element.skewX, element.skewY), element.global.points);
 				this.pencil.transform(context, 1, element.skewX, element.skewY, 1, 0, 0);
 			}
 
 			//Update globals
-			if(element.global && element.parent && complexParent){
-				element.global.x = element.parent.global.x + element.global.x + element.global.points[0] - currX;
-				element.global.y = element.parent.global.y + element.global.y + element.global.points[1] - currY;
-				if(element.global.scaleX < 0) element.global.x -= element.global.width;
-				if(element.global.scaleY < 0) element.global.y -= element.global.height;
+			if(element.global && element.parent){
+				if(complexParent){
+					element.global.x = element.parent.global.x + element.x - currX;
+					element.global.y = element.parent.global.y + element.y - currY;
+				}
+				MatrixTransform.translation(element.global.x, element.global.y, element.global.points);
 			}
 
 
@@ -165,21 +167,27 @@
 					element.draw.apply(element, [context, currX, currY]);
 				}
 				else{
-					//element.__isOffscreen = true;
+					element.__isOffscreen = true;
+
+					var mW = context.canvas.width;
+					var mH = context.canvas.height;
+
 					if(complexParent){
-						//TODO: need more performant and permissive algorythm for complex offscreen elements
-						/*if (element.global.x - ((element.global.width*this.padding)*0.5)< Viewport.maxWidth) {
-							if (element.global.y - ((element.global.height*this.padding)*0.5)< Viewport.maxHeight) {
-								if (element.global.x + (element.global.width*this.padding) >= 0) {
-									if (element.global.y + (element.global.height*this.padding) >= 0) {
-										element.__isOffscreen = false;
-									}
-								}
+						if((element.global.points[0] < mW && element.global.points[0] >= 0) ||
+							(element.global.points[2] < mW && element.global.points[2] >= 0) ||
+							(element.global.points[4] < mW && element.global.points[4] >= 0) ||
+							(element.global.points[6] < mW && element.global.points[6] >= 0)){
+
+							if((element.global.points[1] < mH && element.global.points[1] >= 0) ||
+								(element.global.points[3] < mH && element.global.points[3] >= 0) ||
+								(element.global.points[5] < mH && element.global.points[5] >= 0) ||
+								(element.global.points[7] < mH && element.global.points[7] >= 0)){
+								element.__isOffscreen = false;
 							}
-						}*/
+						}
 					} 
 					else {
-						if (currX < Viewport.maxWidth && currY < Viewport.maxHeight && currX + element.width >= 0 && currY + element.height >= 0) element.__isOffscreen = false;
+						if (currX < mW && currY < mH && currX + element.width >= 0 && currY + element.height >= 0) element.__isOffscreen = false;
 					}
 					
 					if (!element.__isOffscreen) {
@@ -201,7 +209,7 @@
 				
 			//debug outlines
 			if(debug || element.showOutline === true){
-				this.pencil.debugOutline(context, currX, currY, element.width, element.height, "red");
+				this.pencil.debugOutline(context, currX, currY, element.width, element.height, "magenta");
 			}
 				
 			//runs post-render methods
@@ -223,7 +231,9 @@
 			//Restore
 			this.pencil.restore(context);
 			if(debug || element.showOutline === true){
-				this.pencil.debugOutlineComplex(context, element.global.x, element.global.y, element.global.points, "green");
+				if(element.data || element.draw){
+					this.pencil.debugOutlineComplex(context, element.global.x, element.global.y, element.global.points, "cyan");
+				}
 			}
 
 			if(callback) callback();
