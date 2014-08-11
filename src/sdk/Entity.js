@@ -404,7 +404,13 @@
 			 * Called after disposal of data
 			 * @type {function(this:Entity)}
 			 */
-			this.onunload = Arstider.emptyFunction;
+			this.onunload = Arstider.checkIn(props.onunload, Arstider.emptyFunction);
+
+			/**
+			 * Complex interactive element - prevents intensive lookup
+			 * @type {boolean}
+			 */
+			this.complexTouching = Arstider.checkIn(props.complexTouching, false);
 		};
 		
 		/**
@@ -622,7 +628,7 @@
 		 * @return {boolean} Are the coordinates within the zone of the Entity
 		 */
 		Entity.prototype.isTouched = function(x,y){
-			if(!this.global || !this.global.points){
+			if(!this.complexTouching || !this.global || !this.global.points){
 				// --Simple version
 				if(x > this.global.x && x < this.global.x + (this.width * this.global.scaleX)){
 					if(y > this.global.y && y < this.global.y + (this.height * this.global.scaleY)) return true;
