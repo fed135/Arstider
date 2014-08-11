@@ -18,8 +18,8 @@ define("Arstider/Signal", [], /** @lends commons/Signal */ function(){
      * @constructor
      */
     function Signal(){
-        this.__bindings = [];
-        this.__bindingsOnce = [];
+        this.__bindings;
+        this.__bindingsOnce;
     }
 
     Signal.prototype.add = function(listener) {
@@ -37,11 +37,13 @@ define("Arstider/Signal", [], /** @lends commons/Signal */ function(){
     };
 
     Signal.prototype.removeAll = function() {
-        this.__bindings.length = 0;
-        this.__bindingsOnce.length = 0;
+        this.__bindings = null;
+        this.__bindingsOnce.length = null;
     };
 
     Signal.prototype.dispatch = function() {
+        if(!this.__bindings) return;
+
         var 
             args = Array.prototype.slice.call(arguments),
             list = this.__bindings,
@@ -57,10 +59,18 @@ define("Arstider/Signal", [], /** @lends commons/Signal */ function(){
     };
 
     Signal.prototype.getNumListeners = function() {
+        if(!this.__bindings) return 0;
+
         return this.__bindings.length;
     };
 
     Signal.prototype.registerListener = function(listener, once) {
+        if(!this.__bindings) 
+        {
+            this.__bindings = [];
+            this.__bindingsOnce = [];
+        }
+
         var index = this.find(listener);
         if (index == -1 || !once) {
             this.__bindings.push(listener);
@@ -69,6 +79,8 @@ define("Arstider/Signal", [], /** @lends commons/Signal */ function(){
     };
 
     Signal.prototype.find = function(listener, arr) {
+        if(!this.__bindings) return -1;
+
         arr = arr || this.__bindings;
         if (arr.indexOf) return arr.indexOf(listener);
         for (var i = 0, l = arr.length; i < l; i++) {
