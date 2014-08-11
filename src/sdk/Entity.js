@@ -226,7 +226,7 @@
 			 * Enables data slicing (xOffset, yOffset, dataWidth, dataHeight)
 			 * @type {boolean}
 			 */	
-			this.largeData = false;
+			this.largeData = Arstider.checkIn(props.largeData, false);
 	
 			/**
 			 * The element's parent

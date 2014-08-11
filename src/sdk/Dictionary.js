@@ -8,7 +8,7 @@
 ;(function(){
 
 	var 
-		/*
+		/**
 		 * Singleton static
 		 * @private
 		 * @type {Dictionary|null}

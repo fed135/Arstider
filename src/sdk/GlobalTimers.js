@@ -46,8 +46,7 @@
 
 			dt = Arstider.checkIn(dt, Math.round(1000/Arstider.FPS));
 
-			var i = this.list.length-1;
-			for(i; i>=0; i--){
+			for(var i=this.list.length-1; i>=0; i--){
 				if(this.list[i] && this.list[i].running){
 					//closured
 					/*(function(t){

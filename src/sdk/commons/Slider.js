@@ -10,7 +10,7 @@ define("Arstider/commons/Slider",[
 
 		Arstider.Super(this, DisplayObject, props);
 
-		thisRef = this;
+		var thisRef = this;
 			
 		var mouseX = Mouse.x();
 		var mouseY = Mouse.y();
@@ -129,7 +129,7 @@ define("Arstider/commons/Slider",[
 			}
 
 			var containerDrag = new DisplayObject({
-				name: "containerDrag"+id,
+				name: "containerDrag"+id
 			});
 			this.addChild(containerDrag);
 

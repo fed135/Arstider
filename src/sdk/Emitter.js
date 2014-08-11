@@ -213,8 +213,8 @@
 		 * @type {function(this:Emitter)}
 		 */
 		Emitter.prototype.update = function(){
-			var i = this._container.children.length-1, currPart;
-			for(i; i>=0; i--){
+			var currPart;
+			for(var i=this._container.children.length-1; i>=0; i--){
 				currPart = this._container.children[i];
 				currPart.__particleInfo.lifeTime++;
 				if(currPart.__particleInfo.lifeTime >= currPart.__particleInfo.maxLifeTime || currPart.alpha <= 0){

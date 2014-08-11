@@ -25,8 +25,7 @@
 	 * @return {boolean} If the item is in the list
 	 */
 	function notInQueue(queue, key){
-		var i = queue.length-1;
-		for(i; i>=0; i--){
+		for(var i = queue.length-1; i>=0; i--){
 			if(queue[i].name === key) return false;
 		}
 		return true;

@@ -65,7 +65,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 				spritesheet = new ZoeSpritesheet(data, params, fileInfo);
 
 				// Return to callback
-				onSpritesheetLoaded(name, spritesheet);
+				onSpritesheetLoaded(name, spritesheet, params);
 			}
 			
 			// Texture packer JSON Array format
@@ -74,7 +74,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 				spritesheet = new JsonSpritesheet(data, params, fileInfo);
 
 				// Return to callback
-				onSpritesheetLoaded(name, spritesheet);
+				onSpritesheetLoaded(name, spritesheet, params);
 			} 
 
 			// Grid format (OLD SDK2 format)
@@ -83,7 +83,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 				spritesheet = new GridSpritesheet(data, params, fileInfo, function() {
 
 					// Return to callback
-					onSpritesheetLoaded(name, spritesheet);
+					onSpritesheetLoaded(name, spritesheet, params);
 				});
 			} 
 
@@ -91,12 +91,37 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 			else {
 				console.log("SpritesheetManager ERROR: Unkown spritesheet format.");
 				console.log(data);
+				onSpritesheetLoaded(name, spritesheet, params);
+				return;
 			}
+
 		});
 	}
 
-	function onSpritesheetLoaded(name, spritesheet)
+	function onSpritesheetLoaded(name, spritesheet, params)
 	{
+		// Spritesheet overrides
+		var overrides = (params && params.overrides) ? params.overrides : null;
+		if(overrides)
+		{
+			if(overrides.animations)
+			{
+				if(overrides.fps>0) spritesheet.fps = fps;
+
+				for(var animName in overrides.animations)
+				{
+					var animOverrides = overrides.animations[animName];
+
+					for(var p in animOverrides)
+					{
+						spritesheet.animations[animName][p] = animOverrides[p];
+					}
+					
+					//console.log(animName, animOverrides, spritesheet.animations[animName]);
+				}
+			}
+		}
+
 		// Assign to cache
 		spritesheets[name] = spritesheet;
 

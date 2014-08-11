@@ -5,16 +5,17 @@
 define( "Arstider/BitmapAnimation",
 [
 	"Arstider/DisplayObject",
-	"Arstider/sprites/SpritesheetManager"
+	"Arstider/sprites/SpritesheetManager",
+	"Arstider/Signal"
 ], 
 /** @lends BitmapAnimation */
-function (DisplayObject, SpriteSheetManager)
+function (DisplayObject, SpriteSheetManager, Signal)
 {
 	Arstider.Inherit(BitmapAnimation, DisplayObject);
 
 	// Temporary single-use variables
 	var _newFrame;
-	var _stepFrame;
+	var _frameStep;
 	var _rect;
 
 	/**
@@ -37,6 +38,10 @@ function (DisplayObject, SpriteSheetManager)
 		this.speed = Arstider.checkIn(props.speed, 1);
 		this.loop = Arstider.checkIn(props.loop, true);
 
+		// Signals
+		this.animCompleteSignal = new Signal();
+		this.frameChangeSignal = new Signal();
+
 		// Default variables
 		this.isPlaying = true;
 
@@ -52,12 +57,6 @@ function (DisplayObject, SpriteSheetManager)
 			SpriteSheetManager.get(props.spritesheet, props, function(spritesheet)
 			{
 				context._setSpritesheet(spritesheet);
-
-				// Overrides?
-				if(props.overrides)
-				{
-					// TODO
-				}
 
 				// Callback?
 				if(props.onComplete) props.onComplete();
@@ -111,6 +110,19 @@ function (DisplayObject, SpriteSheetManager)
 	};
 
 	/**
+	 * To check if we have a specific anim in it's spritesheet
+	 * @param  {String}  animName The animation name
+	 * @return {Boolean}
+	 */
+	BitmapAnimation.prototype.hasAnim = function(animName)
+	{
+		if(!this.spritesheet) return false;
+		if(this.spritesheet.getAnim(animName)) return true;
+		return false;
+	};
+
+
+	/**
 	 * Pauses the stepping, will resume at the exact smae frame, with the exact same delay before the next step
 	 * @type {function(this:BitmapAnimation)}
 	 * @return {BitmapAnimation} Returns self reference for chaining
@@ -143,12 +155,12 @@ function (DisplayObject, SpriteSheetManager)
 
 		if (this.isPlaying)
 		{
-			_stepFrame = (dt/1000 * this.animation.fps) * this.speed;
+			_frameStep = (dt/1000 * this.animation.fps) * this.speed;
 
-			this.gotoFrame(this.currentFrame + _stepFrame);
+			this.gotoFrame(this.framePosition + _frameStep);
 
 			// Last frame reached?
-			if(this.currentFrame >= this.frames.length)
+			if(this.framePosition-1 + _frameStep > this.frames.length)
 			{
 				this._onAnimComplete();
 			}
@@ -250,10 +262,12 @@ function (DisplayObject, SpriteSheetManager)
 		var frameNum = 1;
 		if(params>1) frameNum = params;
 
-
 		if(animation)
 		{
 			this.animation = animation;
+
+			// No fps in animation, set to spritesheet fps
+			if(!animation.fps) animation.fps = this.spritesheet.fps;
 
 			// Clear next anim time
 			clearTimeout(this.nextTimeout);
@@ -291,11 +305,17 @@ function (DisplayObject, SpriteSheetManager)
 			}
 
 			// Kick-in animation
-			this.currentFrame = 0;
+			this.currentFrame = this.framePosition = 0;
 			return this.gotoFrame(frameNum);
 
-		} else {
-			console.log("BitmapAnimation ERROR: anim '"+animName+"' not found.");
+		}
+		// Anim not found
+		else
+		{
+			console.error("BitmapAnimation: anim '"+animName+"' not found.");
+
+			//this.frame = null;
+			//this.gotoAnim(this.defaultAnim, params);
 		}
 
 		return this;
@@ -313,24 +333,29 @@ function (DisplayObject, SpriteSheetManager)
 	{
 		if(!frame) frame=1;
 
-		// Min/max
-		if(frame<1) frame=1;
-		if(frame>this.frames.length) frame = this.frames.length;
-
 		// Need to change?
-		if(frame==this.currentFrame && !force) return;
-		this.currentFrame = frame;
+		if(frame==this.framePosition && !force) return;
+		this.framePosition = frame;
+
+		// Current frame index
+		this.currentFrame = Math.floor(frame);
+
+		// Min/max
+		if(this.currentFrame<1) this.currentFrame=1;
+		if(this.currentFrame>this.frames.length) this.currentFrame = this.frames.length;
 
 		// First frame is one
-		_newFrame = this.frames[Math.round(frame)-1];
+		_newFrame = this.frames[this.currentFrame-1];
 
+		
 		// Frame specific bitmap?
-		if(_newFrame.image)
+		if(_newFrame.image && _newFrame.image != this.currentImageUrl)
 		{
 			this._setImage(_newFrame.image)
 		} else {
 			this._setFrame(_newFrame, force);
 		}
+
 
 		return this;
 	};
@@ -345,6 +370,10 @@ function (DisplayObject, SpriteSheetManager)
 
 	BitmapAnimation.prototype._onAnimComplete = function()
 	{
+		var animName = this.animation.name;
+
+		//console.log("Anim complete: "+animName, this.loop);
+
 		// Playlist to proceed?
 		if(this.playlist)
 		{
@@ -367,11 +396,11 @@ function (DisplayObject, SpriteSheetManager)
 		} 
 		// Loop
 		else {
-			this.currentFrame = 0;
+			this.currentFrame = this.framePosition = 1;
 		}
 
 		// Anim complete signal
-		//animComplete.emit(this);
+		this.animCompleteSignal.dispatch(animName, this);
 	};
 
 
@@ -397,6 +426,7 @@ function (DisplayObject, SpriteSheetManager)
 			this.currentBitmap.y = frameData.origin[1];
 		}
 		
+		this.frameChangeSignal.dispatch(this.frame, this);
 	};
 
 	BitmapAnimation.prototype._setImage = function(imageUrl)
@@ -418,6 +448,9 @@ function (DisplayObject, SpriteSheetManager)
 			this.addChild(this.currentBitmap);
 			this.bitmaps[imageUrl] = this.currentBitmap;
 		}
+
+		// Check spritesheet if needed
+		//this.addChild(new DisplayObject({bitmap:imageUrl}));
 
 		this.gotoFrame(this.currentFrame, true);
 	};

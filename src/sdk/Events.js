@@ -44,7 +44,7 @@
 		 */
 		NOT_FOUND = -1,
 		
-		/*
+		/**
 		 * Singleton static
 		 * @private
 		 * @type {Events|null}
@@ -81,11 +81,9 @@
 	 * @return {boolean} If the key is in the array
 	 */
 	function isIn(item, arr, key){
-		var i = 0,
-			l = arr.length
-		;
+		var l = arr.length;
 				
-		for(i; i<l; i++){
+		for(var i = 0; i<l; i++){
 			if(key){
 				if(arr[i][key] == item){
 					return i;

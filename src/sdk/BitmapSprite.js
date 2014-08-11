@@ -47,10 +47,12 @@ function (DisplayObject, SpriteSheetManager)
 				context._setSpritesheet(spritesheet);
 
 				// Overrides?
+				/*
 				if(props.overrides)
 				{
 					// TODO
 				}
+				*/
 
 				if(props.frame){
 					context.gotoFrame(props.frame);

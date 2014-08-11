@@ -162,9 +162,7 @@
 		 */
 		Browser.prototype.checkSupport = function(list){
 		
-			var 
-				i = 0,
-				requirements = list || [
+			var requirements = list || [
 					{"name":"ie","minVersion":8},
 					{"name":"firefox","minVersion":3.5},
 					{"name":"safari","minVersion":5},
@@ -173,7 +171,7 @@
 				]
 			;
 			
-			for(i; i < requirements.length; i++){
+			for(var i = 0; i < requirements.length; i++){
 				if(requirements[i].name == this.name){
 					if(requirements[i].minVersion == undefined || parseFloat(this.version) >= requirements[i].minVersion) return true;
 					
