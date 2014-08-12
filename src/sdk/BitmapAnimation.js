@@ -140,7 +140,7 @@ function (DisplayObject, SpriteSheetManager, Signal)
 	 */
     BitmapAnimation.prototype.resume = function()
     {
-    	this.isPlaying = false;
+    	this.isPlaying = true;
 		return this;
     };
 
