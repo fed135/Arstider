@@ -37,6 +37,7 @@ define("Arstider/commons/Input", ["Arstider/Tag"], /** @lends commons/Input */ f
 			var txtField = this.getField();
 			txtField.classList.remove("disabled");
 			delete txtField.readonly;
+			txtField.disabled = false;
 		}
 	};
 
