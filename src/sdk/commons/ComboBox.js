@@ -19,7 +19,7 @@ define("Arstider/commons/ComboBox",[
 
 		///Add comboBox container
 		var comboBox = new DisplayObject({
-			name: this.name + "_comboBox",
+			name: this.name + "_comboBox"
 		});
 
 		// Add properties

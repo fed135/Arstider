@@ -371,8 +371,8 @@
 			singleton.canvasRatio = ratio;
 			singleton.visibleWidth = Math.round(windowW / ratio);
 			singleton.visibleHeight = Math.round(windowH / ratio);
-			singleton.visibleWidth = Math.min(singleton.visibleWidth, singleton.maxWidth)/this.globalScale;
-			singleton.visibleHeight = Math.min(singleton.visibleHeight, singleton.maxHeight)/this.globalScale;
+			singleton.visibleWidth = Math.min(singleton.visibleWidth, singleton.maxWidth)/singleton.globalScale;
+			singleton.visibleHeight = Math.min(singleton.visibleHeight, singleton.maxHeight)/singleton.globalScale;
 			
             singleton.tagParentNode = window.document.getElementById("Arstider_tag_overlay");
             if(!singleton.tagParentNode){
@@ -404,7 +404,10 @@
 		Viewport.prototype._rotate = function(e){
 			var prevOrientation = singleton.orientation;
 
-			singleton.orientation = (window.innerHeight>window.innerWidth)?PORTRAIT:LANDSCAPE;
+			if(Browser.isMobile)
+				singleton.orientation = (window.innerHeight>window.innerWidth)?PORTRAIT:LANDSCAPE;
+			else
+				singleton.orientation = LANDSCAPE;
 			
 			if(singleton.orientation != prevOrientation){
 				Events.broadcast("Viewport.rotate", singleton);

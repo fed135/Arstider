@@ -100,7 +100,7 @@ define("Arstider/commons/Scrollbar",[
 			}
 
 			var containerDrag = new DisplayObject({
-				name: this.name + "_containerDrag",
+				name: this.name + "_containerDrag"
 			});
 			this.addChild(containerDrag);
 
