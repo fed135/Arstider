@@ -96,6 +96,8 @@
 	 */
 	define("Arstider/Request", [], /** @lends Request */ function(){
 		
+		Request.urlArgs = null;
+
 		/**
 		 * Request constructor
 		 * A cover-all-situations network call class
@@ -109,6 +111,14 @@
 			 * @type {string}
 			 */
 			this.url = props.url;
+
+			// Runtime urlArguments appending (Like Require.js config.urlArgs)
+			// Mostly used for cachebusting json files in your game
+			if(Request.urlArgs)
+			{
+				this.url+= (this.url.indexOf('?') === -1 ? '?' : '&') + Request.urlArgs;
+			}
+
 			/**
 			 * Callback function
 			 * @type {function}
