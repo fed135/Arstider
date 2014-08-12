@@ -404,7 +404,10 @@
 		Viewport.prototype._rotate = function(e){
 			var prevOrientation = singleton.orientation;
 
-			singleton.orientation = (window.innerHeight>window.innerWidth)?PORTRAIT:LANDSCAPE;
+			if(Browser.isMobile)
+				singleton.orientation = (window.innerHeight>window.innerWidth)?PORTRAIT:LANDSCAPE;
+			else
+				singleton.orientation = LANDSCAPE;
 			
 			if(singleton.orientation != prevOrientation){
 				Events.broadcast("Viewport.rotate", singleton);
