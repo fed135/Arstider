@@ -35,6 +35,8 @@
 			this.pencil = null;
 
 			this.padding = 1;
+
+			this.abort = false;
 		}
 			
 		/**
@@ -43,14 +45,23 @@
 		 * @type {function}
 		 * @param {Object} curChild Entity-type element to draw and call draw upon the children of
 		 */
-		Renderer.prototype.renderChild = function(context, element, currX, currY, pre, post, debug, complexParent, callback){
+		Renderer.prototype.renderChild = function(context, element, currX, currY, pre, post, debug, complexParent, callback, main){
 
 			var 
 				xAnchor = 0,
-				yAnchor = 0
+				yAnchor = 0,
+				needRestore = false
 			;
 
 			if(!element || element.__skip) return;
+
+			if(singleton.abort){
+				if(main){
+					singleton.abort = false;
+					this.pencil.reset(context);
+				}
+				else return;
+			}
 				
 			Performance.elements++;
 			
@@ -66,6 +77,7 @@
 			
 				complexParent = true;
 				Performance.transforms++;
+				needRestore = true;
 				this.pencil.save(context);
 				xAnchor = (element.width * element.rpX);
 				yAnchor = (element.height * element.rpY);
@@ -76,14 +88,14 @@
 
 				element.global.x = element.parent.global.x + element.x;
 				element.global.y = element.parent.global.y + element.y;
-				element.global.scaleX = element.scaleX * element.parent.scaleX;
-				element.global.scaleY = element.scaleY * element.parent.scaleY;
-				element.global.skewX = element.skewX * element.parent.skewX;
-				element.global.skewY = element.skewY * element.parent.skewY;
+				element.global.scaleX = element.scaleX * element.parent.global.scaleX;
+				element.global.scaleY = element.scaleY * element.parent.global.scaleY;
+				element.global.skewX = element.skewX * element.parent.global.skewX;
+				element.global.skewY = element.skewY * element.parent.global.skewY;
 				element.global.width = element.width * ((element.global.scaleX<0)?(element.global.scaleX*-1):element.global.scaleX);
 				element.global.height = element.height * ((element.global.scaleY<0)?(element.global.scaleY*-1):element.global.scaleY);
-				element.global.rotation = element.rotation + element.parent.rotation;
-				element.global.alpha = element.alpha * element.parent.alpha;
+				element.global.rotation = element.rotation + element.parent.global.rotation;
+				element.global.alpha = element.alpha * element.parent.global.alpha;
 
 				element.global.points = [
 					- xAnchor, 
@@ -127,8 +139,8 @@
 			//Update globals
 			if(element.global && element.parent){
 				if(complexParent){
-					element.global.x = element.parent.global.x + element.x - currX;
-					element.global.y = element.parent.global.y + element.y - currY;
+					element.global.x -= currX;
+					element.global.y -= currY;
 				}
 				MatrixTransform.translation(element.global.x, element.global.y, element.global.points);
 			}
@@ -137,21 +149,25 @@
 			//Alpha
 			if(element.alpha != 1){
 				Performance.transforms++;
+				needRestore = true;
 				this.pencil.alpha(context, element.alpha);
 			}
 			
 			//Composite Mode / Mask
 			if(element.compositeMode != Arstider.defaultComposition){
 				Performance.transforms++;
+				needRestore = true;
 				this.pencil.setCompositionMode(context, element.compositeMode);
 			} 
 			else if(element.mask === true){
 				Performance.transforms++;
+				needRestore = true;
 				this.pencil.setCompositionMode(context, "destination-in");
 			}
 				
 			//Shadow
 			if(element.shadowColor != Arstider.defaultColor){
+				needRestore = true;
 				Performance.transforms++;
 				this.pencil.dropShadow(context, element.shadowOffsetX, element.shadowOffsetY, element.shadowBlur, element.shadowColor);
 			}
@@ -229,7 +245,8 @@
 			}
 				
 			//Restore
-			this.pencil.restore(context);
+			if(needRestore) this.pencil.restore(context);
+			this.pencil.reset(context);
 			if(debug || element.showOutline === true){
 				if(element.data || element.draw){
 					this.pencil.debugOutlineComplex(context, element.global.x, element.global.y, element.global.points, "cyan");
@@ -267,6 +284,10 @@
 				callback();
 			}
 		};
+
+		Renderer.prototype.reset = function(context){
+			this.abort = true;
+		};
 			
 		/**
 		 * Recursively draw elements from the rootChild on the desired context
@@ -278,7 +299,8 @@
 		 */
 		Renderer.prototype.draw = function(context, element, pre, post, debug, callback){
 			this._recoverContextPencil(context, function recoverContext(){
-				singleton.renderChild.apply(singleton, [context, element, 0, 0, pre, post, debug, false, callback]);
+				singleton.reset(context);
+				singleton.renderChild.apply(singleton, [context, element, 0, 0, pre, post, debug, false, callback, true]);
 			});
 		};
 			

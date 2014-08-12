@@ -645,10 +645,7 @@
 			// Preloader rendering
 			if(singleton.handbreak){
 				if(Preloader.interactive || Preloader.animated || Preloader._queue.length > 0){
-                    Renderer.clear(singleton.context, 0,0, Viewport.maxWidth,Viewport.maxHeight);
-					Renderer.draw(singleton.context, Preloader._screen, function(e){singleton.applyRelease(e, ((Browser.isMobile)?Mouse._ongoingTouches:[{x:Mouse.x(), y:Mouse.y(), pressed:Mouse.pressed}]));}, null, showFrames);
-					if(Viewport.tagParentNode) Viewport.tagParentNode.style.display = "none";
-					Mouse.cleanTouches();
+                    singleton.drawPreloader(showFrames);
 				}
 				return;
 			}
@@ -666,9 +663,9 @@
 				
 			if(singleton.profiler) showFrames = singleton.profiler.showFrames;
 			
-			Renderer.draw(singleton.context, Background, null, null, showFrames);  
-			Renderer.draw(singleton.context, singleton.currentScreen, function(e){singleton.applyRelease(e, ((Browser.isMobile)?Mouse._ongoingTouches:[{x:Mouse.x(), y:Mouse.y(), pressed:Mouse.pressed}]));}, null, showFrames);
-			Renderer.draw(singleton.context, Watermark, null, null, showFrames);
+			singleton.drawBackground(showFrames);
+			singleton.drawScreen(showFrames);
+			singleton.drawOverlay(showFrames);
 			Performance.frames++;
 
 			Mouse.cleanTouches();
@@ -680,6 +677,43 @@
 			Performance.endStep();
 
 			showFrames = null;
+		};
+
+		/**
+		 * Rendering of the preloader screen
+		 * @type {function(this:Engine)}
+		 */
+		Engine.prototype.drawPreloader = function(showFrames){
+			Renderer.clear(singleton.context, 0,0, Viewport.maxWidth,Viewport.maxHeight);
+			Renderer.draw(singleton.context, Preloader._screen, function(e){singleton.applyRelease(e, ((Browser.isMobile)?Mouse._ongoingTouches:[{x:Mouse.x(), y:Mouse.y(), pressed:Mouse.pressed}]));}, null, showFrames);
+			if(Viewport.tagParentNode) Viewport.tagParentNode.style.display = "none";
+			Mouse.cleanTouches();
+		};
+
+		/**
+		 * Rendering of the background
+		 * @type {function(this:Engine)}
+		 */
+		Engine.prototype.drawBackground = function(showFrames){
+			Renderer.draw(singleton.context, Background, null, null, showFrames);
+		};
+
+		/**
+		 * Rendering of the background
+		 * @type {function(this:Engine)}
+		 */
+		Engine.prototype.drawOverlay = function(showFrames){
+			Renderer.draw(singleton.context, Watermark, null, null, showFrames);
+		};
+
+		/**
+		 * Rendering of the current screen
+		 * @type {function(this:Engine)}
+		 */
+		Engine.prototype.drawScreen = function(showFrames){
+			Renderer.draw(singleton.context, singleton.currentScreen, function(e){
+				singleton.applyRelease(e, ((Browser.isMobile)?Mouse._ongoingTouches:[{x:Mouse.x(), y:Mouse.y(), pressed:Mouse.pressed}]));
+			}, null, showFrames);
 		};
 
 		/**

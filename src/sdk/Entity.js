@@ -148,12 +148,16 @@
 			 * @type {Object}
 			 */
 			this.global = {
-				alpha:null,
-				x:null,
-				y:null,
-				rotation:null,
-				scaleX:null,
-				scaleY:null
+				alpha:1,
+				x:0,
+				y:0,
+				rotation:0,
+				scaleX:1,
+				scaleY:1,
+				skewX:0,
+				skewY:0,
+				width:0,
+				height:0
 			};
 			
 			/**

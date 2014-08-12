@@ -81,6 +81,10 @@
 			context.globalAlpha *= opacity;
 		};
 
+		Canvas2d.prototype.reset = function(context){
+			context.setTransform(1,0,0,1,0,0);
+		};
+
 		Canvas2d.prototype.setCompositionMode = function(context, mode){
 			context.__savedGlobalCompositeOperation = context.globalCompositeOperation;
 			context.globalCompositeOperation = mode;
