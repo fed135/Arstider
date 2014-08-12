@@ -41,7 +41,7 @@ define("Arstider/core/Animation", ["Arstider/core/Transformation", "Arstider/Eas
 				
 		this.startTime = Arstider.checkIn(time, 1000);
 		this.time = this.startTime;
-		this.easing = Arstider.checkIn(easing, Easings.LINEAR);
+		this.easing = Arstider.checkIn(easing.bind(Easings), Easings.LINEAR);
 		this.easeOpt = easeOpt;
 	}
 	
