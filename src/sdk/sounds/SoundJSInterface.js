@@ -11,13 +11,13 @@
 		}
 
 		SoundJSInterface.prototype.init = function(s){
-			this.managerRef = s;
+			singleton.managerRef = s;
 
-			if(!this.checkStatus()) return;
+			if(!singleton.test()) return;
 		};
 
-		SoundJSInterface.prototype.checkStatus = function(){
-			
+		SoundJSInterface.prototype.test = function(){
+			return false;
 		};
 
 		SoundJSInterface.prototype.create = function(id){
