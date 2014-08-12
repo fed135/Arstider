@@ -14,6 +14,7 @@ function(DisplayObject, TextField, Mouse, Browser){
 		this.enabled = Arstider.checkIn(props.enabled, true);
 		this.currentState = null;
 		this.states = {};
+		this.currentCursor = Mouse.getCursor();
 
 		for(var s in props.states) this.addState(s, props.states[s]);
 
@@ -31,7 +32,7 @@ function(DisplayObject, TextField, Mouse, Browser){
 	};
 
 	Button.prototype._onleave = function(){
-		Mouse.setCursor("default");
+		Mouse.setCursor(this.currentCursor);
 		if(this.enabled) this.showState("normal");
 		else this.showState("disabled");
 		DisplayObject.prototype._onleave.call(this);
@@ -46,7 +47,7 @@ function(DisplayObject, TextField, Mouse, Browser){
 
 	Button.prototype._onrelease = function(){
 		if(this.enabled){
-			Mouse.setCursor("default");
+			Mouse.setCursor(this.currentCursor);
 			this.showState("normal");
 			DisplayObject.prototype._onrelease.call(this);
 		}
