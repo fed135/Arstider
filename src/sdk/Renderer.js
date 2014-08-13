@@ -174,6 +174,29 @@
 
 			//Runs pre-render method:
 			if(pre) pre(element);
+
+			element.onScreen = false;
+
+			var mW = context.canvas.width;
+			var mH = context.canvas.height;
+
+			if(complexParent){
+				if((element.global.points[0] < mW && element.global.points[0] >= 0) ||
+				(element.global.points[2] < mW && element.global.points[2] >= 0) ||
+				(element.global.points[4] < mW && element.global.points[4] >= 0) ||
+				(element.global.points[6] < mW && element.global.points[6] >= 0)){
+
+					if((element.global.points[1] < mH && element.global.points[1] >= 0) ||
+						(element.global.points[3] < mH && element.global.points[3] >= 0) ||
+						(element.global.points[5] < mH && element.global.points[5] >= 0) ||
+						(element.global.points[7] < mH && element.global.points[7] >= 0)){
+						element.onScreen = true;
+					}
+				}
+			} 
+			else {
+				if (currX < mW && currY < mH && currX + element.width >= 0 && currY + element.height >= 0) element.onScreen = true;
+			}
 				
 			//Render data
 			if(element.data || element.draw){
@@ -183,30 +206,7 @@
 					element.draw.apply(element, [context, currX, currY]);
 				}
 				else{
-					element.__isOffscreen = true;
-
-					var mW = context.canvas.width;
-					var mH = context.canvas.height;
-
-					if(complexParent){
-						if((element.global.points[0] < mW && element.global.points[0] >= 0) ||
-							(element.global.points[2] < mW && element.global.points[2] >= 0) ||
-							(element.global.points[4] < mW && element.global.points[4] >= 0) ||
-							(element.global.points[6] < mW && element.global.points[6] >= 0)){
-
-							if((element.global.points[1] < mH && element.global.points[1] >= 0) ||
-								(element.global.points[3] < mH && element.global.points[3] >= 0) ||
-								(element.global.points[5] < mH && element.global.points[5] >= 0) ||
-								(element.global.points[7] < mH && element.global.points[7] >= 0)){
-								element.__isOffscreen = false;
-							}
-						}
-					} 
-					else {
-						if (currX < mW && currY < mH && currX + element.width >= 0 && currY + element.height >= 0) element.__isOffscreen = false;
-					}
-					
-					if (!element.__isOffscreen) {
+					if(element.onScreen) {
 						
 						var node = Arstider.getNode(element);
 						if(node && node.data){

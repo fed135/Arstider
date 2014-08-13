@@ -32,8 +32,9 @@
 		"Arstider/Viewport",
 		"Arstider/Renderer",
 		"Arstider/Telemetry",
-        "Arstider/Sound"
-	], /** @lends Engine */ function (Browser, Screen, Buffer, Events, Background, Watermark, Preloader, GlobalTimers, Performance, Mouse, Viewport, Renderer, Telemetry, Sound){
+        "Arstider/Sound",
+        "Arstider/Signal"
+	], /** @lends Engine */ function (Browser, Screen, Buffer, Events, Background, Watermark, Preloader, GlobalTimers, Performance, Mouse, Viewport, Renderer, Telemetry, Sound, Signal){
 		
 		if(singleton != null) return singleton;
 			
@@ -138,6 +139,9 @@
 			 * @type {boolean}
 			 */
 			this._deltaTimeReset = false;
+
+			this.onerror = new Signal();
+			this.onskip = new Signal();
 
 		}
 		
@@ -272,7 +276,7 @@
 		 * @param {Error} e The error event
 		 */
 		Engine.prototype._handleError = function(e){
-			Events.broadcast("Engine.error", e);
+			singleton.onerror.dispatch(e);
 			Telemetry.log("error", "error", e);
 		};
 		
@@ -657,7 +661,7 @@
 			if(Performance.getStatus() === 0){
 				Performance.endStep();
 				if(Arstider.verbose > 2) console.warn("Arstider.Engine.draw: skipping draw step");
-				Events.broadcast("Engine.skip", singleton);
+				singleton.onskip.dispatch();
 				return;	
 			}
 				
