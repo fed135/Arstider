@@ -8,11 +8,11 @@
 /**
  * Defines the Fonts module
  */
-define("Arstider/core/Font", ["Arstider/Request"], /** @lends core/Font */ function(Request){
+define("Arstider/texts/Font", ["Arstider/Request"], /** @lends texts/Font */ function(Request){
 	/**
 	 * Font object constructor
 	 * @constructor
-	 * @class core/Font
+	 * @class texts/Font
 	 * @param {Object} props The optional build params
 	 */
 	function Font(props){
@@ -80,7 +80,8 @@ define("Arstider/core/Font", ["Arstider/Request"], /** @lends core/Font */ funct
 		this.lineHeight = Arstider.checkIn(props.lineHeight, "1em");
 		this.textWrap = Arstider.checkIn(props.textWrap, false);
 		this.size = Arstider.checkIn(props.size, "12px");
-		this.style = Arstider.checkIn(props.style, "");
+		this.bold = Arstider.checkIn(props.bold, false);
+		this.italic = Arstider.checkIn(props.italic, false);
 		this.strokeStyle = Arstider.checkIn(props.strokeStyle, "transparent");
 		this.fillStyle = Arstider.checkIn(props.fillStyle, "black");
 		this.lineWidth = Arstider.checkIn(props.lineWidth, 0);
@@ -94,6 +95,8 @@ define("Arstider/core/Font", ["Arstider/Request"], /** @lends core/Font */ funct
 		this.textBaseline = Arstider.checkIn(props.textBaseline, "middle");
 		
 		this.loadCallbacks = Arstider.checkIn(props.loadCallbacks, []);
+
+		if(this.lineSpacing === null) this.lineSpacing = parseInt(this.size.split("px").join(""));
 	}
 	
 	/**

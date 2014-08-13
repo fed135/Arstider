@@ -63,12 +63,12 @@
 	/**
 	 * Defines the Emitter module
 	 */
-	define("Arstider/Emitter", ["Arstider/DisplayObject", "Arstider/Pool"], /** @lends Emitter */ function(DisplayObject, Pool){
+	define("Arstider/commons/Emitter", ["Arstider/DisplayObject", "Arstider/commons/Pool"], /** @lends commons/Emitter */ function(DisplayObject, Pool){
 	
 		/**
 		 * Emitter constructor
 		 * A basic particle emitter
-		 * @class Emitter
+		 * @class commons/Emitter
 		 * @constructor
 		 * @param {Object|null} props Optional parameters
 		 */
