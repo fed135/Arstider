@@ -45,12 +45,13 @@
 		 * @type {function}
 		 * @param {Object} curChild Entity-type element to draw and call draw upon the children of
 		 */
-		Renderer.prototype.renderChild = function(context, element, currX, currY, pre, post, debug, complexParent, callback, main){
+		Renderer.prototype.renderChild = function(context, element, currX, currY, xOffset, yOffset, pre, post, debug, complexParent, callback, main){
 
 			var 
 				xAnchor = 0,
 				yAnchor = 0,
-				needRestore = false
+				rpX = 0,
+				rpY = 0
 			;
 
 			if(!element || element.__skip) return;
@@ -71,41 +72,61 @@
 
 			currX += element.x;
 			currY += element.y;
+			rpX = currX;
+			rpY = currY;
+
+			if(complexParent){
+				rpX += element.parent.global.x;
+				rpY += element.parent.global.y;
+			}
 
 			if(element.scaleX != 1 || element.scaleY != 1 || element.skewX != 0 || element.skewY != 0 || element.rotation != 0){
 				//Check for transformations
 			
 				complexParent = true;
 				Performance.transforms++;
-				needRestore = true;
-				this.pencil.save(context);
+			}
+
+			if(complexParent){
 				xAnchor = (element.width * element.rpX);
 				yAnchor = (element.height * element.rpY);
+				xOffset += xAnchor;
+				yOffset += yAnchor;
 			}
 
 			//Update globals
-			if(element.global && element.parent){
+			if(element.global){
+				element.global.x = currX;
+				element.global.y = currY;
+				element.global.scaleX = element.scaleX;
+				element.global.scaleY = element.scaleY;
+				element.global.skewX = element.skewX;
+				element.global.skewY = element.skewY;
+				element.global.width = element.width;
+				element.global.height = element.height;
+				element.global.rotation = element.rotation;
+				element.global.alpha = element.alpha;
 
-				element.global.x = element.parent.global.x + element.x;
-				element.global.y = element.parent.global.y + element.y;
-				element.global.scaleX = element.scaleX * element.parent.global.scaleX;
-				element.global.scaleY = element.scaleY * element.parent.global.scaleY;
-				element.global.skewX = element.skewX * element.parent.global.skewX;
-				element.global.skewY = element.skewY * element.parent.global.skewY;
-				element.global.width = element.width * ((element.global.scaleX<0)?(element.global.scaleX*-1):element.global.scaleX);
-				element.global.height = element.height * ((element.global.scaleY<0)?(element.global.scaleY*-1):element.global.scaleY);
-				element.global.rotation = element.rotation + element.parent.global.rotation;
-				element.global.alpha = element.alpha * element.parent.global.alpha;
+				if(element.parent){
+					element.global.scaleX *= element.parent.global.scaleX;
+					element.global.scaleY *= element.parent.global.scaleY;
+					element.global.skewX *= element.parent.global.skewX;
+					element.global.skewY *= element.parent.global.skewY;
+					element.global.width *= ((element.global.scaleX<0)?(element.global.scaleX*-1):element.global.scaleX);
+					element.global.height *= ((element.global.scaleY<0)?(element.global.scaleY*-1):element.global.scaleY);
+					element.global.rotation += element.parent.global.rotation;
+					element.global.alpha *= element.parent.global.alpha;
+				}
 
 				element.global.points = [
-					- xAnchor, 
-					- yAnchor, 
-					element.global.width - xAnchor, 
-					- yAnchor,
-					- xAnchor,
-					element.global.height - yAnchor,
-					element.global.width - xAnchor,
-					element.global.height - yAnchor
+					xOffset - xAnchor, 
+					yOffset - yAnchor, 
+					xOffset + element.global.width - xAnchor, 
+					yOffset - yAnchor,
+					xOffset - xAnchor,
+					yOffset + element.global.height - yAnchor,
+					xOffset + element.global.width - xAnchor,
+					yOffset + element.global.height - yAnchor
 				];
 			}
 
@@ -136,12 +157,12 @@
 				this.pencil.transform(context, 1, element.skewX, element.skewY, 1, 0, 0);
 			}
 
-			//Update globals
-			if(element.global && element.parent){
-				if(complexParent){
-					element.global.x -= currX;
-					element.global.y -= currY;
-				}
+			if(complexParent){
+				element.global.x -= currX;
+				element.global.y -= currY;
+				MatrixTransform.translation(rpX - xAnchor, rpY - yAnchor, element.global.points);
+			}
+			else{
 				MatrixTransform.translation(element.global.x, element.global.y, element.global.points);
 			}
 
@@ -237,7 +258,7 @@
 					var len = element.children.length;
 					for(var li=0; li<len; li++){
 						if(element.children[li]){
-							this.renderChild(context, element.children[li], currX, currY, pre, post, debug, complexParent);
+							this.renderChild(context, element.children[li], currX, currY, xOffset, yOffset, pre, post, debug, complexParent);
 						}
 					}
 					len = null;
@@ -245,11 +266,11 @@
 			}
 				
 			//Restore
-			if(needRestore) this.pencil.restore(context);
+			this.pencil.restore(context);
 			this.pencil.reset(context);
 			if(debug || element.showOutline === true){
 				if(element.data || element.draw){
-					this.pencil.debugOutlineComplex(context, element.global.x, element.global.y, element.global.points, "cyan");
+					this.pencil.debugOutlineComplex(context, rpX, rpY, element.global.points, "cyan");
 				}
 			}
 
@@ -300,7 +321,7 @@
 		Renderer.prototype.draw = function(context, element, pre, post, debug, callback){
 			this._recoverContextPencil(context, function recoverContext(){
 				singleton.reset(context);
-				singleton.renderChild.apply(singleton, [context, element, 0, 0, pre, post, debug, false, callback, true]);
+				singleton.renderChild.apply(singleton, [context, element, 0, 0, 0, 0, pre, post, debug, false, callback, true]);
 			});
 		};
 			

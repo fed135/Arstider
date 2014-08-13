@@ -21,15 +21,10 @@ define("Arstider/contexts/MatrixTransform", [], {
 	},
 
 	translation:function(x, y, points){
-		var matrix = [x, y];
-		points[0] = (matrix[0] + points[0]);
-		points[1] = (matrix[1] + points[1]);
-		points[2] = (matrix[0] + points[2]);
-		points[3] = (matrix[1] + points[3]);
-		points[4] = (matrix[0] + points[4]);
-		points[5] = (matrix[1] + points[5]);
-		points[6] = (matrix[0] + points[6]);
-		points[7] = (matrix[1] + points[7]);
+		for(var i=0; i<points.length; i+=2){
+        	points[i+0] += x;
+        	points[i+1] += y;
+	    }
 	},
 
 	scaling:function(sx, sy, points){

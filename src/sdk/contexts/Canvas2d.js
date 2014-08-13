@@ -42,7 +42,7 @@
 		};
 
 		Canvas2d.prototype.restore = function(context){
-			context.restore();
+			//context.restore();
 
 			context.globalAlpha = 1;
 
