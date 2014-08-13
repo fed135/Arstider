@@ -70,7 +70,7 @@
 				this.context = this.data.getContext("webgl") || this.data.getContext("experimental-webgl") || null;
 			} 
 
-			if(this.preferedContext == CONTEXT.canvas2d || this.context == null){
+			if(this.preferedContext == CONTEXT.canvas2d || this.context == null){
 				this.contextType = CONTEXT.canvas2d;
 				this.context = this.data.getContext("2d");
 			} 
