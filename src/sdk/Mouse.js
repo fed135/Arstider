@@ -272,12 +272,16 @@
 		};
 
 		/**
-		 * Cahnge cursor appearance over the viewport via css
+		 * Change cursor appearance over the viewport via css
 		 * @type {function(this:Mouse)}
 		 * @param {string} style The style rule to apply to the cursor
 		 */
 		Mouse.prototype.setCursor = function(style){
 			window.document.body.style.cursor = style;
+		};
+
+		Mouse.prototype.getCursor = function(){
+			return window.document.body.style.cursor;
 		};
 		
 		/**

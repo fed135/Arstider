@@ -60,6 +60,20 @@ Arstider.getNode = function(obj, maxDepth){
 	return orig;
 };
 
+Arstider.powerOf2 = function(num){
+	return (num > 0 && (num & (num - 1)) === 0);
+};
+
+Arstider.nextPowerOf2 = function(number){
+    if (number > 0 && (number & (number - 1)) === 0) // see: http://goo.gl/D9kPj
+        return number;
+    else{
+        var result = 1;
+        while (result < number) result <<= 1;
+        return result;
+    }
+};
+
 /**
  * Generates a Unique UID string
  * @memberof Arstider

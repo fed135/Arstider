@@ -19,7 +19,7 @@
 	/**
 	 * Defines the Sound module
 	 */
-	define( "Arstider/Sound", ["Arstider/Browser", "Arstider/Request", "Arstider/Timer", "Arstider/sounds/HowlerInterface", "Arstider/sounds/SoundJSInterface"], /** @lends Sound */ function (Browser, Request, Timer, HowlerInterface, SoundJSInterface) {
+	define( "Arstider/Sound", ["Arstider/Browser", "Arstider/Request", "Arstider/Timer", "Arstider/sounds/HowlerInterface", "Arstider/sounds/SoundJSInterface", "Arstider/sounds/SM2Interface"], /** @lends Sound */ function (Browser, Request, Timer, HowlerInterface, SoundJSInterface, SM2Interface) {
 		
 		if(singleton != null) return singleton;
 		
@@ -87,6 +87,7 @@
 			//assign proper interface
 			if(singleton.lib == "howler") singleton.lib = HowlerInterface;
 			else if(singleton.lib == "soundjs") singleton.lib = SoundJSInterface;
+			else if(singleton.lib == "sm2") singleton.lib = SM2Interface;
 			
 			singleton.lib.init(singleton, url);
 
@@ -130,8 +131,8 @@
 					callback:function(file){
 						this.sounds = file.sounds || {};
 						this.tracks = file.tracks || {};
-						if(callback) callback();
 						this._init(url);
+						if(callback) callback();
 					}
 				}).send();
 			}
@@ -139,6 +140,7 @@
 				singleton.sounds = obj.sounds || {};
 				singleton.tracks = obj.tracks || {};
 				singleton._init(url);
+				if(callback) callback();
 			}
 			return singleton;
 		};

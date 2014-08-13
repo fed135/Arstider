@@ -33,18 +33,19 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 
 		var name = getName(fileInfo.name);
 
-		// Cached or loading?
+		// Already Loading?
+		if(loadingSpritesheetsCallbacks[name]) 
+		{
+			loadingSpritesheetsCallbacks[name].push(onComplete);
+			return;
+		}
+
+		// Cached?
 		if(spritesheets[name])
 		{
-			// Loading?
-			if(loadingSpritesheetsCallbacks[name]) 
-			{
-				loadingSpritesheetsCallbacks[name].push(onComplete);
-				return;
-			}
 			onComplete( spritesheets[name] );
 			return;
-		} 
+		}
 		// New spritesheet
 		else
 		{

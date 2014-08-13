@@ -25,9 +25,9 @@
                 url:url,
                 cache:true,
                 track:true,
+                type:"text",
                 caller:singleton,
                 mimeOverride:"text",
-                async:false,
                 callback:function(res){
                     singleton[type+"Store"][url] = {script: res, type: type};
                     if(callback) callback(singleton[type+"Store"][url]);

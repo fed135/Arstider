@@ -29,6 +29,11 @@ define( "Arstider/Tween", [
 	Tween.DEFAULT_TIME = 1000;
 
 	/**
+	 * If tweens kill themselves when complete
+	 */
+	Tween.AUTO_KILL = false;
+
+	/**
 	 * Tween constructor
 	 * Used to create smooth animations
 	 * @class Tween
@@ -221,6 +226,11 @@ define( "Arstider/Tween", [
 		}
 		else{
 			this.completed = true;
+
+			if(Tween.AUTO_KILL)
+			{
+				this.kill();
+			}
 		}
 	};
 	

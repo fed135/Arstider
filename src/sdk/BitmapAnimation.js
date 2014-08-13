@@ -40,6 +40,7 @@ function (DisplayObject, SpriteSheetManager, Signal)
 
 		// Signals
 		this.animCompleteSignal = new Signal();
+		this.frameChangeSignal = new Signal();
 
 		// Default variables
 		this.isPlaying = true;
@@ -120,6 +121,7 @@ function (DisplayObject, SpriteSheetManager, Signal)
 		return false;
 	};
 
+
 	/**
 	 * Pauses the stepping, will resume at the exact smae frame, with the exact same delay before the next step
 	 * @type {function(this:BitmapAnimation)}
@@ -138,7 +140,7 @@ function (DisplayObject, SpriteSheetManager, Signal)
 	 */
     BitmapAnimation.prototype.resume = function()
     {
-    	this.isPlaying = false;
+    	this.isPlaying = true;
 		return this;
     };
 
@@ -424,6 +426,7 @@ function (DisplayObject, SpriteSheetManager, Signal)
 			this.currentBitmap.y = frameData.origin[1];
 		}
 		
+		this.frameChangeSignal.dispatch(this.frame, this);
 	};
 
 	BitmapAnimation.prototype._setImage = function(imageUrl)

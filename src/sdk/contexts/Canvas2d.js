@@ -61,12 +61,16 @@
 			context.__savedGlobalCompositeOperation = null;
 		};
 
+		Canvas2d.prototype.translate = function(context, x, y){
+			context.translate(x, y);
+		};
+
 		Canvas2d.prototype.transform = function(context, scX, skX, skY, scY, tX, tY){
 			context.transform(scX, skX, skY, scY, tX, tY);
 		};
 
-		Canvas2d.prototype.translate = function(context, x, y){
-			context.translate(x, y);
+		Canvas2d.prototype.scale = function(context, sx, sy){
+			context.scale(sx, sy);
 		};
 
 		Canvas2d.prototype.rotate = function(context, angle){
@@ -75,6 +79,10 @@
 
 		Canvas2d.prototype.alpha = function(context, opacity){
 			context.globalAlpha *= opacity;
+		};
+
+		Canvas2d.prototype.reset = function(context){
+			context.setTransform(1,0,0,1,0,0);
 		};
 
 		Canvas2d.prototype.setCompositionMode = function(context, mode){
@@ -104,20 +112,64 @@
 			context.drawImage(data, pX, pY, destWidth, destHeight, x, y, width, height);
 		};
 
-		Canvas2d.prototype.debugOutline = function(context, x, y, w, h){
+		Canvas2d.prototype.debugOutline = function(context, x, y, w, h, fill){
 				
 			var shadowSafe = context.shadowColor;
 			var prevAlpha = context.globalAlpha;
+			var strokeSafe = context.strokeStyle;
+			var lineSafe = context.lineWidth;
 
 			context.shadowColor = "transparent";
 			context.globalAlpha = 0.8;
 			context.lineWidth = 1;
-			context.strokeStyle = "red";
+			context.strokeStyle = fill;
 				
 			context.strokeRect(x, y, w, h);
 
 			context.globalAlpha = prevAlpha;
 			context.shadowColor = shadowSafe;
+			context.strokeStyle = strokeSafe;
+			context.lineWidth = lineSafe;
+		};
+
+		Canvas2d.prototype.debugOutlineComplex = function(context, x, y, points, fill){
+			if(!points) return;
+
+			var shadowSafe = context.shadowColor;
+			var prevAlpha = context.globalAlpha;
+			var strokeSafe = context.strokeStyle;
+			var lineSafe = context.lineWidth;
+
+			context.shadowColor = "transparent";
+			context.globalAlpha = 0.9;
+			context.lineWidth = 1;
+			context.strokeStyle = fill;
+
+			context.beginPath();
+			context.moveTo(points[0], points[1]);
+			context.lineTo(points[2], points[3]);
+			context.lineTo(points[4], points[5]);
+			context.lineTo(points[6], points[7]);
+			context.lineTo(points[0], points[1]);
+			context.stroke();
+			context.closePath();
+
+			//RP
+			context.lineWidth = 3;
+			context.strokeStyle = "white";
+
+			context.beginPath();
+			context.moveTo(x - 5, y);
+			context.lineTo(x + 5, y);
+			context.moveTo(x, y - 5);
+			context.lineTo(x, y + 5);
+			context.stroke();
+			context.closePath();	
+
+			context.globalAlpha = prevAlpha;
+			context.shadowColor = shadowSafe;
+			context.strokeStyle = strokeSafe;
+			context.lineWidth = lineSafe;
 		};
 
 		Canvas2d.prototype.clear = function(context, x,y,w,h){

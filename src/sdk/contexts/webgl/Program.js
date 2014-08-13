@@ -6,11 +6,12 @@ define("Arstider/contexts/webgl/Program", ["Arstider/contexts/webgl/Shader", "Ar
 		this.fragmentShader = null;
 
         this.context = context;
-        this.context.__program = {loaded:false};
 
         this.texture;
 
-        this.compileCallback = Arstider.emptyFunction;
+        this.compileCallbacks;
+
+        this.ready = false;
 	}
 
 	Program.prototype.setShaders = function(vertex, fragment, callback){
@@ -29,6 +30,8 @@ define("Arstider/contexts/webgl/Program", ["Arstider/contexts/webgl/Shader", "Ar
 
 	Program.prototype._compileShader = function(shader){
         var shader;
+
+        //console.log(shader.type, " shader :", shader.script);
 
         if(shader.type === "fragment"){
             this.fragmentShader = this.context.createShader(this.context.FRAGMENT_SHADER);
@@ -58,18 +61,25 @@ define("Arstider/contexts/webgl/Program", ["Arstider/contexts/webgl/Shader", "Ar
         if(this.vertexShader == null || this.fragmentShader == null) return;
 
         this.program = this.context.createProgram(this.context, [this.vertexShader, this.fragmentShader]);
-        this.context.__program = this.program;
 
         this.context.attachShader(this.program, this.vertexShader);
         this.context.attachShader(this.program, this.fragmentShader);
         this.context.linkProgram(this.program);
         this.context.useProgram(this.program);
 
-        this.program.texture = new Texture(this.context, this.program);
+        this.context.clearColor(0, 0, 0, 0);
 
-        this.context.clearColor(0.0, 0.0, 0.0, 1.0);
+        //this.context.disable(this.context.DEPTH_TEST);
+        //this.context.disable(this.context.CULL_FACE);
 
-        this.compileCallback();
+        //this.context.enable(this.context.BLEND);
+        //this.context.colorMask(true, true, true, this.transparent);
+        
+        this.texture = new Texture(this.context, this.program);
+
+        this.ready = true;
+
+        if(this.compileCallback) this.compileCallback();
     };
 
 	return Program;
