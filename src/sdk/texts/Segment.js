@@ -23,17 +23,17 @@ define("Arstider/texts/Segment", [], function(){
 
 	Segment.prototype.calculateWidth = function(context, font){
 		context.save();
-
 		this.applyStyles(context);
-		context.font = ((font.style == "")?"":(font.style + " ")) + font.size + " " + font.family;
-
-
 		this.width = context.measureText(this.text);
 		context.restore();
 	};
 
 	Segment.prototype.applyStyles = function(context, font){
+		for(var i = 0; i<this.styles.length){
+			this.styles[i].
+		}
 
+		context.font = ((font.style == "")?"":(font.style + " ")) + font.size + " " + font.family;
 	};
 
 	Segment.prototype.render = function(context, font){
