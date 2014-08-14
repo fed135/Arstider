@@ -176,6 +176,7 @@
 				this.pencil.dropShadow(context, element.shadowOffsetX, element.shadowOffsetY, element.shadowBlur, element.shadowColor);
 			}
 
+			//Problem 1 :
 			if(!complex){
 				t.translate(prevX, prevY);
 			}
@@ -200,6 +201,7 @@
 						if(node && node.data){
 							Performance.draws++;
 							if(element.largeData === true){
+								//Problem 2:
 								this.pencil.renderAt(context, node.data, (complex)?-xAnchor:element.x, (complex)?-yAnchor:element.y, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
 							}
 							else{
@@ -213,9 +215,11 @@
 				
 			//debug outlines
 			if(debug || element.showOutline === true){
+				//Problem 2-2:
 				this.pencil.debugOutline(context, (complex)?-xAnchor:element.x, (complex)?-yAnchor:element.y, element.width, element.height, "magenta");
 			}
 			
+			//Problem 3:
 			element.onScreen = this.checkOnScreen(context, element, t, xAnchor, yAnchor);
 
 			//runs post-render methods
