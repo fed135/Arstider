@@ -33,24 +33,26 @@ function ()
 		this.defaultAnim = params.defaultAnim;
 		this.fps = (params.fps>0) ? params.fps : 15;
 		this.animations = {};
-		this.images = {};
+		this.framesByName = {};
 
-		if(params.isImage){
+		this.baseUrl = fileInfo.path;
+
+		if(params.imagesAtlas){
 			// Parse the JSON data to fill animations
-			this.parseJSONImage(data, fileInfo.path);
+			this.parseJSONImages(data, this.baseUrl);
 		}else{
 			// Parse the JSON data to fill animations
-			this.parseJSON(data, fileInfo.path);
+			this.parseJSON(data, this.baseUrl);
 		}
 	};
 
-	JsonSpritesheet.prototype.getImage = function(imageName)
+	JsonSpritesheet.prototype.getFrameByName = function(frameName)
 	{
-		if(!this.images[imageName])
+		if(!this.framesByName[frameName])
 		{
-			console.log("Unable to get image "+imageName+" from the Spritesheet");
+			console.log("Unable to get frame or image "+frameName+" from the Spritesheet");
 		}
-		return this.images[imageName];
+		return this.framesByName[frameName];
 	}
 
 	JsonSpritesheet.prototype.getAnim = function(animName)
@@ -58,7 +60,7 @@ function ()
 		return this.animations[animName];
 	}
 
-    JsonSpritesheet.prototype.parseJSONImage = function(data, path)
+    JsonSpritesheet.prototype.parseJSONImages = function(data, path)
     {
 		// Spritesheet image in the meta object
 		var imageUrl = path + data.meta.image;
@@ -79,9 +81,8 @@ function ()
 			}
 
 			// Create frameInfo
-			frame = this.createFrame(imageUrl, frameData);
-			frameData.filename = frameData.filename.replace(".png", "");
-			this.images[frameData.filename] = frame;
+			frame = this.createFrame(imageUrl, i, frameData);
+			this.framesByName[frame.name] = frame;
 		}	
     }
 
@@ -154,16 +155,27 @@ function ()
 			}
 
 			// Create frameInfo
-			frame = this.createFrame(imageUrl, frameData);
-			frame.index = i;
+			frame = this.createFrame(imageUrl, i, frameData);
 
 			animation.frames.push(frame);
+			this.framesByName[frame.name] = frame;
 		}
 	}
 
-	JsonSpritesheet.prototype.createFrame = function(url, frameData){
+	JsonSpritesheet.prototype.createFrame = function(imageUrl, index, frameData){
+
+		var name = frameData.filename
+		if(name)
+		{
+			name = name.replace(".png", "");
+		} else {
+			name = index+"";
+		}
+
 		var frame = {
-			image:url,
+			index: index,
+			name:name,
+			image:imageUrl,
 			rect: [frameData.frame.x, frameData.frame.y, frameData.frame.w, frameData.frame.h],
 			origin: [frameData.spriteSourceSize.x, frameData.spriteSourceSize.y]
 		}

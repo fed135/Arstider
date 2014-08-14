@@ -420,6 +420,9 @@ function (DisplayObject, SpriteSheetManager, Signal)
 		this.currentBitmap.alpha = 1;
 		this.currentBitmap.loadSection(this.currentImageUrl, _rect[0], _rect[1], _rect[2], _rect[3]);
 
+		this.width = _rect[2];
+		this.height = _rect[3];
+
 		if(frameData.origin)
 		{
 			this.currentBitmap.x = frameData.origin[0];

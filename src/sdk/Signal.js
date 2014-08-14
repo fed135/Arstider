@@ -38,7 +38,7 @@ define("Arstider/Signal", [], /** @lends commons/Signal */ function(){
 
     Signal.prototype.removeAll = function() {
         this.__bindings = null;
-        this.__bindingsOnce.length = null;
+        this.__bindingsOnce = null;
     };
 
     Signal.prototype.dispatch = function() {

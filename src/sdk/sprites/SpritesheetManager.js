@@ -13,50 +13,49 @@ define("Arstider/sprites/SpritesheetManager",
 ],
 function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 {
-	var context = this;
+	var _instance;
 
-	// Public methods
-	this.get = get;
-
-	// Loaded spritesheets dictionnary, indexed by name
-	var spritesheets = {};
-
-	var loadingSpritesheetsCallbacks = {};
-
-	// Spritesheets overrides, indexed by name
-	var overrides = {};
-
-
-	function get(nameOrPath, params, onComplete)
+	function SpritesheetManager()
 	{
-		var fileInfo = getFileInfo(nameOrPath, "{{name}}.json");
+		this.defaultFileName = "{{name}}.json";
+
+		// Loaded spritesheets dictionnary, indexed by name
+		this.spritesheets = {};
+
+		this.loadCallbacks = {};
+
+		// Spritesheets overrides, indexed by name
+		this.overrides = {};
+	}
+
+	SpritesheetManager.prototype.get = function(nameOrPath, params, onComplete)
+	{
+		var fileInfo = getFileInfo(nameOrPath, this.defaultFileName);
 
 		var name = getName(fileInfo.name);
+		// Append params to name
+		params.name = name;
 
 		// Already Loading?
-		if(loadingSpritesheetsCallbacks[name]) 
+		if(this.loadCallbacks[name]) 
 		{
-			loadingSpritesheetsCallbacks[name].push(onComplete);
+			this.loadCallbacks[name].push(onComplete);
 			return;
 		}
 
 		// Cached?
-		if(spritesheets[name])
+		if(this.spritesheets[name])
 		{
 			onComplete( spritesheets[name] );
 			return;
 		}
+
 		// New spritesheet
-		else
-		{
-			if(!loadingSpritesheetsCallbacks[name]) loadingSpritesheetsCallbacks[name] = [];
-			loadingSpritesheetsCallbacks[name].push(onComplete);
-		}
+		if(!this.loadCallbacks[name]) this.loadCallbacks[name] = [];
+		this.loadCallbacks[name].push(onComplete);
 
-		// Append params to name
-		params.name = name;
-
-		loadJSON(fileInfo.url, function(data)
+		var context = this;
+		this.loadJSON(fileInfo.url, function(data)
 		{
 			var spritesheet;
 
@@ -66,7 +65,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 				spritesheet = new ZoeSpritesheet(data, params, fileInfo);
 
 				// Return to callback
-				onSpritesheetLoaded(name, spritesheet, params);
+				context.onSpritesheetLoaded(name, spritesheet, params);
 			}
 			
 			// Texture packer JSON Array format
@@ -75,7 +74,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 				spritesheet = new JsonSpritesheet(data, params, fileInfo);
 
 				// Return to callback
-				onSpritesheetLoaded(name, spritesheet, params);
+				context.onSpritesheetLoaded(name, spritesheet, params);
 			} 
 
 			// Grid format (OLD SDK2 format)
@@ -84,7 +83,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 				spritesheet = new GridSpritesheet(data, params, fileInfo, function() {
 
 					// Return to callback
-					onSpritesheetLoaded(name, spritesheet, params);
+					context.onSpritesheetLoaded(name, spritesheet, params);
 				});
 			} 
 
@@ -92,57 +91,95 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 			else {
 				console.log("SpritesheetManager ERROR: Unkown spritesheet format.");
 				console.log(data);
-				onSpritesheetLoaded(name, spritesheet, params);
+				context.onSpritesheetLoaded(name, spritesheet, params);
 				return;
 			}
 
 		});
 	}
 
-	function onSpritesheetLoaded(name, spritesheet, params)
+	SpritesheetManager.prototype.onSpritesheetLoaded = function(name, spritesheet, params)
 	{
-		// Spritesheet overrides
-		var overrides = (params && params.overrides) ? params.overrides : null;
-		if(overrides)
-		{
-			if(overrides.animations)
-			{
-				if(overrides.fps>0) spritesheet.fps = fps;
+		// Singleton-registered overrides (From your game code calling SpritesheetManager.registerAnimationOverrides() )
+		this.applyOverrides(this.overrides[name], name, spritesheet, params);
 
-				for(var animName in overrides.animations)
-				{
-					var animOverrides = overrides.animations[animName];
-
-					for(var p in animOverrides)
-					{
-						spritesheet.animations[animName][p] = animOverrides[p];
-					}
-					
-					//console.log(animName, animOverrides, spritesheet.animations[animName]);
-				}
-			}
-		}
+		// Run-time overrides
+		if(params.overrides) this.applyOverrides(params.overrides, name, spritesheet, params);
 
 		// Assign to cache
-		spritesheets[name] = spritesheet;
+		this.spritesheets[name] = spritesheet;
 
-		if(loadingSpritesheetsCallbacks[name])
+		if(this.loadCallbacks[name])
 		{
-			var n = loadingSpritesheetsCallbacks[name].length;
+			var n = this.loadCallbacks[name].length;
 			
 			for (var i = 0; i < n; i++) {
-				var callback = loadingSpritesheetsCallbacks[name][i];
+				var callback = this.loadCallbacks[name][i];
 				if(callback) callback(spritesheet);
 			};
 
 			// Flush callbacks
-			loadingSpritesheetsCallbacks[name] = null;
+			this.loadCallbacks[name] = null;
 		}
 	}
 
-	function loadJSON(url, onComplete)
+	SpritesheetManager.prototype.registerOverrides = function(overrides)
 	{
-		var req = new Request({
+		console.log("Animation overrides: ", overrides);
+
+		for (var i = 0; i < overrides.length; i++)
+		{
+			var overrideData = overrides[i];
+
+			var fileInfo = getFileInfo(overrideData.spritesheet, this.defaultFileName);
+
+			var name = getName(fileInfo.name);
+
+			console.error(name);
+		
+			this.overrides[name] = overrideData;
+		};
+	}
+
+	SpritesheetManager.prototype.applyOverrides = function(overrideData, name, spritesheet, params)
+	{
+		if(!overrideData) return;
+
+		console.log("Applying overrides to "+name, overrideData);
+
+		if(overrideData)
+		{
+			if(overrideData.animations)
+			{
+				// Spriteshett default FPS
+				if(overrideData.fps>0) spritesheet.fps = fps;
+
+				for(var animName in overrideData.animations)
+				{
+					var animOverrides = overrideData.animations[animName];
+
+					for(var p in animOverrides)
+					{
+						// Anim does not exists
+						if(!spritesheet.animations[animName])
+						{
+							// TODO: create anim if possible
+							console.error("SpritesheetManager error: Anim '"+animName+"' not found for overrides: ", animName, animOverrides);
+							
+							continue;
+						}
+						spritesheet.animations[animName][p] = animOverrides[p];
+					}
+					
+					console.log(animName, animOverrides, spritesheet.animations[animName]);
+				}
+			}
+		}
+	}
+
+	SpritesheetManager.prototype.loadJSON = function(url, onComplete)
+	{
+		var request = new Request({
 			url:url,
 			caller:this,
 			cache:false,
@@ -152,6 +189,8 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 				onComplete(file);
 			}
 		}).send();
+
+		return request;
 	}
 
 	function getName(nameOrPath)
@@ -223,6 +262,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 		return (dot > 0) ? fileName.substr(0, dot) : fileName;
 	}
 
+	_instance = new SpritesheetManager();
 
-	return context;
+	return _instance;
 });
