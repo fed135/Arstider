@@ -15,15 +15,19 @@ function(DisplayObject, TextField, Mouse, Browser){
 		this.currentState = null;
 		this.states = {};
 		this.currentCursor = Mouse.getCursor();
+		this.hitbox = Arstider.checkIn(props.hitbox, Arstider.checkIn(props.hitBox, null));
 
 		for(var s in props.states) this.addState(s, props.states[s]);
 
 		if(this.enabled) this.showState("normal");
 		else this.showState("disabled");
+
+		if(this.hitbox != null) this.addHitbox(this.hitbox);		
 	}
 	Arstider.Inherit(Button, DisplayObject);
 
 	Button.prototype._onhover = function(){
+		if(this.hitbox != null) return;
 		if(this.enabled && !Browser.isMobile){
 			Mouse.setCursor("pointer");
 			this.showState("hover");
@@ -32,6 +36,7 @@ function(DisplayObject, TextField, Mouse, Browser){
 	};
 
 	Button.prototype._onleave = function(){
+		if(this.hitbox != null) return;
 		Mouse.setCursor(this.currentCursor);
 		if(this.enabled) this.showState("normal");
 		else this.showState("disabled");
@@ -39,6 +44,7 @@ function(DisplayObject, TextField, Mouse, Browser){
 	};
 	
 	Button.prototype._onpress = function(){
+		if(this.hitbox != null) return;
 		if(this.enabled){
 			this.showState("pressed");
 			DisplayObject.prototype._onpress.call(this);
@@ -46,6 +52,7 @@ function(DisplayObject, TextField, Mouse, Browser){
 	};
 
 	Button.prototype._onrelease = function(){
+		if(this.hitbox != null) return;
 		if(this.enabled){
 			Mouse.setCursor(this.currentCursor);
 			this.showState("normal");
@@ -134,6 +141,44 @@ function(DisplayObject, TextField, Mouse, Browser){
 		}
 
 		this.currentState = name;
+	};
+
+	Button.prototype.addHitbox = function(props){
+		var thisRef = this;
+
+		this.hitbox = new DisplayObject({
+			x : props[0],
+			y : props[1],
+			width : props[2],
+			height : props[3],
+			onleave: function(){
+				Mouse.setCursor(thisRef.currentCursor);
+				if(thisRef.enabled) thisRef.showState("normal");
+				else thisRef.showState("disabled");
+				DisplayObject.prototype._onleave.call(thisRef);
+			},
+			onrelease: function(){
+				if(thisRef.enabled){
+					Mouse.setCursor(thisRef.currentCursor);
+					thisRef.showState("normal");
+					DisplayObject.prototype._onrelease.call(thisRef);
+				}
+			},
+			onhover: function(){
+				if(thisRef.enabled && !Browser.isMobile){
+					Mouse.setCursor("pointer");
+					thisRef.showState("hover");
+					DisplayObject.prototype._onhover.call(thisRef);
+				}
+			},
+			onpress: function(){
+				if(thisRef.enabled){
+					thisRef.showState("pressed");
+					DisplayObject.prototype._onpress.call(thisRef);
+				}
+			}
+		})
+		this.addChild(this.hitbox);
 	};
 
 	Button.prototype.enable = function(){
