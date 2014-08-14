@@ -123,12 +123,12 @@
 			 * Callback function
 			 * @type {function}
 			 */
-			this.callback = Arstider.checkIn(props.callback, Arstider.emptyFunction);
+			this.callback = Arstider.checkIn(props.callback, null);
 			/**
 			 * Method to call on progress
 			 * @type {function}
 			 */
-			this.progress = Arstider.checkIn(props.progress, Arstider.emptyFunction);
+			this.progress = Arstider.checkIn(props.progress, null);
 			/**
 			 * Whether to track the call in the preloader or not
 			 * @type {boolean}
@@ -148,7 +148,7 @@
 			 * On error function
 			 * @type {function}
 			 */
-			this.error = Arstider.checkIn(props.error, Arstider.emptyFunction);
+			this.error = Arstider.checkIn(props.error, null);
 			/**
 			 * Reference to the calling object, for callback scope
 			 * @type {string}
