@@ -134,8 +134,6 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 			var fileInfo = getFileInfo(overrideData.spritesheet, this.defaultFileName);
 
 			var name = getName(fileInfo.name);
-
-			console.error(name);
 		
 			this.overrides[name] = overrideData;
 		};
