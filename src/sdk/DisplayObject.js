@@ -257,7 +257,9 @@
 						if(thisRef.height == 0) thisRef.height = img.height;
 					}
 					if(success) success(img);
-					else thisRef.onload();
+					else{
+						if(thisRef.onload) thisRef.onload();
+					}
 				}
 			});
 		};

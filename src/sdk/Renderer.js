@@ -35,19 +35,31 @@
 			this.abort = false;
 		}
 
-		Renderer.prototype.checkOnScreen = function(context, element, points){
-			var mW = context.canvas.width;
-			var mH = context.canvas.height;
+		Renderer.prototype.checkOnScreen = function(context, element, matrix, xo, yo){
+			var 
+				mW = context.canvas.width,
+				mH = context.canvas.height,
+				fx = -xo,
+				fy = -yo,
+				fh = element.height - yo,
+				fw = element.width - xo,
+				p1 = matrix.transformPoint(fx, fy),
+				p2 = matrix.transformPoint(fw, fy),
+				p3 = matrix.transformPoint(fx, fh),
+				p4 = matrix.transformPoint(fw, fh)
+			;
 
-			if((points[0] < mW && points[0] >= 0) ||
-			(points[2] < mW && points[2] >= 0) ||
-			(points[4] < mW && points[4] >= 0) ||
-			(points[6] < mW && points[6] >= 0)){
+			element.global.points = [p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, p4.x, p4.y];
 
-				if((points[1] < mH && points[1] >= 0) ||
-					(points[3] < mH && points[3] >= 0) ||
-					(points[5] < mH && points[5] >= 0) ||
-					(points[7] < mH && points[7] >= 0)){
+			if((p1.x < mW && p1.x >= 0) ||
+			(p2.x <= mW && p2.x > 0) ||
+			(p3.x < mW && p3.x >= 0) ||
+			(p4.x <= mW && p4.x > 0)){
+
+				if((p1.y < mH && p1.y >= 0) ||
+					(p2.y <= mH && p2.y > 0) ||
+					(p3.y < mH && p3.y >= 0) ||
+					(p4.y <= mH && p4.y > 0)){
 					return true;
 				}
 			}
@@ -60,12 +72,14 @@
 		 * @type {function}
 		 * @param {Object} curChild Entity-type element to draw and call draw upon the children of
 		 */
-		Renderer.prototype.renderChild = function(context, element, pre, post, debug, callback, main){
+		Renderer.prototype.renderChild = function(context, element, complex, pre, post, currMatrix, debug, callback, main){
 
 			var 
 				xAnchor = 0,
 				yAnchor = 0,
-				points
+				t,
+				prevX,
+				prevY
 			;
 
 			if(!element || element.__skip) return;
@@ -82,20 +96,14 @@
 			if(!element._skipUpdateBubble && element.update) Performance.numUpdates++; 
 
 			if(element.alpha <= 0) return;
+
+			t = new MatrixTransform(this.pencil, context);
+			if(currMatrix){
+				t.setMatrix(currMatrix.matrix);
+			}
 				
 			xAnchor = (element.width * element.rpX);
 			yAnchor = (element.height * element.rpY);
-
-			points = [
-				- xAnchor, 
-				- yAnchor, 
-				element.width - xAnchor, 
-				- yAnchor,
-				- xAnchor,
-				element.height - yAnchor,
-				element.width - xAnchor,
-				element.height - yAnchor
-			];
 
 			//Update globals
 			if(element.global){
@@ -124,56 +132,56 @@
 				}
 			}
 
-			//Visual translate
-			this.pencil.translate(context, element.x + xAnchor, element.y + yAnchor);
+			//return to 0
+			prevX = t.matrix[4];
+			prevY = t.matrix[5];
+			t.translate(-prevX, -prevY);
 
 			if(element.rotation != 0){
 				Performance.transforms++;
-				this.pencil.rotate(context, element.rotation);
-				MatrixTransform.rotation(element.global.rotation * Arstider.degToRad, points);
+				t.rotate(element.rotation * Arstider.degToRad);
+				complex = true;
 			}
 
 			if(element.scaleX != 1 || element.scaleY != 1){
 				Performance.transforms++;
-				this.pencil.scale(context, element.scaleX, element.scaleY);
-				MatrixTransform.scaling(element.global.scaleX, element.global.scaleY, points);
+				t.scale(element.scaleX, element.scaleY);
+				complex = true;
 			}
 				
 			if(element.skewX != 0 || element.skewY != 0){
 				Performance.transforms++;
-				this.pencil.transform(context, 1, element.skewX, element.skewY, 1, 0, 0);
-				MatrixTransform.skewing(element.global.skewX, element.global.skewY, points);
+				//TODO
 			}
-
-			MatrixTransform.translation(element.global.x, element.global.y, points);
 
 			//Alpha
 			if(element.alpha != 1){
 				Performance.transforms++;
-				needRestore = true;
 				this.pencil.alpha(context, element.alpha);
 			}
 			
 			//Composite Mode / Mask
 			if(element.compositeMode != Arstider.defaultComposition){
 				Performance.transforms++;
-				needRestore = true;
 				this.pencil.setCompositionMode(context, element.compositeMode);
 			} 
 			else if(element.mask === true){
 				Performance.transforms++;
-				needRestore = true;
 				this.pencil.setCompositionMode(context, "destination-in");
 			}
 				
 			//Shadow
 			if(element.shadowColor != Arstider.defaultColor){
-				needRestore = true;
 				Performance.transforms++;
 				this.pencil.dropShadow(context, element.shadowOffsetX, element.shadowOffsetY, element.shadowBlur, element.shadowColor);
 			}
 
-			element.onScreen = this.checkOnScreen(context, element, points);
+			if(!complex){
+				t.translate(prevX, prevY);
+			}
+			else{
+				t.translate(prevX + element.x, prevY + element.y);
+			}
 
 			//Runs pre-render method:
 			if(pre) pre(element);
@@ -192,10 +200,10 @@
 						if(node && node.data){
 							Performance.draws++;
 							if(element.largeData === true){
-								this.pencil.renderAt(context, node.data, -xAnchor, -yAnchor, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
+								this.pencil.renderAt(context, node.data, (complex)?-xAnchor:element.x, (complex)?-yAnchor:element.y, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
 							}
 							else{
-								this.pencil.renderAt(context, node.data, -xAnchor, -yAnchor, element.width, element.height);
+								this.pencil.renderAt(context, node.data, (complex)?-xAnchor:element.x, (complex)?-yAnchor:element.y, element.width, element.height);
 							}
 						}
 						node = null;
@@ -205,9 +213,11 @@
 				
 			//debug outlines
 			if(debug || element.showOutline === true){
-				this.pencil.debugOutline(context, -xAnchor, -yAnchor, element.width, element.height, "magenta");
+				this.pencil.debugOutline(context, (complex)?-xAnchor:element.x, (complex)?-yAnchor:element.y, element.width, element.height, "magenta");
 			}
-				
+			
+			element.onScreen = this.checkOnScreen(context, element, t, xAnchor, yAnchor);
+
 			//runs post-render methods
 			if(post) post(element);
 				
@@ -217,22 +227,19 @@
 					var len = element.children.length;
 					for(var li=0; li<len; li++){
 						if(element.children[li]){
-							this.renderChild(context, element.children[li], pre, post, debug);
+							this.renderChild(context, element.children[li], complex, pre, post, t, debug);
 						}
 					}
 					len = null;
 				}
 			}
-
-			//restore x position
-			this.pencil.translate(context, -(element.x + xAnchor), -(element.y + yAnchor));
 				
 			//Restore
 			this.pencil.restore(context);
-			//this.pencil.reset(context);
+			this.pencil.reset(context);
 			if(debug || element.showOutline === true){
 				if(element.data || element.draw){
-					this.pencil.debugOutlineComplex(context, element.global.x, element.global.y, points, "cyan");
+					this.pencil.debugOutlineComplex(context, element.global.x, element.global.y, element.global.points, "cyan");
 				}
 			}
 
@@ -283,7 +290,7 @@
 		Renderer.prototype.draw = function(context, element, pre, post, debug, callback){
 			this._recoverContextPencil(context, function recoverContext(){
 				singleton.reset(context);
-				singleton.renderChild.apply(singleton, [context, element, 0, 0, 0, 0, pre, post, debug, callback, true]);
+				singleton.renderChild.apply(singleton, [context, element, false, pre, post, null, debug, callback, true]);
 			});
 		};
 			
