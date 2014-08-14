@@ -46,7 +46,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 		// Cached?
 		if(this.spritesheets[name])
 		{
-			onComplete( spritesheets[name] );
+			onComplete( this.spritesheets[name] );
 			return;
 		}
 
