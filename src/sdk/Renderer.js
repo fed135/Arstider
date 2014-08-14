@@ -34,8 +34,6 @@
 			
 			this.pencil = null;
 
-			this.padding = 1;
-
 			this.abort = false;
 		}
 			
@@ -90,8 +88,6 @@
 			if(complexParent){
 				xAnchor = (element.width * element.rpX);
 				yAnchor = (element.height * element.rpY);
-				xOffset += xAnchor;
-				yOffset += yAnchor;
 			}
 
 			//Update globals
@@ -106,6 +102,8 @@
 				element.global.height = element.height;
 				element.global.rotation = element.rotation;
 				element.global.alpha = element.alpha;
+				element.global._xOffset = xOffset;
+				element.global._yOffset = yOffset;
 
 				if(element.parent){
 					element.global.scaleX *= element.parent.global.scaleX;
@@ -135,7 +133,8 @@
 
 				currX = -xAnchor;
 				currY = -yAnchor;
-
+				xOffset += xAnchor;
+				yOffset += yAnchor;
 
 				MatrixTransform.scaling(element.global.scaleX, element.global.scaleY, element.global.points);
 				MatrixTransform.skewing(element.global.skewX, element.global.skewY, element.global.points);

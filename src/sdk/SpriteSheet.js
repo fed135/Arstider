@@ -27,7 +27,7 @@ define( "Arstider/SpriteSheet", ["Arstider/Bitmap", "Arstider/Sequence"], /** @l
 		this.frameWidth = Arstider.checkIn(props.width, 0);
 		this.frameHeight = Arstider.checkIn(props.height, 0);
 				
-		this.onload = Arstider.checkIn(props.onload, Arstider.emptyFunction);
+		this.onload = Arstider.checkIn(props.onload, null);
 		
 		var url = Arstider.checkIn(Arstider.checkIn(props.data, props.bitmap), null);
 		
@@ -71,7 +71,7 @@ define( "Arstider/SpriteSheet", ["Arstider/Bitmap", "Arstider/Sequence"], /** @l
 				if(thisRef.width == 0) thisRef.width = img.width;
 				if(thisRef.height == 0) thisRef.height = img.height;
 				
-				thisRef.onload();
+				if(thisRef.onload) thisRef.onload();
 			}
 		});
 	};

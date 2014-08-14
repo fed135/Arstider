@@ -243,56 +243,56 @@
 			 * @override
 			 * @type {function(this:Entity)}
 			 */
-			this.onpress = Arstider.checkIn(props.onpress, Arstider.emptyFunction);
+			this.onpress = Arstider.checkIn(props.onpress, null);
 			
 			/**
 			 * User-defined behavior when element is pressed
 			 * @override
 			 * @type {function(this:Entity)}
 			 */
-			this.onrelease = Arstider.checkIn(props.onrelease, Arstider.emptyFunction);
+			this.onrelease = Arstider.checkIn(props.onrelease, null);
 			
 			/**
 			 * User-defined behavior when element is pressed
 			 * @override
 			 * @type {function(this:Entity)}
 			 */
-			this.onhover = Arstider.checkIn(props.onhover, Arstider.emptyFunction);
+			this.onhover = Arstider.checkIn(props.onhover, null);
 			
 			/**
 			 * User-defined behavior when element is pressed
 			 * @override
 			 * @type {function(this:Entity)}
 			 */
-			this.onleave = Arstider.checkIn(props.onleave, Arstider.emptyFunction);
+			this.onleave = Arstider.checkIn(props.onleave, null);
 			
 			/**
 			 * User-defined behavior when element is pressed, then released
 			 * @override
 			 * @type {function(this:Entity)}
 			 */
-			this.onclick = Arstider.checkIn(props.onclick, Arstider.emptyFunction);
+			this.onclick = Arstider.checkIn(props.onclick, null);
 			
 			/**
 			 * User-defined behavior when element is pressed with the right mouse button, then released
 			 * @override
 			 * @type {function(this:Entity)}
 			 */
-			this.onrightclick = Arstider.checkIn(props.onrightclick, Arstider.emptyFunction);
+			this.onrightclick = Arstider.checkIn(props.onrightclick, null);
 			
 			/**
 			 * User-defined behavior when element is pressed with the right mouse button, then released
 			 * @override
 			 * @type {function(this:Entity)}
 			 */
-			this.ondoubleclick = Arstider.checkIn(props.ondoubleclick, Arstider.emptyFunction);
+			this.ondoubleclick = Arstider.checkIn(props.ondoubleclick, null);
 			
 			/**
 			 * User-defined behavior when element data has finished loading
 			 * @override
 			 * @type {function(this:Entity)}
 			 */
-			this.onload = Arstider.checkIn(props.onload, Arstider.emptyFunction);
+			this.onload = Arstider.checkIn(props.onload, null);
 			
 			/**
 			 * Whether or not to display de debug outline
@@ -408,7 +408,7 @@
 			 * Called after disposal of data
 			 * @type {function(this:Entity)}
 			 */
-			this.onunload = Arstider.checkIn(props.onunload, Arstider.emptyFunction);
+			this.onunload = Arstider.checkIn(props.onunload, null);
 
 			/**
 			 * Complex interactive element - prevents intensive lookup
@@ -418,11 +418,11 @@
 		};
 		
 		/**
-		 * User-defined behavior for asynchronous, constant logic (60 times per sec)
+		 * User-defined behavior for asynchronous, constant logic
 		 * @override
 		 * @type {function(this:Entity)}
 		 */
-		Entity.prototype.update = Arstider.emptyFunction;
+		Entity.prototype.update = null;
 		
 		/**
 		 * Private logic when element is hovered
@@ -432,7 +432,7 @@
 		Entity.prototype._onhover = function(){
 			this._hovered = true;
 			
-			this.onhover();
+			if(this.onhover) this.onhover();
 		};
 		
 		/**
@@ -445,7 +445,7 @@
 			this._preclick = false;
 			this._rightPressed = false;
 			
-			this.onleave();
+			if(this.onleave) this.onleave();
 		};
 		
 		/**
@@ -456,7 +456,7 @@
 		Entity.prototype._onpress = function(){
 			this._pressed = true;
 			
-			this.onpress();
+			if(this.onpress) this.onpress();
 		};
 		
 		/**
@@ -470,12 +470,14 @@
 			var time = Arstider.timestamp();
 			
 			if(this._preclick){
-				if(time - this._doubleClickCheck < this._doubleClickDelay && this.ondoubleclick != Arstider.emptyFunction) this.ondoubleclick();
-				else this.onclick();
+				if(time - this._doubleClickCheck < this._doubleClickDelay && this.ondoubleclick) this.ondoubleclick();
+				else{
+					if(this.onclick) this.onclick();
+				}
 				
 				this._doubleClickCheck = time;
 			}
-			this.onrelease();
+			if(this.onrelease) this.onrelease();
 			
 			this._preclick = false;
 		};
@@ -487,7 +489,7 @@
 		 */
 		Entity.prototype._onrightclick = function(){
 			this._rightPressed = false;
-			this.onrightclick();
+			if(this.onrightclick) this.onrightclick();
 		};
 		
 		/**
@@ -520,7 +522,7 @@
 				}
 			}
 			
-			if(!this._skipUpdateBubble) this.update(dt);
+			if(!this._skipUpdateBubble && this.update) this.update(dt);
 			
 			if(this.children && this.children.length > 0){
 				for(var i = 0; i<this.children.length; i++){

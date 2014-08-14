@@ -25,7 +25,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 		this.attempt = 0;
 		this.url = Arstider.checkIn(props.data, (props.url || ""));
 		this.data = new Image();
-		this.callback = props.callback || Arstider.emptyFunction;
+		this.callback = props.callback || null;
 		this.width = Arstider.checkIn(props.width, 0);
 		this.height = Arstider.checkIn(props.height, 0);
 		this.id = this.url+Arstider.timestamp()+Math.random();
@@ -194,7 +194,9 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 			thisRef.height = thisRef.data.height;
 			
 			if(callback) callback(thisRef);
-			else thisRef.callback(thisRef);
+			else{
+				if(thisRef.callback) thisRef.callback(thisRef);
+			}
 		};
 		this.data.src = url;
 	};
