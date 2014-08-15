@@ -150,7 +150,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 			if(overrideData.animations)
 			{
 				// Spriteshett default FPS
-				if(overrideData.fps>0) spritesheet.fps = fps;
+				if(overrideData.fps>0) spritesheet.fps = overrideData.fps;
 
 				for(var animName in overrideData.animations)
 				{

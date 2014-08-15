@@ -146,7 +146,7 @@ function ()
 
 			// New animation?
 			if(!animation) {
-				animation = this.animations[animName] = Arstider.clone(animationData);
+				animation = this.animations[animName] = Arstider.clone(frameData);
 
 				// Write or re-write BitmapAnimation variables
 				animation.name = animName;
