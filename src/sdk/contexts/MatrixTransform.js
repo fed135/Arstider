@@ -44,7 +44,7 @@ define("Arstider/contexts/MatrixTransform", [], function(){
     MatrixTransform.prototype.restore = function() {
         if (this.stack.length > 0) {
             var matrix = this.stack.pop();
-            this.setMatrix(matrix);
+            this.setMatrix(matrix, true);
         }
         
         if (this.pencil) this.pencil.restore(this.context);
@@ -103,22 +103,18 @@ define("Arstider/contexts/MatrixTransform", [], function(){
     // Matrix extensions
     //==========================================
 
-    MatrixTransform.prototype.rotateDegrees = function(deg) {
-        var rad = deg * Math.PI / 180;
-        this.rotate(rad);
-    };
 
     MatrixTransform.prototype.rotateAbout = function(rad, x, y) {
         this.translate(x, y);
         this.rotate(rad);
-        this.translate(-x, -y);
+        //this.translate(-x, -y);
         this.setTransform();
     };
 
-    MatrixTransform.prototype.rotateDegreesAbout = function(deg, x, y) {
+    MatrixTransform.prototype.scaleAbout = function(scaleX, scaleY, x, y) {
         this.translate(x, y);
-        this.rotateDegrees(deg);
-        this.translate(-x, -y);
+        this.scale(scaleX, scaleY);
+        //this.translate(-x, -y);
         this.setTransform();
     };
     
