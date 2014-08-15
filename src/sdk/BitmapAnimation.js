@@ -41,6 +41,7 @@ function (DisplayObject, SpriteSheetManager, Signal)
 		// Signals
 		this.animCompleteSignal = new Signal();
 		this.frameChangeSignal = new Signal();
+		this.onReadySignal = new Signal();
 
 		// Default variables
 		this.isPlaying = true;
@@ -48,6 +49,9 @@ function (DisplayObject, SpriteSheetManager, Signal)
 		// Collection of bitmaps
 		this.bitmaps = {};
 
+		// Default RPX+RPY (origin)
+		this.rpX = this.rpY = 0.5;
+		
 		// Get into SDK
 		Arstider.Super(this, DisplayObject, props);
 
@@ -164,6 +168,12 @@ function (DisplayObject, SpriteSheetManager, Signal)
 			{
 				this._onAnimComplete();
 			}
+		}
+
+		if(!this.isReady)
+		{
+			this.isReady = true;
+			this.onReadySignal.dispatch();
 		}
 	};
 
@@ -416,17 +426,37 @@ function (DisplayObject, SpriteSheetManager, Signal)
 		// No image to draw?
 		if(!this.currentBitmap) return;
 
-		// loadSection = function(url, x,y,w,h, success) 
+		
 		this.currentBitmap.alpha = 1;
-		this.currentBitmap.loadSection(this.currentImageUrl, _rect[0], _rect[1], _rect[2], _rect[3]);
 
-		this.width = _rect[2];
-		this.height = _rect[3];
+		/* DisplayObject.loadSection 
+		loadSection = function(url, x,y,w,h, success) 
+		this.currentBitmap.loadSection(this.currentImageUrl, _rect[0], _rect[1], _rect[2], _rect[3]); */
 
+		/* MANUAL DisplayObject.loadSection */
+		this.currentBitmap.width = this.currentBitmap.dataWidth = _rect[2];
+		this.currentBitmap.height = this.currentBitmap.dataHeight = _rect[3];
+		//this.currentBitmap.loadBitmap(this.currentImageUrl);
+		this.currentBitmap.largeData = true;
+		this.currentBitmap.xOffset = _rect[0];
+		this.currentBitmap.yOffset = _rect[1];
+
+		// Offset bitmap to fit origin point
 		if(frameData.origin)
 		{
 			this.currentBitmap.x = frameData.origin[0];
 			this.currentBitmap.y = frameData.origin[1];
+		}
+
+		// Set BitmapAnimation variables for outside use
+		this.width = _rect[2];
+		this.height = _rect[3];
+
+		// Got original source size?
+		if(frameData.sourceSize)
+		{
+			this.dataWidth = frameData.sourceSize[0];
+			this.dataHeight = frameData.sourceSize[1];
 		}
 		
 		this.frameChangeSignal.dispatch(this.frame, this);
@@ -447,7 +477,7 @@ function (DisplayObject, SpriteSheetManager, Signal)
 
 		if(!this.currentBitmap)
 		{
-			this.currentBitmap = new DisplayObject();
+			this.currentBitmap = new DisplayObject({bitmap:imageUrl});
 			this.addChild(this.currentBitmap);
 			this.bitmaps[imageUrl] = this.currentBitmap;
 		}

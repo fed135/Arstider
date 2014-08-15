@@ -146,7 +146,7 @@ function ()
 
 			// New animation?
 			if(!animation) {
-				animation = this.animations[animName] = Arstider.clone(frameData);
+				animation = this.animations[animName] = {}; //Arstider.clone(frameData);
 
 				// Write or re-write BitmapAnimation variables
 				animation.name = animName;
@@ -177,7 +177,8 @@ function ()
 			name:name,
 			image:imageUrl,
 			rect: [frameData.frame.x, frameData.frame.y, frameData.frame.w, frameData.frame.h],
-			origin: [frameData.spriteSourceSize.x, frameData.spriteSourceSize.y]
+			origin: [frameData.spriteSourceSize.x, frameData.spriteSourceSize.y],
+			sourceSize: [frameData.sourceSize.w, frameData.sourceSize.h]
 		}
 		return frame;
 	}

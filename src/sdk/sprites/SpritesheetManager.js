@@ -143,7 +143,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 	{
 		if(!overrideData) return;
 
-		console.log("Applying overrides to "+name, overrideData);
+		//console.log("Applying overrides to "+name, overrideData);
 
 		if(overrideData)
 		{
@@ -169,7 +169,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 						spritesheet.animations[animName][p] = animOverrides[p];
 					}
 					
-					console.log(animName, animOverrides, spritesheet.animations[animName]);
+					//console.log(animName, animOverrides, spritesheet.animations[animName]);
 				}
 			}
 		}

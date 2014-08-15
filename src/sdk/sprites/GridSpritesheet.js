@@ -145,7 +145,8 @@ function (Bitmap)
 				this.frameWidth, 
 				this.frameHeight
 				],
-			origin: [0, 0]
+			//origin: [0, 0],
+			sourceSize: [this.frameWidth, this.frameHeight]
 		}
 
 		return frameData;
