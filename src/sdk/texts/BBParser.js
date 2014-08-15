@@ -43,6 +43,7 @@
 				param : true,
 				render:function(context, font, rule, segment){
 					segment.width = rule.substring(2);
+					segment.isTab = true;
 				}
 			}
 		},
@@ -81,7 +82,7 @@
 				currentStyle = null,
 				segments = []
 			;
-			
+
 			carot = str.indexOf("[[");
 			
 			//If no tags or string all parsed
@@ -89,7 +90,7 @@
 				if(str !== ""){
 					segments.push(new Segment(str));
 				}
-				return true;
+				return segments;
 			}
 			else{
 				//segment before carot
@@ -122,7 +123,7 @@
 					segments.push(cut);
 					
 					//reparse the rest
-					segments = segments.concat(this.parse(str.substring(cutStart), styles));
+					segments = segments.concat(singleton.parse(str.substring(cutStart), styles));
 				}
 				else{
 					if(currentStyle != null){
@@ -133,7 +134,7 @@
 						};
 
 						if(BBTagsList[currentStyle].param === true){
-							stl.rule = str.substring(carot+4, cutStart-2));
+							stl.rule = str.substring(carot+4, cutStart-2);
 						}
 					}
 				}
@@ -150,17 +151,17 @@
 					segments.push(cut);
 					
 					//reparse the rest
-					segments = segments.concat(this.parse(str.substring(cutStart), styles));
+					segments = segments.concat(singleton.parse(str.substring(cutStart), styles));
 				}
 				else{
 					if(currentStyle != null){
 						styles.push(currentStyle);
 					}
-					segments = segments.concat(this.parse(str.substring(cutStart), styles));
+					segments = segments.concat(singleton.parse(str.substring(cutStart), styles));
 				}
 			}
 
-			return singleton.splitInWords(segments);
+			return segments;
 		};
 
 		BBParser.prototype.splitInWords = function(segments){
@@ -175,10 +176,10 @@
 			for (i = 0; i<segments.length; i++) {
 				seg = segments[i].text.split(" ");
 				for(u = 0; u<seg.length; u++){
-					ret.push(new Segment(seg[u], segments[i].styles))
+					ret.push(new Segment(seg[u] + " ", segments[i].styles));
 				}
-			};
-
+			}
+			
 			return ret;
 		};
 			

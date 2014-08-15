@@ -19,27 +19,44 @@ define("Arstider/texts/Segment", [], function(){
 		this.styles = Arstider.checkIn(styles, []);
 
 		this.width = 0;
+
+		this.isTab = false;
 	}
 
 	Segment.prototype.calculateWidth = function(context, font){
+		if(this.isTab) return;
+		if(this.text.indexOf("<br>") != -1){
+			this.width = 0;
+			return;
+		}
+
 		context.save();
-		this.applyStyles(context);
-		this.width = context.measureText(this.text);
+		this.applyStyles(context, font);
+		this.width = context.measureText(this.text).width;
 		context.restore();
 	};
 
 	Segment.prototype.applyStyles = function(context, font){
-		for(var i = 0; i<this.styles.length){
-			this.styles[i].
+		for(var i = 0; i<this.styles.length; i++){
+			this.styles[i].render(context, font, this.styles[i].rule, this);
 		}
 
-		context.font = ((font.style == "")?"":(font.style + " ")) + font.size + " " + font.family;
+		context.font = ((font.bold)?"bold ":"") + ((font.italic)?"italic ":"") + font.size + " " + font.family;
 	};
 
-	Segment.prototype.render = function(context, font){
+	Segment.prototype.render = function(context, font, x, y, stroke, fill){
+
 		context.save();
 
-		this.applyStyles(context);
+		this.applyStyles(context, font);
+
+		if(stroke) context.strokeText(this.text, Arstider.chop(x), Arstider.chop(y));
+		if(fill){
+			if(stroke && font.shadowColor){
+				context.shadowColor = Arstider.defaultColor;
+			}
+			context.fillText(this.text, Arstider.chop(x), Arstider.chop(y));
+		}
 
 		context.restore();
 	};

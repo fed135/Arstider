@@ -24,106 +24,6 @@
 	;
 
 	/**
-	 * Utility method to calculate the size in pixel of some text rendered with a set font
-	 * @private
-	 * @param {CanvasRenderingContext2D} context The Context to use for testing
-	 * @param {Obejct} font The font object
-	 * @param {string} text The text to test
-	 * @return {number} The size in pixels
-	 */
-	function calculateTextWidth(context, font, text){
-
-		var ret;
-
-		context.save();
-		context.font  = ((font.style == "")?"":(font.style + " ")) + font.size + " " + font.family;
-		ret = context.measureText(text);
-		context.restore();
-
-		return ret.width;
-	}
-
-	/**
-	 * Method for text-wrap and multiline TEXT, not sequences
-	 * @private
-	 * @param {CanvasRenderingContext2D} context The Textfield's context
-	 * @param {string} myText The full string to wrap/multiline
-	 * @param {boolean} strokeText Defines if text needs to be stroked
-	 * @param {boolean} fillText Defines if text needs to be filled
-	 * @param {number} x Initial horizontal position of the writing carot
-	 * @param {number} maxWidth Maximum width of the paragraph, delimits wrapping edges
-	 */
-	function wrapText(context, myText, strokeText, fillText, x, padding, maxWidth, otherLineX, otherLineWrap) {
-
-		var
-	       	words = [],
-	       	paragraphs = [],
-	       	line = '',
-	       	n,
-	       	y = padding + context.lineSpacing*0.5,
-	       	lineNum = 0,
-	       	inc,
-	       	testLine,
-	       	metrics,
-	       	testWidth,
-	       	oldShadow = null
-		;
-
-		paragraphs = myText.split(breakLine);
-
-		for(inc = 0; inc < paragraphs.length; inc++){
-		   	words = paragraphs[inc].split(" ");
-		   	line = '';
-		   	for(n = 0; n < words.length; n++) {
-		      	testLine = line + words[n] + ' ';
-		       	metrics = context.measureText(testLine);
-		       	testWidth = metrics.width;
-		       	if(testWidth > ((lineNum === 0)?maxWidth:(otherLineWrap == undefined)?maxWidth:otherLineWrap)) {
-		       		if(strokeText){
-		       			context.strokeText(line, ((lineNum === 0)?x:(otherLineX == undefined)?x:otherLineX), y + (inc*context.lineSpacing));
-					}
-					if(fillText){
-						if(strokeText && context.shadowColor){
-							oldShadow = context.shadowColor;
-							context.shadowColor = "transparent";
-						}
-
-						context.fillText(line, ((lineNum === 0)?x:(otherLineX == undefined)?x:otherLineX), y + (inc*context.lineSpacing));
-
-						if(oldShadow != null){
-							context.shadowColor = oldShadow;
-							oldShadow = null;
-						}
-					}
-					line = words[n] + ' ';
-					y += context.lineSpacing;
-					lineNum++;
-		       	}
-		       	else line = testLine;
-			}
-		    if(strokeText){
-		 		context.strokeText(line, ((lineNum === 0)?x:(otherLineX == undefined)?x:otherLineX), y + (inc*context.lineSpacing));
-			}
-			if(fillText){
-
-				if(strokeText && context.shadowColor){
-					oldShadow = context.shadowColor;
-					context.shadowColor = "transparent";
-				}
-
-				context.fillText(line, ((lineNum === 0)?x:(otherLineX == undefined)?x:otherLineX), y + (inc*context.lineSpacing));
-
-				if(oldShadow != null){
-					context.shadowColor = oldShadow;
-					oldShadow = null;
-				}
-			}
-	    }
-
-	    return [((lineNum === 0)?x:(otherLineX == undefined)?x:otherLineX) + context.measureText(line).width,y];
-	}
-
-	/**
 	 * Defines the TextField module
 	 */
 	define( "Arstider/TextField", [
@@ -132,9 +32,8 @@
 			"Arstider/Fonts",
 			"Arstider/Signal",
 
-			"Arstider/core/BBParser",  
-			"Arstider/core/TextLine", 
-	], /** @lends TextField */ function (Buffer, Entity, Fonts, Signal, Parser, TextLine, Word) {
+			"Arstider/texts/BBParser"  
+	], /** @lends TextField */ function (Buffer, Entity, Fonts, Signal, Parser) {
 
 		/**
 		 * Defines a reference entity, for property lookup
@@ -201,6 +100,9 @@
 			 */
 			this._custom = {};
 
+			//Fast render
+			this.dynamic = Arstider.checkIn(props.dynamic, true);
+
 			this.onchange = new Signal();
 
 			Arstider.Super(this, Entity, props);
@@ -223,6 +125,10 @@
 				if(txt.indexOf(breakLine) != -1) this.textWrap = true;
 				this._textValue = txt;
 				this._words = Parser.parse(txt);
+				//If non-dynamic
+				if(!this.dynamic){
+					this._words = Parser.splitInWords(this._words);
+				}
 
 				this.render();
 			}
@@ -264,108 +170,95 @@
 		 */
 		TextField.prototype._renderWordList = function(f){
 
-			//
-			var startX = fontRef.fontOffsetX + this.padding;
-			var startY = fontRef.fontOffsetY + this.padding + fontRef.lineSpacing * 0.5;
-			var segRes = null;
+			var 
+				caret = {x:0, y:0},
+				fieldWidth = this.width - (f.padding || 0)*2,
+				longestLine = 0,
+				currentLine = 0,
+				lines = [],
+				l = null,
+				i,
+				u
+			;
 
-			if(maxWidth == undefined){
-				for(var i = 0; i<this._textValue.length; i++){
-					segRes = this._renderSegment(this._textValue[i], fontRef, startX, startY);
-					startX += segRes.width;
-					//startY += segRes.height;//in the cas of wrapped text
+			for(i = 0; i<this._words.length; i++){
+				this._words[i].calculateWidth(this.data.context, f);
+			}
+
+			//need to manually parse
+			if(fieldWidth > 0 || this.textWrap){
+				for(i = 0; i<this._words.length; i++){
+					if(this._words[i].text.indexOf(breakLine) != -1){
+						if(l != null) lines.push(l);
+						l = [];
+					}
+
+					if(fieldWidth > 0){
+						//TODO: split words
+						if(currentLine + this._words[i].width > fieldWidth){
+							if(l != null && l.length != 0) lines.push(l);
+							l = [];
+						}
+					}
+					
+					if(l == null) l = [];
+					l.push(this._words[i]);
+					currentLine += this._words[i].width;
+					if(currentLine > longestLine) longestLine = currentLine;
 				}
+				if(l && l.length > 0) lines.push(l);
 			}
 			else{
-				for(var i = 0; i<this._textValue.length; i++){
-					segRes = this._renderSegment(this._textValue[i], fontRef, startX, startY, fontRef.fontOffsetX + this.padding, true);
-					startX = segRes[0];
-					startY = segRes[1];
+				lines[0] = this._words;
+				longestLine =  this._getLineWidth(lines[0]);
+			}
+
+			//set buffer width 
+			if(fieldWidth <= 0){
+				this.data.setSize(longestLine + (f.padding * 2) + Math.abs(f.fontOffsetX) + f.shadowBlur, (lines.length * f.lineSpacing) + (f.padding * 2) + Math.abs(f.fontOffsetY)  + f.shadowBlur);
+				fieldWidth = longestLine;
+			}
+			else{
+				this.data.setSize(this.width, this.height || (lines.length * f.lineSpacing) + (f.padding * 2) + Math.abs(f.fontOffsetY)  + f.shadowBlur);
+			}
+			this.width = this.data.width;
+			this.height = this.data.height;
+
+			//apply font
+			this.applyFont(f);
+			
+			//We handle that here, thank you
+			this.data.context.textAlign = "left";
+
+			for(i = 0; i< lines.length; i++){
+				caret.x = f.padding + f.fontOffsetX;
+				if(f.textAlign == "right") caret.x += fieldWidth;
+				else if(f.textAlign == "center"){
+					l = this._getLineWidth(lines[i]);
+					caret.x += ((fieldWidth - l)*0.5);
+				}
+
+				caret.y = f.padding + (i*f.lineSpacing) + f.fontOffsetY;
+
+				for(u = 0; u<lines[i].length; u++){
+					if(f.textAlign == "right"){
+						caret.x -= lines[i][lines[i].length-(u +1)].width;
+						lines[i][lines[i].length-(u +1)].render(this.data.context, f, caret.x, caret.y, this.strokeText, this.fillText);
+					}
+					else{
+						lines[i][u].render(this.data.context, f, caret.x, caret.y, this.strokeText, this.fillText);
+						caret.x += lines[i][u].width;
+					}
 				}
 			}
 		};
 
-		/**
-		 * Renders a single segment of text with over-ruling styles
-		 * @private
-		 * @type {function(this:TextField)}
-		 * @param {Object} segment The segment object to render
-		 * @param {Object} fontRef Final transformation options
-		 * @param {number} startX The starting x offset for typing
-		 * @param {number} startY The starting y offset for typing
-		 * @param {number|null} iniX New line x position
-		 * @param {boolean|null} wrapped Is text wrapped or not (multi-lined)
-		 * @return {Object} The rendered segment with it's visible width and height, so to position the next segments
-		 */
-		TextField.prototype._renderSegment = function(segment, fontRef, startX, startY, iniX, wrapped){
-
-			var
-				i = 0,
-				fontCopy = Arstider.clone(fontRef),	//For safe revert
-				wasStroke = this.strokeText,
-				wasFill = this.fillText,
-				oldShadow = null,
-				wrapPos = null
-			;
-
-			this.data.context.save();
-
-			for(i; i<segment.styles.length; i++){
-				switch(segment.styles[i][0].toUpperCase()){
-					case "B":
-						fontCopy.style = "bold";
-						break;
-					case "I":
-						fontCopy.style = "italic";
-						break;
-					case "C":
-						this.data.context.fillStyle = segment.styles[i].substring(2);
-						break;
-					case "S":
-						fontCopy.size = segment.styles[i].substring(2);
-						break;
-					case "T":
-						this.width = parseInt(segment.styles[i].substring(2));
-						return;
-				}
+		TextField.prototype._getLineWidth = function(l){
+			var total = 0;
+			for(var i = 0; i<l.length; i++){
+				total += l[i].width;
 			}
-
-			this.data.context.font  = ((fontCopy.style == "")?"":(fontCopy.style + " ")) + fontCopy.size + " " + fontCopy.family;
-
-			if(wrapped){
-				wrapPos = wrapText(this.data.context, segment.text, this.strokeText, this.fillText, startX, startY, this.width - (this.padding*2) - (this.width - (this.width - startX)), iniX, this.width - (this.padding*2));
-
-				this.strokeText = wasStroke;
-				this.fillText = wasFill;
-				this.data.context.restore();
-
-				return wrapPos;
-			}
-			else{
-				if(this.strokeText) this.data.context.strokeText(segment.text, startX, startY);
-				if(this.fillText){
-					if(this.strokeText && fontCopy.shadowColor){
-						oldShadow = this.data.context.shadowColor;
-						this.data.context.shadowColor = "transparent";
-					}
-
-					this.data.context.fillText(segment.text, startX, startY);
-
-					if(oldShadow != null){
-						this.data.context.shadowColor = oldShadow;
-						oldShadow = null;
-					}
-				}
-
-				segment.width = this.data.context.measureText(segment.text).width;
-				segment.height = this.data.context.lineHeight;
-
-				this.strokeText = wasStroke;
-				this.fillText = wasFill;
-				this.data.context.restore();
-
-				return segment;
-			}
+			return total;
 		};
 
 		TextField.prototype.applyFont = function(f){
@@ -394,11 +287,9 @@
 
 			var _final = Arstider.mixin(Arstider.clone(this._font), this._custom, true);
 
-			this.applyFont(_final);
+			this._renderWordList(_final);
 
-			this._renderWords(_final);
-
-			this.onchange.apply(this);
+			this.onchange.dispatch(this);
 		};
 
 		return TextField;

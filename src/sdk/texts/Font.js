@@ -92,7 +92,7 @@ define("Arstider/texts/Font", ["Arstider/Request"], /** @lends texts/Font */ fun
 		this.fontOffsetX = Arstider.checkIn(props.fontOffsetX, 0);
 		this.fontOffsetY = Arstider.checkIn(props.fontOffsetY, 0);
 		this.textAlign = Arstider.checkIn(props.textAlign, "left");
-		this.textBaseline = Arstider.checkIn(props.textBaseline, "middle");
+		this.textBaseline = Arstider.checkIn(props.textBaseline, "top");
 		
 		this.loadCallbacks = Arstider.checkIn(props.loadCallbacks, []);
 
