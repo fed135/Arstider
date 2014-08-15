@@ -8,12 +8,12 @@
 /**
  * Defines the Animation module
  */
-define("Arstider/core/Animation", ["Arstider/core/Transformation", "Arstider/Easings"], /** @lends core/Animation */ function(Transformation, Easings){
+define("Arstider/tweens/Animation", ["Arstider/tweens/Transformation", "Arstider/Easings"], /** @lends tweens/Animation */ function(Transformation, Easings){
 
 	/**
 	 * Tween animation Object constructor
 	 * @constructor
-	 * @name core/Animation
+	 * @name tweens/Animation
 	 * @private
 	 * @param {Object} target The tween target
 	 * @param {Object} changes The list of Transformation objects

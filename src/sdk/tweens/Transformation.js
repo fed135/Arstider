@@ -8,12 +8,12 @@
 /**
  * Defines the Transformation module
  */
-define("Arstider/core/Transformation", [], /** @lends core/Transformation */ function(){
+define("Arstider/tweens/Transformation", [], /** @lends tweens/Transformation */ function(){
 
 	/**
 	 * Transformation Object constructor
 	 * @constructor
-	 * @class core/Transformation
+	 * @class tweens/Transformation
 	 * @private
 	 * @param {Object} property The property affected by the transformation
 	 * @param {Object} start The starting value

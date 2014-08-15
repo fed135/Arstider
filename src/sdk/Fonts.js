@@ -19,7 +19,7 @@
 	/**
 	 * Defines the Fonts module
 	 */	
-	define( "Arstider/Fonts", ["Arstider/Request", "Arstider/core/Font"], /** @lends Fonts */ function (Request, Font) {
+	define( "Arstider/Fonts", ["Arstider/Request", "Arstider/texts/Font"], /** @lends Fonts */ function (Request, Font) {
 		
 		/**
 		 * Returns singleton if it has been instantiated

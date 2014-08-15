@@ -8,12 +8,12 @@
 /**
  * Defines the CollisionMap module
  */
-define("Arstider/CollisionMap", ["Arstider/Bitmap", "Arstider/Entity"], /** @lends CollisionMap */ function(Bitmap, Entity){
+define("Arstider/commons/CollisionMap", ["Arstider/Bitmap", "Arstider/Entity"], /** @lends commons/CollisionMap */ function(Bitmap, Entity){
 	
 	/**
 	 * CollisionMap constructor
 	 * Collision detection mask entity
-	 * @class CollisionMap
+	 * @class commons/CollisionMap
 	 * @constructor
 	 * @param {Object} props Strating proprieties for the map.
 	 */

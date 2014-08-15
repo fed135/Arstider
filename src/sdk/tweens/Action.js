@@ -8,12 +8,12 @@
 /**
  * Defines the Action module
  */
-define("Arstider/core/Action", [], /** @lends core/Action */ function(){
+define("Arstider/tweens/Action", [], /** @lends tweens/Action */ function(){
 
 	/**
 	 * Tween action step constructor
 	 * @constructor
-	 * @name core/Action
+	 * @name tweens/Action
 	 * @private
 	 * @param {function} callback The method to call at that step
 	 * @param {*} option Optional data to provide the callback with

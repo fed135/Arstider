@@ -12,9 +12,9 @@
 define( "Arstider/Tween", [
 	"Arstider/Easings", 
 	"Arstider/GlobalTimers", 
-	"Arstider/core/Transformation", 
-	"Arstider/core/Animation",
-	"Arstider/core/Action"
+	"Arstider/tweens/Transformation", 
+	"Arstider/tweens/Animation",
+	"Arstider/tweens/Action"
 	], /** @lends Tween */ function (Easings, GlobalTimers, Transformation, Animation, Action){
 	
 
