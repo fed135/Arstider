@@ -142,8 +142,12 @@
 			
 			if(element.rotation != 0 || element.scaleX != 1 || element.scaleY != 1 || complex){
 				t.save();
+				if (complex) {
+					t.translate(element.x  + xAnchor, element.y + yAnchor);
+				} else {
+					t.translate(element.global.x + xAnchor, element.global.y + yAnchor);
+				}
 				complex = true;
-				t.translate(element.x + xAnchor, element.y + yAnchor);
 			}
 
 			if(element.rotation != 0){
