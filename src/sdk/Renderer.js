@@ -134,6 +134,12 @@
 				}
 			}
 
+			//Alpha
+			if(element.alpha != 1){
+				Performance.transforms++;
+				this.pencil.alpha(context, element.alpha);
+			}
+			
 			if(element.rotation != 0 || element.scaleX != 1 || element.scaleY != 1 || complex){
 				t.save();
 				complex = true;
@@ -155,12 +161,6 @@
 				//TODO
 			}
 
-			//Alpha
-			if(element.alpha != 1){
-				Performance.transforms++;
-				this.pencil.alpha(context, element.alpha);
-			}
-			
 			//Composite Mode / Mask
 			if(element.compositeMode != Arstider.defaultComposition){
 				Performance.transforms++;
@@ -231,6 +231,7 @@
 				
 			//Restore
 			if(complex) t.restore();
+			if(element.alpha != 1) this.pencil.alpha(context, 1/element.alpha);
 
 			if(callback) callback();
 		};

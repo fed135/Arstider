@@ -78,7 +78,20 @@
 		};
 
 		Canvas2d.prototype.alpha = function(context, opacity){
-			context.globalAlpha *= opacity;
+			
+			var newAlpha = context.globalAlpha * opacity;
+			if (newAlpha > 1) newAlpha = 1;
+			//Firefox completely ignores globalAlpha assignments of greater than 1,
+			//and it also reports a rounded value when you read globalAlpha,
+			//so rounding errors can VERY easily wind up creating a >1 assignment
+			//when dividing alpha changes back out on the way back up the display list
+			//
+			//ideally we would just restore a manually-saved value,
+			//but I'm not sure whether that would fit into this 'pencil' system;
+			//this seems to be the fix that would change the existing system the least
+			
+			context.globalAlpha = newAlpha;
+			
 		};
 
 		Canvas2d.prototype.reset = function(context){
