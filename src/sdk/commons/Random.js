@@ -8,13 +8,13 @@
 /**
  * Defines the Random module
  */
-define("Arstider/Random", [], /** @lends Random */function(){
+define("Arstider/commons/Random", [], /** @lends commons/Random */function(){
 	
 	/**
 	 * Random constructor
 	 * Random number generator
 	 * @constructor
-	 * @class Random
+	 * @class commons/Random
 	 * @param {number|null} seed The generator seed.
 	 */
 	function Random(seed) {
