@@ -50,7 +50,7 @@ function (DisplayObject, SpriteSheetManager, Signal)
 		this.bitmaps = {};
 
 		// Default RPX+RPY (origin)
-		this.rpX = this.rpY = 0.5;
+		//this.rpX = this.rpY = 0.5;
 
 		// Get into SDK
 		Arstider.Super(this, DisplayObject, props);
@@ -290,8 +290,8 @@ function (DisplayObject, SpriteSheetManager, Signal)
 			}
 
 			// Looping
-			this.loopAnim = this.loop;
-			if(animation.loop || animation.loopAnim===false) this.loopAnim = animation.loop;
+			this.loopCurrentAnim = this.loop;
+			if(animation.loop || animation.loop===false) this.loopCurrentAnim = animation.loop;
 
 			// Specific speed
 			//if(animation.speed>0) this.speed = animation.speed;
@@ -311,7 +311,7 @@ function (DisplayObject, SpriteSheetManager, Signal)
 				}
 
 				if(params.next) this.nextAnim = params.next;
-				if(params.loop===true || params.loop===false) this.loopAnim = params.loop;
+				if(params.loop===true || params.loop===false) this.loopCurrentAnim = params.loop;
 			}
 
 			// Kick-in animation
@@ -382,7 +382,7 @@ function (DisplayObject, SpriteSheetManager, Signal)
 	{
 		var animName = this.animation.name;
 
-		//console.log("Anim complete: "+animName, this.loopAnim);
+		//console.log("Anim complete: "+animName, this.loopCurrentAnim);
 
 		// Playlist to proceed?
 		if(this.playlist)
@@ -399,7 +399,7 @@ function (DisplayObject, SpriteSheetManager, Signal)
 			this.nextAnimParams = null;
 		}
 		// Stop?
-		else if (!this.loopAnim || this.frames.length<=1)
+		else if (!this.loopCurrentAnim || this.frames.length<=1)
 		{
 			this.currentFrame = this.frames.length;
 			this.stop();
