@@ -39,10 +39,10 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 		if(this.url != ""){
 			this.attempt++;
 			if(Arstider.blobCache[this.url] != undefined) this._fetchUrl(Arstider.blobCache[this.url].url);
-			else if(this.url.indexOf("data:image") != -1){
+			else if(this.url.indexOf("data:image") != -1 || this.forceImg){
 				this._fetchUrl(this.url);
 			}
-			else if(((Browser.name == "safari" && Browser.version < 7) || Browser.name == "ie") && !this.forceImg){
+			else if(((Browser.name == "safari" && Browser.version < 7) || Browser.name == "ie")){
 				if(Arstider.bufferPool["_compatBuffer_"+this.url]){
 					this.data = Arstider.bufferPool["_compatBuffer_"+this.url];
 					if(this.callback){
