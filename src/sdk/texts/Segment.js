@@ -37,6 +37,8 @@ define("Arstider/texts/Segment", [], function(){
 	};
 
 	Segment.prototype.applyStyles = function(context, font){
+
+		context.textAlign = "left";
 		for(var i = 0; i<this.styles.length; i++){
 			this.styles[i].render(context, font, this.styles[i].rule, this);
 		}

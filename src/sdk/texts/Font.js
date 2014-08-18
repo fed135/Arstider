@@ -76,6 +76,8 @@ define("Arstider/texts/Font", ["Arstider/Request"], /** @lends texts/Font */ fun
 		this.temp = Arstider.checkIn(props.temp, false);
 		
 		this.padding = Arstider.checkIn(props.padding, 0);
+		this.paddingTop = Arstider.checkIn(props.paddingTop, this.padding);
+		this.paddingLeft = Arstider.checkIn(props.paddingLeft, this.padding);
 		this.lineSpacing = Arstider.checkIn(props.lineSpacing, null);
 		this.lineHeight = Arstider.checkIn(props.lineHeight, "1em");
 		this.textWrap = Arstider.checkIn(props.textWrap, false);
@@ -92,7 +94,7 @@ define("Arstider/texts/Font", ["Arstider/Request"], /** @lends texts/Font */ fun
 		this.fontOffsetX = Arstider.checkIn(props.fontOffsetX, 0);
 		this.fontOffsetY = Arstider.checkIn(props.fontOffsetY, 0);
 		this.textAlign = Arstider.checkIn(props.textAlign, "left");
-		this.textBaseline = Arstider.checkIn(props.textBaseline, "top");
+		this.textBaseline = "top";
 		
 		this.loadCallbacks = Arstider.checkIn(props.loadCallbacks, []);
 

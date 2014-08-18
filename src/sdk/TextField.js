@@ -143,9 +143,6 @@
 			this._custom = specials || {};
 			this._font = Fonts.get(font);
 
-
-			if(this.padding == null) this.padding = Arstider.checkIn(this._custom.padding, Arstider.checkIn(font.padding, 0));
-
 			var thisRef = this;
 			this._font._onFontLoaded(function(){
 				thisRef.render.apply(thisRef);
@@ -172,7 +169,7 @@
 
 			var 
 				caret = {x:0, y:0},
-				fieldWidth = this.width - (f.padding || 0)*2,
+				fieldWidth = this.width - (f.paddingLeft*2),
 				longestLine = 0,
 				currentLine = 0,
 				lines = [],
@@ -215,11 +212,11 @@
 
 			//set buffer width 
 			if(fieldWidth <= 0){
-				this.data.setSize(longestLine + (f.padding * 2) + Math.abs(f.fontOffsetX) + f.shadowBlur, (lines.length * f.lineSpacing) + (f.padding * 2) + Math.abs(f.fontOffsetY)  + f.shadowBlur);
+				this.data.setSize(longestLine + (f.paddingLeft * 2) + Math.abs(f.fontOffsetX) + f.shadowBlur, (lines.length * f.lineSpacing) + (f.paddingTop * 2) + Math.abs(f.fontOffsetY)  + f.shadowBlur);
 				fieldWidth = longestLine;
 			}
 			else{
-				this.data.setSize(this.width, this.height || (lines.length * f.lineSpacing) + (f.padding * 2) + Math.abs(f.fontOffsetY)  + f.shadowBlur);
+				this.data.setSize(this.width, this.height || (lines.length * f.lineSpacing) + (f.paddingTop * 2) + Math.abs(f.fontOffsetY)  + f.shadowBlur);
 			}
 			this.width = this.data.width;
 			this.height = this.data.height;
@@ -231,14 +228,14 @@
 			this.data.context.textAlign = "left";
 
 			for(i = 0; i< lines.length; i++){
-				caret.x = f.padding + f.fontOffsetX;
+				caret.x = f.paddingLeft + f.fontOffsetX;
 				if(f.textAlign == "right") caret.x += fieldWidth;
 				else if(f.textAlign == "center"){
 					l = this._getLineWidth(lines[i]);
 					caret.x += ((fieldWidth - l)*0.5);
 				}
 
-				caret.y = f.padding + (i*f.lineSpacing) + f.fontOffsetY;
+				caret.y = f.paddingTop + (i*f.lineSpacing) + f.fontOffsetY;
 
 				for(u = 0; u<lines[i].length; u++){
 					if(f.textAlign == "right"){
