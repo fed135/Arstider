@@ -51,7 +51,7 @@ function (DisplayObject, SpriteSheetManager, Signal)
 
 		// Default RPX+RPY (origin)
 		this.rpX = this.rpY = 0.5;
-		
+
 		// Get into SDK
 		Arstider.Super(this, DisplayObject, props);
 
@@ -392,6 +392,7 @@ function (DisplayObject, SpriteSheetManager, Signal)
 		// Next chained anim?
 		else if(this.nextAnim && !this.timedAnim)
 		{
+			//console.log(this.nextAnim, this.nextAnimParams);
 			this.gotoAnim(this.nextAnim, this.nextAnimParams);
 			// Release next anim
 			this.nextAnim = null;
