@@ -48,7 +48,7 @@
 				p2 = matrix.transformPoint(fw, fy),
 				p3 = matrix.transformPoint(fx, fh),
 				p4 = matrix.transformPoint(fw, fh),
-				pc = {x:p1.x + (p2.x - p1.x), y:p1.y + (p3.y - p1.y)}
+				pc = {x:(p1.x+p2.x+p3.x+p4.x)*0.25, y:(p1.y+p2.y+p3.y+p4.y)*0.25}
 			;
 
 			if((p1.x - singleton.padding < mW && p1.x >=  -singleton.padding) ||
