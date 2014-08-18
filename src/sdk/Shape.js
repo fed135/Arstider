@@ -61,7 +61,8 @@
          * @param {type} ctx The context to draw on
          */
 		Shape.prototype.draw = function(ctx, _x, _y){
-			//ctx.save();
+
+			ctx.save();
 
 			var i;
 
@@ -101,7 +102,7 @@
             if(this.fillStyle != Arstider.defaultColor) ctx.fill();
             if(this.strokeStyle != Arstider.defaultColor) ctx.stroke();
 
-            //ctx.restore();
+            ctx.restore();
         };
 
 		return Shape;

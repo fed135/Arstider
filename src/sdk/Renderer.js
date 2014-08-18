@@ -189,7 +189,7 @@
 				//Custom draw method :: WARNING! Only context is provided... could be any of Webgl or Canvas2d !!!
 				if(element.draw){
 					Performance.draws++;
-					element.draw.apply(element, [context]);
+					element.draw.apply(element, [context, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y]);
 				}
 				else{
 					if(element.onScreen) {
