@@ -41,7 +41,7 @@ function (DisplayObject, SpriteSheetManager)
 		// Go spritesheet?
 		if(props.spritesheet)
 		{
-			SpriteSheetManager.get(props.spritesheet, {isImage:true}, function(spritesheet)
+			SpriteSheetManager.get(props.spritesheet, {imagesAtlas:true}, function(spritesheet)
 			{
 				// First execution
 				context._setSpritesheet(spritesheet);
@@ -88,16 +88,13 @@ function (DisplayObject, SpriteSheetManager)
 	};
 
 	/**
-	 * Set the playhead of the current animation, should not be used directly: 
-	 * gotoAndPlay() and gotoAndStop() should be used.
-	 * @param {Object} frame Frame number, first frame BASE "1"
-	 * @param {Object} params Additional parameters
-	 * @type {function(this:BitmapSprite)}
-	 * @return {BitmapSprite} Returns self reference for chaining
+	 * Go to a frame by it's image name
+	 * @param  {[type]} frameName The image name omitting the extention, ie: "btnUp"
+	 * @return {[type]}           [description]
 	 */
-	BitmapSprite.prototype.gotoFrame = function(frame)
+	BitmapSprite.prototype.gotoFrame = function(frameName)
 	{
-		var frameData = this.spritesheet.getImage(frame);
+		var frameData = this.spritesheet.getFrameByName(frameName);
 
 		// Frame specific bitmap?
 		if(frameData.image)
