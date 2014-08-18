@@ -81,9 +81,10 @@
 			this.url = url;
 
 			var req = new Bitmap({
-				url:url, 
+				url:url,
+				forceImg:true,
 				callback:function(img){
-					thisRef._createPattern.apply(thisRef, [img.data, callback]);
+					thisRef._createPattern.apply(thisRef, [img, callback]);
 				}
 			});
 		};
@@ -94,9 +95,11 @@
 		 * @type {function(this:Texture)}
 		 * @param {Image|HTMLCanvasElement} data The data to create a texture from
 		 */
-		Texture.prototype._createPattern = function(data, callback){
-			if(data){
-				this.pattern = cnv.context.createPattern(data, this.repeat);
+		Texture.prototype._createPattern = function(img, callback){
+			var node = Arstider.getNode(img);
+
+			if(node && node.data){
+				this.pattern = cnv.context.createPattern(node.data, this.repeat);
 			}
 			else{
 				console.warn("Arstider.Texture.createPattern: no data");

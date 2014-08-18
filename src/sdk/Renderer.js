@@ -108,30 +108,32 @@
 			yAnchor = (element.height * element.rpY);
 
 			//Update globals
-			if(element.global){
-				element.global.x = element.x;
-				element.global.y = element.y;
-				element.global.scaleX = element.scaleX;
-				element.global.scaleY = element.scaleY;
-				element.global.skewX = element.skewX;
-				element.global.skewY = element.skewY;
-				element.global.width = element.width;
-				element.global.height = element.height;
-				element.global.rotation = element.rotation;
-				element.global.alpha = element.alpha;
+			if(!element.global){
+				element.global = {};
+			}
 
-				if(element.parent){
-					element.global.x += element.parent.global.x;
-					element.global.y += element.parent.global.y;
-					element.global.scaleX *= element.parent.global.scaleX;
-					element.global.scaleY *= element.parent.global.scaleY;
-					element.global.skewX *= element.parent.global.skewX;
-					element.global.skewY *= element.parent.global.skewY;
-					element.global.width *= ((element.global.scaleX<0)?(element.global.scaleX*-1):element.global.scaleX);
-					element.global.height *= ((element.global.scaleY<0)?(element.global.scaleY*-1):element.global.scaleY);
-					element.global.rotation += element.parent.global.rotation;
-					element.global.alpha *= element.parent.global.alpha;
-				}
+			element.global.x = element.x;
+			element.global.y = element.y;
+			element.global.scaleX = element.scaleX;
+			element.global.scaleY = element.scaleY;
+			element.global.skewX = element.skewX;
+			element.global.skewY = element.skewY;
+			element.global.width = element.width;
+			element.global.height = element.height;
+			element.global.rotation = element.rotation;
+			element.global.alpha = element.alpha;
+
+			if(element.parent){
+				element.global.x += element.parent.global.x;
+				element.global.y += element.parent.global.y;
+				element.global.scaleX *= element.parent.global.scaleX;
+				element.global.scaleY *= element.parent.global.scaleY;
+				element.global.skewX *= element.parent.global.skewX;
+				element.global.skewY *= element.parent.global.skewY;
+				element.global.width *= ((element.global.scaleX<0)?(element.global.scaleX*-1):element.global.scaleX);
+				element.global.height *= ((element.global.scaleY<0)?(element.global.scaleY*-1):element.global.scaleY);
+				element.global.rotation += element.parent.global.rotation;
+				element.global.alpha *= element.parent.global.alpha;
 			}
 
 			//Alpha

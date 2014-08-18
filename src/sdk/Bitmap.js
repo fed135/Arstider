@@ -29,6 +29,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 		this.width = Arstider.checkIn(props.width, 0);
 		this.height = Arstider.checkIn(props.height, 0);
 		this.id = this.url+Arstider.timestamp()+Math.random();
+		this.forceImg = Arstider.checkIn(props.forceImg, false);
 			
 		this.load();
 	}
@@ -41,7 +42,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 			else if(this.url.indexOf("data:image") != -1){
 				this._fetchUrl(this.url);
 			}
-			else if((Browser.name == "safari" && Browser.version < 7) || Browser.name == "ie"){
+			else if(((Browser.name == "safari" && Browser.version < 7) || Browser.name == "ie") && !this.forceImg){
 				if(Arstider.bufferPool["_compatBuffer_"+this.url]){
 					this.data = Arstider.bufferPool["_compatBuffer_"+this.url];
 					if(this.callback){
@@ -118,7 +119,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 	Bitmap.prototype._fetchUrl = function(url, callback){
 		var thisRef = this;
 		
-		if((Browser.name == "safari" && Browser.version < 7) || Browser.name == "ie"){
+		if(((Browser.name == "safari" && Browser.version < 7) || Browser.name == "ie") && !this.forceImg){
 			Arstider.__retroAssetLoader = true;
 			Preloader.progress(this.id, 0);
 			//need to save into a canvas

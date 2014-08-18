@@ -510,7 +510,7 @@
 				for(i = target.children.length-1; i>=0; i--){
 					if(target && target.children && target.children[i] && !target.children[i].__skip){
 						for(u=0; u<numInputs;u++){
-							if(Arstider.__cancelBubble[u] !== true){
+							if(Arstider.__cancelBubble[u] !== true && target.children[i].isTouched){
 								if(target.children[i].isTouched(Mouse.x(u), Mouse.y(u))){
 									if(Mouse.isPressed(u)){
 										if(!target.children[i]._pressed) target.children[i]._onpress(e);
@@ -558,7 +558,7 @@
 
 			if(Browser.isMobile){
 				for(i=0; i< inputs.length; i++){
-					if(Arstider.__cancelBubble[i] !== true){
+					if(Arstider.__cancelBubble[i] !== true && target.isTouched){
 						if(target.isTouched(inputs[i].x, inputs[i].y) && inputs[i].pressed){
 							inputId = i;
 							mouseX = inputs[i].x;
@@ -575,7 +575,7 @@
 				}
 			}
 			else{
-				if(Arstider.__cancelBubble[0] !== true){
+				if(Arstider.__cancelBubble[0] !== true  && target.isTouched){
 					if(target.isTouched(mouseX, mouseY)){
 						
 						if(!target._hovered) target._onhover();
