@@ -290,8 +290,8 @@ function (DisplayObject, SpriteSheetManager, Signal)
 			}
 
 			// Looping
-			this.loop = true;
-			if(animation.loop===false) this.loop = false;
+			this.loopAnim = this.loop;
+			if(animation.loop || animation.loopAnim===false) this.loopAnim = animation.loop;
 
 			// Specific speed
 			//if(animation.speed>0) this.speed = animation.speed;
@@ -311,7 +311,7 @@ function (DisplayObject, SpriteSheetManager, Signal)
 				}
 
 				if(params.next) this.nextAnim = params.next;
-				if(params.loop===true || params.loop===false) this.loop = params.loop;
+				if(params.loop===true || params.loop===false) this.loopAnim = params.loop;
 			}
 
 			// Kick-in animation
@@ -382,7 +382,7 @@ function (DisplayObject, SpriteSheetManager, Signal)
 	{
 		var animName = this.animation.name;
 
-		//console.log("Anim complete: "+animName, this.loop);
+		//console.log("Anim complete: "+animName, this.loopAnim);
 
 		// Playlist to proceed?
 		if(this.playlist)
@@ -397,10 +397,9 @@ function (DisplayObject, SpriteSheetManager, Signal)
 			// Release next anim
 			this.nextAnim = null;
 			this.nextAnimParams = null;
-
 		}
 		// Stop?
-		else if (!this.loop || this.frames.length<=1)
+		else if (!this.loopAnim || this.frames.length<=1)
 		{
 			this.currentFrame = this.frames.length;
 			this.stop();
@@ -450,8 +449,8 @@ function (DisplayObject, SpriteSheetManager, Signal)
 		}
 
 		// Set BitmapAnimation variables for outside use
-		this.width = _rect[2];
-		this.height = _rect[3];
+		/*this.width = _rect[2];
+		this.height = _rect[3];*/
 
 		// Got original source size?
 		if(frameData.sourceSize)
