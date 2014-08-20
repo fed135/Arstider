@@ -1,10 +1,14 @@
 ;(function(){
 	
+	var singleton = null;
+
 	/**
 	 * Defines the Hash module
 	 */
-	define("Arstider/Hash", ["Arstider/Events","Arstider/Engine"], /** @lends Hash */ function(Events, Engine){
-		
+	define("Arstider/Hash", ["Arstider/Signal", "Arstider/Engine"], /** @lends Hash */ function(Signal, Engine){
+			
+		if(singleton != null) return singleton;
+
 		/**
 		 * Hash constructor
 		 * @class Hash
@@ -13,7 +17,7 @@
 		function Hash(){
 
 			this.anchor = this.getAnchor();
-			if (!this.anchor) return false;	
+			this.onchange = new Signal();	
 		}
 
 		Hash.prototype.getAnchor= function(){
@@ -40,11 +44,11 @@
 
 			function locationHashChanged (){
 				thisRef.anchor = thisRef.getAnchor();
-				Events.broadcast("Hash.hashchange",thisRef.anchor);
+				thisRef.onchange.dispatch(thisRef.anchor);
 			};
 		};
 
-
-		return Hash;
+		singleton = new Hash();
+		return singleton;
 	});
 })();

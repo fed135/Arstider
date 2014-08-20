@@ -33,8 +33,9 @@
 		"Arstider/Renderer",
 		"Arstider/Telemetry",
         "Arstider/Sound",
-        "Arstider/Signal"
-	], /** @lends Engine */ function (Browser, Screen, Buffer, Events, Background, Watermark, Preloader, GlobalTimers, Performance, Mouse, Viewport, Renderer, Telemetry, Sound, Signal){
+        "Arstider/Signal",
+        "Arstider/Hash"
+	], /** @lends Engine */ function (Browser, Screen, Buffer, Events, Background, Watermark, Preloader, GlobalTimers, Performance, Mouse, Viewport, Renderer, Telemetry, Sound, Signal, Hash){
 		
 		if(singleton != null) return singleton;
 			
@@ -159,8 +160,10 @@
 				});
 			}
 			else{
-				Arstider.verbose = 0;
-				Arstider.disableConsole();
+				if(Hash.anchor.indexOf("debug") == -1){
+					Arstider.verbose = 0;
+					Arstider.disableConsole();
+				}
 			}
 				
             this.canvas = new Buffer({
