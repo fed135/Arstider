@@ -34,6 +34,9 @@
 			this.pencil = null;
 			this.abort = false;
 			this.padding = 100;
+
+			this.highPerformance = false;
+			this.advancedCulling = false;
 		}
 
 		Renderer.prototype.checkOnScreen = function(context, element, matrix, xo, yo){
@@ -78,9 +81,7 @@
 
 			var 
 				xAnchor = 0,
-				yAnchor = 0,
-				prevX = 0,
-				prevY = 0
+				yAnchor = 0
 			;
 
 			if(!element || element.__skip) return;
@@ -88,7 +89,6 @@
 			if(singleton.abort){
 				if(main){
 					singleton.abort = false;
-					//this.pencil.reset(context);
 				}
 				else return;
 			}
@@ -99,11 +99,14 @@
 			if(element.alpha <= 0) return;
 
 			
-			if(!t){
+			if(!t && !this.highPerformance && this.advancedCulling){
 				t = new MatrixTransform(this.pencil, context);
 				t.restore();
 			}
-				
+			else{
+				if(main) this.pencil.restore(context);
+			}
+
 			xAnchor = (element.width * element.rpX);
 			yAnchor = (element.height * element.rpY);
 
@@ -143,23 +146,29 @@
 			}
 			
 			if(element.rotation != 0 || element.scaleX != 1 || element.scaleY != 1 || complex){
-				t.save();
+				if(t) t.save();
+				else this.pencil.save(context);
+
 				if (complex) {
-					t.translate(element.x  + xAnchor, element.y + yAnchor);
+					if(t) t.translate(element.x  + xAnchor, element.y + yAnchor);
+					else this.pencil.translate(context, element.x  + xAnchor, element.y + yAnchor);
 				} else {
-					t.translate(element.global.x + xAnchor, element.global.y + yAnchor);
+					if(t) t.translate(element.global.x + xAnchor, element.global.y + yAnchor);
+					else this.pencil.translate(context, element.global.x + xAnchor, element.global.y + yAnchor);
 				}
 				complex = true;
 			}
 
 			if(element.rotation != 0){
 				Performance.transforms++;
-				t.rotate(element.rotation * Arstider.degToRad);
+				if(t) t.rotate(element.rotation * Arstider.degToRad);
+				else this.pencil.rotate(context, element.rotation * Arstider.degToRad);
 			}
 
 			if(element.scaleX != 1 || element.scaleY != 1){
 				Performance.transforms++;
-				t.scale(element.scaleX, element.scaleY);
+				if(t) t.scale(element.scaleX, element.scaleY);
+				else this.pencil.scale(context, element.scaleX, element.scaleY);
 			}
 				
 			if(element.skewX != 0 || element.skewY != 0){
@@ -191,19 +200,19 @@
 				//Custom draw method :: WARNING! Only context is provided... could be any of Webgl or Canvas2d !!!
 				if(element.draw){
 					Performance.draws++;
-					element.draw.apply(element, [context, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y]);
+					element.draw.apply(element, [context, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y]);
 				}
 				else{
-					if(element.onScreen) {
+					if(element.onScreen || !this.advancedCulling) {
 						
 						var node = Arstider.getNode(element);
 						if(node && node.data){
 							Performance.draws++;
 							if(element.largeData === true){
-								this.pencil.renderAt(context, node.data, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
+								this.pencil.renderAt(context, node.data, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
 							}
 							else{
-								this.pencil.renderAt(context, node.data, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y, element.width, element.height);
+								this.pencil.renderAt(context, node.data, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y, element.width, element.height);
 							}
 						}
 						node = null;
@@ -213,11 +222,12 @@
 				
 			//debug outlines
 			if(debug || element.showOutline === true){
-				this.pencil.debugOutline(context, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y, element.width, element.height, "magenta");
+				this.pencil.debugOutline(context, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y, element.width, element.height, "magenta");
 			}
 			
-			
-			element.onScreen = this.checkOnScreen(context, element, t, (complex)?xAnchor:-element.global.x, (complex)?yAnchor:-element.global.y);
+			if(this.advancedCulling){
+				element.onScreen = this.checkOnScreen(context, element, t, (complex)?xAnchor:-element.global.x, (complex)?yAnchor:-element.global.y);
+			}
 
 			//runs post-render methods
 			if(post) post(element);
@@ -236,7 +246,10 @@
 			}
 				
 			//Restore
-			if(complex) t.restore();
+			if(complex){
+				if(t) t.restore();
+				else this.pencil.restore(context);
+			}
 			if(element.alpha != 1) this.pencil.alpha(context, 1/element.alpha);
 
 			if(callback) callback();
