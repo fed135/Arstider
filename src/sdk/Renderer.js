@@ -96,20 +96,6 @@
 			Performance.elements++;
 			if(!element._skipUpdateBubble && element.update) Performance.numUpdates++; 
 
-			if(element.alpha <= 0) return;
-
-			
-			if(!t && !this.highPerformance && this.advancedCulling){
-				t = new MatrixTransform(this.pencil, context);
-				t.restore();
-			}
-			else{
-				if(main) this.pencil.restore(context);
-			}
-
-			xAnchor = (element.width * element.rpX);
-			yAnchor = (element.height * element.rpY);
-
 			//Update globals
 			if(!element.global){
 				element.global = {};
@@ -138,6 +124,20 @@
 				element.global.rotation += element.parent.global.rotation;
 				element.global.alpha *= element.parent.global.alpha;
 			}
+
+			if(element.alpha <= 0) return;
+
+			
+			if(!t && !this.highPerformance && this.advancedCulling){
+				t = new MatrixTransform(this.pencil, context);
+				t.restore();
+			}
+			else{
+				if(main) this.pencil.restore(context);
+			}
+
+			xAnchor = (element.width * element.rpX);
+			yAnchor = (element.height * element.rpY);
 
 			//Alpha
 			if(element.alpha != 1){
