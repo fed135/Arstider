@@ -90,8 +90,8 @@ define("Arstider/Screen", [
 		/**
 		 * Listen for scale change
 		 */
-		Events.bind("Viewport.globalScaleChange", this.updateScale, this);
-		Events.bind("Viewport.resize", this.updateScale, this);
+		Events.bind("Viewport.globalScaleChange", this.updateScale);
+		Events.bind("Viewport.resize", this.updateScale);
 	};
 
 	/**
