@@ -162,8 +162,7 @@ define("Arstider/Screen", [
 	 */
 	Screen.prototype._unload = function(){
 		this.loaded = false;
-		this.removeChildren();
-		Events.unbind("Viewport.globalScaleChange", this.updateScale);
+		this.removeChildren(true);
 		
 		if(this.onunload) this.onunload();
 	};

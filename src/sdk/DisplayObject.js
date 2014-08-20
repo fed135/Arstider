@@ -103,7 +103,7 @@
 				}
 				else{
 					this.children[index].onStage = false;
-					this.children[index].killBuffer();
+					if(this.children[index].killBuffer) this.children[index].killBuffer();
 					this.children[index].parent = null;
 					
 					this.children.splice(index,1);
@@ -131,7 +131,7 @@
 				}
 				else{
 					this.children[index].onStage = false;
-					this.children[index].killBuffer();
+					if(this.children[index].killBuffer) this.children[index].killBuffer();
 					this.children[index].parent = null;
 					
 					this.children.splice(index,1);
@@ -185,7 +185,7 @@
 						someKept = true;
 					}
 					else{
-						this.children[i].killBuffer();
+						if(this.children[i].killBuffer) this.children[i].killBuffer();
 						this.children[i].parent = null;
 						this.children[i].onStage = false;
 						delete this.children[i];

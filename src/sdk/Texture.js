@@ -102,7 +102,7 @@
 				this.pattern = cnv.context.createPattern(node.data, this.repeat);
 			}
 			else{
-				console.warn("Arstider.Texture.createPattern: no data");
+				console.error("Arstider.Texture.createPattern: no data");
 			}
 
             if(callback) callback.apply(this);
