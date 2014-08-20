@@ -86,12 +86,6 @@ define("Arstider/Screen", [
 		else{
 			if(Arstider.verbose > 2) console.warn("Arstider.Screen: new screen has no init method");
 		}
-		
-		/**
-		 * Listen for scale change
-		 */
-		Events.bind("Viewport.globalScaleChange", this.updateScale);
-		Events.bind("Viewport.resize", this.updateScale);
 	};
 
 	/**
@@ -193,20 +187,6 @@ define("Arstider/Screen", [
 				Arstider.savedStates[name].__tweens.push(Arstider.clone(GlobalTimers.list[i], true));
 			}
 		}
-	};
-
-	/**
-	 * Resizes the screen when globalScale changes
-	 * @private
-	 * @type {function(this:Screen)}
-	 */
-	Screen.prototype.updateScale = function(){
-		this.width = Viewport.maxWidth;
-		this.height = Viewport.maxHeight;
-		this.scaleX = this.scaleY = Viewport.globalScale;
-		this.global.scaleX = this.global.scaleX = Viewport.globalScale;
-		this.global.width = Viewport.maxWidth;
-		this.global.height = Viewport.maxHeight;
 	};
 	
 	return Screen;
