@@ -34,9 +34,6 @@
 			this.pencil = null;
 			this.abort = false;
 			this.padding = 100;
-
-			this.highPerformance = false;
-			this.advancedCulling = false;
 		}
 
 		Renderer.prototype.checkOnScreen = function(context, element, matrix, xo, yo){
@@ -81,7 +78,9 @@
 
 			var 
 				xAnchor = 0,
-				yAnchor = 0
+				yAnchor = 0,
+				prevX = 0,
+				prevY = 0
 			;
 
 			if(!element || element.__skip) return;
@@ -89,6 +88,7 @@
 			if(singleton.abort){
 				if(main){
 					singleton.abort = false;
+					//this.pencil.reset(context);
 				}
 				else return;
 			}
@@ -96,48 +96,43 @@
 			Performance.elements++;
 			if(!element._skipUpdateBubble && element.update) Performance.numUpdates++; 
 
-			//Update globals
-			if(!element.global){
-				element.global = {};
-			}
-
-			element.global.x = element.x;
-			element.global.y = element.y;
-			element.global.scaleX = element.scaleX;
-			element.global.scaleY = element.scaleY;
-			element.global.skewX = element.skewX;
-			element.global.skewY = element.skewY;
-			element.global.width = element.width;
-			element.global.height = element.height;
-			element.global.rotation = element.rotation;
-			element.global.alpha = element.alpha;
-
-			if(element.parent){
-				element.global.x += element.parent.global.x;
-				element.global.y += element.parent.global.y;
-				element.global.scaleX *= element.parent.global.scaleX;
-				element.global.scaleY *= element.parent.global.scaleY;
-				element.global.skewX *= element.parent.global.skewX;
-				element.global.skewY *= element.parent.global.skewY;
-				element.global.width *= ((element.global.scaleX<0)?(element.global.scaleX*-1):element.global.scaleX);
-				element.global.height *= ((element.global.scaleY<0)?(element.global.scaleY*-1):element.global.scaleY);
-				element.global.rotation += element.parent.global.rotation;
-				element.global.alpha *= element.parent.global.alpha;
-			}
-
 			if(element.alpha <= 0) return;
 
 			
-			if(!t && !this.highPerformance && this.advancedCulling){
+			if(!t){
 				t = new MatrixTransform(this.pencil, context);
 				t.restore();
 			}
-			else{
-				if(main) this.pencil.restore(context);
-			}
-
+				
 			xAnchor = (element.width * element.rpX);
 			yAnchor = (element.height * element.rpY);
+
+			//Update globals
+			if(element.global){
+				element.global.x = element.x;
+				element.global.y = element.y;
+				element.global.scaleX = element.scaleX;
+				element.global.scaleY = element.scaleY;
+				element.global.skewX = element.skewX;
+				element.global.skewY = element.skewY;
+				element.global.width = element.width;
+				element.global.height = element.height;
+				element.global.rotation = element.rotation;
+				element.global.alpha = element.alpha;
+
+				if(element.parent){
+					element.global.x += element.parent.global.x;
+					element.global.y += element.parent.global.y;
+					element.global.scaleX *= element.parent.global.scaleX;
+					element.global.scaleY *= element.parent.global.scaleY;
+					element.global.skewX *= element.parent.global.skewX;
+					element.global.skewY *= element.parent.global.skewY;
+					element.global.width *= ((element.global.scaleX<0)?(element.global.scaleX*-1):element.global.scaleX);
+					element.global.height *= ((element.global.scaleY<0)?(element.global.scaleY*-1):element.global.scaleY);
+					element.global.rotation += element.parent.global.rotation;
+					element.global.alpha *= element.parent.global.alpha;
+				}
+			}
 
 			//Alpha
 			if(element.alpha != 1){
@@ -146,29 +141,23 @@
 			}
 			
 			if(element.rotation != 0 || element.scaleX != 1 || element.scaleY != 1 || complex){
-				if(t) t.save();
-				else this.pencil.save(context);
-
+				t.save();
 				if (complex) {
-					if(t) t.translate(element.x  + xAnchor, element.y + yAnchor);
-					else this.pencil.translate(context, element.x  + xAnchor, element.y + yAnchor);
+					t.translate(element.x  + xAnchor, element.y + yAnchor);
 				} else {
-					if(t) t.translate(element.global.x + xAnchor, element.global.y + yAnchor);
-					else this.pencil.translate(context, element.global.x + xAnchor, element.global.y + yAnchor);
+					t.translate(element.global.x + xAnchor, element.global.y + yAnchor);
 				}
 				complex = true;
 			}
 
 			if(element.rotation != 0){
 				Performance.transforms++;
-				if(t) t.rotate(element.rotation * Arstider.degToRad);
-				else this.pencil.rotate(context, element.rotation * Arstider.degToRad);
+				t.rotate(element.rotation * Arstider.degToRad);
 			}
 
 			if(element.scaleX != 1 || element.scaleY != 1){
 				Performance.transforms++;
-				if(t) t.scale(element.scaleX, element.scaleY);
-				else this.pencil.scale(context, element.scaleX, element.scaleY);
+				t.scale(element.scaleX, element.scaleY);
 			}
 				
 			if(element.skewX != 0 || element.skewY != 0){
@@ -200,19 +189,19 @@
 				//Custom draw method :: WARNING! Only context is provided... could be any of Webgl or Canvas2d !!!
 				if(element.draw){
 					Performance.draws++;
-					element.draw.apply(element, [context, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y]);
+					element.draw.apply(element, [context, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y]);
 				}
 				else{
-					if(element.onScreen || !this.advancedCulling) {
+					if(element.onScreen) {
 						
 						var node = Arstider.getNode(element);
 						if(node && node.data){
 							Performance.draws++;
 							if(element.largeData === true){
-								this.pencil.renderAt(context, node.data, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
+								this.pencil.renderAt(context, node.data, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
 							}
 							else{
-								this.pencil.renderAt(context, node.data, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y, element.width, element.height);
+								this.pencil.renderAt(context, node.data, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y, element.width, element.height);
 							}
 						}
 						node = null;
@@ -222,12 +211,11 @@
 				
 			//debug outlines
 			if(debug || element.showOutline === true){
-				this.pencil.debugOutline(context, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y, element.width, element.height, "magenta");
+				this.pencil.debugOutline(context, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y, element.width, element.height, "magenta");
 			}
 			
-			if(this.advancedCulling){
-				element.onScreen = this.checkOnScreen(context, element, t, (complex)?xAnchor:-element.global.x, (complex)?yAnchor:-element.global.y);
-			}
+			
+			element.onScreen = this.checkOnScreen(context, element, t, (complex)?xAnchor:-element.global.x, (complex)?yAnchor:-element.global.y);
 
 			//runs post-render methods
 			if(post) post(element);
@@ -246,10 +234,7 @@
 			}
 				
 			//Restore
-			if(complex){
-				if(t) t.restore();
-				else this.pencil.restore(context);
-			}
+			if(complex) t.restore();
 			if(element.alpha != 1) this.pencil.alpha(context, 1/element.alpha);
 
 			if(callback) callback();
