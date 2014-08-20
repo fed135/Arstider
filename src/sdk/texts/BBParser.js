@@ -164,7 +164,7 @@
 			return segments;
 		};
 
-		BBParser.prototype.splitInWords = function(segments){
+		BBParser.prototype.splitSymbol = function(segments, symbol, replace, insert){
 
 			var 
 				i = 0,
@@ -174,9 +174,10 @@
 			;
 
 			for (i = 0; i<segments.length; i++) {
-				seg = segments[i].text.split(" ");
+				seg = segments[i].text.split(symbol);
 				for(u = 0; u<seg.length; u++){
-					ret.push(new Segment(seg[u] + " ", segments[i].styles));
+					if(u > 0 && insert) ret.push(new Segment(symbol, segments[i].styles));
+					ret.push(new Segment(seg[u] + ((replace)?symbol:""), segments[i].styles));
 				}
 			}
 			

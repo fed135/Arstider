@@ -47,6 +47,7 @@ define("Arstider/texts/Segment", [], function(){
 	};
 
 	Segment.prototype.render = function(context, font, x, y, stroke, fill){
+		if(this.text.indexOf("<br>") != -1) return;
 
 		context.save();
 

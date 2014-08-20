@@ -101,7 +101,7 @@
 			this._custom = {};
 
 			//Fast render
-			this.dynamic = Arstider.checkIn(props.dynamic, true);
+			this.dynamic = Arstider.checkIn(props.dynamic, false);
 
 			this.onchange = new Signal();
 
@@ -125,9 +125,11 @@
 				if(txt.indexOf(breakLine) != -1) this.textWrap = true;
 				this._textValue = txt;
 				this._words = Parser.parse(txt);
+				this._words = Parser.splitSymbol(this._words, breakLine, false, true);
+
 				//If non-dynamic
 				if(!this.dynamic){
-					this._words = Parser.splitInWords(this._words);
+					this._words = Parser.splitSymbol(this._words, " ", true, false);
 				}
 
 				this.render();
@@ -188,6 +190,7 @@
 					if(this._words[i].text.indexOf(breakLine) != -1){
 						if(l != null) lines.push(l);
 						l = [];
+						currentLine = 0;
 					}
 
 					if(fieldWidth > 0){
@@ -195,6 +198,7 @@
 						if(currentLine + this._words[i].width > fieldWidth){
 							if(l != null && l.length != 0) lines.push(l);
 							l = [];
+							currentLine = 0;
 						}
 					}
 					
