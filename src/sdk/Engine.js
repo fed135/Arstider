@@ -160,10 +160,12 @@
 				});
 			}
 			else{
+				/*
 				if(Hash.anchor.indexOf("debug") == -1){
 					Arstider.verbose = 0;
 					Arstider.disableConsole();
 				}
+				*/
 			}
 				
             this.canvas = new Buffer({
