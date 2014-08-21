@@ -526,10 +526,11 @@
 			
 			if(this.children && this.children.length > 0){
 				for(var i = 0; i<this.children.length; i++){
-					if(this.children[i] && this.children[i]._update){
-						if(this._skipUpdateBubble && this.children[i].cancelBubble) this.children[i].cancelBubble();
+					var c = this.children[i];
+					if(c && c._update){
+						if(this._skipUpdateBubble && c.cancelBubble) c.cancelBubble();
 						//(function(t){setTimeout(function relayUpdate(){t._update.apply(t, [dt]);},0);})(this.children[i]);
-						this.children[i]._update.apply(this.children[i], [dt]);
+						c._update(dt);
 					}
 				}
 			}

@@ -104,7 +104,7 @@ if(Object.create == undefined){
 Arstider.disableConsole = function(){
 	window.console = {
 		log:Arstider.emptyFunction,
-		warn:Arstider.emptyFunction,
+		warn:Arstider.emptyFunction
 		//error:Arstider.emptyFunction
 	};
 };
