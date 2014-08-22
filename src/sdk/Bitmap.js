@@ -29,7 +29,6 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 		this.width = Arstider.checkIn(props.width, 0);
 		this.height = Arstider.checkIn(props.height, 0);
 		this.id = this.url+Arstider.timestamp()+Math.random();
-		this.forceImg = Arstider.checkIn(props.forceImg, false);
 			
 		this.load();
 	}
@@ -39,29 +38,8 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 		if(this.url != ""){
 			this.attempt++;
 			if(Arstider.blobCache[this.url] != undefined) this._fetchUrl(Arstider.blobCache[this.url].url);
-			else if(this.url.indexOf("data:image") != -1 || this.forceImg){
+			else if(this.url.indexOf("data:image") != -1){
 				this._fetchUrl(this.url);
-			}
-			else if(((Browser.name == "safari" && Browser.version < 7) || Browser.name == "ie")){
-				if(Arstider.bufferPool["_compatBuffer_"+this.url]){
-					this.data = Arstider.bufferPool["_compatBuffer_"+this.url];
-					if(this.callback){
-						if(this.data._loaded){
-							setTimeout(function retroLoadDelay(){thisRef.callback(thisRef.data.data);},0);
-						}
-						else{
-							this.data.onchange.addOnce(function(){
-								thisRef.callback(thisRef.data.data);
-							});
-						}
-					}
-				}
-				else{
-					this.data = new Buffer({
-						name:"_compatBuffer_"+this.url
-					});
-					this._fetchUrl(this.url);
-				}
 			}
 			else{
 				this.req = new Request({
@@ -88,23 +66,28 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 
 		if(Arstider.blobCache[this.url] == undefined){
 			var testURL;
-			try{
-				testURL = window.URL.createObjectURL(e);
+			if(e.indexOf && e.indexOf("data:") != -1){
+				testURL = e;
 			}
-			catch(e){
-				testURL = null;
+			else{
+				try{
+					testURL = window.URL.createObjectURL(e);
+				}
+				catch(e){
+					testURL = null;
+				}
+				if(!window.URL.createObjectURL || !testURL){
+					var reader = new window.FileReader();
+					reader.readAsDataURL(e); 
+					reader.onloadend = function(){
+					    Arstider.blobCache[thisRef.url] = {url:reader.result, size:e.size}; 
+					    thisRef._fetchUrl.apply(thisRef, [Arstider.blobCache[thisRef.url].url]);          
+					}
+					return;
+				}
 			}
 
-			if(!window.URL.createObjectURL || !testURL){
-				var reader = new window.FileReader();
-				reader.readAsDataURL(e); 
-				reader.onloadend = function(){
-				    Arstider.blobCache[thisRef.url] = {url:reader.result, size:e.size}; 
-				    thisRef._fetchUrl.apply(thisRef, [Arstider.blobCache[thisRef.url].url]);          
-				}
-				return;
-			}
-			else Arstider.blobCache[this.url] = {url:testURL, size:e.size};
+			Arstider.blobCache[this.url] = {url:testURL, size:e.size || e.length*8};
 		}
 		
 		//loads the element into bitmap data
@@ -118,61 +101,6 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 	 */
 	Bitmap.prototype._fetchUrl = function(url, callback){
 		var thisRef = this;
-		
-		if(((Browser.name == "safari" && Browser.version < 7) || Browser.name == "ie") && !this.forceImg){
-			Arstider.__retroAssetLoader = true;
-			Preloader.progress(this.id, 0);
-			//need to save into a canvas
-			var img = new Image();
-			img.onload = function(){
-				//Added a padding for IE's innacurate onload...
-				setTimeout(function bitmapLoadDelay(){
-					if(thisRef && thisRef.data){
-						if(!thisRef.data.setSize){
-							thisRef.data = new Buffer({
-								name:"_compatBuffer_"+thisRef.url
-							});
-						}
-
-						if(thisRef.data.setSize){
-							thisRef.data.setSize(img.width, img.height)
-							thisRef.data.width = thisRef.width = img.width;
-							thisRef.data.height = thisRef.height = img.height;
-							thisRef.data.context.drawImage(img, 0,0);
-							//fetches data - another IE safety measure
-							var bucket = thisRef.data.context.getImageData(1,1,1,1);
-							img.onload = null;
-							img.src = Arstider.emptyImgSrc;
-							if(callback) callback(thisRef.data.data);
-							else thisRef.callback(thisRef.data.data);
-							thisRef.data._loaded = true;
-							thisRef.data.onchange.dispatch(thisRef.data.data);
-							thisRef.attempt = 0;
-							Preloader.progress(thisRef.id, 100);
-							bucket = null;
-						}
-					}
-					else{
-						console.warn("Arstider.Bitmap._fetchUrl: Entity or data no longer available");
-					}
-					img = null;
-				},50);
-			};
-			img.onerror = function(e){
-				if(thisRef.attempt > 3){
-					console.warn("Arstider.Bitmap._fetchUrl: could not load image ", thisRef.url, ":", e);
-					Preloader.progress(thisRef.id, 100);
-				}
-				else{
-					if(thisRef && thisRef.load) thisRef.load.apply(thisRef);
-				}
-			};
-
-			img.src = url;
-
-
-			return;
-		}
 
 		if(Arstider.defaultRenderStyle === "sharp"){
 			if(Browser.name == "firefox") this.data.style.imageRendering = '-moz-crisp-edges';
@@ -198,6 +126,8 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 			else{
 				if(thisRef.callback) thisRef.callback(thisRef);
 			}
+
+			if(this.forceImg) Preloader.progress(this.id, 100);
 		};
 		this.data.src = url;
 	};

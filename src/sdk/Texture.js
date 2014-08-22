@@ -82,7 +82,6 @@
 
 			var req = new Bitmap({
 				url:url,
-				forceImg:true,
 				callback:function(img){
 					thisRef._createPattern.apply(thisRef, [img, callback]);
 				}

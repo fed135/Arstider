@@ -53,8 +53,6 @@
 		preloaderRef = null
 	;
 	
-	window.URL = window.URL || window.webkitURL || null;
-	
 	/**
 	 * Look for a call in the list of pending calls
 	 * @private
@@ -94,7 +92,7 @@
 	/**
 	 * Defines the Request module
 	 */
-	define("Arstider/Request", [], /** @lends Request */ function(){
+	define("Arstider/Request", ["Arstider/Browser"], /** @lends Request */ function(Browser){
 		
 		Request.urlArgs = null;
 
@@ -119,6 +117,8 @@
 				this.url+= (this.url.indexOf('?') === -1 ? '?' : '&') + Request.urlArgs;
 			}
 
+			this._compatibilityMode = ((Browser.name == "ie" && Browser.version == 9) || (Browser.name == "safari" && Browser.platformVersion <= 6));
+
 			/**
 			 * Callback function
 			 * @type {function}
@@ -138,7 +138,7 @@
 			 * Returning data type
 			 * @type {string}
 			 */
-			this.type = Arstider.checkIn(props.type, "blob");
+			this.type = Arstider.checkIn(props.type, (this._compatibilityMode)?"arraybuffer":"blob");
 			/**
 			 * Whether to cache the response for this call
 			 * @type {boolean}
@@ -158,6 +158,8 @@
 			/**
 			 * Advanced
 			 */
+			this.timeout = Arstider.checkIn(props.timeout, 12000); //10 Seconds
+			this.timeoutTimer = null;
 			
 			/**
 			 * Request method (GET, POST, PUT, CHANGE, UPDATE, etc.)
@@ -223,6 +225,8 @@
 			 * If a send request is pending
 			 */
 			this._sendPending = false;
+
+			this.completed = false;
 		}
 		
 		/**
@@ -241,6 +245,9 @@
 				thisRef = this,
 				header
 			;
+
+			this.completed = false;
+			if(this.timeoutTimer != null) clearTimeout(this.timeoutTimer);
 			
 			function handleError(e){
 				if(thisRef.error){
@@ -250,7 +257,7 @@
 			};
 			
 			if(this.track) preloaderRef.progress(this.id, 0);
-				
+
 			if(this.cache){
 				if(cache[this.url] !== undefined){
 					this.callback.apply(this.caller, [cache[this.url]]);
@@ -267,100 +274,129 @@
 					pending.push({url:this.url});
 				}
 			}
-				
-			if(window.URL == null && thisRef.type == "blob"){
 
-				/**
-				 * Older browser, need to use Tag-loading method, not xhr
-				 */
+			if(this.type == "arraybuffer"){
+				var loader = new Image();
+				var ret;
+				loader.onload = function(){
+					loader.onload = null;
+					//Only for images
+					if(thisRef.url.indexOf(".jpg") || thisRef.url.indexOf(".png") || thisRef.url.indexOf(".gif")){
+						setTimeout(function loadBitmapDelay(){
+							ret = Arstider.saveToBuffer(thisRef.id, loader);
+							ret.getPixelAt(1,1);
+							ret = ret.getURL("image/png", 0);
+							thisRef.cache[thisRef.url] = ret;
+							if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [ret]);
+							if(thisRef.track) preloaderRef.progress(thisRef.id, 100);
+							loader.src = Arstider.emptyImgSrc;
+							if(Arstider.bufferPool[thisRef.id] && Arstider.bufferPool[thisRef.id].kill) Arstider.bufferPool[thisRef.id].kill();
+						}, 50);
+					}
+					else{
+						thisRef.cache[thisRef.url] = ret;
+						if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [ret]);
+						if(thisRef.track) preloaderRef.progress(thisRef.id, 100);
+						loader.src = Arstider.emptyImgSrc;
+					}
+					this.completed = true;
+				};
+				loader.src = this.url;
 
-				var tag;
-				if(this.url.indexOf(".mp3") || this.url.indexOf(".ogg")) tag = new Audio();
-				else tag = new Image();
+				if(this.track){
+					this.timeoutTimer = setTimeout(function(){
+						if(!thisRef.completed){
+							preloaderRef.progress(thisRef.id, 100);
+						}
+					}, this.timeout);
+				}
+				return;
+			}
 				
-				tag.onload = function(){
+			/**
+			 * Older browser, need to use Tag-loading method, not xhr
+			 */
+			xhr = new XMLHttpRequest();
+					
+			xhr.open(this.method, this.url, this.async, this.user, this.password);
+
+			
+            if(this.async) xhr.responseType = this.type;
+            if(this.type == "json") xhr.responseType = "text";
+                                       
+            if(this.mimeOverride != null && xhr.overrideMimeType) xhr.overrideMimeType(this.mimeOverride);
+
+            if(this.method.toLowerCase() == "post"){
+               		//check for content-type header
+           		if(this.headers === Arstider.emptyObj) this.headers = {};
+           		if(this.headers["Content-Type"] == undefined) this.headers["Content-Type"] = "application/x-www-form-urlencoded";
+           	}
+
+			for(header in this.headers){
+				if(refusedHeaders.indexOf(header) === -1){
+					xhr.setRequestHeader(header, this.headers[header]);
+				}
+				else{
+					if(Arstider.verbose > 1) console.warn("Arstider.Request.send: header ",header," is not accepted and will be ignored");
+				}
+			}
+				
+			xhr.onprogress = function(e) {
+				if(thisRef.progress) {
+					thisRef.progress.apply(thisRef.caller, [e]);
+				}
+				if(thisRef.track) preloaderRef.progress(thisRef.id, Math.round((e.loaded/e.total)*100));
+			};
+						
+			xhr.onload = function(){
+				if(this.status == 200){
+					var res;
+					if(thisRef.type == "json"){
+						try{
+							res = JSON.parse(this.responseText);
+						}
+						catch(e){
+							console.error(e);
+							res = {};
+						}
+					}
+					else{
+						if(thisRef.type == "text"){
+							res = this.responseText;
+						}
+						else res = this.response;
+					}
+
 					if(thisRef.cache){
-						cache[thisRef.url] = tag;
+						cache[thisRef.url] = res;
 						updateInPending(thisRef.url, preloaderRef);
 					}
 					
-					if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [tag]);
+					if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [res]);
 					if(thisRef.track) preloaderRef.progress(thisRef.id, 100);
-				};
-				
-				tag.onerror = handleError;
-				tag.src = this.url;
-			}
-			else{
-				xhr = new XMLHttpRequest();
-					
-				xhr.open(this.method, this.url, this.async, this.user, this.password);
-
-				if((navigator.userAgent.toLowerCase().indexOf('applewebkit') != -1 || navigator.userAgent.toLowerCase().indexOf('trident') != -1) && this.type == "json") this._parseRequired = true;
-				else {
-                    if(this.async) xhr.responseType = this.type;
-                }
-                                       
-               	if(this.mimeOverride != null) xhr.overrideMimeType(this.mimeOverride);
-				
-               	if(this.method.toLowerCase() == "post"){
-               		//check for content-type header
-               		if(this.headers === Arstider.emptyObj) this.headers = {};
-               		if(this.headers["Content-Type"] == undefined) this.headers["Content-Type"] = "application/x-www-form-urlencoded";
-               	}
-
-				for(header in this.headers){
-					if(refusedHeaders.indexOf(header) === -1){
-						xhr.setRequestHeader(header, this.headers[header]);
-					}
-					else{
-						if(Arstider.verbose > 1) console.warn("Arstider.Request.send: header ",header," is not accepted and will be ignored");
-					}
 				}
-				
-				xhr.onprogress = function(e) {
-					if(thisRef.progress) {
-						thisRef.progress.apply(thisRef.caller, [e]);
-					}
-					if(thisRef.track) preloaderRef.progress(thisRef.id, Math.round((e.loaded/e.total)*100));
-				};
+				else{
+					if(thisRef.track) preloaderRef.progress(thisRef.id, 100);
+				}
+				thisRef.completed = true;
+				if(thisRef.timeoutTimer != null) clearTimeout(thisRef.timeoutTimer);
+				thisRef.timeoutTimer = null;
+			};
 						
-				xhr.onload = function(){
-					//console.log("onload");
-					if(this.status == 200){
-						var res;
-						if(thisRef._parseRequired){
-							try{
-								 res = JSON.parse(this.responseText);
-							}
-							catch(e){
-								console.error(e);
-								res = {};
-							}
-						}
-						else{
-							if(thisRef.type == "text"){
-								res = this.responseText;
-							}
-							else res = this.response;
-						} 
+			xhr.onerror = handleError;
 						
-						if(thisRef.cache){
-							cache[thisRef.url] = res;
-							updateInPending(thisRef.url, preloaderRef);
-						}
-						
-						if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [res]);
-						if(thisRef.track) preloaderRef.progress(thisRef.id, 100);
-					}
-				};
-						
-				xhr.onerror = handleError;
-							
-				xhr.send(Arstider.serialize(this.postData));
+			xhr.send(Arstider.serialize(this.postData));
 
-				return xhr;
+			if(this.track){
+				this.timeoutTimer = setTimeout(function(){
+					if(!thisRef.completed){
+						//xhr.abort(); -> they might eventually complete, they'll just pop-in. no big deal.
+						preloaderRef.progress(thisRef.id, 100);
+					}
+				}, this.timeout);
 			}
+
+			return xhr;
 		};
 		
 		return Request;

@@ -156,10 +156,10 @@
 		 * @param {string|null} type Optionnal toDataUrl parameter
 		 * @return {string} The blobUrl
 		 */
-		Buffer.prototype.getURL = function(type){
+		Buffer.prototype.getURL = function(type, quality){
 			if(!this.data) return;
 
-			return this.data.toDataURL(type || "image/png");
+			return this.data.toDataURL(type || "image/png", Arstider.checkIn(quality, 10));
 		};
 
 		Buffer.prototype.setShaders = function(vertex, fragment){
