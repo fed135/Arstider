@@ -64,6 +64,8 @@ function (Bitmap)
 
 	GridSpritesheet.prototype.onImageComplete = function(image)
 	{
+		if(this.imageWidth) return;
+
 		var data = this.data;
 		var path = this.path;
 
@@ -71,6 +73,12 @@ function (Bitmap)
 		this.imageHeight = image.height;
 		this.frameWidth = data.frameWidth;
 		this.frameHeight = data.frameHeight;
+
+		if(!this.imageWidth)
+		{
+			console.error("Cannot find image size for "+this.imageUrl);
+			return;
+		}
 
 
 		if (data.anchor != null)
