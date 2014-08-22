@@ -161,10 +161,10 @@ function (DisplayObject, SpriteSheetManager, Signal)
 		{
 			_frameStep = (dt/1000 * this.animation.fps) * this.speed;
 
-			this.gotoFrame(this.framePosition + _frameStep);
+			this.gotoFrame(this.animPosition + _frameStep);
 
 			// Last frame reached?
-			if(this.framePosition-1 + _frameStep > this.frames.length)
+			if(this.animPosition-1 + _frameStep > this.frames.length)
 			{
 				this._onAnimComplete();
 			}
@@ -315,7 +315,7 @@ function (DisplayObject, SpriteSheetManager, Signal)
 			}
 
 			// Kick-in animation
-			this.currentFrame = this.framePosition = 0;
+			this.currentFrame = this.animPosition = 0;
 			return this.gotoFrame(frameNum);
 
 		}
@@ -344,8 +344,8 @@ function (DisplayObject, SpriteSheetManager, Signal)
 		if(!frame) frame=1;
 
 		// Need to change?
-		if(frame==this.framePosition && !force) return;
-		this.framePosition = frame;
+		if(frame==this.animPosition && !force) return;
+		this.animPosition = frame;
 
 		// Current frame index
 		this.currentFrame = Math.floor(frame);
@@ -406,7 +406,7 @@ function (DisplayObject, SpriteSheetManager, Signal)
 		} 
 		// Loop
 		else {
-			this.currentFrame = this.framePosition = 1;
+			this.currentFrame = this.animPosition = 1;
 		}
 
 		// Anim complete signal
