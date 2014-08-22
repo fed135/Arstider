@@ -177,12 +177,17 @@
 				lines = [],
 				l = null,
 				i,
-				u
+				u,
+				heightVal
 			;
 
+			//get width
 			for(i = 0; i<this._words.length; i++){
 				this._words[i].calculateWidth(this.data.context, f);
 			}
+
+			//get height
+			f.lineSpacing = parseInt(f.size.split("px").join(""));
 
 			//need to manually parse
 			if(fieldWidth > 0 || this.textWrap){
@@ -214,13 +219,15 @@
 				longestLine =  this._getLineWidth(lines[0]);
 			}
 
+			heightVal = (lines.length * f.lineSpacing) + (f.paddingTop * 2) + Math.abs(f.fontOffsetY) + f.shadowBlur + (f.lineSpacing * 0.25);
+
 			//set buffer width 
 			if(fieldWidth <= 0){
-				this.data.setSize(longestLine + (f.paddingLeft * 2) + Math.abs(f.fontOffsetX) + f.shadowBlur, (lines.length * f.lineSpacing) + (f.paddingTop * 2) + Math.abs(f.fontOffsetY)  + f.shadowBlur);
+				this.data.setSize(longestLine + (f.paddingLeft * 2) + Math.abs(f.fontOffsetX) + f.shadowBlur, heightVal);
 				fieldWidth = longestLine;
 			}
 			else{
-				this.data.setSize(this.width, this.height || (lines.length * f.lineSpacing) + (f.paddingTop * 2) + Math.abs(f.fontOffsetY)  + f.shadowBlur);
+				this.data.setSize(this.width, this.height || heightVal);
 			}
 			this.width = this.data.width;
 			this.height = this.data.height;
@@ -239,7 +246,7 @@
 					caret.x += ((fieldWidth - l)*0.5);
 				}
 
-				caret.y = f.paddingTop + (i*f.lineSpacing) + f.fontOffsetY;
+				caret.y = f.paddingTop + ((i+1)*f.lineSpacing) + f.fontOffsetY;
 
 				for(u = 0; u<lines[i].length; u++){
 					if(f.textAlign == "right"){
