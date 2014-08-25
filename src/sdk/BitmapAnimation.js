@@ -310,7 +310,18 @@ function (DisplayObject, SpriteSheetManager, Signal)
 					if(!params.next) params.next = this.defaultAnim;
 				}
 
-				if(params.next) this.nextAnim = params.next;
+				if(params.next) {
+					if(typeof(params.next)=="string")
+					{
+						this.nextAnim = params.next;
+						this.nextAnimParms = null;
+					} else {
+						this.nextAnim = params.next.name;
+						delete params.next.name;
+						this.nextAnimParams = params.next;
+					}
+					
+				}
 				if(params.loop===true || params.loop===false) this.loopCurrentAnim = params.loop;
 			}
 
