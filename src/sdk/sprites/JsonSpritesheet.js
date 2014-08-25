@@ -33,7 +33,8 @@ function ()
 		this.defaultAnim = params.defaultAnim;
 		this.fps = (params.fps>0) ? params.fps : 15;
 		this.animations = {};
-		this.framesByName = {};
+		this.frames = [];
+		this.frameDict = {};
 
 		this.baseUrl = fileInfo.path;
 
@@ -48,11 +49,11 @@ function ()
 
 	JsonSpritesheet.prototype.getFrameByName = function(frameName)
 	{
-		if(!this.framesByName[frameName])
+		if(!this.frameDict[frameName])
 		{
 			console.log("Unable to get frame or image "+frameName+" from the Spritesheet");
 		}
-		return this.framesByName[frameName];
+		return this.frameDict[frameName];
 	}
 
 	JsonSpritesheet.prototype.getAnim = function(animName)
@@ -82,7 +83,7 @@ function ()
 
 			// Create frameInfo
 			frame = this.createFrame(imageUrl, i, frameData);
-			this.framesByName[frame.name] = frame;
+			this.frameDict[frame.name] = frame;
 		}	
     }
 
@@ -158,7 +159,8 @@ function ()
 			frame = this.createFrame(imageUrl, i, frameData);
 
 			animation.frames.push(frame);
-			this.framesByName[frame.name] = frame;
+			this.frameDict[frame.name] = frame;
+			this.frames.push(frame);
 		}
 	}
 

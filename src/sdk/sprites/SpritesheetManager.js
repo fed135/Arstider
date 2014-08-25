@@ -161,17 +161,69 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 				{
 					var animOverrides = overrideData.animations[animName];
 
+					var anim;
 					for(var p in animOverrides)
 					{
+						anim = spritesheet.animations[animName];
+
 						// Anim does not exists
-						if(!spritesheet.animations[animName])
+						if(!anim)
 						{
 							// TODO: create anim if possible
 							console.error("SpritesheetManager error: Anim '"+animName+"' not found for overrides: ", animName, animOverrides);
 							
 							continue;
 						}
-						spritesheet.animations[animName][p] = animOverrides[p];
+
+						// Frame re-indexing
+						if(p=="frames")
+						{
+							var frames = animOverrides[p];
+							var frameList;
+							
+							for (var i = 0; i < frames.length; i++) {
+
+								var frame = frames[i];
+
+								if(typeof(frame)=="string")
+								{
+									// TODO
+									if(!this.warnedFrameName)
+									{
+										this.warnedFrameName = true;
+										console.error("Frame re-indexing from frame names is not yet supported for anim "+animName);
+									}
+								}
+								// Numeric frame re-indexing
+								else if(frame>0 || frame===0)
+								{
+									console.log(spritesheet)
+									var frameData = spritesheet.frames[frame];
+
+									if(!frameData)
+									{
+										console.error("Frame "+frame+" not found on anim "+animName);
+									}
+									// Frame OK
+									else {
+										if(!frameList) frameList = [];
+										frameList.push(frameData);
+									}
+								}
+							};
+
+							if(frameList)
+							{
+								anim["frames"]=frameList;
+							}
+						}
+
+						// Normal overrides
+						else
+						{
+							anim[p] = animOverrides[p];
+						}
+						
 					}
 					
 					//console.log(animName, animOverrides, spritesheet.animations[animName]);
