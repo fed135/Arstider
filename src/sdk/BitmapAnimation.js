@@ -97,7 +97,27 @@ function (DisplayObject, SpriteSheetManager, Signal)
 	 */
 	BitmapAnimation.prototype.killBuffer = function()
 	{
+		if(this.data && this.data.kill) this.data.kill();
+		
+		this.data = null;
+
+		if(!this.animCompleteSignal) return;
+
+		this.removeChildren();
+
 		this.stop();
+		this.bitmaps = null;
+		this.spritesheet = null;
+
+		this.animCompleteSignal.removeAll();
+		this.frameChangeSignal.removeAll();
+		this.onReadySignal.removeAll();
+
+		this.animCompleteSignal = null;
+		this.frameChangeSignal = null;
+		this.onReadySignal = null;
+
+		if(this.onunload) this.onunload();
 	};
 
 
@@ -210,27 +230,6 @@ function (DisplayObject, SpriteSheetManager, Signal)
 	};
 
 	/**
-	 * [next description]
-	 * @param  {[type]}   params
-	 * @return {Function}
-	 */
-	BitmapAnimation.prototype._next = function(params)
-	{
-		if(!this.playlist || this.playlist.length<=0) return;
-
-		var animName = this.playlist.shift();
-
-		this.gotoAnim(animName, params);
-
-		if(this.playlist.length<=0)
-		{
-			this.playlist = null;
-		}
-
-		// TODO: Playlist complete event
-	};
-
-	/**
 	 * Go to a specific animation or frame of the current animation, but stop
 	 * @param {Object} frameOrAnim Animation name or frame number of current sequence
 	 * @param {Object} params Additional parameters or specific frame number for anim name
@@ -254,6 +253,8 @@ function (DisplayObject, SpriteSheetManager, Signal)
 	 */
 	BitmapAnimation.prototype.gotoAnim = function(animName, params)
 	{
+		if(!this.isPlaying) this.isPlaying = true;
+
 		var waitForTimedAnim = ( this.timedAnim && !(params && !params.force) );
 
 		if(!this.spritesheet || waitForTimedAnim )
@@ -302,6 +303,18 @@ function (DisplayObject, SpriteSheetManager, Signal)
 			// Additional parameters
 			if(params)
 			{
+				// Play animation reversed?
+				if(params.reverse)
+				{
+					if(!this.spritesheet.reversedFrames) this.spritesheet.reversedFrames = {};
+					if(this.spritesheet.reversedFrames[animName])
+					{
+						this.frames = this.spritesheet.reversedFrames[animName];
+					} else {
+						this.spritesheet.reversedFrames[animName] = this.frames = this.frames.slice().reverse();
+					}
+				}
+
 				// Play anim for a certain time?
 				if(params.time>0)
 				{
@@ -403,8 +416,8 @@ function (DisplayObject, SpriteSheetManager, Signal)
 		// Next chained anim?
 		else if(this.nextAnim && !this.timedAnim)
 		{
-			//console.log(this.nextAnim, this.nextAnimParams);
 			this.gotoAnim(this.nextAnim, this.nextAnimParams);
+
 			// Release next anim
 			this.nextAnim = null;
 			this.nextAnimParams = null;
@@ -424,7 +437,26 @@ function (DisplayObject, SpriteSheetManager, Signal)
 		this.animCompleteSignal.dispatch(animName, this);
 	};
 
+	/**
+	 * [next description]
+	 * @param  {[type]}   params
+	 * @return {Function}
+	 */
+	BitmapAnimation.prototype._next = function(params)
+	{
+		if(!this.playlist || this.playlist.length<=0) return;
 
+		var animName = this.playlist.shift();
+
+		this.gotoAnim(animName, params);
+
+		if(this.playlist.length<=0)
+		{
+			this.playlist = null;
+		}
+
+		// TODO: Playlist complete event
+	};
 
 	BitmapAnimation.prototype._setFrame = function(frameData, force)
 	{
