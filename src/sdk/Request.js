@@ -48,9 +48,7 @@
 			"Upgrade",
 			"User-Agent",
 			"Via"
-		],
-
-		preloaderRef = null
+		]
 	;
 	
 	/**
@@ -75,7 +73,7 @@
 	 * @param {string} url The url of the call
 	 * @param {Object} preloaderRef The instance of the preloader singleton
 	 */
-	function updateInPending(url){
+	function updateInPending(url, preloaderRef){
 		var i = pending.length-1;
 		for(i;i>=0;i--){
 			if(url == pending[i].url){
@@ -92,7 +90,7 @@
 	/**
 	 * Defines the Request module
 	 */
-	define("Arstider/Request", ["Arstider/Browser"], /** @lends Request */ function(Browser){
+	define("Arstider/Request", ["Arstider/Browser", "Arstider/Preloader"], /** @lends Request */ function(Browser, Preloader){
 		
 		Request.urlArgs = null;
 
@@ -202,29 +200,6 @@
 			 * @type {string}
 			 */
 			this.id = this.url+"_"+Arstider.timestamp();
-			
-			/**
-			 * If response requires parsing
-			 * @private
-			 * @type {boolean}
-			 */
-			this._parseRequired = false;
-
-			/**
-			 * For stanbdalone
-			 */
-			var thisRef = this;
-			if(this.track){
-				requirejs(["Arstider/Preloader"],function(p){
-					preloaderRef = p;
-					if(thisRef._sendPending) thisRef.send.apply(thisRef);
-				});
-			}
-
-			/**
-			 * If a send request is pending
-			 */
-			this._sendPending = false;
 
 			this.completed = false;
 		}
@@ -234,11 +209,6 @@
 		 * @type {function(this:Request)}
 		 */
 		Request.prototype.send = function(){
-			
-			if(preloaderRef == null && this.track){
-				this._sendPending = true;
-				return;
-			}
 
 			var 
 				xhr,
@@ -248,21 +218,22 @@
 
 			this.completed = false;
 			if(this.timeoutTimer != null) clearTimeout(this.timeoutTimer);
+			this.timeoutTimer = null;
 			
 			function handleError(e){
 				if(thisRef.error){
 					thisRef.error.apply(thisRef.caller, [e]);
 				}
-				if(thisRef.track) preloaderRef.progress(thisRef.id, 100);
+				if(thisRef.track) Preloader.progress(thisRef.id, 100);
 			};
 			
-			if(this.track) preloaderRef.progress(this.id, 0);
+			if(this.track) Preloader.progress(this.id, 0);
 
 			if(this.cache){
 				if(cache[this.url] !== undefined){
 					this.callback.apply(this.caller, [cache[this.url]]);
 					updateInPending(this.url);
-					if(this.track) preloaderRef.progress(this.id, 100);
+					if(this.track) Preloader.progress(this.id, 100);
 					return;
 				}
 					
@@ -288,7 +259,7 @@
 							ret = ret.getURL("image/png", 0);
 							thisRef.cache[thisRef.url] = ret;
 							if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [ret]);
-							if(thisRef.track) preloaderRef.progress(thisRef.id, 100);
+							if(thisRef.track) Preloader.progress(thisRef.id, 100);
 							loader.src = Arstider.emptyImgSrc;
 							if(Arstider.bufferPool[thisRef.id] && Arstider.bufferPool[thisRef.id].kill) Arstider.bufferPool[thisRef.id].kill();
 						}, 50);
@@ -296,17 +267,19 @@
 					else{
 						thisRef.cache[thisRef.url] = ret;
 						if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [ret]);
-						if(thisRef.track) preloaderRef.progress(thisRef.id, 100);
+						if(thisRef.track) Preloader.progress(thisRef.id, 100);
 						loader.src = Arstider.emptyImgSrc;
 					}
 					this.completed = true;
+					if(thisRef.timeoutTimer != null) clearTimeout(thisRef.timeoutTimer);
+					thisRef.timeoutTimer = null;
 				};
 				loader.src = this.url;
 
 				if(this.track){
-					this.timeoutTimer = setTimeout(function(){
+					this.timeoutTimer = setTimeout(function imageLoadTimeout(){
 						if(!thisRef.completed){
-							preloaderRef.progress(thisRef.id, 100);
+							Preloader.progress(thisRef.id, 100);
 						}
 					}, this.timeout);
 				}
@@ -345,7 +318,7 @@
 				if(thisRef.progress) {
 					thisRef.progress.apply(thisRef.caller, [e]);
 				}
-				if(thisRef.track) preloaderRef.progress(thisRef.id, Math.round((e.loaded/e.total)*100));
+				if(thisRef.track) Preloader.progress(thisRef.id, Math.round((e.loaded/e.total)*100));
 			};
 						
 			xhr.onload = function(){
@@ -369,14 +342,14 @@
 
 					if(thisRef.cache){
 						cache[thisRef.url] = res;
-						updateInPending(thisRef.url, preloaderRef);
+						updateInPending(thisRef.url, Preloader);
 					}
 					
 					if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [res]);
-					if(thisRef.track) preloaderRef.progress(thisRef.id, 100);
+					if(thisRef.track) Preloader.progress(thisRef.id, 100);
 				}
 				else{
-					if(thisRef.track) preloaderRef.progress(thisRef.id, 100);
+					if(thisRef.track) Preloader.progress(thisRef.id, 100);
 				}
 				thisRef.completed = true;
 				if(thisRef.timeoutTimer != null) clearTimeout(thisRef.timeoutTimer);
@@ -388,10 +361,10 @@
 			xhr.send(Arstider.serialize(this.postData));
 
 			if(this.track){
-				this.timeoutTimer = setTimeout(function(){
+				this.timeoutTimer = setTimeout(function imageLoadTimeout(){
 					if(!thisRef.completed){
 						//xhr.abort(); -> they might eventually complete, they'll just pop-in. no big deal.
-						preloaderRef.progress(thisRef.id, 100);
+						Preloader.progress(thisRef.id, 100);
 					}
 				}, this.timeout);
 			}

@@ -40,27 +40,13 @@
 		 * @param {number} dt Delta time
 		 */
 		GlobalTimers.prototype.step = function(dt){
-			if(!requirejs.defined("Arstider/Engine")){
-				Arstider.requestAnimFrame.apply(window, [singleton.step])
-			}
-
 			dt = Arstider.checkIn(dt, Math.round(1000/Arstider.FPS));
 
 			for(var i=this.list.length-1; i>=0; i--){
 				if(this.list[i] && this.list[i].running){
-					//closured
-					/*(function(t){
-						setTimeout(function relayTimer(){
-							t.delay -= dt;
-							
-							if(t.step) t.step.apply(t);
-							if(t.delay <= 0 && t.completed == false) t.finish();
-						},0);
-					})(this.list[i]);*/
-					//static
 					if(this.list[i] && this.list[i].delay){
 						this.list[i].delay -= dt;
-						if(this.list[i] && this.list[i].step) this.list[i].step.apply(this.list[i]);
+						if(this.list[i] && this.list[i].step) this.list[i].step.call(this.list[i]);
 						if(this.list[i] && this.list[i].delay <= 0 && this.list[i].completed == false) this.list[i].finish();
 					}
 				}
@@ -85,13 +71,6 @@
 		GlobalTimers.prototype.push = function(elem){
 			if(this.list.indexOf(elem) == -1){
 				this.list.push(elem);
-			}
-
-			if(!requirejs.defined("Arstider/Engine")){
-				if(!this._roughStarted){
-					this._roughStarted = true;
-					Arstider.requestAnimFrame.apply(window, [singleton.step]);
-				}
 			}
 		};
 

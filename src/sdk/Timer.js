@@ -112,7 +112,7 @@ define( "Arstider/Timer", ["Arstider/GlobalTimers"], /** @lends Timer */ functio
 	    	var thisRef = this;
 	    	this._startTime = Arstider.timestamp();
 	    	clearTimeout(this._internalTimer);
-	    	this._internalTimer = setTimeout(function internalTimerStepRelay(){thisRef.finish.apply(thisRef);}, this.delay);
+	    	this._internalTimer = setTimeout(function internalTimerStepRelay(){thisRef.finish.call(thisRef);}, this.delay);
 	    }
 	    return this; 
 	};

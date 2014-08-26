@@ -147,7 +147,7 @@
 
 			var thisRef = this;
 			this._font._onFontLoaded(function(){
-				thisRef.render.apply(thisRef);
+				thisRef.render.call(thisRef);
 			});
 		};
 

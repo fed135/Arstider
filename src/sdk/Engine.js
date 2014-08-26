@@ -470,7 +470,7 @@
 				
 				if(Arstider.verbose > 2) console.warn("Arstider.Engine.play: playing...");
 				if(!singleton.isPreloading) singleton.handbreak = false;
-				if(singleton.frameRequest || Arstider.__animTimer) Arstider.cancelAnimFrame.apply(window, [singleton.frameRequest]);
+				if(singleton.frameRequest || Arstider.__animTimer) Arstider.cancelAnimFrame.call(window, singleton.frameRequest);
 				singleton.draw();
 				Events.broadcast("Engine.play", singleton);
 			}
@@ -647,7 +647,7 @@
 			if(!singleton.debug && Arstider.verbose > 0) Arstider.verbose = 0;
 			
 			//Immediately request the next frame
-			singleton.frameRequest = Arstider.requestAnimFrame.apply(window, [singleton.draw]);
+			singleton.frameRequest = Arstider.requestAnimFrame.call(window, singleton.draw, Performance.deltaTime);
 			
 			if(Arstider.defaultRenderStyle == "sharp") singleton.canvas.updateRenderStyle(Arstider.defaultRenderStyle);
 

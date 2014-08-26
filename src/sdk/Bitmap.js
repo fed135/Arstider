@@ -81,7 +81,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 					reader.readAsDataURL(e); 
 					reader.onloadend = function(){
 					    Arstider.blobCache[thisRef.url] = {url:reader.result, size:e.size}; 
-					    thisRef._fetchUrl.apply(thisRef, [Arstider.blobCache[thisRef.url].url]);          
+					    thisRef._fetchUrl.call(thisRef, Arstider.blobCache[thisRef.url].url);          
 					}
 					return;
 				}

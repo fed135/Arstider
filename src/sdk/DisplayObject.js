@@ -287,12 +287,12 @@
 			this.y = 0;
 
 			Renderer.draw(this.data.context, this, null, null, false, function(){
-				thisRef.removeChildren.apply(thisRef);
+				thisRef.removeChildren.call(thisRef);
 
 				thisRef.x = savedX;
 				thisRef.y = savedY;
 
-				if(callback) callback.apply(thisRef);
+				if(callback) callback.call(thisRef);
 			});
 		};
 		

@@ -87,6 +87,23 @@ define("Arstider/Tag", ["Arstider/Entity", "Arstider/Viewport"], /** @lends Tag 
 			if(Arstider.verbose > 0) console.warn("Arstider.Tag.unbind: no DOM element");
 		}
 	};
+
+	Tag.prototype.appendChild = function(element){
+		if(element.nodeName || element._tag){
+			if(element.nodeName){
+				this._tag.appendChild(element);
+			}
+			else if(element._tag && element._tag.nodeName){
+				this._tag.appendChild(element._tag);
+			}
+			else{
+				console.error("Problem with element, cannot append to DOM tree! :: ", element);
+			}
+		}
+		else{
+			console.error("Cannot append non-DOM element to DOM tree! :: ", element);
+		}
+	};
 	
 	/**
 	 * Overrides the _update method so that the tag's position matches the entities'

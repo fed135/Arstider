@@ -34,6 +34,7 @@
 			this.pencil = null;
 			this.abort = false;
 			this.padding = 100;
+			this.allowSkip = true;
 		}
 
 		Renderer.prototype.checkOnScreen = function(context, element, matrix, xo, yo){
@@ -189,7 +190,7 @@
 				//Custom draw method :: WARNING! Only context is provided... could be any of Webgl or Canvas2d !!!
 				if(element.draw){
 					Performance.draws++;
-					element.draw.apply(element, [context, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y]);
+					element.draw.call(element, context, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y);
 				}
 				else{
 					if(element.onScreen) {
@@ -284,7 +285,7 @@
 		Renderer.prototype.draw = function(context, element, pre, post, debug, callback){
 			this._recoverContextPencil(context, function recoverContext(){
 				singleton.reset(context);
-				singleton.renderChild.apply(singleton, [context, element, false, pre, post, null, debug, callback, true]);
+				singleton.renderChild.call(singleton, context, element, false, pre, post, null, debug, callback, true);
 			});
 		};
 			
