@@ -91,7 +91,10 @@
 					singleton.abort = false;
 					//this.pencil.reset(context);
 				}
-				else return;
+				else{
+					if(callback) callback();
+					return;
+				}
 			}
 				
 			Performance.elements++;
@@ -187,14 +190,15 @@
 
 			//Render data
 			if(element.data || element.draw){
-				//Custom draw method :: WARNING! Only context is provided... could be any of Webgl or Canvas2d !!!
-				if(element.draw){
-					Performance.draws++;
-					element.draw.call(element, context, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y);
-				}
-				else{
-					if(element.onScreen) {
-						
+				var onScreen = (element.global.x < context.canvas.width && element.global.x + element.global.width > 0 && element.global.y < context.canvas.height && element.global.y + element.global.height > 0);
+				if((!complex && onScreen) || complex){
+					//Custom draw method :: WARNING! Only context is provided... could be any of Webgl or Canvas2d !!!
+					if(element.draw){
+						Performance.draws++;
+						element.draw.call(element, context, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y);
+					}
+					else{
+						//if(element.onScreen) {
 						var node = Arstider.getNode(element);
 						if(node && node.data){
 							Performance.draws++;
@@ -216,7 +220,7 @@
 			}
 			
 			
-			element.onScreen = this.checkOnScreen(context, element, t, (complex)?xAnchor:-element.global.x, (complex)?yAnchor:-element.global.y);
+			//element.onScreen = this.checkOnScreen(context, element, t, (complex)?xAnchor:-element.global.x, (complex)?yAnchor:-element.global.y);
 
 			//runs post-render methods
 			if(post) post(element);

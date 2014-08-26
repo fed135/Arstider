@@ -92,14 +92,15 @@
 		 */
 		Mouse.prototype.init = function(div){
 			if(div){
-				if(Browser.isMobile){
+				if(Browser.isMobile || ('ontouchmove' in window)){
 					window.addEventListener('touchmove', this._handleTouchMove);
 					window.addEventListener('touchstart',  this._handleTouchStart, false);			
 					window.addEventListener('touchend',  this._handleTouchEnd,false);
 					window.addEventListener('touchcancel', this._handleTouchEnd, false);
 					window.addEventListener('touchleave', this._handleTouchEnd, false);
 				}
-				else{
+				
+				if(!Browser.isMobile && ('onmousemove' in window)){
 					div.addEventListener('mouseup', this._handleMouseUp,false);
 					div.addEventListener('mousedown', this._handleMouseDown,false);
 					div.addEventListener('mousemove',  this._handleMouseMove);

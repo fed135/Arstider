@@ -107,6 +107,8 @@
 			 * @type {number}
 			 */
 			this.lastFrame = 0;
+
+			this.lastLogicFrame = 0;
 			
 			/**
 			 * Maximum MS allowed between frames
@@ -136,9 +138,17 @@
 		Performance.prototype._stepLogic = function(){
 			if(singleton.updateLogic == null) return;
 			
-			setTimeout(singleton._stepLogic, 1000/Arstider.FPS);
+			var ts = Arstider.timestamp();
+
+			if(this.lastLogicFrame == 0) this.lastLogicFrame = ts;
+
+			singleton.deltaTime = ts - singleton.lastLogicFrame;
+			singleton.lastLogicFrame = ts;
+
+			var nextFrame = Math.round(Math.max(0, (1000/Arstider.FPS) - singleton.deltaTime));
+			setTimeout(singleton._stepLogic, nextFrame);
 			
-			singleton.updateLogic(1000/Arstider.FPS);
+			singleton.updateLogic(singleton.deltaTime);
 		};
 		
 		/**
