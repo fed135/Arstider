@@ -22,7 +22,7 @@
     /**
 	 * Defines performance module
 	 */	
-	define( "Arstider/core/Performance", [], /** @lends core/Performance */ function (){
+	define( "Arstider/core/Performance", ["Arstider/Signal"], /** @lends core/Performance */ function (Signal){
 		
 		if(singleton != null) return singleton;
 		
@@ -34,13 +34,6 @@
 		 * @constructor
 		 */	
 		function Performance(){
-			
-			/**
-			 * Delta time
-			 * @private 
-			 * @type {number}
-			 */
-			this.deltaTime = 0;
 
 			/**
 			 * Number of canvas draws
@@ -67,18 +60,6 @@
 			this.frames = 0;
 			
 			/**
-			 * Number of skipped canvas draws (animationFrame cycle)
-			 * @type {number}
-			 */
-			this.skippedDraw = 0;
-			
-			/**
-			 * Top FPS reached
-			 * @type {number}
-			 */
-			this.topFrames = 0;
-			
-			/**
 			 * MS between animation frames
 			 * @type {number}
 			 */
@@ -95,115 +76,71 @@
 			 * @type {number}
 			 */
 			this.bufferMem = 0;
-			
-			/**
-			 * Current time stamp
-			 * @type {number}
-			 */
-			this.now = 0;
-			
-			/**
-			 * Delay with previous frame
-			 * @type {number}
-			 */
-			this.lastFrame = 0;
 
-			this.lastLogicFrame = 0;
-			
-			/**
-			 * Maximum MS allowed between frames
-			 * @type {number}
-			 */
-			this.skipTreshold = 45; //ms
-			
-			/**
-			 * Tells whether the Engine is running at the proper speed (0-1-2)
-			 * @private
-			 * @type {boolean}
-			 */
-			this._onTrack = true;
-			
-			/**
-			 * Logic update to call
-			 * @override
-			 * @type {function()}
-			 */
-			this.updateLogic = Arstider.emptyFunction;
+			this.allowSkip = true;
+
+			this._signals = {};
 		}
-		
-		/**
-		 * Gets called 60 times per second, so that logic stays constant
-		 * @private
-		 */
-		Performance.prototype._stepLogic = function(){
-			if(singleton.updateLogic == null) return;
-			
-			var ts = Arstider.timestamp();
 
-			if(this.lastLogicFrame == 0) this.lastLogicFrame = ts;
+		Performance.prototype.getFrameSignal = function(fps){
+			if(!fps || fps == "auto" || fps > 60) fps = 60;
 
-			singleton.deltaTime = ts - singleton.lastLogicFrame;
-			singleton.lastLogicFrame = ts;
-
-			var nextFrame = Math.round(Math.max(0, (1000/Arstider.FPS) - singleton.deltaTime));
-			setTimeout(singleton._stepLogic, nextFrame);
-			
-			singleton.updateLogic(singleton.deltaTime);
-		};
-		
-		/**
-		 * Updates performance info for the profiler
-		 */
-		Performance.prototype.update = function(){
-			if(singleton.frames > singleton.topFrames){
-				singleton.topFrames = singleton.frames;
-			}
-			
-			singleton.draws = 0;
-			singleton.elements = 0;
-			singleton.transforms = 0;
-			singleton.frames = 0;
-		};
-		
-		/**
-		 * Inits the performance info at the start of the frame
-		 * @param {boolean} allowSkip Whether to allow draw/update skip
-		 */
-		Performance.prototype.startStep = function(allowSkip){
-			singleton._onTrack = 1;
-			
-			if(allowSkip == true){
-				singleton.now = Arstider.timestamp();
-				
-				if(singleton.lastFrame == 0){
-					singleton.lastFrame = singleton.now;
+			if(this._signals[fps] && this._signals[fps].signal) return this._signals[fps].signal;
+			else{
+				this._signals[fps] = {
+					signal:new Signal(),
+					lastCalled:Arstider.timestamp()
+				};
+				if(fps == 60 && Arstider.requestAnimFrame){
+					this.nativeRequest();
 				}
-				
-				if(singleton.now - singleton.lastFrame > singleton.skipTreshold){
-					singleton._onTrack = 0;
-					singleton.skippedDraw++;
+				else{
+					this._signals[fps].targetRate = Math.round(1000/fps);
+					this.timeoutRequest(fps);
 				}
+				return this._signals[fps].signal;
 			}
 		};
-		
-		/**
-		 * Completes performance cycle for a frame
-		 */
-		Performance.prototype.endStep = function(){
-			singleton.lastFrame = singleton.now;
+
+		Performance.prototype.nativeRequest = function(){
+			var 
+				ts = Arstider.timestamp(),
+				dt = ts - this._signals[60].lastCalled,
+				thisRef = this
+			;
+
+			this._signals[60].lastCalled = ts;
+			this._signals[60].signal.dispatch(dt);
+
+			Arstider.requestAnimFrame(function ArstiderRequestAnimFrame(){
+				thisRef.nativeRequest.call(thisRef);
+			});
+		};
+
+		Performance.prototype.timeoutRequest = function(fps){
+			var 
+				ts = Arstider.timestamp(),
+				dt = ts - this._signals[fps].lastCalled,
+				nextFrame = Math.max(0, this._signals[fps].targetRate - dt),
+				thisRef = this
+			;
+
+			this._signals[fps].lastCalled = ts;
+			this._signals[fps].signal.dispatch(dt);
+
+			this._signals[fps].timeout = setTimeout(function(){
+				thisRef.timeoutRequest.call(thisRef, fps);
+			}, nextFrame);
+		};
+
+		Performance.prototype.clean = function(){
+			this.draws = 0;
+			this.elements = 0;
+			this.transforms = 0;
+			this.frames = 0;
 		};
 		
-		/**
-		 * Fetches current performance status as compared to a 60fps target(0 = under, 1 = ok, 2 = over)
-		 */
-		Performance.prototype.getStatus = function(){
-			return singleton._onTrack;
-		};
-		
-		singleton = new Performance();
-		
-		singleton._stepLogic();
-		
+		singleton = new Performance();	
 		return singleton;
 	});
 })();

@@ -25,8 +25,6 @@ define("Arstider/Tag", ["Arstider/Entity", "Arstider/Viewport"], /** @lends Tag 
 		if(props.type) this._tag.type = props.type;
 		if(props.value) this._tag.value = props.value;
 		this._tag.id = props.id || "Arstider_tag_"+this.name;
-		Viewport.tagParentNode.appendChild(this._tag);
-		this.parentNode = Viewport.tagParentNode;
 	}
 	
 	Arstider.Inherit(Tag, Entity);
@@ -38,7 +36,10 @@ define("Arstider/Tag", ["Arstider/Entity", "Arstider/Viewport"], /** @lends Tag 
 	 * @param {string} value The value to assign
 	 */
 	Tag.prototype.attr = function(name, value){
-		if(value != undefined) this._tag[name] = value;
+		if(value != undefined){
+			this._tag[name] = value;
+			return this;
+		}
 		return this._tag[name];
 	};
 	
@@ -49,7 +50,10 @@ define("Arstider/Tag", ["Arstider/Entity", "Arstider/Viewport"], /** @lends Tag 
 	 * @param {string} value The value to assign
 	 */
 	Tag.prototype.style = function(name, value){
-		if(value != undefined) this._tag.style[name] = value;
+		if(value != undefined){
+			this._tag.style[name] = value;
+			return this;
+		}
 		return this._tag.style[name];
 	};
 	

@@ -23,8 +23,6 @@
 		"Arstider/Screen",
 		"Arstider/Buffer",
 		"Arstider/Events",
-		"Arstider/Background",
-		"Arstider/Watermark",
 		"Arstider/Preloader",
 		"Arstider/GlobalTimers",
 		"Arstider/core/Performance",
@@ -35,7 +33,7 @@
         "Arstider/Sound",
         "Arstider/Signal",
         "Arstider/Hash"
-	], /** @lends Engine */ function (Browser, Screen, Buffer, Events, Background, Watermark, Preloader, GlobalTimers, Performance, Mouse, Viewport, Renderer, Telemetry, Sound, Signal, Hash){
+	], /** @lends Engine */ function (Browser, Screen, Buffer, Events, Preloader, GlobalTimers, Performance, Mouse, Viewport, Renderer, Telemetry, Sound, Signal, Hash){
 		
 		if(singleton != null) return singleton;
 			
@@ -61,28 +59,6 @@
 			 * @type {boolean}
 			 */
 			this.debug = ("@debug@" == "true");
-			/**
-			 * Whether or not the engine should skip the rendering of frames if performances are low
-			 * @type {boolean}
-			 */
-			this.allowSkip = true;
-			
-			/**
-			 * Engine canvas element
-			 * @type {HTMLCanvasElement}
-			 */
-			this.canvas = null;
-			/**
-			 * Engine canvas context
-			 * @type {CanvasRenderingContext2D}
-			 */
-			this.context = null;
-			
-			/**
-			 * Request animation frame timer
-			 * @type {number}
-			 */
-			this.frameRequest = null;
 			
 			/**
 			 * Visual profiler
@@ -106,13 +82,6 @@
 			 * @type {boolean}
 			 */
 			this.pausedByRequest = false;
-			
-			/**
-			 * Saved copy of a screen with a popup over it
-			 * @private
-			 * @type {Screen}
-			 */
-			this._savedScreen = null;
 			
 			/**
 			 * Tells if engine is in the preloading process
@@ -152,7 +121,7 @@
 		 * @param {HTMLDivElement} tag The div to start the engine in
 		 * @param {boolean} synchronous Makes the logic run at the same speed as render
 		 */
-		Engine.prototype.start = function(tag, synchronous, vertex, fragment){
+		Engine.prototype.start = function(tag){
 			if(this.debug){
 				requirejs(["Arstider/core/Debugger"], function(Debugger){
 					singleton.profiler = new Debugger(singleton);
@@ -160,37 +129,17 @@
 				});
 			}
 			else{
-				/*
-				if(Hash.anchor.indexOf("debug") == -1){
+				if(Hash.anchor && Hash.anchor.indexOf && Hash.anchor.indexOf("debug") == -1){
 					Arstider.verbose = 0;
 					Arstider.disableConsole();
 				}
-				*/
-			}
-				
-            this.canvas = new Buffer({
-                name:"Arstider_main",
-                id:"Arstider_main_canvas",
-                webgl:false
-                /*webgl:true,
-                vertexShader:vertex,
-                fragmentShader:fragment*/
-            });
-                        
-			this.context = this.canvas.context;
-                        
-            Arstider.setFPS(Arstider.FPS);
-			
-			this._isSynchronous = synchronous || false;
-			
-			Performance.updateLogic = (this._isSynchronous)?null:this.stepLogic;
+			}   
 			
 			window.addEventListener("error", this._handleError);
 				
-			Viewport.init(tag, this.canvas.data);
+			Viewport.init(tag);
 			
 			Mouse.init(Viewport.container);
-			Mouse._touchRelay = this.applyTouch;
 			
 			Events.bind("Engine.gotoScreen", this.loadScreen);
 			Events.bind("Engine.showPopup", this.showPopup);
@@ -213,7 +162,14 @@
 				}
 			});
 			
+			Performance.getFrameSignal(Arstider.FPS).add(function(dt){
+				if(!singleton.handbreak && !Viewport.unsupportedOrientation){
+					GlobalTimers.step.call(GlobalTimers, dt);
+				}
+			});
+
 			if(!this.pausedByRequest) this.play();
+
 			
 			//Platform info
 			var data = Arstider.clone(Browser, false, "browser_");
@@ -242,36 +198,6 @@
 		Engine.prototype.setPreloaderScreen = function(preloaderScreen){
 			Preloader.setScreen(new Screen(preloaderScreen));
 			Preloader._screen.stage = singleton;
-		};
-		
-		/**
-		 * Steps the logic of the game (GlobalTimers)
-		 * @type {function(this:Engine)}
-		 * @param {number} dt Delta time (delay between now and the last frame) 
-		 */
-		Engine.prototype.stepLogic = function(dt){
-
-			Performance.numUpdates = 0;
-
-			if(Arstider.skipUpdate) return;
-			if(singleton === null) return;
-
-			//Check if canvas rendering is on/off
-			if(singleton.handbreak) return;
-
-			if(singleton._deltaTimeReset){
-				singleton._deltaTimeReset = false;
-				return;
-			}
-
-			if(dt <= 0) return;
-
-			Performance.numTimers = GlobalTimers.count();
-			GlobalTimers.step(dt);
-			if(singleton.currentScreen && singleton.currentScreen._update){
-				singleton.currentScreen._update(dt);
-				Performance.numUpdates++;
-			}
 		};
 		
 		/**
@@ -436,19 +362,15 @@
 				Telemetry.log("system", "screenstop", {screen:singleton.currentScreen.name});
 				if(!preserve) singleton.currentScreen._unload();
                 
-                //if(Arstider.__retroAssetLoader){
-					singleton.protectData(Preloader._screen);
-					singleton.protectData(Background);
-					singleton.protectData(Watermark);
+                singleton.protectData(Preloader._screen);
 
-					for(var i in Arstider.bufferPool){
-	                	if(i.indexOf("_compatBuffer_") != -1 || i.indexOf("Arstider_Gradient") != -1 || i.indexOf("Arstider_TextField") != -1){
-	                		if(Arstider.bufferPool[i].data && !Arstider.bufferPool[i]._protected){
-	                			Arstider.bufferPool[i].kill();
-	                		}
-	                	}
-	                }
-				//}
+				for(var i in Arstider.bufferPool){
+	               	if(i.indexOf("_compatBuffer_") != -1 || i.indexOf("Arstider_Gradient") != -1 || i.indexOf("Arstider_TextField") != -1){
+	               		if(Arstider.bufferPool[i].data && !Arstider.bufferPool[i]._protected){
+	               			Arstider.bufferPool[i].kill();
+	               		}
+	               	}
+	               }
 
                 GlobalTimers.removeTweens();
 
@@ -470,8 +392,8 @@
 				
 				if(Arstider.verbose > 2) console.warn("Arstider.Engine.play: playing...");
 				if(!singleton.isPreloading) singleton.handbreak = false;
-				if(singleton.frameRequest || Arstider.__animTimer) Arstider.cancelAnimFrame.call(window, singleton.frameRequest);
-				singleton.draw();
+				if(singleton.frameRequest || Arstider.__animTimer) Arstider.cancelAnimFrame.apply(window, [singleton.frameRequest]);
+				//singleton.draw();
 				Events.broadcast("Engine.play", singleton);
 			}
 		};
@@ -486,207 +408,6 @@
 			singleton.handbreak = true;
 			Events.broadcast("Engine.stop", singleton);
 		};
-		
-		/**
-		 * Applies touch events to the canvas element recursively
-		 * @type {function(this:Engine)}
-		 * @param {Object} e The touch/mouse event
-		 * @param {Object|null} target The target to apply the event to (defaults to current screen) 
-		 */
-		Engine.prototype.applyTouch = function(e, target){
-			
-			if(!target){
-				Arstider.__cancelBubble = {};
-				target = (singleton.handbreak) ? Preloader._screen : singleton.currentScreen;
-			}
-			
-			var 
-				i,
-				u,
-				numInputs = 1
-			;
-
-			if(Browser.isMobile){
-				numInputs = Math.min(Mouse.count(true), 5);
-				Sound._queueFile();
-			}
-			
-			if(target && target.children && target.children.length > 0){
-				for(i = target.children.length-1; i>=0; i--){
-					if(target && target.children && target.children[i] && !target.children[i].__skip){
-						for(u=0; u<numInputs;u++){
-							if(Arstider.__cancelBubble[u] !== true && target.children[i].isTouched){
-								if(target.children[i].isTouched(Mouse.x(u), Mouse.y(u))){
-									if(Mouse.isPressed(u)){
-										if(!target.children[i]._pressed) target.children[i]._onpress(e);
-										if(Browser.isMobile) target.children[i]._preclick = true;
-									}
-									else{
-										if(target.children[i]._pressed) target.children[i]._onrelease(e);
-									}
-									
-									if(target && target.children && target.children[i] && !target.children[i].__skip){
-										if(Mouse.rightPressed) target.children[i]._rightPressed = true;
-										else{
-											if(target.children[i]._rightPressed) target.children[i]._onrightclick(e);
-										}
-									}
-									break;
-								}
-							}
-						}
-					
-						//recursion
-						if(target && target.children && target.children[i] && !target.children[i].__skip && target.children[i].children && target.children[i].children.length > 0) singleton.applyTouch(e, target.children[i]);
-					}
-				}
-			}
-
-			Arstider.__cancelBubble = {};
-			i = u = numInputs = null;
-		};
-
-		/**
-		 * Finishes touch behaviours to the canvas element before draw
-		 * @type {function(this:Engine)}
-		 * @param {Object|null} target The target to apply the event to (defaults to current screen) 
-		 */
-		Engine.prototype.applyRelease = function(target, inputs){
-
-			var 
-				mouseX = (inputs.length == 0)?-1:inputs[0].x,
-				mouseY = (inputs.length == 0)?-1:inputs[0].y,
-				i,
-				inputId = null
-			;
-
-
-			if(Browser.isMobile){
-				for(i=0; i< inputs.length; i++){
-					if(Arstider.__cancelBubble[i] !== true && target.isTouched){
-						if(target.isTouched(inputs[i].x, inputs[i].y) && inputs[i].pressed){
-							inputId = i;
-							mouseX = inputs[i].x;
-							mouseY = inputs[i].y;
-							break;
-						}
-					}
-				}
-
-				if(inputId == null && (target._pressed || target._preclick)){
-					target._onleave();
-					target._pressed = false;
-					target._preclick = false;
-				}
-			}
-			else{
-				if(Arstider.__cancelBubble[0] !== true  && target.isTouched){
-					if(target.isTouched(mouseX, mouseY)){
-						
-						if(!target._hovered) target._onhover();
-						if(!Mouse.isPressed()) target._preclick = true;
-					}
-					else{
-						if(target._hovered) target._onleave();
-						target._pressed = false;
-					}
-				}
-			}
-
-			if(mouseX != -1 && mouseY != -1){
-				if(target._dragged){
-					target.x = mouseX - target._dragOffsetX;
-					target.y = mouseY - target._dragOffsetY;
-						
-					if(target._boundDrag){
-						if(target.x < 0) target.x = 0;
-						if(target.y < 0) target.y = 0;
-						if(target.x > target.parent.width) target.x = target.parent.width;
-						if(target.y > target.parent.height) target.y = target.parent.height;
-					}
-				}
-			}
-
-			mouseX = mouseY = i = inputId = null;
-		};
-		
-		/**
-		 * Recursively wipes pending deletion item (remove child is an async operation)
-		 * @type {function(this:Engine)}
-		 * @param {Object|null} target The target to check for pending deletion items in (defaults to current screen) 
-		 */
-		Engine.prototype.removePending = function(target){
-			if(target && target.children && target.children.length > 0){
-				for(i = target.children.length-1; i>=0; i--){
-					if(target && target.children && target.children[i] && target.children[i].__skip) target.children.splice(i, 1);
-					else{
-						//recursion
-						if(target && target.children && target.children[i] && target.children[i].children && target.children[i].children.length > 0) singleton.removePending(target.children[i]);
-					}
-				}
-			}
-		};
-		
-		/**
-		 * Renders a frame
-		 * @type {function(this:Engine)}
-		 */
-		Engine.prototype.draw = function(){
-			//Declare vars
-			var
-				showFrames = false
-			;
-
-			if(Viewport.unsupportedOrientation) return;
-
-			if(singleton._isSynchronous){
-				Performance.deltaTime = Arstider.timestamp() - Performance.lastFrame;
-				singleton.stepLogic(Performance.deltaTime);
-			}      
-			
-			if(!singleton.debug && Arstider.verbose > 0) Arstider.verbose = 0;
-			
-			//Immediately request the next frame
-			singleton.frameRequest = Arstider.requestAnimFrame.call(window, singleton.draw, Performance.deltaTime);
-			
-			if(Arstider.defaultRenderStyle == "sharp") singleton.canvas.updateRenderStyle(Arstider.defaultRenderStyle);
-
-			// Preloader rendering
-			if(singleton.handbreak){
-				if(Preloader.interactive || Preloader.animated || Preloader._queue.length > 0){
-                    singleton.drawPreloader(showFrames);
-				}
-				return;
-			}
-
-			if(Viewport.tagParentNode) Viewport.tagParentNode.style.display = "block";
-			
-			Performance.startStep(singleton.allowSkip);
-			
-			if(Performance.getStatus() === 0){
-				Performance.endStep();
-				if(Arstider.verbose > 2) console.warn("Arstider.Engine.draw: skipping draw step");
-				singleton.onskip.dispatch();
-				return;	
-			}
-				
-			if(singleton.profiler) showFrames = singleton.profiler.showFrames;
-			
-			singleton.drawBackground(showFrames);
-			singleton.drawScreen(showFrames);
-			singleton.drawOverlay(showFrames);
-			Performance.frames++;
-
-			Mouse.cleanTouches();
-
-			if(showFrames) singleton.profiler.drawFrames();
-			
-			singleton.removePending(singleton.currentScreen);
-			
-			Performance.endStep();
-
-			showFrames = null;
-		};
 
 		/**
 		 * Rendering of the preloader screen
@@ -698,42 +419,6 @@
 			if(Viewport.tagParentNode) Viewport.tagParentNode.style.display = "none";
 			Mouse.cleanTouches();
 		};
-
-		/**
-		 * Rendering of the background
-		 * @type {function(this:Engine)}
-		 */
-		Engine.prototype.drawBackground = function(showFrames){
-			Renderer.draw(singleton.context, Background, null, null, showFrames);
-		};
-
-		/**
-		 * Rendering of the background
-		 * @type {function(this:Engine)}
-		 */
-		Engine.prototype.drawOverlay = function(showFrames){
-			Renderer.draw(singleton.context, Watermark, null, null, showFrames);
-		};
-
-		/**
-		 * Rendering of the current screen
-		 * @type {function(this:Engine)}
-		 */
-		Engine.prototype.drawScreen = function(showFrames){
-			Renderer.draw(singleton.context, singleton.currentScreen, function(e){
-				singleton.applyRelease(e, ((Browser.isMobile)?Mouse._ongoingTouches:[{x:Mouse.x(), y:Mouse.y(), pressed:Mouse.pressed}]));
-			}, null, showFrames);
-		};
-
-		/**
-		 * Returns a snapshot url of the Engine
-		 * @memberof Arstider
-		 * @type {function}
-		 * @return {string}
-		 */
-		 Arstider.printScreen = function(type){
-		 	return singleton.canvas.getURL(type);
-		 };
 		
 		singleton = new Engine();
 		return singleton;

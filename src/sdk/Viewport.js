@@ -48,7 +48,13 @@
 			 * The main canvas html tag element
 			 * @type {HTMLCanvasElement|null}
 			 */
-			this.tag = null;
+			this.layers = [];
+			/**
+			 * Layer Wrapper
+			 * @type {HTMLDivElement}
+			 */
+			this.wrapper = null;
+
 			/**
 			 * Current device orientation
 			 * @type {string|null}
@@ -175,19 +181,20 @@
 		 * @param {string} tag The tag id in which to initialize the engine
 		 * @param {Buffer} canvas The Buffer object to append to the tag
 		 */
-		Viewport.prototype.init = function(tag, canvas){
+		Viewport.prototype.init = function(tag){
 			var thisRef = this;
 			
 			if(tag.appendChild) this.container = tag;
 			else this.container = window.document.getElementById(tag);
 			if(this.container){
-				this.container.appendChild(canvas);
-				this.tag = canvas;
-				
 				this.container.style.position = "relative";
 				this.container.style.display = "block";
 				this.container.style.width = "100%";
 				this.container.style.height = "100%";
+
+				this.wrapper = document.createElement("div");
+				this.wrapper.style.overflow = "hidden";
+				this.container.appendChild(this.wrapper);
 				
 				window.addEventListener("resize", this._resize);
 				if(Browser.isMobile){
@@ -245,7 +252,7 @@
 					else thisRef._pageshow();
 				});
 				
-				this._requestFullscreenEvent = (this.tag.requestFullScreen)?"requestFullScreen":(this.tag.mozRequestFullScreen)?"mozRequestFullScreen":(this.tag.webkitRequestFullScreenWithKeys)?"webkitRequestFullScreenWithKeys":(this.tag.webkitRequestFullScreen)?"webkitRequestFullScreen":"FullscreenError";
+				this._requestFullscreenEvent = (this.container.requestFullScreen)?"requestFullScreen":(this.container.mozRequestFullScreen)?"mozRequestFullScreen":(this.container.webkitRequestFullScreenWithKeys)?"webkitRequestFullScreenWithKeys":(this.container.webkitRequestFullScreen)?"webkitRequestFullScreen":"FullscreenError";
 				this._cancelFullscreenEvent =  (window.document.cancelFullScreen)?"cancelFullScreen":(window.document.mozCancelFullScreen)?"mozCancelFullScreen":(window.document.webkitCancelFullScreen)?"webkitCancelFullScreen":"FullscreenError";
 				
 				
@@ -276,10 +283,10 @@
 			
 			scale = Arstider.checkIn(scale, false);
 		
-			if(scale) this.tag.classList.add("fs_scaled_element");
-			else this.tag.classList.remove("fs_scaled_element");
+			if(scale) this.container.classList.add("fs_scaled_element");
+			else this.container.classList.remove("fs_scaled_element");
 			
-			var res = this.tag[this._requestFullscreenEvent]();
+			var res = this.container[this._requestFullscreenEvent]();
 			
 			Events.broadcast("Viewport.enterFullscreen", singleton);
 			
@@ -297,6 +304,21 @@
 			Events.broadcast("Viewport.quitFullscreen", singleton);
 			
 			return res;
+		};
+
+		Viewport.prototype.addLayer = function(layer){
+			if(singleton.layers.indexOf(layer) == -1){
+				singleton.layers.push(layer);
+				singleton.wrapper.appendChild(layer.wrapper._tag);
+				singleton._positionLayer(layer, singleton.canvasRatio);
+			}
+		};
+
+		Viewport.prototype.removeLayer = function(layer){
+			var index = singleton.layers.indexOf(layer)
+			if(index != -1){
+				singleton.layers.splice(index, 1);
+			}
 		};
 		
 		/**
@@ -319,12 +341,17 @@
 				}
 			}
 
-			var windowW;
-			var windowH;
-			var ratio = 1;
-			var scaleX, scaleY;
-			var posX, posY;
-			var style = window.getComputedStyle(singleton.container, null);
+			var 
+				windowW,
+				windowH,
+				ratio = 1,
+				scaleX, 
+				scaleY,
+				posX, 
+				posY,
+				style = window.getComputedStyle(singleton.container, null),
+				i = 0
+			;
 
 			if(singleton.orientation == LANDSCAPE){
 				windowW = parseInt(style.getPropertyValue("width"));
@@ -360,39 +387,35 @@
 			singleton.xOffset = posX;
 			singleton.yOffset = posY;
 				
-			singleton.tag.style.left = posX+"px";
-			singleton.tag.style.top = posY+"px";
-			singleton.tag.style.width = scaleX+"px";
-			singleton.tag.style.height = scaleY+"px";
-			singleton.tag.style.position = "absolute";
-			singleton.tag.width = singleton.maxWidth;
-			singleton.tag.height = singleton.maxHeight;
+			singleton.wrapper.style.left = posX+"px";
+			singleton.wrapper.style.top = posY+"px";
+			singleton.wrapper.style.width = scaleX+"px";
+			singleton.wrapper.style.height = scaleY+"px";
+			singleton.wrapper.style.position = "absolute";
+			singleton.wrapper.width = singleton.maxWidth;
+			singleton.wrapper.height = singleton.maxHeight;
 			
 			singleton.canvasRatio = ratio;
 			singleton.visibleWidth = Math.round(windowW / ratio);
 			singleton.visibleHeight = Math.round(windowH / ratio);
 			singleton.visibleWidth = Math.min(singleton.visibleWidth, singleton.maxWidth)/singleton.globalScale;
 			singleton.visibleHeight = Math.min(singleton.visibleHeight, singleton.maxHeight)/singleton.globalScale;
-			
-            singleton.tagParentNode = window.document.getElementById("Arstider_tag_overlay");
-            if(!singleton.tagParentNode){
-            	singleton.tagParentNode = window.document.createElement("div");
-				singleton.tagParentNode.id = "Arstider_tag_overlay";
-				singleton.tag.parentNode.appendChild(singleton.tagParentNode);
-            	singleton.tagParentNode.style.position = "absolute";
-            	singleton.tagParentNode.style.display = "block";
-            	singleton.tagParentNode.style.zIndex = 9999;
-            	singleton.tagParentNode.style.overflow = "hidden";
-           	}
-        
-            singleton.tagParentNode.style.width = singleton.tag.style.width;
-            singleton.tagParentNode.style.height = singleton.tag.style.height;
-            singleton.tagParentNode.style.left = singleton.tag.style.left;
-            singleton.tagParentNode.style.top = singleton.tag.style.top;
+
+			for(i; i<singleton.layers.length; i++){
+				singleton._positionLayer(singleton.layers[i], ratio);
+			}
                         
 			Events.broadcast("Viewport.resize", singleton);
                         
 			if(Browser.isMobile) window.document.body.scrollTop=0;
+		};
+
+		Viewport.prototype._positionLayer = function(layer, ratio){
+			layer.wrapper._tag.style.left = (layer.x * ratio) +"px";
+			layer.wrapper._tag.style.top = (layer.y * ratio) +"px";
+			layer.wrapper._tag.style.width = layer.canvas.data.style.width = (layer.width * ratio) +"px";
+			layer.wrapper._tag.style.height = layer.canvas.data.style.height = (layer.height * ratio) +"px";
+			layer.wrapper._tag.style.position = "relative";
 		};
 		
 		/**

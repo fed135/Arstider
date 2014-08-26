@@ -160,10 +160,10 @@
  			                           "<span style='color:#99FF99;'>Memory:",Arstider.getMemory(),"Mb</span>",
  			                           "&nbsp;|&nbsp;",
  			                           //Drawn Objects
- 			                           "<span style='color:#FF9999;'>Draws:", Math.ceil(Performance.draws/Performance.frames) ,"/ Entities:",Math.ceil(Performance.elements/Performance.frames),"</span>",
+ 			                           "<span style='color:#FF9999;'>Draws:", Math.ceil(Performance.draws/*/Performance.frames*/) ,"/ Entities:",Math.ceil(Performance.elements/*/Performance.frames*/),"</span>",
  			                           "&nbsp;|&nbsp;",
  			                           //Transformations
- 			                           "<span style='color:#9999FF;'>Transformations:",Math.ceil(Performance.transforms/Performance.frames),"</span>",
+ 			                           "<span style='color:#9999FF;'>Transformations:",Math.ceil(Performance.transforms/*/Performance.frames*/),"</span>",
  			                           "&nbsp;|&nbsp;",
  			                           //Num Buffers
  			                           "<span style='color:#FFFFFF;'>Buffers:",Arstider.countBuffers(),"</span>",
@@ -177,7 +177,7 @@
  			                           //Skips
  			                           "<span style='color:#FF0000;'>D-",Performance.skippedDraw,"</span>"].join("");
 			
-			Performance.update();
+			Performance.clean();
 		};
 		
 		/**
