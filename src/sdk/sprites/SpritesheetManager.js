@@ -32,27 +32,30 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 	{
 		var fileInfo = getFileInfo(nameOrPath, this.defaultFileName);
 
-		var name = getName(fileInfo.name);
+		var cacheId = getCacheId(fileInfo.url);
+
+		var name = fileInfo.name;
+		
 		// Append params to name
 		params.name = name;
 
 		// Already Loading?
-		if(this.loadCallbacks[name]) 
+		if(this.loadCallbacks[cacheId]) 
 		{
-			this.loadCallbacks[name].push(onComplete);
+			this.loadCallbacks[cacheId].push(onComplete);
 			return;
 		}
 
 		// Cached?
-		if(this.spritesheets[name])
+		if(this.spritesheets[cacheId])
 		{
-			onComplete( this.spritesheets[name] );
+			onComplete( this.spritesheets[cacheId] );
 			return;
 		}
 
 		// New spritesheet
-		if(!this.loadCallbacks[name]) this.loadCallbacks[name] = [];
-		this.loadCallbacks[name].push(onComplete);
+		if(!this.loadCallbacks[cacheId]) this.loadCallbacks[cacheId] = [];
+		this.loadCallbacks[cacheId].push(onComplete);
 
 		var context = this;
 		this.loadJSON(fileInfo.url, function(data)
@@ -63,18 +66,22 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 			if(data.images && data.images.length>=1)
 			{
 				spritesheet = new ZoeSpritesheet(data, params, fileInfo);
+				spritesheet.name = name;
+				spritesheet.url = fileInfo.url;
 
 				// Return to callback
-				context.onSpritesheetLoaded(name, spritesheet, params);
+				context.onSpritesheetLoaded(cacheId, spritesheet, params);
 			}
 			
 			// Texture packer JSON Array format
 			else if(data.frames && data.frames.length>=1)
 			{
 				spritesheet = new JsonSpritesheet(data, params, fileInfo);
+				spritesheet.name = name;
+				spritesheet.url = fileInfo.url;
 
 				// Return to callback
-				context.onSpritesheetLoaded(name, spritesheet, params);
+				context.onSpritesheetLoaded(cacheId, spritesheet, params);
 			} 
 
 			// Grid format (OLD SDK2 format)
@@ -83,43 +90,45 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 				spritesheet = new GridSpritesheet(data, params, fileInfo, function() {
 
 					// Return to callback
-					context.onSpritesheetLoaded(name, spritesheet, params);
+					context.onSpritesheetLoaded(cacheId, spritesheet, params);
 				});
+				spritesheet.name = name;
+				spritesheet.url = fileInfo.url;
 			} 
 
 			// Not supported
 			else {
 				console.log("SpritesheetManager ERROR: Unkown spritesheet format.");
 				console.log(data);
-				context.onSpritesheetLoaded(name, spritesheet, params);
+				context.onSpritesheetLoaded(cacheId, spritesheet, params);
 				return;
 			}
 
 		});
 	}
 
-	SpritesheetManager.prototype.onSpritesheetLoaded = function(name, spritesheet, params)
+	SpritesheetManager.prototype.onSpritesheetLoaded = function(cacheId, spritesheet, params)
 	{
 		// Singleton-registered overrides (From your game code calling SpritesheetManager.registerAnimationOverrides() )
-		this.applyOverrides(this.overrides[name], name, spritesheet, params);
+		this.applyOverrides(this.overrides[spritesheet.name], name, spritesheet, params);
 
 		// Run-time overrides
 		if(params.overrides) this.applyOverrides(params.overrides, name, spritesheet, params);
 
 		// Assign to cache
-		this.spritesheets[name] = spritesheet;
+		this.spritesheets[cacheId] = spritesheet;
 
-		if(this.loadCallbacks[name])
+		if(this.loadCallbacks[cacheId])
 		{
-			var n = this.loadCallbacks[name].length;
+			var n = this.loadCallbacks[cacheId].length;
 			
 			for (var i = 0; i < n; i++) {
-				var callback = this.loadCallbacks[name][i];
+				var callback = this.loadCallbacks[cacheId][i];
 				if(callback) callback(spritesheet);
 			};
 
 			// Flush callbacks
-			this.loadCallbacks[name] = null;
+			this.loadCallbacks[cacheId] = null;
 		}
 	}
 
@@ -130,12 +139,8 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 		for (var i = 0; i < overrides.length; i++)
 		{
 			var overrideData = overrides[i];
-
-			var fileInfo = getFileInfo(overrideData.spritesheet, this.defaultFileName);
-
-			var name = getName(fileInfo.name);
 		
-			this.overrides[name] = overrideData;
+			this.overrides[overrideData.spritesheet] = overrideData;
 		};
 	}
 
@@ -156,17 +161,69 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 				{
 					var animOverrides = overrideData.animations[animName];
 
+					var anim;
 					for(var p in animOverrides)
 					{
+						anim = spritesheet.animations[animName];
+
 						// Anim does not exists
-						if(!spritesheet.animations[animName])
+						if(!anim)
 						{
 							// TODO: create anim if possible
 							console.error("SpritesheetManager error: Anim '"+animName+"' not found for overrides: ", animName, animOverrides);
 							
 							continue;
 						}
-						spritesheet.animations[animName][p] = animOverrides[p];
+
+						// Frame re-indexing
+						if(p=="frames")
+						{
+							var frames = animOverrides[p];
+							var frameList;
+							
+							for (var i = 0; i < frames.length; i++) {
+
+								var frame = frames[i];
+
+								if(typeof(frame)=="string")
+								{
+									// TODO
+									if(!this.warnedFrameName)
+									{
+										this.warnedFrameName = true;
+										console.error("Frame re-indexing from frame names is not yet supported for anim "+animName);
+									}
+								}
+								// Numeric frame re-indexing
+								else if(frame>0 || frame===0)
+								{
+									console.log(spritesheet)
+									var frameData = spritesheet.frames[frame];
+
+									if(!frameData)
+									{
+										console.error("Frame "+frame+" not found on anim "+animName);
+									}
+									// Frame OK
+									else {
+										if(!frameList) frameList = [];
+										frameList.push(frameData);
+									}
+								}
+							};
+
+							if(frameList)
+							{
+								anim["frames"]=frameList;
+							}
+						}
+
+						// Normal overrides
+						else
+						{
+							anim[p] = animOverrides[p];
+						}
+						
 					}
 					
 					//console.log(animName, animOverrides, spritesheet.animations[animName]);
@@ -191,7 +248,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 		return request;
 	}
 
-	function getName(nameOrPath)
+	function getCacheId(nameOrPath)
 	{
 		return nameOrPath.replace(/\//g,'_');
 	}
@@ -213,10 +270,15 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 
 			path = url;
 
-			var nameFromPath = url.substr(url.lastIndexOf("/")+1, url.length);
+			var nameFromPath = url.substring(url.lastIndexOf("/")+1, url.length);
 
 			// Replace known token if existing
 			defaultFileName = defaultFileName.replace("{{name}}", nameFromPath);
+
+			if(nameFromPath.indexOf(".")>-1)
+			{
+				name = url.substring(0, url.lastIndexOf("."));
+			}
 
 			name = nameFromPath;
 
@@ -229,9 +291,14 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 		// Received file with ext
 		else
 		{
-			path = url.substr(0, url.lastIndexOf("/") + 1);
+			path = url.substring(0, url.lastIndexOf("/") + 1);
 			
-			name = url.substr(0, url.lastIndexOf("."));
+			if(url.indexOf("/")>-1) 
+			{
+				name = url.substring(url.lastIndexOf("/") + 1, url.lastIndexOf("."));
+			} else {
+				name = url.substring(0, url.lastIndexOf("."));
+			}
 		}
 
 		return {
