@@ -198,18 +198,20 @@
 						element.draw.call(element, context, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y);
 					}
 					else{
-						//if(element.onScreen) {
-						var node = Arstider.getNode(element);
-						if(node && node.data){
-							Performance.draws++;
-							if(element.largeData === true){
-								this.pencil.renderAt(context, node.data, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
+						if(element.global.height > 0 && element.global.width > 0){
+							//if(element.onScreen) {
+							var node = Arstider.getNode(element);
+							if(node && node.data){
+								Performance.draws++;
+								if(element.largeData === true){
+									this.pencil.renderAt(context, node.data, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
+								}
+								else{
+									this.pencil.renderAt(context, node.data, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y, element.width, element.height);
+								}
 							}
-							else{
-								this.pencil.renderAt(context, node.data, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y, element.width, element.height);
-							}
+							node = null;
 						}
-						node = null;
 					}
 				}
 			}
