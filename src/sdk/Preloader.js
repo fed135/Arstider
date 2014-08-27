@@ -90,6 +90,7 @@
 			this.reset();
 			Events.broadcast("Preloader.showPreloader", name);
 			this.visible = true;
+			if(this._screen) this._screen.show();
 		};
 		
 		/**
@@ -99,6 +100,7 @@
 		 */
 		Preloader.prototype.setScreen = function(preloaderScreen){
 			this._screen = preloaderScreen;
+			this._screen.show();
 		};
 		
 		/**
@@ -209,6 +211,7 @@
 		Preloader.prototype.hide = function(){
 			Events.broadcast("Preloader.loadingCompleted");
 			this.visible = false;
+			this._screen.hide();
 			this.reset();
 		};
 		

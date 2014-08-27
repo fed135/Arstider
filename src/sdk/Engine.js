@@ -196,8 +196,10 @@
 		 * @param {Screen} preloaderScreen The screen to use
 		 */
 		Engine.prototype.setPreloaderScreen = function(preloaderScreen){
-			Preloader.setScreen(new Screen(preloaderScreen));
-			Preloader._screen.stage = singleton;
+			require([preloaderScreen], function(s){
+				Preloader.setScreen(s);
+				Preloader._screen.stage = singleton;
+			});
 		};
 		
 		/**

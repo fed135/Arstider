@@ -65,12 +65,6 @@
 			this._mouse = {x:0,y:0};
 
 			/**
-			 * Overriden by the engine. Called on input to keep the event chain
-			 * @type {function}
-			 */
-			this._touchRelay = Arstider.emptyFunction;
-
-			/**
 			 * Keeps track of the touches in progress
 			 * @private
 			 * @type {Array}
@@ -83,7 +77,27 @@
 			 * @type {Array}
 			 */
 			this._currentGestures = [];
+
+			this.listeners = {};
 		}
+
+		Mouse.prototype.addListener = function(name, handler){
+			if(!(name in singleton.listeners)){
+				singleton.listeners[name] = handler;
+			}
+		};
+
+		Mouse.prototype.removeListener = function(name){
+			if(name in singleton.listeners){
+				delete singleton.listeners[name];
+			}
+		};
+
+		Mouse.prototype._touchRelay = function(e){
+			for(var n in singleton.listeners){
+				if(singleton.listeners[n]) singleton.listeners[n](e);
+			}
+		};
 
 		/**
 		 * Setups the event listeners on the provided DOM Element

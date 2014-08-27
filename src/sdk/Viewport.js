@@ -415,7 +415,7 @@
 			layer.wrapper._tag.style.top = (layer.y * ratio) +"px";
 			layer.wrapper._tag.style.width = layer.canvas.data.style.width = (layer.width * ratio) +"px";
 			layer.wrapper._tag.style.height = layer.canvas.data.style.height = (layer.height * ratio) +"px";
-			layer.wrapper._tag.style.position = "relative";
+			layer.wrapper._tag.style.position = "absolute";
 		};
 		
 		/**

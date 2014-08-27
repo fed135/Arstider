@@ -49,9 +49,9 @@ define("Arstider/Layer", [
 		this._updateHandler = null;
 
 		if(this.mouseEnabled){
-			/*Mouse.addListener(function(e){
+			Mouse.addListener(this.name, function(e){
 				thisRef.applyTouch.call(thisRef, e);
-			});*/
+			});
 		}
 
 		this.wrapper.appendChild(this.canvas.data);
@@ -81,19 +81,22 @@ define("Arstider/Layer", [
 	};
 
 	Layer.prototype._update = function(dt){
-		if(Engine.handbreak || Viewport.unsupportedOrientation) return;
 
 		var thisRef = this;
 
-		if(this.update) this.update(dt);
+		if(!Engine.handbreak && !Viewport.unsupportedOrientation){
+			if(this.update) this.update(dt);
 
-		if(this.children && this.children.length > 0){
-			for(var i = 0; i<this.children.length; i++){
-				if(this.children[i] && this.children[i]._update){
-					this.children[i]._update(dt);
+			if(this.children && this.children.length > 0){
+				for(var i = 0; i<this.children.length; i++){
+					if(this.children[i] && this.children[i]._update){
+						this.children[i]._update(dt);
+					}
 				}
 			}
 		}
+
+		Renderer.clear(this.canvas.context, 0 ,0 , this.width, this.height);
 
 		var showFrames = false;
 		var mouseAction = (this.mouseEnabled)?function(e){
@@ -101,7 +104,6 @@ define("Arstider/Layer", [
 		}:null;
 		if(Engine.profiler) showFrames = Engine.profiler.showFrames;
 
-		console.log("DRAWING "+ this.name+ " !!! :)")
 		Renderer.draw(this.canvas.context, this, mouseAction, null, showFrames);
 
 		this.removePending();
@@ -114,6 +116,8 @@ define("Arstider/Layer", [
 		 * @param {Object|null} target The target to apply the event to (defaults to current screen) 
 		 */
 		Layer.prototype.applyTouch = function(e, target){
+
+			console.log("Applying touch");
 			
 			if(!target){
 				Arstider.__cancelBubble = {};
@@ -159,7 +163,7 @@ define("Arstider/Layer", [
 						}
 					
 						//recursion
-						if(target && target.children && target.children[i] && !target.children[i].__skip && target.children[i].children && target.children[i].children.length > 0) singleton.applyTouch(e, target.children[i]);
+						if(target && target.children && target.children[i] && !target.children[i].__skip && target.children[i].children && target.children[i].children.length > 0) this.applyTouch(e, target.children[i]);
 					}
 				}
 			}
@@ -247,8 +251,16 @@ define("Arstider/Layer", [
 		this._stepTimer.add(this._updateHandler);
 	};
 
-	Layer.prototype.setIndex = function(val){
+	Layer.prototype.show = function(){
+		this.wrapper.style("display", "block");
+	};
 
+	Layer.prototype.hide = function(){
+		this.wrapper.style("display", "none");
+	};
+
+	Layer.prototype.setIndex = function(val){
+		this.wrapper.style("zIndex", val);
 	};
 
 	Layer.prototype.killBuffer = function(){
@@ -256,6 +268,7 @@ define("Arstider/Layer", [
 		this.wrapper._tag = null;
 
 		Viewport.removeLayer(this);
+		Mouse.removeListener(this.name);
 	};
 
 	return Layer;
