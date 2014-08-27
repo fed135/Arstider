@@ -646,6 +646,8 @@
 			
 			if(!singleton.debug && Arstider.verbose > 0) Arstider.verbose = 0;
 			
+			Performance.startStep(singleton.allowSkip);
+
 			//Immediately request the next frame
 			singleton.frameRequest = Arstider.requestAnimFrame.call(window, singleton.draw, Performance.deltaTime);
 			
@@ -655,13 +657,14 @@
 			if(singleton.handbreak){
 				if(Preloader.interactive || Preloader.animated || Preloader._queue.length > 0){
                     singleton.drawPreloader(showFrames);
+                    Performance.endStep();
 				}
 				return;
 			}
 
 			if(Viewport.tagParentNode) Viewport.tagParentNode.style.display = "block";
 			
-			Performance.startStep(singleton.allowSkip);
+			
 			
 			if(Performance.getStatus() === 0){
 				Performance.endStep();

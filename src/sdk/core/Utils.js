@@ -700,8 +700,8 @@ Arstider.Inherit = function(child, parent){
  * @param {function()} callback The called method for rendering
  */
 Arstider.fixedAnimationFrame = function(callback, dt){
-
-	var nextFrame = Math.round(Math.max(0, (1000/Arstider.FPS) - dt));
+	var targetFPS = (1000/Arstider.FPS);
+	var nextFrame = Math.round(Math.max(1, targetFPS - (dt - targetFPS)));
 	Arstider.__animTimer = window.setTimeout(callback, nextFrame);
 };
 
