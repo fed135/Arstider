@@ -35,48 +35,6 @@
 		 */	
 		function Performance(){
 
-			/**
-			 * Number of canvas draws
-			 * @type {number}
-			 */
-			this.draws = 0;
-			
-			/**
-			 * Number of canvas elements
-			 * @type {number}
-			 */
-			this.elements = 0;
-			
-			/**
-			 * Number of canvas transformations
-			 * @type {number}
-			 */
-			this.transforms = 0;
-			
-			/**
-			 * Number of drawn frames (animationFrame cycle)
-			 * @type {number}
-			 */
-			this.frames = 0;
-			
-			/**
-			 * MS between animation frames
-			 * @type {number}
-			 */
-			this.frameDelay = 0;
-			
-			/**
-			 * Number of registered Buffers
-			 * @type {number}
-			 */
-			this.numBuffers = 0;
-			
-			/**
-			 * Total Buffer memory 
-			 * @type {number}
-			 */
-			this.bufferMem = 0;
-
 			this.allowSkip = true;
 
 			this._signals = {};
@@ -112,7 +70,7 @@
 			this._signals[60].lastCalled = ts;
 			this._signals[60].signal.dispatch(dt);
 
-			Arstider.requestAnimFrame(function ArstiderRequestAnimFrame(){
+			Arstider.requestAnimFrame.call(window, function ArstiderRequestAnimFrame(){
 				thisRef.nativeRequest.call(thisRef);
 			});
 		};
@@ -131,13 +89,6 @@
 			this._signals[fps].timeout = setTimeout(function(){
 				thisRef.timeoutRequest.call(thisRef, fps);
 			}, nextFrame);
-		};
-
-		Performance.prototype.clean = function(){
-			this.draws = 0;
-			this.elements = 0;
-			this.transforms = 0;
-			this.frames = 0;
 		};
 		
 		singleton = new Performance();	

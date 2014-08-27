@@ -59,12 +59,6 @@
 			 * @type {boolean}
 			 */
 			this.debug = ("@debug@" == "true");
-			
-			/**
-			 * Visual profiler
-			 * @type {Debugger}
-			 */
-			this.profiler = null;
 				
 			/**
 			 * Current screen object
@@ -124,8 +118,7 @@
 		Engine.prototype.start = function(tag){
 			if(this.debug){
 				requirejs(["Arstider/core/Debugger"], function(Debugger){
-					singleton.profiler = new Debugger(singleton);
-					singleton.profiler.init();
+					Debugger.init();
 				});
 			}
 			else{
@@ -133,7 +126,11 @@
 					Arstider.verbose = 0;
 					Arstider.disableConsole();
 				}
-			}   
+			}  
+			console.log("New instance of the Arstider Engine.");
+			console.log("Build: "+ this.release+" Version: "+this.version);
+			console.log("DEBUG MODE");
+			console.log("##################################################");
 			
 			window.addEventListener("error", this._handleError);
 				
@@ -420,6 +417,89 @@
 			Renderer.draw(singleton.context, Preloader._screen, function(e){singleton.applyRelease(e, ((Browser.isMobile)?Mouse._ongoingTouches:[{x:Mouse.x(), y:Mouse.y(), pressed:Mouse.pressed}]));}, null, showFrames);
 			if(Viewport.tagParentNode) Viewport.tagParentNode.style.display = "none";
 			Mouse.cleanTouches();
+		};
+
+		/**
+		 * Returns an element or a list of elements that match the search criterias for inspection
+		 * @memberof Arstider
+		 * @type {function}
+		 * @const
+		 * @param {string|null} name The name of the element to search for. If none is provided, returns all elements
+		 * @param {Object|null} t The target to perform the seach in. If none is provided, seaches in the current screen
+		 * @return {Array|Object} The element(s) that fit the search query
+		 */
+		Arstider.findElement = function(name, t){
+			if(!singleton.debug) return;
+			
+			var 
+				ret = [], 
+				i = 0, 
+				t = t || singleton.currentScreen
+			;
+				
+			if(t && t.children){
+				for(i; i<t.children.length; i++){
+					if(!name || name === t.children[i].name){
+						ret.push(t.children[i]);
+					}
+					if(t.children[i].children){
+						ret = ret.concat(Arstider.findElement.apply(singleton,[name, t.children[i]]));
+					}
+				}
+			}
+			
+			if(ret.length == 1) return ret[0];
+			return ret;
+		};
+		
+		/**
+		 * Draws the desired data object into a separate buffer for inspection
+		 * @memberof Arstider
+		 * @type {function}
+		 * @const
+		 * @param {Image|HTMLCanvasElement} targetData The data to draw on the debug canvas
+		 */
+		Arstider.debugDraw = function(targetData){
+			if(!singleton.debug) return;
+			
+			var 
+				ctx = null,
+				win = window.document.getElementById("debugWindow")
+			;
+				
+			if(!win){
+				win = window.document.createElement('canvas');
+				win.width=300;
+				win.height=300;
+				win.id = "debugWindow";
+				win.style.height = "300px";
+				win.style.width = "300px";
+				win.style.position = "absolute";
+				win.style.display = "block";
+				win.style.backgroundColor = "green";
+				win.style.bottom = "0px";
+				win.style.right = "0px";
+				win.style.zIndex = 999;
+				window.document.body.appendChild(win);
+			}
+			ctx = win.getContext('2d');
+			ctx.clearRect(0,0,300,300);
+			ctx.drawImage(targetData, 0,0,300,300);
+		};
+
+		/**
+		 * Broadcasts an event for debugging
+		 * @memberof Arstider
+		 * @type {function}
+		 * @const
+		 * @param {string} name The name of the event to call
+		 * @param {*} param The parameters to provide the broadcast
+		 * @param {*} target The target for broadcast
+		 */
+		Arstider.debugBroadcast = function(name, param, target){
+			if(!singleton.debug) return;
+			
+			Events.broadcast(name, param, target);
 		};
 		
 		singleton = new Engine();

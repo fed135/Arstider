@@ -3,12 +3,13 @@ define("Arstider/Layer", [
 	"Arstider/Viewport", 
 	"Arstider/Tag", 
 	"Arstider/core/Performance", 
+	"Arstider/core/Profiler",
 	"Arstider/Renderer", 
 	"Arstider/DisplayObject", 
 	"Arstider/Mouse", 
 	"Arstider/Engine", 
 	"Arstider/Browser"
-	], function(Buffer, Viewport, Tag, Performance, Renderer, DisplayObject, Mouse, Engine, Browser){
+	], function(Buffer, Viewport, Tag, Performance, Profiler, Renderer, DisplayObject, Mouse, Engine, Browser){
 
 	Layer.id = 0;
 
@@ -51,6 +52,13 @@ define("Arstider/Layer", [
 		if(this.mouseEnabled){
 			Mouse.addListener(this.name, function(e){
 				thisRef.applyTouch.call(thisRef, e);
+			});
+		}
+
+		if(Engine.debug){
+			this.performance = new Profiler();
+			require(["Arstider/core/Debugger"], function(Debugger){
+				Debugger.layers[thisRef.name] = thisRef;
 			});
 		}
 
@@ -104,7 +112,7 @@ define("Arstider/Layer", [
 		}:null;
 		if(Engine.profiler) showFrames = Engine.profiler.showFrames;
 
-		Renderer.draw(this.canvas.context, this, mouseAction, null, showFrames);
+		Renderer.draw(this.canvas.context, this, mouseAction, null, this.performance, showFrames);
 
 		this.removePending();
 	};
@@ -269,6 +277,14 @@ define("Arstider/Layer", [
 
 		Viewport.removeLayer(this);
 		Mouse.removeListener(this.name);
+
+		var thisRef = this;
+
+		if(Engine.debug){
+			require(["Arstider/core/Debugger"], function(Debugger){
+				delete Debugger.layers[thisRef.name];
+			});
+		}
 	};
 
 	return Layer;

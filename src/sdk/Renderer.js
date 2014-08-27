@@ -19,7 +19,7 @@
 	 /**
 	 * Defines performance module
 	 */	
-	define( "Arstider/Renderer", ["Arstider/contexts/Webgl", "Arstider/contexts/Canvas2d", "Arstider/core/Performance", "Arstider/contexts/MatrixTransform"], /** @lends core/Renderer */ function (Webgl, Canvas2d, Performance, MatrixTransform){
+	define( "Arstider/Renderer", ["Arstider/contexts/Webgl", "Arstider/contexts/Canvas2d", "Arstider/contexts/MatrixTransform"], /** @lends core/Renderer */ function (Webgl, Canvas2d, MatrixTransform){
 		
 		if(singleton != null) return singleton;
 			
@@ -32,7 +32,6 @@
 		 */
 		function Renderer(){
 			this.pencil = null;
-			this.abort = false;
 			this.padding = 100;
 			this.allowSkip = true;
 		}
@@ -75,7 +74,7 @@
 		 * @type {function}
 		 * @param {Object} curChild Entity-type element to draw and call draw upon the children of
 		 */
-		Renderer.prototype.renderChild = function(context, element, complex, pre, post, t, debug, callback, main){
+		Renderer.prototype.renderChild = function(context, element, complex, pre, post, performance, t, debug, callback, main){
 
 			var 
 				xAnchor = 0,
@@ -85,20 +84,9 @@
 			;
 
 			if(!element || element.__skip) return;
-
-			if(singleton.abort){
-				if(main){
-					singleton.abort = false;
-					//this.pencil.reset(context);
-				}
-				else{
-					if(callback) callback();
-					return;
-				}
-			}
 				
-			Performance.elements++;
-			if(!element._skipUpdateBubble && element.update) Performance.numUpdates++; 
+			performance.elements++;
+			if(!element._skipUpdateBubble && element.update) performance.updates++; 
 
 			if(element.alpha <= 0) return;
 
@@ -140,7 +128,7 @@
 
 			//Alpha
 			if(element.alpha != 1){
-				Performance.transforms++;
+				performance.transforms++;
 				this.pencil.alpha(context, element.alpha);
 			}
 			
@@ -155,33 +143,33 @@
 			}
 
 			if(element.rotation != 0){
-				Performance.transforms++;
+				performance.transforms++;
 				t.rotate(element.rotation * Arstider.degToRad);
 			}
 
 			if(element.scaleX != 1 || element.scaleY != 1){
-				Performance.transforms++;
+				performance.transforms++;
 				t.scale(element.scaleX, element.scaleY);
 			}
 				
 			if(element.skewX != 0 || element.skewY != 0){
-				Performance.transforms++;
+				performance.transforms++;
 				//TODO
 			}
 
 			//Composite Mode / Mask
 			if(element.compositeMode != Arstider.defaultComposition){
-				Performance.transforms++;
+				performance.transforms++;
 				this.pencil.setCompositionMode(context, element.compositeMode);
 			} 
 			else if(element.mask === true){
-				Performance.transforms++;
+				performance.transforms++;
 				this.pencil.setCompositionMode(context, "destination-in");
 			}
 				
 			//Shadow
 			if(element.shadowColor != Arstider.defaultColor){
-				Performance.transforms++;
+				performance.transforms++;
 				this.pencil.dropShadow(context, element.shadowOffsetX, element.shadowOffsetY, element.shadowBlur, element.shadowColor);
 			}
 
@@ -194,14 +182,14 @@
 				if((!complex && onScreen) || complex){
 					//Custom draw method :: WARNING! Only context is provided... could be any of Webgl or Canvas2d !!!
 					if(element.draw){
-						Performance.draws++;
+						performance.draws++;
 						element.draw.call(element, context, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y);
 					}
 					else{
 						//if(element.onScreen) {
 						var node = Arstider.getNode(element);
 						if(node && node.data){
-							Performance.draws++;
+							performance.draws++;
 							if(element.largeData === true){
 								this.pencil.renderAt(context, node.data, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
 							}
@@ -231,7 +219,7 @@
 					var len = element.children.length;
 					for(var li=0; li<len; li++){
 						if(element.children[li]){
-							this.renderChild(context, element.children[li], complex, pre, post, t, debug);
+							this.renderChild(context, element.children[li], complex, pre, post, performance, t, debug);
 						}
 					}
 					len = null;
@@ -273,10 +261,6 @@
 				callback();
 			}
 		};
-
-		Renderer.prototype.reset = function(context){
-			this.abort = true;
-		};
 			
 		/**
 		 * Recursively draw elements from the rootChild on the desired context
@@ -286,10 +270,10 @@
 		 * @param {Object} post Post-render operation
 		 * @param {Object} showBoxes Whether or not to show the debug outlines
 		 */
-		Renderer.prototype.draw = function(context, element, pre, post, debug, callback){
+		Renderer.prototype.draw = function(context, element, pre, post, performance, debug, callback){
 			this._recoverContextPencil(context, function recoverContext(){
-				singleton.reset(context);
-				singleton.renderChild.call(singleton, context, element, false, pre, post, null, debug, callback, true);
+				singleton.renderChild.call(singleton, context, element, false, pre, post, performance, null, debug, callback, true);
+				performance.frames++;
 			});
 		};
 			

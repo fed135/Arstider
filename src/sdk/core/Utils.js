@@ -724,49 +724,32 @@ Arstider.fixedCancelAnimationFrame = function(ref){
 Arstider.blobCache = {empty:{url:Arstider.emptyImgSrc, size:0}};
 
 /**
- * Sets the FPS of the game (max 60)
+ * Parses vendor-prefixed values for requesting an animation frame
  * @memberof Arstider
- * @type {function}
+ * @const
  */
-Arstider.setFPS = function(val){
-	val = val || 60;
+Arstider.requestAnimFrame = (function(){
+	return window.requestAnimationFrame    ||
+		window.webkitRequestAnimationFrame ||
+		window.mozRequestAnimationFrame    ||
+		window.oRequestAnimationFrame      ||
+		window.msRequestAnimationFrame     ||
+		null;
+})();
 
-	if(val == "auto" || val >= 60){
-		Arstider.FPS = 60;
-		/**
-		 * Parses vendor-prefixed values for requesting an animation frame
-		 * @memberof Arstider
-		 * @const
-		 */
-		Arstider.requestAnimFrame = (function(){
-			return window.requestAnimationFrame    ||
-				window.webkitRequestAnimationFrame ||
-				window.mozRequestAnimationFrame    ||
-				window.oRequestAnimationFrame      ||
-				window.msRequestAnimationFrame     ||
-				Arstider.fixedAnimationFrame;
-		})();
-
-		/**
-		 * Parses vendor-prefixed values for canceling request animation frame
-		 * @memberof Arstider
-		 * @const
-		 */
-		Arstider.cancelAnimFrame = (function(){
-			return	window.cancelAnimationFrame    ||
-				window.webkitCancelAnimationFrame  ||
-				window.mozCancelAnimationFrame     ||
-				window.oCancelAnimationFrame       ||
-				window.msCancelAnimationFrame      ||
-				Arstider.fixedCancelAnimationFrame;
-		})();
-	}
-	else{
-		Arstider.FPS = val;
-		Arstider.requestAnimFrame = Arstider.fixedAnimationFrame;
-		Arstider.cancelAnimFrame = Arstider.fixedCancelAnimationFrame;
-	}
-};
+/**
+ * Parses vendor-prefixed values for canceling request animation frame
+ * @memberof Arstider
+ * @const
+ */
+Arstider.cancelAnimFrame = (function(){
+	return	window.cancelAnimationFrame    ||
+		window.webkitCancelAnimationFrame  ||
+		window.mozCancelAnimationFrame     ||
+		window.oCancelAnimationFrame       ||
+		window.msCancelAnimationFrame      ||
+		null;
+})();
 
 /**
  * Default rendering style
