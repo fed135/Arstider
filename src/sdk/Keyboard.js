@@ -58,7 +58,7 @@
 		
 		runCallbacks(key, "down");
 		
-		if(key == "up" || key == "down"){
+		if(key == "up" || key == "down" || key == "space"){
 			var e = event || window.event;
 			e.stopPropagation();
 			e.preventDefault();
@@ -76,7 +76,7 @@
 		
 		runCallbacks(key, "up");
 		
-		if(key == "up" || key == "down"){
+		if(key == "up" || key == "down" || key == "space"){
 			var e = event || window.event;
 			e.stopPropagation();
 			e.preventDefault();
