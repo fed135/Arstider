@@ -176,8 +176,10 @@
 			//Runs pre-render method:
 			if(pre) pre(element);
 
+			t.setTransform();
+
 			//Render data
-			if(element.data || element.draw){
+			if(element.data || element.draw){	
 				var onScreen = (element.global.x < context.canvas.width && element.global.x + element.global.width > 0 && element.global.y < context.canvas.height && element.global.y + element.global.height > 0);
 				if((!complex && onScreen) || complex){
 					//Custom draw method :: WARNING! Only context is provided... could be any of Webgl or Canvas2d !!!
@@ -235,6 +237,7 @@
 
 		Renderer.prototype.clear = function(context, x, y, width, height){
 			this._recoverContextPencil(context, function(){
+				singleton.pencil.reset(context);
 				singleton.pencil.clear(context, x,y,width,height);
 			});
 		};

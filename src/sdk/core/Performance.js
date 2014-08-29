@@ -49,13 +49,13 @@
 					signal:new Signal(),
 					lastCalled:Arstider.timestamp()
 				};
-				if(fps == 60 && Arstider.requestAnimFrame){
+				/*if(fps == 60 && Arstider.requestAnimFrame){
 					this.nativeRequest();
 				}
-				else{
+				else{*/
 					this._signals[fps].targetRate = Math.round(1000/fps);
 					this.timeoutRequest(fps);
-				}
+				//}
 				return this._signals[fps].signal;
 			}
 		};
@@ -79,16 +79,16 @@
 			var 
 				ts = Arstider.timestamp(),
 				dt = ts - this._signals[fps].lastCalled,
-				nextFrame = Math.max(0, this._signals[fps].targetRate - dt),
+				nextFrame = Math.max(0, this._signals[fps].targetRate - (dt - this._signals[fps].targetRate)),
 				thisRef = this
 			;
 
-			this._signals[fps].lastCalled = ts;
-			this._signals[fps].signal.dispatch(dt);
-
-			this._signals[fps].timeout = setTimeout(function(){
+			this._signals[fps].timeout = setTimeout(function ArstsiderRequestAnimFrame(){
 				thisRef.timeoutRequest.call(thisRef, fps);
 			}, nextFrame);
+
+			this._signals[fps].lastCalled = ts;
+			this._signals[fps].signal.dispatch(dt);
 		};
 		
 		singleton = new Performance();	

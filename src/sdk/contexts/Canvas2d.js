@@ -65,8 +65,8 @@
 			context.translate(x, y);
 		};
 
-		Canvas2d.prototype.transform = function(context, scX, skX, skY, scY, tX, tY){
-			context.transform(scX, skX, skY, scY, tX, tY);
+		Canvas2d.prototype.setTransform = function(context, scX, skX, skY, scY, tX, tY){
+			context.setTransform(scX, skX, skY, scY, tX, tY);
 		};
 
 		Canvas2d.prototype.scale = function(context, sx, sy){

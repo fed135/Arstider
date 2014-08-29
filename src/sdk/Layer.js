@@ -104,6 +104,7 @@ define("Arstider/Layer", [
 			}
 		}
 
+		//console.log(this.width, ",",this.height);
 		Renderer.clear(this.canvas.context, 0 ,0 , this.width, this.height);
 
 		var showFrames = false;
