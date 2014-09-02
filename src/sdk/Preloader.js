@@ -200,7 +200,7 @@
 		 * @type {function(this:Preloader)}
 		 */
 		Preloader.prototype.reset = function(){
-			this._queue = [];
+			this._queue.length = 0;
 			this._checks = 0;
 		};
 		

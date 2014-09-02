@@ -103,7 +103,7 @@
 		 * @type {function(this:GlobalTimers)}
 		 */
 		GlobalTimers.prototype.clean = function(){
-			this.list = [];
+			this.list.length = 0;
 		};
 
 		/**

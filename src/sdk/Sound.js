@@ -109,7 +109,7 @@
 				}
 			}
 			else singleton.play('empty');
-			singleton._queue = [];
+			singleton._queue.length = 0;
 		};
 		
 		/**
@@ -297,7 +297,7 @@
 		 * @param {string|number} howlId The howlId for the Howler sound instance
 		 */
 		Sound.prototype._killCallbacks = function(howlId){
-			if(singleton._callbacks[howlId]) singleton._callbacks[howlId] = [];
+			if(singleton._callbacks[howlId]) singleton._callbacks[howlId].length = 0;
 			else{
 				if(Arstider.verbose > 1) console.warn("Arstider.Sound.killCallbacks: sound instance id unavailable");
 			}

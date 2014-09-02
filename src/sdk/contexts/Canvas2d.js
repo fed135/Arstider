@@ -94,6 +94,12 @@
 			
 		};
 
+		Canvas2d.prototype.clip = function(context, x, y, w, h){
+			context.beginPath();
+			context.rect(x, y, w, h);
+			context.clip();
+		};
+
 		Canvas2d.prototype.reset = function(context){
 			context.setTransform(1,0,0,1,0,0);
 		};

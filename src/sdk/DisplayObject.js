@@ -193,7 +193,7 @@
 				}
 			}
 			
-			if(!someKept) this.children = [];
+			if(!someKept) this.children.length = 0;
 
 			return this;
 		};

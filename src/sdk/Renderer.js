@@ -264,6 +264,10 @@
 				callback();
 			}
 		};
+
+		Renderer.prototype.clip = function(context){
+			this.pencil.clip(context, 0, 0, context.canvas.width, context.canvas.height);
+		};
 			
 		/**
 		 * Recursively draw elements from the rootChild on the desired context

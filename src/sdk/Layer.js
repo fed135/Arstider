@@ -106,6 +106,7 @@ define("Arstider/Layer", [
 
 		//console.log(this.width, ",",this.height);
 		Renderer.clear(this.canvas.context, 0 ,0 , this.width, this.height);
+		Renderer.clip(this.canvas.context);
 
 		var showFrames = false;
 		var mouseAction = (this.mouseEnabled)?function(e){

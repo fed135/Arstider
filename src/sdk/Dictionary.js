@@ -128,7 +128,7 @@
 						for(var i = 0; i < this._pendingStrings.length; i++){
 							this.translate(this._pendingStrings[i][0], this._pendingStrings[i][1], this._pendingStrings[i][2]);
 						}
-						this._pendingStrings = [];
+						this._pendingStrings.length = 0;
 					}
 					if(callback) callback();
 				}

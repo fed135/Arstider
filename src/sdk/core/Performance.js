@@ -49,13 +49,13 @@
 					signal:new Signal(),
 					lastCalled:Arstider.timestamp()
 				};
-				/*if(fps == 60 && Arstider.requestAnimFrame){
+				if(fps == 60 && Arstider.requestAnimFrame){
 					this.nativeRequest();
 				}
-				else{*/
+				else{
 					this._signals[fps].targetRate = Math.round(1000/fps);
 					this.timeoutRequest(fps);
-				//}
+				}
 				return this._signals[fps].signal;
 			}
 		};
