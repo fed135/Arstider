@@ -32,9 +32,7 @@
 		 */
 		function Renderer(){
 			this.pencil = null;
-			this.abort = false;
 			this.padding = 100;
-			this.allowSkip = true;
 		}
 
 		Renderer.prototype.checkOnScreen = function(context, element, matrix, xo, yo){
@@ -85,17 +83,6 @@
 			;
 
 			if(!element || element.__skip) return;
-
-			if(singleton.abort){
-				if(main){
-					singleton.abort = false;
-					//this.pencil.reset(context);
-				}
-				else{
-					if(callback) callback();
-					return;
-				}
-			}
 				
 			Performance.elements++;
 			if(!element._skipUpdateBubble && element.update) Performance.numUpdates++; 
@@ -190,6 +177,7 @@
 
 			//Render data
 			if(element.data || element.draw){
+				t.setTransform();
 				var onScreen = (element.global.x < context.canvas.width && element.global.x + element.global.width > 0 && element.global.y < context.canvas.height && element.global.y + element.global.height > 0);
 				if((!complex && onScreen) || complex){
 					//Custom draw method :: WARNING! Only context is provided... could be any of Webgl or Canvas2d !!!
@@ -275,10 +263,6 @@
 				callback();
 			}
 		};
-
-		Renderer.prototype.reset = function(context){
-			this.abort = true;
-		};
 			
 		/**
 		 * Recursively draw elements from the rootChild on the desired context
@@ -290,7 +274,7 @@
 		 */
 		Renderer.prototype.draw = function(context, element, pre, post, debug, callback){
 			this._recoverContextPencil(context, function recoverContext(){
-				singleton.reset(context);
+				//singleton.pencil.clip(context, 0, 0, context.canvas.width, context.canvas.height);	//not great for rpX/rpY greater than 0
 				singleton.renderChild.call(singleton, context, element, false, pre, post, null, debug, callback, true);
 			});
 		};

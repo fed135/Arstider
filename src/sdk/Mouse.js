@@ -119,7 +119,7 @@
 		 * @type {function(this:Mouse)}
 		 */
 		Mouse.prototype.reset = function(){
-			singleton._ongoingTouches = [];
+			singleton._ongoingTouches.length = 0;
 			singleton.pressed = false;
 			singleton.rightPressed = false;
 			singleton._mouse.x = 0;

@@ -69,6 +69,10 @@
 			context.transform(scX, skX, skY, scY, tX, tY);
 		};
 
+		Canvas2d.prototype.setTransform = function(context, scX, skX, skY, scY, tX, tY){
+			context.setTransform(scX, skX, skY, scY, tX, tY);
+		};
+
 		Canvas2d.prototype.scale = function(context, sx, sy){
 			context.scale(sx, sy);
 		};
@@ -92,6 +96,12 @@
 			
 			context.globalAlpha = newAlpha;
 			
+		};
+
+		Canvas2d.prototype.clip = function(context, x, y, w, h){
+			context.beginPath();
+			context.rect(x, y, w, h);
+			context.clip();
 		};
 
 		Canvas2d.prototype.reset = function(context){

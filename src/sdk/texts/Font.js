@@ -126,7 +126,7 @@ define("Arstider/texts/Font", ["Arstider/Request"], /** @lends texts/Font */ fun
 		for(i; i>=0;i--){
 			this.loadCallbacks[i]();
 		}
-		if(remove) this.loadCallbacks = [];
+		if(remove) this.loadCallbacks.length = 0;
 	};
 
 	return Font;
