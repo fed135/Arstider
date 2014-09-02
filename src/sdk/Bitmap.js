@@ -69,6 +69,11 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 			if(e.indexOf && e.indexOf("data:") != -1){
 				testURL = e;
 			}
+			else if(e instanceof Buffer){
+				this.data = e;
+				if(this.callback) this.callback(this);
+				return;
+			}
 			else{
 				try{
 					testURL = window.URL.createObjectURL(e);

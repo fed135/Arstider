@@ -115,7 +115,7 @@
 				this.url+= (this.url.indexOf('?') === -1 ? '?' : '&') + Request.urlArgs;
 			}
 
-			this._compatibilityMode = ((Browser.name == "ie" && Browser.version == 9) || (Browser.name == "safari" && Browser.platformVersion <= 6));
+			this._compatibilityMode = ((Browser.name == "ie" && Browser.version == 9) || (Browser.name == "safari" && Browser.platformVersion < 7));
 
 			/**
 			 * Callback function
@@ -230,19 +230,21 @@
 			if(this.track) Preloader.progress(this.id, 0);
 
 			if(this.cache){
-				if(cache[this.url] !== undefined){
-					this.callback.apply(this.caller, [cache[this.url]]);
-					updateInPending(this.url);
-					if(this.track) Preloader.progress(this.id, 100);
-					return;
-				}
-					
-				if(findInPending(this.url)){
-					pending.push(this);
-					return;
-				}
-				else{
-					pending.push({url:this.url});
+				if(!(this.type == "arraybuffer" && Browser.name == "safari" && Browser.platformVersion < 7)){
+					if(cache[this.url] !== undefined){
+						this.callback.apply(this.caller, [cache[this.url]]);
+						updateInPending(this.url);
+						if(this.track) Preloader.progress(this.id, 100);
+						return;
+					}
+						
+					if(findInPending(this.url)){
+						pending.push(this);
+						return;
+					}
+					else{
+						pending.push({url:this.url});
+					}
 				}
 			}
 
@@ -256,16 +258,18 @@
 						setTimeout(function loadBitmapDelay(){
 							ret = Arstider.saveToBuffer(thisRef.id, loader);
 							ret.getPixelAt(1,1);
-							ret = ret.getURL("image/png", 0);
-							thisRef.cache[thisRef.url] = ret;
+							if(Browser.name == "ie"){
+								ret = ret.getURL("image/png", 0);
+								cache[thisRef.url] = ret;
+								if(Arstider.bufferPool[thisRef.id] && Arstider.bufferPool[thisRef.id].kill) Arstider.bufferPool[thisRef.id].kill();
+							}
 							if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [ret]);
 							if(thisRef.track) Preloader.progress(thisRef.id, 100);
 							loader.src = Arstider.emptyImgSrc;
-							if(Arstider.bufferPool[thisRef.id] && Arstider.bufferPool[thisRef.id].kill) Arstider.bufferPool[thisRef.id].kill();
 						}, 50);
 					}
 					else{
-						thisRef.cache[thisRef.url] = ret;
+						cache[thisRef.url] = ret;
 						if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [ret]);
 						if(thisRef.track) Preloader.progress(thisRef.id, 100);
 						loader.src = Arstider.emptyImgSrc;
@@ -293,9 +297,11 @@
 					
 			xhr.open(this.method, this.url, this.async, this.user, this.password);
 
-			
-            if(this.async) xhr.responseType = this.type;
-            if(this.type == "json") xhr.responseType = "text";
+			if(!(Browser.name == "safari" && Browser.platformVersion < 7)){
+				console.log("should not be there!");
+            	if(this.async) xhr.responseType = this.type;
+            	if(this.type == "json") xhr.responseType = "text";
+            }
                                        
             if(this.mimeOverride != null && xhr.overrideMimeType) xhr.overrideMimeType(this.mimeOverride);
 
