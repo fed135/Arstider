@@ -77,7 +77,12 @@
 			 * @type {CanvasRenderingContext2D}
 			 */
 			this.context = null;
-			
+			/**
+			 * Engine canvas renderer
+			 * @type {Renderer}
+			 */
+			this.renderer = null;
+
 			/**
 			 * Request animation frame timer
 			 * @type {number}
@@ -696,8 +701,8 @@
 		 * @type {function(this:Engine)}
 		 */
 		Engine.prototype.drawPreloader = function(showFrames){
-			Renderer.clear(singleton.context, 0,0, Viewport.maxWidth,Viewport.maxHeight);
-			Renderer.draw(singleton.context, Preloader._screen, function(e){singleton.applyRelease(e, ((Browser.isMobile)?Mouse._ongoingTouches:[{x:Mouse.x(), y:Mouse.y(), pressed:Mouse.pressed}]));}, null, showFrames);
+			this.renderer.clear(singleton.context, 0,0, Viewport.maxWidth,Viewport.maxHeight);
+			this.renderer.draw(singleton.context, Preloader._screen, function(e){singleton.applyRelease(e, ((Browser.isMobile)?Mouse._ongoingTouches:[{x:Mouse.x(), y:Mouse.y(), pressed:Mouse.pressed}]));}, null, showFrames);
 			if(Viewport.tagParentNode) Viewport.tagParentNode.style.display = "none";
 			Mouse.cleanTouches();
 		};
@@ -707,7 +712,7 @@
 		 * @type {function(this:Engine)}
 		 */
 		Engine.prototype.drawBackground = function(showFrames){
-			Renderer.draw(singleton.context, Background, null, null, showFrames);
+			this.renderer.draw(singleton.context, Background, null, null, showFrames);
 		};
 
 		/**
@@ -715,7 +720,7 @@
 		 * @type {function(this:Engine)}
 		 */
 		Engine.prototype.drawOverlay = function(showFrames){
-			Renderer.draw(singleton.context, Watermark, null, null, showFrames);
+			this.renderer.draw(singleton.context, Watermark, null, null, showFrames);
 		};
 
 		/**
@@ -723,7 +728,7 @@
 		 * @type {function(this:Engine)}
 		 */
 		Engine.prototype.drawScreen = function(showFrames){
-			Renderer.draw(singleton.context, singleton.currentScreen, function(e){
+			this.renderer.draw(singleton.context, singleton.currentScreen, function(e){
 				singleton.applyRelease(e, ((Browser.isMobile)?Mouse._ongoingTouches:[{x:Mouse.x(), y:Mouse.y(), pressed:Mouse.pressed}]));
 			}, null, showFrames);
 		};

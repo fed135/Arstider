@@ -298,7 +298,6 @@
 			xhr.open(this.method, this.url, this.async, this.user, this.password);
 
 			if(!(Browser.name == "safari" && Browser.platformVersion < 7)){
-				console.log("should not be there!");
             	if(this.async) xhr.responseType = this.type;
             	if(this.type == "json") xhr.responseType = "text";
             }
