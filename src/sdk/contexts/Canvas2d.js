@@ -127,10 +127,10 @@
 		};
 			
 		Canvas2d.prototype.renderAt = function(context, data, x, y, width, height, pX, pY, destWidth, destHeight){
-			pX = Arstider.checkIn(pX, 0);
-            pY = Arstider.checkIn(pY, 0);
-            destWidth = Arstider.checkIn(destWidth, data.width);
-            destHeight = Arstider.checkIn(destHeight, data.height);
+			if(pX == undefined) pX = 0;
+            if(pY == undefined) pY = 0;
+            destWidth = destWidth || data.width;
+            destHeight = destHeight || data.height;
 
 			context.drawImage(data, pX, pY, destWidth, destHeight, x, y, width, height);
 		};

@@ -500,37 +500,43 @@
 		 */
 		Entity.prototype._update = function(dt){
 			
+			var i, c, len;
+
 			/**
 			 * Check for docking options
 			 */
 			if(this.parent != null){
-				if(this._fillX != null){
-					if((this._fillX + "").indexOf("px") !== -1) this.width = parseFloat(this._fillX);
-					else this.width = this.parent.width * parseFloat(this._fillX);
-				}
-				if(this._fillY != null){
-					if((this._fillY + "").indexOf("px") !== -1) this.height = parseFloat(this._fillY);
-					else this.height = this.parent.height * parseFloat(this._fillY);
-				}
-				if(this._dockX != null){
-					if((this._dockX + "").indexOf("px") !== -1) this.x = parseFloat(this._dockX);
-					else this.x = (this.parent.width * parseFloat(this._dockX)) - (this.width * parseFloat(this._dockX));
-				}
-				if(this._dockY != null){
-					if((this._dockY + "").indexOf("px") !== -1) this.y = parseFloat(this._dockY);
-					else this.y = (this.parent.height * parseFloat(this._dockY)) - (this.height * parseFloat(this._dockY));
+				if(this.global.alpha > 0){
+					if(this._fillX != null){
+						if((this._fillX + "").indexOf("px") !== -1) this.width = parseFloat(this._fillX);
+						else this.width = this.parent.width * parseFloat(this._fillX);
+					}
+					if(this._fillY != null){
+						if((this._fillY + "").indexOf("px") !== -1) this.height = parseFloat(this._fillY);
+						else this.height = this.parent.height * parseFloat(this._fillY);
+					}
+					if(this._dockX != null){
+						if((this._dockX + "").indexOf("px") !== -1) this.x = parseFloat(this._dockX);
+						else this.x = (this.parent.width * parseFloat(this._dockX)) - (this.width * parseFloat(this._dockX));
+					}
+					if(this._dockY != null){
+						if((this._dockY + "").indexOf("px") !== -1) this.y = parseFloat(this._dockY);
+						else this.y = (this.parent.height * parseFloat(this._dockY)) - (this.height * parseFloat(this._dockY));
+					}
 				}
 			}
 			
 			if(!this._skipUpdateBubble && this.update) this.update(dt);
-			
-			if(this.children && this.children.length > 0){
-				for(var i = 0; i<this.children.length; i++){
-					var c = this.children[i];
-					if(c && c._update){
-						if(this._skipUpdateBubble && c.cancelBubble) c.cancelBubble();
-						//(function(t){setTimeout(function relayUpdate(){t._update.apply(t, [dt]);},0);})(this.children[i]);
-						c._update(dt);
+
+			if(this.children){
+				len = this.children.length;
+				if(len > 0){
+					for(i = 0; i<len; i++){
+						c = this.children[i];
+						if(c && c._update){
+							if(this._skipUpdateBubble && c.cancelBubble) c.cancelBubble();
+							c._update(dt);
+						}
 					}
 				}
 			}
