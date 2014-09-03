@@ -1,10 +1,10 @@
 /**
- * 
+ *
  * Spritesheet Manager SINGLETON
- * 
+ *
  * @author Jo Simard <josimard@meetfidel.com>
  */
-define("Arstider/sprites/SpritesheetManager", 
+define("Arstider/sprites/SpritesheetManager",
 [
 	"Arstider/Request",
 	"Arstider/sprites/JsonSpritesheet",
@@ -35,12 +35,12 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 		var cacheId = getCacheId(fileInfo.url);
 
 		var name = fileInfo.name;
-		
+
 		// Append params to name
 		params.name = name;
 
 		// Already Loading?
-		if(this.loadCallbacks[cacheId]) 
+		if(this.loadCallbacks[cacheId])
 		{
 			this.loadCallbacks[cacheId].push(onComplete);
 			return;
@@ -72,7 +72,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 				// Return to callback
 				context.onSpritesheetLoaded(cacheId, spritesheet, params);
 			}
-			
+
 			// Texture packer JSON Array format
 			else if(data.frames && data.frames.length>=1)
 			{
@@ -82,7 +82,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 
 				// Return to callback
 				context.onSpritesheetLoaded(cacheId, spritesheet, params);
-			} 
+			}
 
 			// Grid format (OLD SDK2 format)
 			else if(data.frameWidth>0)
@@ -94,7 +94,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 				});
 				spritesheet.name = name;
 				spritesheet.url = fileInfo.url;
-			} 
+			}
 
 			// Not supported
 			else {
@@ -121,7 +121,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 		if(this.loadCallbacks[cacheId])
 		{
 			var n = this.loadCallbacks[cacheId].length;
-			
+
 			for (var i = 0; i < n; i++) {
 				var callback = this.loadCallbacks[cacheId][i];
 				if(callback) callback(spritesheet);
@@ -139,7 +139,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 		for (var i = 0; i < overrides.length; i++)
 		{
 			var overrideData = overrides[i];
-		
+
 			this.overrides[overrideData.spritesheet] = overrideData;
 		};
 	}
@@ -152,6 +152,11 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 
 		if(overrideData)
 		{
+			if(overrideData.defaultAnim)
+			{
+				spritesheet.defaultAnim = overrideData.defaultAnim;
+			}
+
 			if(overrideData.animations)
 			{
 				// Spriteshett default FPS
@@ -171,7 +176,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 						{
 							// TODO: create anim if possible
 							console.error("SpritesheetManager error: Anim '"+animName+"' not found for overrides: ", animName, animOverrides);
-							
+
 							continue;
 						}
 
@@ -180,7 +185,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 						{
 							var frames = animOverrides[p];
 							var frameList;
-							
+
 							for (var i = 0; i < frames.length; i++) {
 
 								var frame = frames[i];
@@ -223,9 +228,9 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 						{
 							anim[p] = animOverrides[p];
 						}
-						
+
 					}
-					
+
 					//console.log(animName, animOverrides, spritesheet.animations[animName]);
 				}
 			}
@@ -254,18 +259,18 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 	}
 
 	/*
-	* Get information from a file url 
+	* Get information from a file url
 	*/
 	function getFileInfo(url, defaultFileName)
 	{
 		var name;
 		var ext = getFileExtension( url );
 		var path;
-		
+
 		// Only received folder
 		if (ext == null && defaultFileName!=null)
 		{
-			// Remove trailing slash 
+			// Remove trailing slash
 			if (url.lastIndexOf("/") == url.length-1) url = url.substr(0, url.lastIndexOf("/"));
 
 			path = url;
@@ -292,8 +297,8 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 		else
 		{
 			path = url.substring(0, url.lastIndexOf("/") + 1);
-			
-			if(url.indexOf("/")>-1) 
+
+			if(url.indexOf("/")>-1)
 			{
 				name = url.substring(url.lastIndexOf("/") + 1, url.lastIndexOf("."));
 			} else {
