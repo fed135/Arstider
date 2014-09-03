@@ -81,7 +81,7 @@
 			 * Engine canvas renderer
 			 * @type {Renderer}
 			 */
-			this.renderer = null;
+			this.renderer = Renderer;
 
 			/**
 			 * Request animation frame timer
@@ -713,7 +713,7 @@
 		 */
 		Engine.prototype.drawBackground = function(showFrames){
 			if(Background.data == null && Background.children.length == 0) return;
-			Renderer.draw(singleton.context, Background, null, null, showFrames);
+			this.renderer.draw(singleton.context, Background, null, null, showFrames);
 		};
 
 		/**
@@ -722,7 +722,7 @@
 		 */
 		Engine.prototype.drawOverlay = function(showFrames){
 			if(Watermark.data == null && Watermark.children.length == 0) return;
-			Renderer.draw(singleton.context, Watermark, null, null, showFrames);
+			this.renderer.draw(singleton.context, Watermark, null, null, showFrames);
 		};
 
 		/**
