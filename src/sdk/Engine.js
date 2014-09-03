@@ -81,7 +81,7 @@
 			 * Engine canvas renderer
 			 * @type {Renderer}
 			 */
-			this.renderer = null;
+			this.renderer = Renderer;
 
 			/**
 			 * Request animation frame timer
