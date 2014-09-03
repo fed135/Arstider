@@ -77,13 +77,11 @@
 
 			var 
 				xAnchor = 0,
-				yAnchor = 0,
-				prevX = 0,
-				prevY = 0
+				yAnchor = 0
 			;
-
-			if(!element || element.__skip) return;
 				
+			if(!element) return;
+
 			Performance.elements++;
 			if(!element._skipUpdateBubble && element.update) Performance.numUpdates++; 
 
@@ -183,7 +181,7 @@
 					//Custom draw method :: WARNING! Only context is provided... could be any of Webgl or Canvas2d !!!
 					if(element.draw){
 						Performance.draws++;
-						element.draw.call(element, context, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y);
+						element.draw.call(element, context, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y);
 					}
 					else{
 						if(element.global.height > 0 && element.global.width > 0){
@@ -192,21 +190,22 @@
 							if(node && node.data){
 								Performance.draws++;
 								if(element.largeData === true){
-									this.pencil.renderAt(context, node.data, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
+									this.pencil.renderAt(context, node.data, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
 								}
 								else{
-									this.pencil.renderAt(context, node.data, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y, element.width, element.height);
+									this.pencil.renderAt(context, node.data, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y, element.width, element.height);
 								}
 							}
 							node = null;
 						}
 					}
 				}
+				onScreen = null;
 			}
 				
 			//debug outlines
 			if(debug || element.showOutline === true){
-				this.pencil.debugOutline(context, (complex)?prevX-xAnchor:element.global.x, (complex)?prevY-yAnchor:element.global.y, element.width, element.height, "magenta");
+				this.pencil.debugOutline(context, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y, element.width, element.height, "magenta");
 			}
 			
 			
@@ -219,20 +218,25 @@
 			if(element.children){
 				if(element.children.length > 0) {
 					var len = element.children.length;
-					for(var li=0; li<len; li++){
-						if(element.children[li]){
+					var li;
+					for(li=0; li<len; li++){
+						if(element.children[li] && !element.children[li].__skip){
 							this.renderChild(context, element.children[li], complex, pre, post, t, debug);
 						}
 					}
-					len = null;
+					len = li = null;
 				}
 			}
 				
 			//Restore
-			if(complex) t.restore();
-			if(element.alpha != 1) this.pencil.alpha(context, 1/element.alpha);
-
-			if(callback) callback();
+			if(!main){
+				if(complex) t.restore();
+				if(element.alpha != 1) this.pencil.alpha(context, 1/element.alpha);
+			}
+			else{
+				t = null;
+				if(callback) callback();
+			}
 		};
 
 		Renderer.prototype.clear = function(context, x, y, width, height){

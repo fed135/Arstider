@@ -707,6 +707,7 @@
 		 * @type {function(this:Engine)}
 		 */
 		Engine.prototype.drawBackground = function(showFrames){
+			if(Background.data == null && Background.children.length == 0) return;
 			Renderer.draw(singleton.context, Background, null, null, showFrames);
 		};
 
@@ -715,6 +716,7 @@
 		 * @type {function(this:Engine)}
 		 */
 		Engine.prototype.drawOverlay = function(showFrames){
+			if(Watermark.data == null && Watermark.children.length == 0) return;
 			Renderer.draw(singleton.context, Watermark, null, null, showFrames);
 		};
 
