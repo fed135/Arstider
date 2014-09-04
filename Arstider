@@ -1,25 +1,127 @@
 #!/bin/sh
 
-echo "####################"
-echo "### Arstider SDK ###"
-echo "####################"
-echo " "
+###-------------------------------------// Functions
 
+welcome () {
+  echo "####################"
+  echo "### Arstider SDK ###"
+  echo "####################"
+  echo ""
+}
+
+#Compile function
+compile () {
+  if [ $# -eq 2 ] ; then
+    change_dest $2
+  fi
+  ant $1
+}
+
+#Change build path
+change_dest () {
+  if [ $# -eq 1 ] ; then
+    mkdir -p $1
+    export BUILD_DEST=$1
+  fi
+  echo "$BUILD_DEST"
+}
+
+#Create a new project
+create_project () {
+  echo " "
+}
+
+#Show version number function
+version () {
+  mapfile < version.properties
+  echo "Arstider ${MAPFILE[@]}"
+}
+
+#Show manual function
+manual () {
+  echo ""
+  #Compile
+  echo " -c|-compile     [opt]dest"
+  echo "                             compiles the classes into the Arstider.js and Arstider.min.js"
+  echo "                             at the specified location, or at the default loaction: "
+  echo "                             $DESTINATION"
+  echo ""
+  #Print/set destination path
+  echo " -d|-dest        [opt]dest"
+  echo "                             defines the path, if specified, prints the current one otherwise"
+  echo ""
+  #Generate Documentation
+  echo " -doc            [opt]dest"
+  echo "                             compiles the project documentation (JSDoc) at the specified"
+  echo "                             location or at the default location : "
+  echo "                             $DESTINATION"
+  echo ""
+  #Manual
+  echo " -m|-man"
+  echo "                             shows the available commands for this program"
+  echo ""
+  #New project
+  echo " -n|-new-project name [opt]dest"
+  echo "                             fetches the arstider template project from github and initializes"
+  echo "                             it at the specified location or at the default location :"  
+  echo "                             $DESTINATION"
+  echo ""
+  #Print Version
+  echo " -v|-version"
+  echo "                             displays the current engine version"
+  echo ""
+}
+
+#Goodbye message
+goodbye () {
+  echo "Exiting program"
+}
+
+###-------------------------------------// Program
+
+#welcome
+
+#Setup
 DESTINATION=""
-if [ $# -eq 0 ] ; then
-  echo "Using default build path"
-  if [ -z "$BUILD_DEST" ] ; then
-    DESTINATION="$PWD/dist"
-    echo "Destination: $DESTINATION"
-    mkdir -p $DESTINATION
-    export BUILD_DEST=$DESTINATION
-  fi
+if [ -z "$BUILD_DEST" ] ; then
+  echo " initializing default build path: $PWD/dist"
+  DESTINATION="$PWD/dist"
+  change_dest $DESTINATION
 else
-  DESTINATION="$1"
-  if [ "$BUILD_DEST" != $DESTINATION ] ; then
-    echo "Exporting build destination variable: $DESTINATION"
-    export BUILD_DEST=$DESTINATION
-  fi
+  DESTINATION="$BUILD_DEST"
 fi
 
-ant
+#Entry point
+if [ $# -eq 0 ] ; then
+  #No command
+  echo " No command specified"
+  manual
+else
+  #Detect command
+  case "$1" in
+  "-c" | "-compile")
+    compile build.all "$2"
+    ;;
+  "-d" | "-dest")
+    change_dest "$2"
+    ;;
+  "-doc")
+    compile build.documentation "$2"
+    ;;
+  "-m" | "-man")
+    manual
+    ;;
+  "-n" | "-new-project")
+    create_project "$2" "$3"
+    ;;
+  "-v" | "-version")
+    version
+    ;;
+  *)
+    echo " Command not found $1"
+    manual
+  esac
+fi
+
+#goodbye
+
