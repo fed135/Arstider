@@ -178,7 +178,8 @@
 				l = null,
 				i,
 				u,
-				heightVal
+				heightVal,
+				headRoom = 0
 			;
 
 			//get width
@@ -186,8 +187,8 @@
 				this._words[i].calculateWidth(this.data.context, f);
 			}
 
-			//get height
-			f.lineSpacing = parseInt(f.size.split("px").join(""));
+			//get height to calculate topSpace
+			headRoom = Math.max(0, f.lineSpacing - parseInt(f.size));
 
 			//need to manually parse
 			if(fieldWidth > 0 || this.textWrap){
@@ -246,7 +247,7 @@
 					caret.x += ((fieldWidth - l)*0.5);
 				}
 
-				caret.y = f.paddingTop + ((i+1)*f.lineSpacing) + f.fontOffsetY;
+				caret.y = f.paddingTop + ((i+1)*f.lineSpacing) + f.fontOffsetY - headRoom;
 
 				for(u = 0; u<lines[i].length; u++){
 					if(f.textAlign == "right"){

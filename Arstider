@@ -1,12 +1,31 @@
-#!/bin/sh
+#!/bin/bash
+
+###-------------------------------------// Variables
+
+DESTINATION=""
+CURRENT_DIR="$PWD"
+LIBNAME="Arstider"
+
+###-------------------------------------// Colors
+
+BLUE_COLOR="\033[1;34m"
+GREEN_COLOR="\033[1;32m"
+RED_COLOR="\033[1;31m"
+RESET="\e[0m"
 
 ###-------------------------------------// Functions
 
 welcome () {
-  echo "####################"
-  echo "### Arstider SDK ###"
-  echo "####################"
-  echo ""
+  DIR="$( cd "$( dirname "$0" )" && pwd )"
+  cd $DIR
+
+  if [ -z "$BUILD_DEST" ] ; then
+    echo " initializing default build path:" $GREEN_COLOR"$PWD/dist"$RESET
+    DESTINATION="$PWD/dist"
+    change_dest $DESTINATION
+  else
+    DESTINATION="$BUILD_DEST"
+  fi
 }
 
 #Compile function
@@ -34,68 +53,87 @@ create_project () {
 #Show version number function
 version () {
   mapfile < version.properties
-  echo "Arstider ${MAPFILE[@]}"
+  echo -e "$BLUE_COLOR$LIBNAME ${MAPFILE[@]}$RESET"
 }
 
 #Show manual function
 manual () {
-  echo ""
+
+  TAB="\t"
+  PARTAB=$TAB$TAB$TAB$TAB
+  BR=" "
+
+  #Usage
+  #...
+
   #Compile
-  echo " -c|-compile     [opt]dest"
-  echo "                             compiles the classes into the Arstider.js and Arstider.min.js"
-  echo "                             at the specified location, or at the default loaction: "
-  echo "                             $DESTINATION"
-  echo ""
+  echo " -c|--compile     [opt]dest"
+  echo -e $PARTAB"compiles the classes into the $LIBNAME.js and $LIBNAME.min.js"
+  echo -e $PARTAB"at the specified location, or at the default loaction: "
+  echo -e $PARTAB$DESTINATION
+  echo $BR
+
   #Print/set destination path
-  echo " -d|-dest        [opt]dest"
-  echo "                             defines the path, if specified, prints the current one otherwise"
-  echo ""
+  echo " -d|--dest        [opt]dest"
+  echo -e $PARTAB"defines the path, if specified, prints the current one otherwise"
+  echo $BR
+
   #Generate Documentation
   echo " -doc            [opt]dest"
-  echo "                             compiles the project documentation (JSDoc) at the specified"
-  echo "                             location or at the default location : "
-  echo "                             $DESTINATION"
-  echo ""
+  echo -e $PARTAB"compiles the project documentation (JSDoc) at the specified"
+  echo -e $PARTAB"location or at the default location : "
+  echo -e $PARTAB$DESTINATION
+  echo $BR
+
   #Manual
-  echo " -m|-man"
-  echo "                             shows the available commands for this program"
-  echo ""
+  echo " -h|--help"
+  echo -e $PARTAB"shows the available commands for this program"
+  echo $BR
+
   #New project
-  echo " -n|-new-project name [opt]dest"
-  echo "                             fetches the arstider template project from github and initializes"
-  echo "                             it at the specified location or at the default location :"  
-  echo "                             $DESTINATION"
-  echo ""
+  echo " -n|--new-project name [opt]dest"
+  echo -e $PARTAB"fetches the arstider template project from github and initializes"
+  echo -e $PARTAB"it at the specified location or at the default location :"  
+  echo -e $PARTAB$DESTINATION
+  echo $BR
+
   #Print Version
-  echo " -v|-version"
-  echo "                             displays the current engine version"
-  echo ""
+  echo " -v|--version"
+  echo -e $PARTAB"displays the current engine version"
+  echo $BR
+}
+
+#Error message
+err_msg () {
+  
+  PRE="Error:"
+
+  if [ $# -eq 0 ] ; then
+    echo -e $RED_COLOR$PRE$RESET
+  elif [ $# -eq 1 ] ; then
+    echo -e $RED_COLOR$PRE$1$RESET
+  elif [ $# -eq 2 ] ; then
+    echo -e $RED_COLOR$PRE$1$RESET$2
+  fi
+
+  #show manual
+  manual
 }
 
 #Goodbye message
 goodbye () {
-  echo "Exiting program"
+  echo -e $RESET
+  cd $CURRENT_DIR
 }
 
 ###-------------------------------------// Program
 
-#welcome
-
-#Setup
-DESTINATION=""
-if [ -z "$BUILD_DEST" ] ; then
-  echo " initializing default build path: $PWD/dist"
-  DESTINATION="$PWD/dist"
-  change_dest $DESTINATION
-else
-  DESTINATION="$BUILD_DEST"
-fi
+welcome
 
 #Entry point
 if [ $# -eq 0 ] ; then
   #No command
-  echo " No command specified"
-  manual
+  err_msg "No command specified"
 else
   #Detect command
   case "$1" in
@@ -118,10 +156,8 @@ else
     version
     ;;
   *)
-    echo " Command not found $1"
-    manual
+    err_msg "Command not found " $1
   esac
 fi
 
-#goodbye
-
+goodbye
