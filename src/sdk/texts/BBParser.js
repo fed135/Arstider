@@ -30,19 +30,19 @@
 			"C":{
 				param : true,
 				render:function(context, font, rule){
-					context.fillStyle = rule.substring(2);
+					context.fillStyle = rule;
 				}
 			},
 			"S":{
 				param : true,
 				render:function(context, font, rule){
-					font.size = rule.substring(2);
+					font.size = rule;
 				}
 			}, 
 			"T":{
 				param : true,
 				render:function(context, font, rule, segment){
-					segment.width = rule.substring(2);
+					segment.width = rule;
 					segment.isTab = true;
 				}
 			}
@@ -80,7 +80,8 @@
 				cut,
 				styles = styles || [],
 				currentStyle = null,
-				segments = []
+				segments = [],
+				styleObject = null
 			;
 
 			carot = str.indexOf("[[");
@@ -128,13 +129,13 @@
 				else{
 					if(currentStyle != null){
 
-						var stl = {
+						styleObject = {
 							style:currentStyle,
 							render:BBTagsList[currentStyle].render
 						};
 
 						if(BBTagsList[currentStyle].param === true){
-							stl.rule = str.substring(carot+4, cutStart-2);
+							styleObject.rule = str.substring(carot+4, cutStart-2);
 						}
 					}
 				}
@@ -146,7 +147,7 @@
 					cut = new Segment(" ");
 					cut.styles = styles.concat();
 					if(currentStyle != null){
-						cut.styles.push(currentStyle);
+						cut.styles.push(styleObject);
 					}
 					segments.push(cut);
 					
@@ -155,7 +156,7 @@
 				}
 				else{
 					if(currentStyle != null){
-						styles.push(currentStyle);
+						styles.push(styleObject);
 					}
 					segments = segments.concat(singleton.parse(str.substring(cutStart), styles));
 				}
