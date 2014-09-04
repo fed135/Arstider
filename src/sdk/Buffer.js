@@ -49,6 +49,8 @@
 
 			this.vertexShader = props.vertexShader;
 			this.fragmentShader = props.fragmentShader;
+
+			this.compatPrivilege = false;
 			
 			this.getContext();
 			
@@ -58,8 +60,6 @@
 			}
 			
 			Arstider.bufferPool[this.name] = this;
-
-			this.onchange = new Signal();
 		}
 
 		Buffer.prototype.getContext = function(){
@@ -85,6 +85,8 @@
 		 * @type {function(this:Buffer)}
 		 */
 		Buffer.prototype.kill = function(){
+			if(this.compatPrivilege) return;
+
 			delete Arstider.bufferPool[this.name];
 			this.width = 0;
 			this.height = 0;

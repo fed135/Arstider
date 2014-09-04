@@ -69,11 +69,6 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 			if(e.indexOf && e.indexOf("data:") != -1){
 				testURL = e;
 			}
-			else if(e instanceof Buffer){
-				this.data = e;
-				if(this.callback) this.callback(this);
-				return;
-			}
 			else{
 				try{
 					testURL = window.URL.createObjectURL(e);
@@ -105,7 +100,18 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 	 * @param {string} url URL to load
 	 */
 	Bitmap.prototype._fetchUrl = function(url, callback){
-		var thisRef = this;
+		var thisRef = this, compatMode = (Browser.name == "safari" && Browser.platformVersion < 7);
+
+		if(compatMode){
+			this.compatPrivilege = true;
+			if(Arstider.bufferPool[this.url] && Arstider.bufferPool[this.url].data != null){
+				if(callback) callback(Arstider.bufferPool[this.url]);
+				else{
+					if(thisRef.callback) thisRef.callback(Arstider.bufferPool[this.url]);
+				}
+				return;
+			}
+		} 
 
 		if(Arstider.defaultRenderStyle === "sharp"){
 			if(Browser.name == "firefox") this.data.style.imageRendering = '-moz-crisp-edges';
@@ -123,21 +129,35 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 		}
 
 		this.data.onload = function(){
+			var ret;
+
 			thisRef.data.onload = null;
-			thisRef.width = thisRef.data.width;
-			thisRef.height = thisRef.data.height;
-			
-			if(callback) callback(thisRef);
+			ret = thisRef;
+			if(compatMode){
+				if(Arstider.bufferPool[thisRef.url] && Arstider.bufferPool[thisRef.url].data != null){
+					ret = Arstider.bufferPool[thisRef.url];
+				}
+				else{
+					ret = Arstider.saveToBuffer(thisRef.url, thisRef.data);
+					ret.compatPrivilege = true;
+				}
+			}
 			else{
-				if(thisRef.callback) thisRef.callback(thisRef);
+				thisRef.width = thisRef.data.width;
+				thisRef.height = thisRef.data.height;
 			}
 
-			if(this.forceImg) Preloader.progress(this.id, 100);
+
+			if(callback) callback(ret);
+			else{
+				if(thisRef.callback) thisRef.callback(ret);
+			}
 		};
 		this.data.src = url;
 	};
 
 	Bitmap.prototype.kill = function(){
+
 		if(this.data && this.data.kill) this.data.kill();
 		this.data = null;
 

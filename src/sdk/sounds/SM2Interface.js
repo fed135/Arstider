@@ -10,14 +10,15 @@
 			this.managerRef;
 		}
 
-		SM2Interface.prototype.init = function(s, url){
+		SM2Interface.prototype.init = function(s, url, callback){
 			singleton.managerRef = s;
 
 			if(!singleton.test()) return;
 
 			soundManager.setup({
-				html5PollingInterval:50,
+				html5PollingInterval:245,
 				preferFlash:false,
+				useHTML5Audio:true,
 				onready:function(){
 					singleton.managerRef.sounds._handle = soundManager.createSound({
 						id:"sounds",
@@ -26,6 +27,7 @@
 						multiShotEvents:true,
 						onfinish:singleton.managerRef._removeInstance
 					});
+					if(callback) callback();
 				}
 			});
 		};
@@ -116,7 +118,7 @@
 		};
 
 		SM2Interface.prototype.playSound = function(handle, id, options, callback){
-			handle.stop();
+			//handle.stop();
 			
 			options = options || {};
 			options.from = singleton.managerRef.sounds[id].offset;

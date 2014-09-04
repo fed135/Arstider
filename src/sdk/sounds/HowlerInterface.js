@@ -10,12 +10,13 @@
 			this.managerRef;
 		}
 
-		HowlerInterface.prototype.init = function(s, url){
+		HowlerInterface.prototype.init = function(s, url, callback){
 			singleton.managerRef = s;
 
 			if(!singleton.test()) return;
 
 			if(Browser.name == "android") Howler.usingWebAudio = false;
+			Howler.iOSAutoEnable = false;
 
 			var 
 				i,
@@ -33,6 +34,8 @@
 				sprite:sprite,
 				onend:singleton.managerRef._removeInstance
 			});
+
+			if(callback) callback();
 		};
 
 		HowlerInterface.prototype.test = function(){
@@ -45,6 +48,7 @@
 
 		HowlerInterface.prototype.create = function(id){
 			return new Howl({
+				buffer:true,
 				urls:singleton.managerRef.tracks[id].files,
 				loop:singleton.managerRef.tracks[id].loop || false
 			});

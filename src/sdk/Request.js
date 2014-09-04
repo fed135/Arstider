@@ -250,19 +250,23 @@
 
 			if(this.type == "arraybuffer"){
 				var loader = new Image();
-				var ret;
+				loader.onerror = function(){
+					if(thisRef.track) Preloader.progress(thisRef.id, 100);
+				};
+
 				loader.onload = function(){
+					var ret, bucket;
 					loader.onload = null;
 					//Only for images
 					if(thisRef.url.indexOf(".jpg") || thisRef.url.indexOf(".png") || thisRef.url.indexOf(".gif")){
 						setTimeout(function loadBitmapDelay(){
 							ret = Arstider.saveToBuffer(thisRef.id, loader);
-							ret.getPixelAt(1,1);
-							if(Browser.name == "ie"){
+							bucket = ret.getPixelAt(1,1,1,1);
+							//if(Browser.name == "ie"){
 								ret = ret.getURL("image/png", 0);
 								cache[thisRef.url] = ret;
 								if(Arstider.bufferPool[thisRef.id] && Arstider.bufferPool[thisRef.id].kill) Arstider.bufferPool[thisRef.id].kill();
-							}
+							//}
 							if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [ret]);
 							if(thisRef.track) Preloader.progress(thisRef.id, 100);
 							loader.src = Arstider.emptyImgSrc;
@@ -285,7 +289,7 @@
 						if(!thisRef.completed){
 							Preloader.progress(thisRef.id, 100);
 						}
-					}, this.timeout);
+					}, this.timeout*2);
 				}
 				return;
 			}
