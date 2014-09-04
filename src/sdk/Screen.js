@@ -165,6 +165,8 @@ define("Arstider/Screen", [
 		this.removeChildren(true);
 		
 		if(this.onunload) this.onunload();
+
+		requirejs.undef(this.name);
 	};
 	
 	/**

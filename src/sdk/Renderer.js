@@ -160,8 +160,9 @@
 				this.pencil.setCompositionMode(context, element.compositeMode);
 			} 
 			else if(element.mask === true){
+				t.setTransform();
 				Performance.transforms++;
-				this.pencil.setCompositionMode(context, "destination-in");
+				this.pencil.clip(context, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y, element.width, element.height);
 			}
 				
 			//Shadow
@@ -175,7 +176,7 @@
 
 			//Render data
 			if(element.data || element.draw){
-				t.setTransform();
+				if(!element.mask) t.setTransform();
 				var onScreen = (element.global.x < context.canvas.width && element.global.x + element.global.width > 0 && element.global.y < context.canvas.height && element.global.y + element.global.height > 0);
 				if((!complex && onScreen) || complex){
 					//Custom draw method :: WARNING! Only context is provided... could be any of Webgl or Canvas2d !!!
