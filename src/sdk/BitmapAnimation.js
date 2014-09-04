@@ -434,7 +434,8 @@ function (DisplayObject, SpriteSheetManager, Signal)
 		}
 
 		// Anim complete signal
-		this.animCompleteSignal.dispatch(animName, this);
+		if(this.animCompleteSignal)
+			this.animCompleteSignal.dispatch(animName, this);
 	};
 
 	/**
