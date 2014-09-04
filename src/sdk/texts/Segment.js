@@ -19,6 +19,8 @@ define("Arstider/texts/Segment", [], function(){
 		this.styles = Arstider.checkIn(styles, []);
 
 		this.width = 0;
+		this.yOffset = 0;
+		this.xOffset = 0;
 
 		this.isTab = false;
 	}
@@ -31,8 +33,8 @@ define("Arstider/texts/Segment", [], function(){
 		}
 
 		context.save();
-		this.applyStyles(context, font);
-		this.width = context.measureText(this.text).width;
+		this.applyStyles(context, Arstider.clone(font));
+		this.width = context.measureText(this.text).width + this.xOffset;
 		context.restore();
 	};
 
@@ -47,18 +49,18 @@ define("Arstider/texts/Segment", [], function(){
 	};
 
 	Segment.prototype.render = function(context, font, x, y, stroke, fill){
-		if(this.text.indexOf("<br>") != -1) return;
+		if(this.text.indexOf("<br>") != -1 || this.text == "" || this.text == " ") return;
 
 		context.save();
 
-		this.applyStyles(context, font);
+		this.applyStyles(context, Arstider.clone(font));
 
-		if(stroke) context.strokeText(this.text, Arstider.chop(x), Arstider.chop(y));
+		if(stroke) context.strokeText(this.text, Arstider.chop(x+this.xOffset), Arstider.chop(y+this.yOffset));
 		if(fill){
 			if(stroke && font.shadowColor){
 				context.shadowColor = Arstider.defaultColor;
 			}
-			context.fillText(this.text, Arstider.chop(x), Arstider.chop(y));
+			context.fillText(this.text, Arstider.chop(x+this.xOffset), Arstider.chop(y+this.yOffset));
 		}
 
 		context.restore();

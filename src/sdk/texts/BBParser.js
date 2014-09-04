@@ -33,17 +33,41 @@
 					context.fillStyle = rule;
 				}
 			},
+			"G":{
+				param : true,
+				render:function(context, font, rule){
+					context.shadowBlur = parseInt(rule);
+				}
+			},
+			"L":{
+				param : true,
+				render:function(context, font, rule){
+					context.lineWidth = parseInt(rule);
+				}
+			},
 			"S":{
 				param : true,
 				render:function(context, font, rule){
 					font.size = rule;
 				}
-			}, 
+			},
 			"T":{
 				param : true,
 				render:function(context, font, rule, segment){
-					segment.width = rule;
+					segment.width = parseInt(rule);
 					segment.isTab = true;
+				}
+			},
+			"X":{
+				param : true,
+				render:function(context, font, rule, segment){
+					segment.xOffset = parseInt(rule);
+				}
+			}
+			"Y":{
+				param : true,
+				render:function(context, font, rule, segment){
+					segment.yOffset = parseInt(rule);
 				}
 			}
 		},
