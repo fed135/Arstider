@@ -25,7 +25,7 @@
 			}];
 
 			for(i in singleton.managerRef.sounds){
-				manifest[0].data.audioSprite.push({id:i, offset:singleton.managerRef.sounds[i].offset, duration:singleton.managerRef.sounds[i].duration, loop:singleton.managerRef.sounds[i].loop});
+				manifest[0].data.audioSprite.push({id:i, startTime:singleton.managerRef.sounds[i].offset, duration:singleton.managerRef.sounds[i].duration, loop:singleton.managerRef.sounds[i].loop});
 			}
 
 			createjs.Sound.addEventListener("fileload", function(){
@@ -44,9 +44,9 @@
 
 		SoundJSInterface.prototype._fadeLoop = function(handle, to, delay, callback){
 
-			var inc = (handle.volume - to)/(delay *0.05);
+			var inc = (handle._volume - to)/(delay *0.05);
 
-			s.setVolume(Math.round(handle.volume - inc));
+			s.setVolume(Math.round(handle._volume - inc));
 			delay -= 20;
 
 			if(delay > 0){
@@ -94,22 +94,27 @@
 		};
 
 		SoundJSInterface.prototype.playSound = function(handle, id, options, callback){
-			if(handle){
-				handle.play(id);
-			}
+			createjs.Sound.play(id);
+			
 			return singleton.managerRef;
 		};
 
 		SoundJSInterface.prototype.pause = function(handle, id){
 			if(handle){
-				handle.pause(id);
+				handle.pause();
+			}
+			else{
+				createjs.Sound.pause(id);
 			}
 			return singleton.managerRef;
 		};
 
 		SoundJSInterface.prototype.resume = function(handle, id){
 			if(handle){
-				handle.resume(id);
+				handle.resume();
+			}
+			else{
+				createjs.Sound.resume(id);
 			}
 			return singleton.managerRef;
 		};
@@ -125,6 +130,9 @@
 				handle.stop();
 				if(id && singleton.managerRef.tracks[id] && singleton.managerRef.tracks[id].fadeOutTimer) singleton.managerRef.tracks[id].fadeOutTimer.pause();
 			}
+			else{
+				createjs.Sound.stop(id);
+			}
 			return singleton.managerRef;
 		};
 
@@ -137,7 +145,7 @@
 
 		SoundJSInterface.prototype.setVolume = function(handle, volume, id){
 			if(handle){
-				handle.setVolume(volume*100);
+				handle.setVolume(volume);
 			}
 			return singleton.managerRef;
 		};
