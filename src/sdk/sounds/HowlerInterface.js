@@ -20,11 +20,16 @@
 
 			var 
 				i,
-				sprite = {empty:[0,1]}
+				sprite = {empty:[0,1]},
+				padding = 0
 			;
+
+			if(Browser.name == "ie"){
+				padding = 100;
+			}
 			
 			for(i in singleton.managerRef.sounds){
-				sprite[i] = [singleton.managerRef.sounds[i].offset, singleton.managerRef.sounds[i].duration, singleton.managerRef.sounds[i].loop];
+				sprite[i] = [singleton.managerRef.sounds[i].offset - padding, singleton.managerRef.sounds[i].duration, singleton.managerRef.sounds[i].loop];
 			}
 			
 			singleton.managerRef.sounds['empty'] = {};
