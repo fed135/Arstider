@@ -63,7 +63,7 @@
 				render:function(context, font, rule, segment){
 					segment.xOffset = parseInt(rule);
 				}
-			}
+			},
 			"Y":{
 				param : true,
 				render:function(context, font, rule, segment){
