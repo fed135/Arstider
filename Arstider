@@ -76,14 +76,16 @@ change_dest () {
 create_project () {
   #resolve project directory path
   project_dir="$CURRENT_DIR/$1"
-  if [ $2 != "" ] ; then 
+  if [ "$2" != "" ] ; then 
     project_dir="$2/$1"
   fi
 
   #create folder
   if [ -d "$project_dir" ] ; then
-    if show_confirm "Folder already exists, delete the folder?" ; then
-      rm -ri "$project_dir"
+    show_confirm "Folder already exists, delete the folder? (Y/n)"
+    echo $BR
+    if [ $result -eq 1 ] ; then
+      rm -rf "$project_dir"
       if [ -d "$project_dir" ] ; then
         #Cancelled deletion, exit
         exit 0
@@ -101,21 +103,23 @@ create_project () {
   echo -e $GREEN_COLOR"Unzipping..."$RESET
   unzip master.zip
   echo -e $GREEN_COLOR"Copying files..."$RESET
-  cp "./$TEMPLATE_FOLDER/*" "$project_dir"
-
-  #get libraries
-  for i in "${DEPENDENCIES[@]}"
-  do
-    echo -e $GREEN_COLOR"Getting library ${LIBRARIES[$i]}..."$RESET
-    wget "${DEPENDENCIES[$i]}"
-    cp "${LIBRARIES[$i]}" "$project_dir/src/js/libs/${LIBRARIES[$i]}"
-    rm "${LIBRARIES[$i]}"
-  done
+  cp -R "$PWD/$TEMPLATE_FOLDER/" "$project_dir"
 
   #cleanup
   echo -e $GREEN_COLOR"Cleaning up..."$RESET
   rm master.zip
-  rm $TEMPLATE_FOLDER
+  rm -rf $TEMPLATE_FOLDER
+
+  #get libraries
+  mkdir "$project_dir/src/js/libs"
+  for (( i=0 ; i < ${#DEPENDENCIES[@]} ; i++ )) do
+  echo -e $GREEN_COLOR"Getting library "${LIBRARIES[$i]}"..."$RESET
+  wget "${DEPENDENCIES[$i]}"
+  cp "${LIBRARIES[$i]}" "$project_dir/src/js/libs/${LIBRARIES[$i]}"
+  rm "${LIBRARIES[$i]}"
+  done
+
+  #Done
   echo -e $GREEN_COLOR"Finished!"$RESET
 }
 
@@ -203,12 +207,12 @@ err_msg () {
 #Confirmation message
 show_confirm () {
   read -p "$1 " -n 1 -r
-  echo    # (optional) move to a new line
+  echo $BR  # (optional) move to a new line
   if [[ $REPLY =~ ^[Yy]$ ]] ; then
     # do dangerous stuff
-    return true
+    result=1
   else
-    return false
+    result=0
   fi
 }
 
