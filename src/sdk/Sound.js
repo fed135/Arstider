@@ -86,7 +86,7 @@
 
 			//assign proper interface
 			if(singleton.lib == "howler") singleton.lib = HowlerInterface;
-			//TODO: else if(singleton.lib == "soundjs") singleton.lib = SoundJSInterface;
+			else if(singleton.lib == "soundjs") singleton.lib = SoundJSInterface;
 			else if(singleton.lib == "sm2") singleton.lib = SM2Interface;
 			
 			singleton.lib.init(singleton, url, function(){

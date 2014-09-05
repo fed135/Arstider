@@ -48,6 +48,15 @@ change_dest () {
 #Create a new project
 create_project () {
   echo " "
+  #create folder
+
+  #get template zip
+
+  #unzip in location
+
+  #get libraries
+
+  #cleanup
 }
 
 #Show version number function

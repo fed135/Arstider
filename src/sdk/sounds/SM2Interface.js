@@ -70,7 +70,6 @@
 			options = options || {};
 			var callbacks = [];
 
-			console.log("playing ", id);
 			if(!isSound){
 				var fadeIn = Arstider.checkIn(options.fadeIn, singleton.managerRef.tracks[id].fadeIn);
 				if(fadeIn) singleton.fade(handle, id, 0, handle._volume, fadeIn);
@@ -146,6 +145,7 @@
 		SM2Interface.prototype.fade = function(handle, id, startVol, endVol, time, callback){
 			handle.setVolume(startVol);
 			singleton._fadeLoop(handle, endVol, time, callback);
+			return singleton.managerRef;
 		};
 
 		SM2Interface.prototype.stop = function(handle, id){
