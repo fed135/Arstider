@@ -137,7 +137,7 @@
 				cutStart = str.indexOf("]]") + 2;
 				
 				if(currentStyle === "T"){
-					cut = new Segment(" ");
+					cut = new Segment("");
 					cut.styles = [
 						{
 							style:"T",
@@ -168,7 +168,7 @@
 				
 				cutEnd = str.substring(carot).indexOf("[[");
 				if(str[cutEnd+2] === "/"){
-					cut = new Segment(" ");
+					cut = new Segment("");
 					cut.styles = styles.concat();
 					if(currentStyle != null){
 						cut.styles.push(styleObject);
