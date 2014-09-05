@@ -3,19 +3,42 @@
 ###-------------------------------------// Variables
 
 DESTINATION=""
+
 CURRENT_DIR="$PWD"
+
 LIBNAME="Arstider"
+
+PROJECT=""
+META=".$LIBNAMEProject"
+
+TEMPLATE_URL="https://github.com/fed135/Arstider_template/archive/master.zip"
+TEMPLATE_FOLDER="Arstider_template-master"
+
+DEPENDENCIES=('http://requirejs.org/docs/release/2.1.14/minified/require.js' 'https://raw.githubusercontent.com/goldfire/howler.js/master/howler.min.js')
+LIBRARIES=('require.js' 'howler.min.js')
 
 ###-------------------------------------// Colors
 
-BLUE_COLOR="\033[1;34m"
-GREEN_COLOR="\033[1;32m"
-RED_COLOR="\033[1;31m"
+BLUE_COLOR="\033[0;34m"
+GREEN_COLOR="\033[0;32m"
+YELLOW_COLOR="\033[0;33m"
+RED_COLOR="\033[0;31m"
+PURPLE_COLOR="\033[0;35m"
 RESET="\e[0m"
 
 ###-------------------------------------// Functions
 
+check_if_in_project () {
+  if [ -f $META ] ; then
+    mapfile < $META
+    raw="${MAPFILE[@]}"
+    PROJECT=${raw:5}
+  fi
+}
+
 welcome () {
+  check_if_in_project
+
   DIR="$( cd "$( dirname "$0" )" && pwd )"
   cd $DIR
 
@@ -26,6 +49,10 @@ welcome () {
   else
     DESTINATION="$BUILD_DEST"
   fi
+}
+
+check_if_override () {
+  echo "does a file/folder already have their name on it ?"
 }
 
 #Compile function
@@ -47,16 +74,57 @@ change_dest () {
 
 #Create a new project
 create_project () {
-  echo " "
+  #resolve project directory path
+  project_dir="$CURRENT_DIR/$1"
+  if [ $2 != "" ] ; then 
+    project_dir="$2/$1"
+  fi
+
   #create folder
+  if [ -d "$project_dir" ] ; then
+    if show_confirm "Folder already exists, delete the folder?" ; then
+      rm -ri "$project_dir"
+      if [ -d "$project_dir" ] ; then
+        #Cancelled deletion, exit
+        exit 0
+      fi
+    else
+      exit 0
+    fi
+  else
+    mkdir -p "$project_dir"
+  fi
 
   #get template zip
-
-  #unzip in location
+  echo -e $GREEN_COLOR"Getting lastest project template..."$RESET
+  wget $TEMPLATE_URL
+  echo -e $GREEN_COLOR"Unzipping..."$RESET
+  unzip master.zip
+  echo -e $GREEN_COLOR"Copying files..."$RESET
+  cp "./$TEMPLATE_FOLDER/*" "$project_dir"
 
   #get libraries
+  for i in "${DEPENDENCIES[@]}"
+  do
+    echo -e $GREEN_COLOR"Getting library ${LIBRARIES[$i]}..."$RESET
+    wget "${DEPENDENCIES[$i]}"
+    cp "${LIBRARIES[$i]}" "$project_dir/src/js/libs/${LIBRARIES[$i]}"
+    rm "${LIBRARIES[$i]}"
+  done
 
   #cleanup
+  echo -e $GREEN_COLOR"Cleaning up..."$RESET
+  rm master.zip
+  rm $TEMPLATE_FOLDER
+  echo -e $GREEN_COLOR"Finished!"$RESET
+}
+
+create_screen () {
+  if [ PROJECT != ""] ; then
+    echo "Creating screen inside project $PROJECT"
+  else
+    err_msg "Not currently in a project!"
+  fi
 }
 
 #Show version number function
@@ -67,7 +135,6 @@ version () {
 
 #Show manual function
 manual () {
-
   TAB="\t"
   PARTAB=$TAB$TAB$TAB$TAB
   BR=" "
@@ -76,45 +143,49 @@ manual () {
   #...
 
   #Compile
-  echo " -c|--compile     [opt]dest"
+  echo -e " -c|--compile     $YELLOW_COLOR[opt]$RESET dest"
   echo -e $PARTAB"compiles the classes into the $LIBNAME.js and $LIBNAME.min.js"
   echo -e $PARTAB"at the specified location, or at the default loaction: "
   echo -e $PARTAB$DESTINATION
   echo $BR
 
   #Print/set destination path
-  echo " -d|--dest        [opt]dest"
+  echo -e " -d|--dest        $YELLOW_COLOR[opt]$RESET dest"
   echo -e $PARTAB"defines the path, if specified, prints the current one otherwise"
   echo $BR
 
   #Generate Documentation
-  echo " -doc            [opt]dest"
+  echo -e " -doc             $YELLOW_COLOR[opt]$RESET dest"
   echo -e $PARTAB"compiles the project documentation (JSDoc) at the specified"
   echo -e $PARTAB"location or at the default location : "
   echo -e $PARTAB$DESTINATION
   echo $BR
 
   #Manual
-  echo " -h|--help"
+  echo -e " -h|--help"
   echo -e $PARTAB"shows the available commands for this program"
   echo $BR
 
   #New project
-  echo " -n|--new-project name [opt]dest"
+  echo -e " -n|--new-project name $YELLOW_COLOR[opt]$RESET dest"
   echo -e $PARTAB"fetches the arstider template project from github and initializes"
   echo -e $PARTAB"it at the specified location or at the default location :"  
   echo -e $PARTAB$DESTINATION
   echo $BR
 
+  #New screen
+  echo -e " -s|--new-screen name"
+  echo -e $PARTAB"creates a new screen inside the current project"
+  echo $BR
+
   #Print Version
-  echo " -v|--version"
+  echo -e " -v|--version"
   echo -e $PARTAB"displays the current engine version"
   echo $BR
 }
 
 #Error message
 err_msg () {
-  
   PRE="Error:"
 
   if [ $# -eq 0 ] ; then
@@ -127,6 +198,29 @@ err_msg () {
 
   #show manual
   manual
+}
+
+#Confirmation message
+show_confirm () {
+  read -p "$1 " -n 1 -r
+  echo    # (optional) move to a new line
+  if [[ $REPLY =~ ^[Yy]$ ]] ; then
+    # do dangerous stuff
+    return true
+  else
+    return false
+  fi
+}
+
+#Warning message
+warn_msg () {
+  PRE="Warning:"
+
+  if [ $# -eq 0 ] ; then
+    echo -e $PURPLE_COLOR$PRE$RESET
+  elif [ $# -eq 1 ] ; then
+    echo -e $PURPLE_COLOR$PRE$1$RESET
+  fi
 }
 
 #Goodbye message
@@ -146,22 +240,25 @@ if [ $# -eq 0 ] ; then
 else
   #Detect command
   case "$1" in
-  "-c" | "-compile")
+  "-c" | "--compile")
     compile build.all "$2"
     ;;
-  "-d" | "-dest")
+  "-d" | "--dest")
     change_dest "$2"
     ;;
-  "-doc")
+  "--doc")
     compile build.documentation "$2"
     ;;
-  "-m" | "-man")
+  "-m" | "--man")
     manual
     ;;
-  "-n" | "-new-project")
+  "-n" | "--new-project")
     create_project "$2" "$3"
     ;;
-  "-v" | "-version")
+  "-s" | "--new-screen")
+    create_screen "$2"
+    ;;
+  "-v" | "--version")
     version
     ;;
   *)

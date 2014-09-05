@@ -16,7 +16,7 @@
 			if(!singleton.test()) return;
 
 			if(Browser.name == "android") Howler.usingWebAudio = false;
-			Howler.iOSAutoEnable = false;
+			//Howler.iOSAutoEnable = false;
 
 			var 
 				i,
@@ -53,7 +53,7 @@
 
 		HowlerInterface.prototype.create = function(id){
 			return new Howl({
-				buffer:true,
+				//buffer:true,
 				urls:singleton.managerRef.tracks[id].files,
 				loop:singleton.managerRef.tracks[id].loop || false
 			});
