@@ -88,7 +88,13 @@
 	     * @class texts/BBParser
 	     * @constructor
 	     */
-		function BBParser(){}
+		function BBParser(){
+			this.openSegment = "[[";
+			this.closeSegment = "]]";
+			this.ruleEnd = "/";
+			this.assignation = "=";
+			this.breakLine = "<br>";
+		}
 		
 		/**
 		 * Recursive string parsing method
@@ -108,7 +114,7 @@
 				styleObject = null
 			;
 
-			carot = str.indexOf("[[");
+			carot = str.indexOf(this.openSegment);
 			
 			//If no tags or string all parsed
 			if(carot === -1){
@@ -126,22 +132,22 @@
 				}
 				
 				//define currentStyle
-				currentStyle = (str[carot+2]).toUpperCase();
+				currentStyle = (str[carot+this.openSegment.length]).toUpperCase();
 				
 				//check if style in list
-				if(currentStyle === "/") styles.pop();
+				if(currentStyle === this.ruleEnd) styles.pop();
 				if(BBTagsList[currentStyle] == undefined) currentStyle = null;
 				
 				
 				//cutStart
-				cutStart = str.indexOf("]]") + 2;
+				cutStart = str.indexOf(this.closeSegment) + this.closeSegment.length;
 				
 				if(currentStyle === "T"){
 					cut = new Segment("");
 					cut.styles = [
 						{
 							style:"T",
-							rule:str.substring(carot+4, cutStart-2),
+							rule:str.substring(carot+this.openSegment.length+this.assignation.length+1, cutStart-this.closeSegment.length),
 							render:BBTagsList["T"].render
 						}
 					];
@@ -159,15 +165,15 @@
 						};
 
 						if(BBTagsList[currentStyle].param === true){
-							styleObject.rule = str.substring(carot+4, cutStart-2);
+							styleObject.rule = str.substring(carot+this.openSegment.length+this.assignation.length+1, cutStart-this.closeSegment.length);
 						}
 					}
 				}
 				
 				//check for closing tag
 				
-				cutEnd = str.substring(carot).indexOf("[[");
-				if(str[cutEnd+2] === "/"){
+				cutEnd = str.substring(carot).indexOf(this.openSegment);
+				if(str[cutEnd+this.openSegment.length] === this.ruleEnd){
 					cut = new Segment("");
 					cut.styles = styles.concat();
 					if(currentStyle != null){
@@ -198,11 +204,31 @@
 				seg
 			;
 
-			for (i = 0; i<segments.length; i++) {
+			for(i = 0; i<segments.length; i++){
 				seg = segments[i].text.split(symbol);
 				for(u = 0; u<seg.length; u++){
 					if(u > 0 && insert) ret.push(new Segment(symbol, segments[i].styles));
 					ret.push(new Segment(seg[u] + ((replace)?symbol:""), segments[i].styles));
+				}
+			}
+			
+			return ret;
+		};
+
+		BBParser.prototype.trimSpaces = function(segments){
+
+			var 
+				i = 0,
+				u = 0,
+				ret = [],
+				seg
+			;
+
+			for(i = 0; i<segments.length; i++){
+				seg = segments[i].text.split(" ");
+				for(u = 0; u<seg.length; u++){
+					ret.push(new Segment(seg[u], segments[i].styles));
+					if(u < seg.length-1) ret.push(new Segment(" ", segments[i].styles));
 				}
 			}
 			

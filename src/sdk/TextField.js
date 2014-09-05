@@ -8,14 +8,6 @@
 
 	var
 		/**
-		 * Break-line character
-		 * @const
-		 * @private
-		 * @type {string}
-		 */
-		breakLine = "<br>",
-
-		/**
 		 * Static entity reference
 		 * @private
 		 * @type {Object|null}
@@ -32,8 +24,9 @@
 			"Arstider/Fonts",
 			"Arstider/Signal",
 
+			"Arstider/texts/Segment",
 			"Arstider/texts/BBParser"  
-	], /** @lends TextField */ function (Buffer, Entity, Fonts, Signal, Parser) {
+	], /** @lends TextField */ function (Buffer, Entity, Fonts, Signal, Segment, Parser) {
 
 		/**
 		 * Defines a reference entity, for property lookup
@@ -93,6 +86,8 @@
 			 */
 			this._font = null;
 
+
+
 			/**
 			 * Custom unique mods
 			 * @private
@@ -101,7 +96,7 @@
 			this._custom = {};
 
 			//Fast render
-			this.dynamic = Arstider.checkIn(props.dynamic, false);
+			this.dynamic = null;
 
 			this.onchange = new Signal();
 
@@ -122,14 +117,15 @@
 			txt = txt + "";
 
 			if(txt != this._textValue){
-				if(txt.indexOf(breakLine) != -1) this.textWrap = true;
+				if(txt.indexOf(Parser.breakLine) != -1) this.textWrap = true;
 				this._textValue = txt;
-				this._words = Parser.parse(txt);
-				this._words = Parser.splitSymbol(this._words, breakLine, false, true);
-
-				//If non-dynamic
-				if(!this.dynamic){
-					this._words = Parser.splitSymbol(this._words, " ", true, false);
+				if(txt.indexOf(Parser.openSegment) != -1 || this.textWrap){
+					this._words = Parser.parse(txt);
+					this._words = Parser.splitSymbol(this._words, Parser.breakLine, false, true);
+					this._words = Parser.trimSpaces(this._words);
+				}
+				else{
+					this._words = [new Segment(txt)];
 				}
 
 				this.render();
@@ -193,7 +189,7 @@
 			//need to manually parse
 			if(fieldWidth > 0 || this.textWrap){
 				for(i = 0; i<this._words.length; i++){
-					if(this._words[i].text.indexOf(breakLine) != -1){
+					if(this._words[i].text.indexOf(Parser.breakLine) != -1){
 						if(l != null) lines.push(l);
 						l = [];
 						currentLine = 0;
@@ -286,6 +282,18 @@
 		TextField.prototype.render = function(){
 
 			this._makeBuffer();
+
+			if(this.dynamic == null){
+				if(this.width == 0){
+					this.dynamic = true;
+				}
+				else this.dynamic = false;
+			}
+
+			if(this.dynamic === true){
+				this.width = 0;
+				this.height = 0;
+			}
 
 			/**
 			 * Cancel operation if not all required fields are filled
