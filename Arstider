@@ -7,6 +7,7 @@ DESTINATION=""
 CURRENT_DIR="$PWD"
 
 LIBNAME="Arstider"
+LIBPATH="$( cd "$( dirname "$0" )" && pwd )"
 
 PROJECT=""
 META=".$LIBNAMEProject"
@@ -16,6 +17,10 @@ TEMPLATE_FOLDER="Arstider_template-master"
 
 DEPENDENCIES=('http://requirejs.org/docs/release/2.1.14/minified/require.js' 'https://raw.githubusercontent.com/goldfire/howler.js/master/howler.min.js')
 LIBRARIES=('require.js' 'howler.min.js')
+
+ALL_ARGUMENTS=( $@ )
+MAIN_COMMAND=""
+MAIN_ARGUMENTS=()
 
 ###-------------------------------------// Colors
 
@@ -36,14 +41,27 @@ check_if_in_project () {
   fi
 }
 
+change_directory () {
+  cd $1
+}
+
+#Change build path
+change_dest () {
+  if [ $# -eq 1 ] ; then
+    mkdir -p $1
+    export BUILD_DEST=$1
+  fi
+  echo "Destination: $BUILD_DEST"
+}
+
+ 
+
 welcome () {
   check_if_in_project
 
-  DIR="$( cd "$( dirname "$0" )" && pwd )"
-  cd $DIR
+  change_directory $LIBPATH
 
   if [ -z "$BUILD_DEST" ] ; then
-    echo " initializing default build path:" $GREEN_COLOR"$PWD/dist"$RESET
     DESTINATION="$PWD/dist"
     change_dest $DESTINATION
   else
@@ -63,14 +81,7 @@ compile () {
   ant $1
 }
 
-#Change build path
-change_dest () {
-  if [ $# -eq 1 ] ; then
-    mkdir -p $1
-    export BUILD_DEST=$1
-  fi
-  echo "$BUILD_DEST"
-}
+
 
 #Create a new project
 create_project () {
@@ -113,10 +124,10 @@ create_project () {
   #get libraries
   mkdir "$project_dir/src/js/libs"
   for (( i=0 ; i < ${#DEPENDENCIES[@]} ; i++ )) do
-  echo -e $GREEN_COLOR"Getting library "${LIBRARIES[$i]}"..."$RESET
-  wget "${DEPENDENCIES[$i]}"
-  cp "${LIBRARIES[$i]}" "$project_dir/src/js/libs/${LIBRARIES[$i]}"
-  rm "${LIBRARIES[$i]}"
+    echo -e $GREEN_COLOR"Getting library "${LIBRARIES[$i]}"..."$RESET
+    wget "${DEPENDENCIES[$i]}"
+    cp "${LIBRARIES[$i]}" "$project_dir/src/js/libs/${LIBRARIES[$i]}"
+    rm "${LIBRARIES[$i]}"
   done
 
   #Done
@@ -139,53 +150,37 @@ version () {
 
 #Show manual function
 manual () {
-  TAB="\t"
-  PARTAB=$TAB$TAB$TAB$TAB
-  BR=" "
+  local tab="\t"
+  local ret=" "
 
-  #Usage
-  #...
+  for i in "${!commands[@]}" do
+    #Separator
+    echo $ret
 
-  #Compile
-  echo -e " -c|--compile     $YELLOW_COLOR[opt]$RESET dest"
-  echo -e $PARTAB"compiles the classes into the $LIBNAME.js and $LIBNAME.min.js"
-  echo -e $PARTAB"at the specified location, or at the default loaction: "
-  echo -e $PARTAB$DESTINATION
-  echo $BR
+    #Title
+    echo -e $tab$BLUE_COLOR$i$RESET
+    echo $ret
 
-  #Print/set destination path
-  echo -e " -d|--dest        $YELLOW_COLOR[opt]$RESET dest"
-  echo -e $PARTAB"defines the path, if specified, prints the current one otherwise"
-  echo $BR
+    #Keys
+    for (( u=0 ; u < ${#commands[$i][key][@]} ; u++ )) do
+      echo -e $tab$tab"${commands[$i][key][$u]}"
+    done
+    echo $ret
 
-  #Generate Documentation
-  echo -e " -doc             $YELLOW_COLOR[opt]$RESET dest"
-  echo -e $PARTAB"compiles the project documentation (JSDoc) at the specified"
-  echo -e $PARTAB"location or at the default location : "
-  echo -e $PARTAB$DESTINATION
-  echo $BR
+    #Arguments
+    for (( u=0 ; u < ${#commands[$i][arguments][@]} ; u++ )) do
+      echo -e $tab$tab"${commands[$i][arguments][$u]}"
+    done
+    echo $ret
 
-  #Manual
-  echo -e " -h|--help"
-  echo -e $PARTAB"shows the available commands for this program"
-  echo $BR
+    #description
+    echo ${commands[$i][description]}
 
-  #New project
-  echo -e " -n|--new-project name $YELLOW_COLOR[opt]$RESET dest"
-  echo -e $PARTAB"fetches the arstider template project from github and initializes"
-  echo -e $PARTAB"it at the specified location or at the default location :"  
-  echo -e $PARTAB$DESTINATION
-  echo $BR
+    #target
+    echo ${commands[$i][target]}
 
-  #New screen
-  echo -e " -s|--new-screen name"
-  echo -e $PARTAB"creates a new screen inside the current project"
-  echo $BR
-
-  #Print Version
-  echo -e " -v|--version"
-  echo -e $PARTAB"displays the current engine version"
-  echo $BR
+    #output
+    echo ${commands[$i][output]}
 }
 
 #Error message
@@ -233,41 +228,145 @@ goodbye () {
   cd $CURRENT_DIR
 }
 
+#Run command
+run_command () {
+  local command_found=0
+
+  for (( i=0 ; i < ${#commands[@]} ; i++ )) do
+    for (( u=0 ; u < ${#commands[$i][key][@]} ; u++ )) do
+      if [ $MAIN_COMMAND == commands[$i][key][$u] ] ; then
+        command_found=1
+        filters[commands[$i][target]]
+        commands[$i][method]
+      fi
+    done
+  done
+
+  if [ $command_found == 0 ] ; then
+    #No command
+    err_msg "Command not found!"
+    exit 0
+  fi
+}
+
+###-------------------------------------// Commands
+
+init_commands () {
+  declare -a commands
+
+  #Compile command
+  declare -a commands["compile"]
+  local ref=commands["compile"]
+  ref[key]=("-c"  "--compile")
+  ref[target]=$LIBNAME
+  ref[method]=compile
+  ref[arguments]=("?Destination")
+  ref[output]="program"
+  ref[description]="Compiles the $LIBNAME classes into $LIBNAME.js (unminified) and $LIBNAME.min.js (Google Closure turbo compression) at location: $DESTINATION"
+
+  #Change destination command
+  declare -a commands["change destination"]
+  local ref=commands["change destination"]
+  ref[key]=("-d"  "--destination")
+  ref[target]="varies"
+  ref[method]=change_dest
+  ref[arguments]=("Destination")
+  ref[output]="Current build path"
+  ref[description]="Compiles the $LIBNAME classes into $LIBNAME.js (unminified) and $LIBNAME.min.js (Google Closure turbo compression) at location: $DESTINATION"
+
+  #Build documentation command
+  declare -a commands["documentation"]
+  local ref=commands["documentation"]
+  ref[key]=("--documentation")
+  ref[target]=$LIBNAME
+  ref[method]=documentation
+  ref[arguments]=("?Destination")
+  ref[output]="program"
+  ref[description]="Compiles the project's technical documentation (JSDoc) at the specified location: $DESTINATION"
+
+  #Show manual command
+  declare -a commands["manual"]
+  local ref=commands["manual"]
+  ref[key]=("-m" "--manual")
+  ref[target]="varies"
+  ref[method]=manual
+  ref[arguments]=()
+  ref[output]="$LIBNAME user manual"
+  ref[description]="Shows the available commands for this program"
+
+  #New project
+  declare -a commands["new project"]
+  local ref=commands["new project"]
+  ref[key]=("-p" "--newproject")
+  ref[target]="varies"
+  ref[method]=create_project
+  ref[arguments]=("Project name" "?Destination")
+  ref[output]="program"
+  ref[description]="Fetches the latest template project from internet and creates a new project at the specified location: $DESTINATION"
+
+  #New screen
+  declare -a commands["new screen"]
+  local ref=commands["new screen"]
+  ref[key]=("-s" "--newscreen")
+  ref[target]="project"
+  ref[method]=create_screen
+  ref[arguments]=("Screen name" "?Destination")
+  ref[output]="program"
+  ref[description]="Fetches the latest screen template (recommended syntax) from internet and creates a new screen at the specified location: $DESTINATION"
+
+  #Version
+  declare -a commands["version"]
+  local ref=commands["version"]
+  ref[key]=("-v" "--version")
+  ref[target]="varies"
+  ref[method]=version
+  ref[arguments]=()
+  ref[output]="$LIBNAME version number"
+  ref[description]="Displays the currently installed $LIBNAME version"
+}
+
+###-------------------------------------// Filters
+
+#Temp
+base_filter () {
+  return 1
+}
+
+#Temp
+varies_filter () {
+  base_filter
+  return 1
+}
+
+project_filter () {
+  base_filter
+  if [ $PROJECT == ""] ; then
+    err_msg "Not currently in a project!"
+    exit 0
+  fi
+}
+
+declare -a filters
+filters[$LIBNAME]=base_filter
+filters["varies"]=varies_filter
+filters["project"]=project_filter
+
 ###-------------------------------------// Program
 
-welcome
+main () {
+  welcome
+  init_commands
+  run_command
+  goodbye
+}
 
 #Entry point
 if [ $# -eq 0 ] ; then
   #No command
   err_msg "No command specified"
 else
-  #Detect command
-  case "$1" in
-  "-c" | "--compile")
-    compile build.all "$2"
-    ;;
-  "-d" | "--dest")
-    change_dest "$2"
-    ;;
-  "--doc")
-    compile build.documentation "$2"
-    ;;
-  "-m" | "--man")
-    manual
-    ;;
-  "-n" | "--new-project")
-    create_project "$2" "$3"
-    ;;
-  "-s" | "--new-screen")
-    create_screen "$2"
-    ;;
-  "-v" | "--version")
-    version
-    ;;
-  *)
-    err_msg "Command not found " $1
-  esac
+  MAIN_COMMAND=$1
+  MAIN_ARGUMENTS==("${ALL_ARGUMENTS[@]:1}")
 fi
 
-goodbye
+main
