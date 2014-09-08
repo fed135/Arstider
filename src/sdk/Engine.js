@@ -300,7 +300,6 @@
 			if(singleton.currentScreen){
 				if(singleton.currentScreen.onload && singleton.currentScreen.__loaded === false){
 					singleton.currentScreen.__loaded = true;
-                    if(!Sound._fileInPipe) Sound.play("empty");
 					singleton.currentScreen.onload();
 				}
 				if(singleton.canvas && singleton.canvas.data) singleton.canvas.data.focus();
@@ -513,7 +512,6 @@
 
 			if(Browser.isMobile){
 				numInputs = Math.min(Mouse.count(true), 5);
-				Sound._queueFile();
 			}
 			
 			if(target && target.children && target.children.length > 0){

@@ -15,11 +15,11 @@
 		 */
 		singleton = null
 	;
-	
+
 	/**
 	 * Defines the Sound module
 	 */
-	define( "Arstider/Sound", ["Arstider/Browser", "Arstider/Request", "Arstider/Timer", "Arstider/sounds/HowlerInterface", "Arstider/sounds/SoundJSInterface", "Arstider/sounds/SM2Interface"], /** @lends Sound */ function (Browser, Request, Timer, HowlerInterface, SoundJSInterface, SM2Interface) {
+	define( "Arstider/Sound", ["Arstider/Browser", "Arstider/Request", "Arstider/Timer", "Arstider/sounds/Track", "Arstider/sounds/HowlerInterface", "Arstider/sounds/SoundJSInterface", "Arstider/sounds/SM2Interface"], /** @lends Sound */ function (Browser, Request, Timer, Track, HowlerInterface, SoundJSInterface, SM2Interface) {
 		
 		if(singleton != null) return singleton;
 		
@@ -48,12 +48,6 @@
 			 * @type {Array}
 			 */
 			this._queue = [];
-			/**
-			 * Indicates if the file is in the buffer
-			 * @private
-			 * @type {boolean}
-			 */
-			this._fileInPipe = false;
 			
 			/**
 			 * List of callbacks, per sound instance
@@ -81,6 +75,13 @@
 		 * @param {string} url The url of the sound sprite
 		 */
 		Sound.prototype._init = function(url){
+			singleton._spriteUrl = url;
+
+			var i;
+			for(i in singleton.tracks){
+				singleton.tracks[i] = new Track(singleton.tracks[i]);
+			}
+
 			//default
 			if(singleton.lib == null) singleton.lib = "howler";
 
@@ -89,28 +90,9 @@
 			else if(singleton.lib == "soundjs") singleton.lib = SoundJSInterface;
 			else if(singleton.lib == "sm2") singleton.lib = SM2Interface;
 			
-			singleton.lib.init(singleton, url, function(){
-				if(!Browser.isMobile) singleton._fileInPipe = true;
-			});
+			singleton.lib.init(singleton, url);
 		};
-		
-		/**
-		 * Puts the file in the buffer (on touch input)
-		 * @private
-		 * @type {function(this:Sound)}
-		 */
-		Sound.prototype._queueFile = function(){
-			if(singleton._fileInPipe==true) return;
-			singleton._fileInPipe = true;
-			
-			if(singleton._queue.length > 0){
-				for(var i = 0; i<singleton._queue.length; i++){
-					singleton.play(singleton._queue[i].id, singleton._queue[i].props);
-				}
-			}
-			else singleton.play('empty');
-			singleton._queue.length = 0;
-		};
+
 		
 		/**
 		 * Defines the list of sounds and sprite informations
@@ -155,7 +137,7 @@
 		 */
 		Sound.prototype.preload = function(id, playOnLoaded, props){
 			if(Browser.isMobile){
-				singleton.tracks[id]._handle = singleton.lib.create(id);
+				singleton.tracks[id].handle = singleton.lib.create(id);
 				if(playOnLoaded) singleton.play(id, props);
 			}
 			else{
@@ -165,7 +147,7 @@
 					cache:false,
 					track:true,
 					callback:function(){
-						this.tracks[id]._handle = this.lib.create(id);
+						this.tracks[id].handle = this.lib.create(id);
 						if(playOnLoaded) singleton.play(id, props);
 					}
 				}).send();
@@ -184,24 +166,19 @@
 			props = props || {};
 			
 			if(singleton.muted) return singleton;
-
-			if(!singleton._fileInPipe){
-				singleton._queue.push({id:id, props:props});
-				return singleton;
-			}
 			
 			if(id in singleton.tracks){
 				//Sound not loaded, need to preload
-				if(!singleton.tracks[id]._handle){
+				if(!singleton.tracks[id].handle){
 					singleton.preload(id, true, props);
 					return singleton;
 				}
 				
-				singleton.lib.setVolume(singleton.tracks[id]._handle, Arstider.checkIn(props.volume, 1)); 
-				singleton.lib.playTrack(singleton.tracks[id]._handle, id, props);
+				singleton.lib.setVolume(singleton.tracks[id].handle, Arstider.checkIn(props.volume, 1)); 
+				singleton.lib.playTrack(singleton.tracks[id].handle, id, props);
 			}
 			else if(id in singleton.sounds){
-				singleton.lib.playSound(singleton.sounds._handle, id, props);
+				singleton.lib.playSound(singleton.sounds.handle, id, props);
 			}
 			else{
 				if(Arstider.verbose > 1) console.warn("Arstider.Sound.play: sound '", id, "' does not exist");
@@ -221,11 +198,11 @@
 		 */
 		Sound.prototype.fade = function(id, to, duration, callback){
 			if(id in singleton.tracks){
-				singleton.lib.fade(singleton.tracks[id]._handle, id, "auto", to, duration, callback);
+				singleton.lib.fade(singleton.tracks[id].handle, id, "auto", to, duration, callback);
 				return singleton;
 			}
 			
-			if(singleton.checkInstance(id)) singleton.lib.fade(singleton.sounds._handle, id, "auto", to, duration, callback);
+			if(singleton.checkInstance(id)) singleton.lib.fade(singleton.sounds.handle, id, "auto", to, duration, callback);
 			return singleton;
 		};
 
@@ -237,11 +214,11 @@
 		 */
 		Sound.prototype.setPosition = function(id, pos){
 			if(id in singleton.tracks){
-				singleton.lib.setPosition(singleton.tracks[id]._handle, pos);
+				singleton.lib.setPosition(singleton.tracks[id].handle, pos);
 				return singleton;
 			}
 			
-			if(singleton.checkInstance(id)) singleton.lib.setPosition(singleton.sounds._handle, pos, id);
+			if(singleton.checkInstance(id)) singleton.lib.setPosition(singleton.sounds.handle, pos, id);
 			return singleton;
 		};
 		
@@ -312,7 +289,7 @@
 		 * @return {string|number} The howlId
 		 */
 		Sound.prototype.getPlaying = function(id, index){
-			if(id in singleton.tracks) return singleton.tracks[id]._handle;
+			if(id in singleton.tracks) return singleton.tracks[id].handle;
 			
 			if(!singleton.sounds[id].instances) singleton.sounds[id].instances = [];
 			
@@ -334,11 +311,11 @@
 			}
 
 			if(id in singleton.tracks){ 
-				singleton.lib.stop(singleton.tracks[id]._handle, id);
+				singleton.lib.stop(singleton.tracks[id].handle, id);
 				return singleton;
 			}
 			
-			if(singleton.checkInstance(id)) singleton.lib.stop(singleton.sounds._handle, id);
+			if(singleton.checkInstance(id)) singleton.lib.stop(singleton.sounds.handle, id);
 			return singleton;
 		};
 
@@ -349,7 +326,7 @@
 		 */
 		Sound.prototype.stopAllTracks = function(){
 			for(var id in singleton.tracks){
-				singleton.lib.stop(singleton.tracks[id]._handle, id);
+				singleton.lib.stop(singleton.tracks[id].handle, id);
 			}
 			return singleton;
 		};
@@ -382,7 +359,7 @@
 		 * @return {Object} Self reference, for chaining
 		 */
 		Sound.prototype.stopAllSounds = function(){	
-			singleton.lib.stop(singleton.sounds._handle);
+			singleton.lib.stop(singleton.sounds.handle);
 			return singleton;
 		};
 		
@@ -395,18 +372,18 @@
 		Sound.prototype.pause = function(id){
 			if(id == "__emergency-stop__"){
 				for(var i in singleton.tracks){
-					singleton.lib.pause(singleton.tracks[i]._handle, i);
+					singleton.lib.pause(singleton.tracks[i].handle, i);
 				}
-				singleton.lib.pause(singleton.sounds._handle);
+				singleton.lib.pause(singleton.sounds.handle);
 				return;
 			}
 
 			if(id in singleton.tracks){
-				singleton.lib.pause(singleton.tracks[id]._handle, id);
+				singleton.lib.pause(singleton.tracks[id].handle, id);
 				return singleton;
 			}
 			
-			if(singleton.checkInstance(id)) singleton.lib.pause(singleton.sounds._handle, id);
+			if(singleton.checkInstance(id)) singleton.lib.pause(singleton.sounds.handle, id);
 			return singleton
 		};
 		
@@ -419,17 +396,17 @@
 		Sound.prototype.resume = function(id){
 			if(id == "__emergency-stop__"){
 				for(var i in singleton.tracks){
-					singleton.lib.resume(singleton.tracks[i]._handle, i);
+					singleton.lib.resume(singleton.tracks[i].handle, i);
 				}
 				return;
 			}
 
 			if(id in singleton.tracks){
-				singleton.lib.resume(singleton.tracks[id]._handle, id);
+				singleton.lib.resume(singleton.tracks[id].handle, id);
 				return singleton;
 			}
 			
-			if(singleton.checkInstance(id)) singleton.lib.resume(singleton.sounds._handle, id);
+			if(singleton.checkInstance(id)) singleton.lib.resume(singleton.sounds.handle, id);
 			return singleton;
 		};
 
@@ -461,11 +438,11 @@
 		 */
 		Sound.prototype.setVolume = function(id, val){
 			if(id in singleton.tracks){
-				singleton.lib.setVolume(singleton.tracks[id]._handle, val, id);
+				singleton.lib.setVolume(singleton.tracks[id].handle, val, id);
 				return singleton;
 			}
 			
-			if(singleton.checkInstance(id)) singleton.lib.setVolume(singleton.sounds._handle, val, id);
+			if(singleton.checkInstance(id)) singleton.lib.setVolume(singleton.sounds.handle, val, id);
 			return singleton;
 		};
 

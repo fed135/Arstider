@@ -20,7 +20,7 @@
 
 			var 
 				i,
-				sprite = {empty:[0,1]},
+				sprite = {empty:[0,11]},
 				padding = 0
 			;
 
@@ -34,7 +34,7 @@
 			
 			singleton.managerRef.sounds['empty'] = {};
 			
-			singleton.managerRef.sounds._handle = new Howl({
+			singleton.managerRef.sounds.handle = new Howl({
 				urls:[url+".mp3",url+".ogg"],
 				sprite:sprite,
 				onend:singleton.managerRef._removeInstance
@@ -54,6 +54,7 @@
 		HowlerInterface.prototype.create = function(id){
 			return new Howl({
 				//buffer:true,
+				autoplay:true,
 				urls:singleton.managerRef.tracks[id].files,
 				loop:singleton.managerRef.tracks[id].loop || false
 			});
