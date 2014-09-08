@@ -22,13 +22,18 @@ ALL_ARGUMENTS=( $@ )
 MAIN_COMMAND=""
 MAIN_ARGUMENTS=()
 
+declare -A commands
+declare -A filters
+
 ###-------------------------------------// Colors
 
-BLUE_COLOR="\033[0;34m"
-GREEN_COLOR="\033[0;32m"
-YELLOW_COLOR="\033[0;33m"
-RED_COLOR="\033[0;31m"
-PURPLE_COLOR="\033[0;35m"
+BLUE_COLOR="\033[0;34m"     #Reserved names/methods
+GREEN_COLOR="\033[0;32m"    #Key words/variables
+YELLOW_COLOR="\033[0;33m"   #Paths
+RED_COLOR="\033[0;31m"      #Errors
+PURPLE_COLOR="\033[0;35m"   #Warnings
+CYAN_COLOR="\033[0;36m"     #External Program output
+GRAY_COLOR="\033[0;37m"     #Comments/Labels
 RESET="\e[0m"
 
 ###-------------------------------------// Functions
@@ -51,7 +56,7 @@ change_dest () {
     mkdir -p $1
     export BUILD_DEST=$1
   fi
-  echo "Destination: $BUILD_DEST"
+  echo -e $GRAY_COLOR"Destination: $YELLOW_COLOR$BUILD_DEST$RESET"
 }
 
  
@@ -69,16 +74,14 @@ welcome () {
   fi
 }
 
-check_if_override () {
-  echo "does a file/folder already have their name on it ?"
-}
-
 #Compile function
 compile () {
-  if [ $# -eq 2 ] ; then
-    change_dest $2
+  if [ ${#MAIN_ARGUMENTS[@]} -eq 2 ] ; then
+    change_dest ${MAIN_ARGUMENTS[$2]}
   fi
-  ant $1
+  echo -e $CYAN_COLOR
+  ant ${MAIN_ARGUMENTS[$1]}
+  echo -e $RESET
 }
 
 
@@ -151,36 +154,71 @@ version () {
 #Show manual function
 manual () {
   local tab="\t"
-  local ret=" "
+  local ret="|*"
+  local IFS=','
+  local keys
+  local arguments
+  local cm
+  local isopt
+  local words
+  local line
+  local maxlinesize=60
 
-  for i in "${!commands[@]}" do
+  for (( i=0 ; i < ${#command_list[@]} ; i++ )) do
+    cm=${command_list[$i]}
     #Separator
-    echo $ret
+    echo "|********************************************"
 
     #Title
-    echo -e $tab$BLUE_COLOR$i$RESET
-    echo $ret
+    echo -e "$ret $BLUE_COLOR$cm$RESET"
+
+    echo "$ret - - - - - - - - - - - - - - - - - - - - -"
 
     #Keys
-    for (( u=0 ; u < ${#commands[$i][key][@]} ; u++ )) do
-      echo -e $tab$tab"${commands[$i][key][$u]}"
+    echo -e "$ret "$GRAY_COLOR"Keyword(s):"$RESET
+    IFS=',' read -a keys <<< "${commands[$cm,key]}"
+    for (( u=0 ; u < ${#keys[@]} ; u++ )) do
+      echo -e $ret$tab$tab"${keys[$u]}"
     done
     echo $ret
 
     #Arguments
-    for (( u=0 ; u < ${#commands[$i][arguments][@]} ; u++ )) do
-      echo -e $tab$tab"${commands[$i][arguments][$u]}"
+    echo -e "$ret "$GRAY_COLOR"Argument(s):"$RESET
+    IFS=',' read -a arguments <<< "${commands[$cm,arguments]}"
+    for (( u=0 ; u < ${#arguments[@]} ; u++ )) do
+      isopt="${arguments[$u]:0:1}"
+      if [ $isopt == "?" ] ; then
+        echo -e $ret$tab$tab"${arguments[$u]:1} "$GREEN_COLOR"[optional]"$RESET
+      else
+        echo -e $ret$tab$tab"${arguments[$u]}"
+      fi
     done
     echo $ret
 
     #description
-    echo ${commands[$i][description]}
+    echo -e "$ret "$GRAY_COLOR"Description:"$RESET
+    IFS=' ' read -a words <<< "${commands[$cm,description]}"
+    while [[ ${#words[@]} -gt 0 ]] ; do
+      line=""
+      while [[ $((${#line}+${#words[0]})) -lt $maxlinesize ]]; do
+        line+="${words[0]} "
+        words=("${words[@]:1}")
+      done
+      echo -e "$ret "$tab$line
+    done
+    echo $ret
 
     #target
-    echo ${commands[$i][target]}
+    echo -e "$ret "$GRAY_COLOR"Target (global/varies/project):"$RESET
+    echo -e "$ret "$tab${commands[$cm,target]}
+    echo $ret
 
     #output
-    echo ${commands[$i][output]}
+    echo -e "$ret "$GRAY_COLOR"Output:"$RESET
+    echo -e "$ret "$tab${commands[$cm,output]}
+    echo $ret
+  done
+  echo "|********************************************"
 }
 
 #Error message
@@ -231,13 +269,20 @@ goodbye () {
 #Run command
 run_command () {
   local command_found=0
+  local IFS
+  local keys
+  local cm
+  local filter
 
-  for (( i=0 ; i < ${#commands[@]} ; i++ )) do
-    for (( u=0 ; u < ${#commands[$i][key][@]} ; u++ )) do
-      if [ $MAIN_COMMAND == commands[$i][key][$u] ] ; then
+  for (( i=0 ; i < ${#command_list[@]} ; i++ )) do
+    cm=${command_list[$i]}
+    IFS="," read -ra keys <<< "${commands[$cm,key]}"
+    for u in "${keys[@]}" ; do
+      if [ $MAIN_COMMAND == $u ] ; then
         command_found=1
-        filters[commands[$i][target]]
-        commands[$i][method]
+        filter="${commands[$cm,target]}"
+        ${filters[$filter]}
+        ${commands[$cm,method]}
       fi
     done
   done
@@ -252,110 +297,124 @@ run_command () {
 ###-------------------------------------// Commands
 
 init_commands () {
-  declare -a commands
+  command_list=()
+
+  local ref=""
+
+  local key="key"
+  local target="target"
+  local method="method"
+  local arguments="arguments"
+  local output="output"
+  local description="description"
 
   #Compile command
-  declare -a commands["compile"]
-  local ref=commands["compile"]
-  ref[key]=("-c"  "--compile")
-  ref[target]=$LIBNAME
-  ref[method]=compile
-  ref[arguments]=("?Destination")
-  ref[output]="program"
-  ref[description]="Compiles the $LIBNAME classes into $LIBNAME.js (unminified) and $LIBNAME.min.js (Google Closure turbo compression) at location: $DESTINATION"
+  ref="compile"
+  command_list+=("$ref")
+  commands[$ref,$key]="-c,--compile"
+  commands[$ref,$target]="global"
+  commands[$ref,$method]=compile
+  commands[$ref,$arguments]="?Destination"
+  commands[$ref,$output]="program"
+  commands[$ref,$description]="Compiles the $LIBNAME classes into $LIBNAME.js (unminified) and $LIBNAME.min.js (Google Closure turbo compression) at location"
 
   #Change destination command
-  declare -a commands["change destination"]
-  local ref=commands["change destination"]
-  ref[key]=("-d"  "--destination")
-  ref[target]="varies"
-  ref[method]=change_dest
-  ref[arguments]=("Destination")
-  ref[output]="Current build path"
-  ref[description]="Compiles the $LIBNAME classes into $LIBNAME.js (unminified) and $LIBNAME.min.js (Google Closure turbo compression) at location: $DESTINATION"
+  ref="change destination"
+  command_list+=("$ref")
+  commands[$ref,$key]="-d,--destination"
+  commands[$ref,$target]="varies"
+  commands[$ref,$method]=change_dest
+  commands[$ref,$arguments]="Destination"
+  commands[$ref,$output]="Current build path"
+  commands[$ref,$description]="Changes the current output folder"
 
   #Build documentation command
-  declare -a commands["documentation"]
-  local ref=commands["documentation"]
-  ref[key]=("--documentation")
-  ref[target]=$LIBNAME
-  ref[method]=documentation
-  ref[arguments]=("?Destination")
-  ref[output]="program"
-  ref[description]="Compiles the project's technical documentation (JSDoc) at the specified location: $DESTINATION"
+  ref="documentation"
+  command_list+=("$ref")
+  commands[$ref,$key]="--documentation"
+  commands[$ref,$target]="global"
+  commands[$ref,$method]=documentation
+  commands[$ref,$arguments]="?Destination"
+  commands[$ref,$output]="program"
+  commands[$ref,$description]="Compiles the project's technical documentation (JSDoc) at the specified location"
 
   #Show manual command
-  declare -a commands["manual"]
-  local ref=commands["manual"]
-  ref[key]=("-m" "--manual")
-  ref[target]="varies"
-  ref[method]=manual
-  ref[arguments]=()
-  ref[output]="$LIBNAME user manual"
-  ref[description]="Shows the available commands for this program"
+  ref="manual"
+  command_list+=("$ref")
+  commands[$ref,$key]="-m,--manual"
+  commands[$ref,$target]="varies"
+  commands[$ref,$method]=manual
+  commands[$ref,$arguments]=""
+  commands[$ref,$output]="$LIBNAME user manual"
+  commands[$ref,$description]="Shows the available commands for this program"
 
   #New project
-  declare -a commands["new project"]
-  local ref=commands["new project"]
-  ref[key]=("-p" "--newproject")
-  ref[target]="varies"
-  ref[method]=create_project
-  ref[arguments]=("Project name" "?Destination")
-  ref[output]="program"
-  ref[description]="Fetches the latest template project from internet and creates a new project at the specified location: $DESTINATION"
+  ref="new project"
+  command_list+=("$ref")
+  commands[$ref,$key]="-p,--newproject"
+  commands[$ref,$target]="varies"
+  commands[$ref,$method]=create_project
+  commands[$ref,$arguments]="Project name,?Destination"
+  commands[$ref,$output]="program"
+  commands[$ref,$description]="Fetches the latest template project from internet and creates a new project at the specified location"
 
   #New screen
-  declare -a commands["new screen"]
-  local ref=commands["new screen"]
-  ref[key]=("-s" "--newscreen")
-  ref[target]="project"
-  ref[method]=create_screen
-  ref[arguments]=("Screen name" "?Destination")
-  ref[output]="program"
-  ref[description]="Fetches the latest screen template (recommended syntax) from internet and creates a new screen at the specified location: $DESTINATION"
+  ref="new screen"
+  command_list+=("$ref")
+  commands[$ref,$key]="-s,--newscreen"
+  commands[$ref,$target]="project"
+  commands[$ref,$method]=create_screen
+  commands[$ref,$arguments]="Screen name,?Destination"
+  commands[$ref,$output]="program"
+  commands[$ref,$description]="Fetches the latest screen template (recommended syntax) from internet and creates a new screen at the specified location"
 
   #Version
-  declare -a commands["version"]
-  local ref=commands["version"]
-  ref[key]=("-v" "--version")
-  ref[target]="varies"
-  ref[method]=version
-  ref[arguments]=()
-  ref[output]="$LIBNAME version number"
-  ref[description]="Displays the currently installed $LIBNAME version"
+  ref="version"
+  command_list+=("$ref")
+  commands[$ref,$key]="-v,--version"
+  commands[$ref,$target]="varies"
+  commands[$ref,$method]=version
+  commands[$ref,$arguments]=""
+  commands[$ref,$output]="$LIBNAME version number"
+  commands[$ref,$description]="Displays the currently installed $LIBNAME version"
 }
 
 ###-------------------------------------// Filters
 
-#Temp
-base_filter () {
-  return 1
-}
+init_filters () {
+  #Temp
+  base_filter () {
+    #echo "base filter"
+    return 1
+  }
 
-#Temp
-varies_filter () {
-  base_filter
-  return 1
-}
+  #Temp
+  varies_filter () {
+    base_filter
+    #echo "varies filter"
+    return 1
+  }
 
-project_filter () {
-  base_filter
-  if [ $PROJECT == ""] ; then
-    err_msg "Not currently in a project!"
-    exit 0
-  fi
-}
+  project_filter () {
+    base_filter
+    #echo "project filter"
+    if [ $PROJECT == ""] ; then
+      err_msg "Not currently in a project!"
+      exit 0
+    fi
+  }
 
-declare -a filters
-filters[$LIBNAME]=base_filter
-filters["varies"]=varies_filter
-filters["project"]=project_filter
+  filters["global"]=base_filter
+  filters["varies"]=varies_filter
+  filters["project"]=project_filter
+}
 
 ###-------------------------------------// Program
 
 main () {
   welcome
   init_commands
+  init_filters
   run_command
   goodbye
 }
@@ -364,9 +423,10 @@ main () {
 if [ $# -eq 0 ] ; then
   #No command
   err_msg "No command specified"
+  exit 0
 else
   MAIN_COMMAND=$1
-  MAIN_ARGUMENTS==("${ALL_ARGUMENTS[@]:1}")
+  MAIN_ARGUMENTS=("${ALL_ARGUMENTS[@]:1}")
 fi
 
 main
