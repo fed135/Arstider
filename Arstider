@@ -8,9 +8,10 @@ CURRENT_DIR="$PWD"
 
 LIBNAME="Arstider"
 LIBPATH="$( cd "$( dirname "$0" )" && pwd )"
+LIBVERSION=""
 
-PROJECT=""
-META=".$LIBNAMEProject"
+PROJECT="-"
+META="."$LIBNAME"Project"
 
 TEMPLATE_URL="https://github.com/fed135/Arstider_template/archive/master.zip"
 TEMPLATE_FOLDER="Arstider_template-master"
@@ -38,69 +39,117 @@ RESET="\e[0m"
 
 ###-------------------------------------// Functions
 
+#Looks a project metadata file in the current directory
 check_if_in_project () {
-  if [ -f $META ] ; then
-    mapfile < $META
-    raw="${MAPFILE[@]}"
-    PROJECT=${raw:5}
-  fi
-}
+  local raw
 
-change_directory () {
-  cd $1
+  upsearch () {
+    if [ -f $1 ] ; then
+      mapfile < $1
+      raw="${MAPFILE[@]}"
+      PROJECT=${raw:5}
+      PROJECT=$(echo $PROJECT|tr -d '\n')
+      #echo -e $GREEN_COLOR" in Project $PROJECT!"
+      return 1
+    fi
+
+    if [ "$PWD" != "/" ] ; then
+      cd ".."
+      upsearch $1
+    fi
+  }
+
+  upsearch $META
 }
 
 #Change build path
 change_dest () {
-  if [ $# -eq 1 ] ; then
-    mkdir -p $1
-    export BUILD_DEST=$1
-  fi
-  echo -e $GRAY_COLOR"Destination: $YELLOW_COLOR$BUILD_DEST$RESET"
+  DESTINATION=$1
+  #echo -e "Changing working directory to "$YELLOW_COLOR$DESTINATION$RESET
+  mkdir -p $1
 }
 
- 
-
+#Set working directory and navigate to library
 welcome () {
   check_if_in_project
-
-  change_directory $LIBPATH
-
-  if [ -z "$BUILD_DEST" ] ; then
-    DESTINATION="$PWD/dist"
-    change_dest $DESTINATION
-  else
-    DESTINATION="$BUILD_DEST"
-  fi
+  change_dest "$CURRENT_DIR"
 }
 
 #Compile function
 compile () {
-  if [ ${#MAIN_ARGUMENTS[@]} -eq 2 ] ; then
-    change_dest ${MAIN_ARGUMENTS[$2]}
+  local temp=""
+  local alt=1
+  local unminified=""
+  local minified=""
+
+  if [ ${#MAIN_ARGUMENTS[@]} -eq 1 ] ; then
+    change_dest ${MAIN_ARGUMENTS[0]}
   fi
-  echo -e $CYAN_COLOR
-  ant ${MAIN_ARGUMENTS[$1]}
-  echo -e $RESET
+
+  version
+
+  echo -e $CYAN_COLOR"Gathering classes..."
+
+  for f in $(find "src/sdk" -name "*.js") ; do
+    if [ $alt -eq 0 ] ; then
+      echo -e $CYAN_COLOR"  adding "$f$RESET
+      alt=1
+    else
+      echo -e $BLUE_COLOR"  adding "$f$RESET
+      alt=0
+    fi
+
+    mapfile < $f
+    temp+="${MAPFILE[@]}"
+  done
+
+  echo -e $CYAN_COLOR"Parsing..."
+  unminified=${temp//@version@/$LIBVERSION}
+  unminified=${unminified//@debug@/true}
+  unminified=${unminified//@target@/dev}
+  
+  minified=${temp//@version@/$LIBVERSION}
+  minified=${minified//@debug@/false}
+  minified=${minified//@target@/turbo}
+
+  echo "Saving to "$DESTINATION/$LIBNAME".js..."
+  echo "$unminified" > $DESTINATION/$LIBNAME".js"
+
+  echo "Compiling "$LIBNAME".min.js..."
+  echo "$minified" > $DESTINATION/"_temp.js"
+  java -jar ./tools/compiler.jar --js $DESTINATION/"_temp.js" --js_output_file $DESTINATION/$LIBNAME".min.js" --compilation_level ADVANCED_OPTIMIZATIONS
+  rm -rf $DESTINATION/"_temp.js"
+
+  echo -e $GREEN_COLOR"Build completed successfully!"$RESET
 }
 
+#Compiles the documentation at the specified location
+documentation () {
+  if [ ${#MAIN_ARGUMENTS[@]} -eq 1 ] ; then
+    change_dest ${MAIN_ARGUMENTS[0]}
+  fi
 
+  echo -e $CYAN_COLOR
+  tools/jsdoc/jsdoc --destination $DESTINATION/$LIBNAME-Documentation --recurse --verbose src/sdk
+  echo -e $GREEN_COLOR"Documentation successfully built!"$RESET
+}
 
 #Create a new project
 create_project () {
   #resolve project directory path
-  project_dir="$CURRENT_DIR/$1"
-  if [ "$2" != "" ] ; then 
-    project_dir="$2/$1"
+  if [ ${#MAIN_ARGUMENTS[@]} -eq 2 ] ; then
+    change_dest "${MAIN_ARGUMENTS[1]}/${MAIN_ARGUMENTS[0]}"
+  else
+    change_dest "$CURRENT_DIR/${MAIN_ARGUMENTS[0]}"
   fi
 
   #create folder
-  if [ -d "$project_dir" ] ; then
-    show_confirm "Folder already exists, delete the folder? (Y/n)"
+  if [ -d "$DESTINATION" ] ; then
+    show_confirm "Create new project at $DESTINATION? (Y/n)"
     echo $BR
     if [ $result -eq 1 ] ; then
-      rm -rf "$project_dir"
-      if [ -d "$project_dir" ] ; then
+      rm -rf "$DESTINATION"
+      if [ -d "$DESTINATION" ] ; then
         #Cancelled deletion, exit
         exit 0
       fi
@@ -108,7 +157,7 @@ create_project () {
       exit 0
     fi
   else
-    mkdir -p "$project_dir"
+    mkdir -p $DESTINATION
   fi
 
   #get template zip
@@ -117,29 +166,60 @@ create_project () {
   echo -e $GREEN_COLOR"Unzipping..."$RESET
   unzip master.zip
   echo -e $GREEN_COLOR"Copying files..."$RESET
-  cp -R "$PWD/$TEMPLATE_FOLDER/" "$project_dir"
+  cp -R "$PWD/$TEMPLATE_FOLDER/" $DESTINATION
 
   #cleanup
   echo -e $GREEN_COLOR"Cleaning up..."$RESET
   rm master.zip
   rm -rf $TEMPLATE_FOLDER
 
+  #project meta
+  echo -e $GREEN_COLOR"Creating metadata file..."$RESET
+  touch "$DESTINATION/$META"
+  echo "name=${MAIN_ARGUMENTS[0]}" > "$DESTINATION/$META"
+  chmod 770 $DESTINATION
+
   #get libraries
-  mkdir "$project_dir/src/js/libs"
+  mkdir "$DESTINATION/src/js/libs"
   for (( i=0 ; i < ${#DEPENDENCIES[@]} ; i++ )) do
     echo -e $GREEN_COLOR"Getting library "${LIBRARIES[$i]}"..."$RESET
     wget "${DEPENDENCIES[$i]}"
-    cp "${LIBRARIES[$i]}" "$project_dir/src/js/libs/${LIBRARIES[$i]}"
+    cp "${LIBRARIES[$i]}" "$DESTINATION/src/js/libs/${LIBRARIES[$i]}"
     rm "${LIBRARIES[$i]}"
   done
+
+  #for proper js libs path
+  MAIN_ARGUMENTS=("$DESTINATION/src/js/libs/")
+  compile "$DESTINATION/src/js/libs"
 
   #Done
   echo -e $GREEN_COLOR"Finished!"$RESET
 }
 
 create_screen () {
-  if [ PROJECT != ""] ; then
-    echo "Creating screen inside project $PROJECT"
+  local temp
+  local pathname
+  local name
+  local dir
+
+  if [[ "$PROJECT" != "-" ]] ; then
+
+    mapfile < "$LIBPATH/Templates/Screen.js"
+    temp=${MAPFILE[@]}
+
+    pathname=${MAIN_ARGUMENTS[0]}
+    IFS='/' read -a dir <<< "${pathname}"
+    name=${dir[(( ${#dir[@]} - 1 ))]}
+
+    temp=${temp//@name@/$name}
+    temp=${temp//@pathname@/$pathname}
+
+    if [ ${#MAIN_ARGUMENTS[@]} -eq 2 ] ; then
+      change_dest ${MAIN_ARGUMENTS[1]}
+    fi
+
+    echo "Creating screen $DESTINATION/$name.js"
+    echo "$temp" > "$DESTINATION/$name.js"
   else
     err_msg "Not currently in a project!"
   fi
@@ -148,7 +228,9 @@ create_screen () {
 #Show version number function
 version () {
   mapfile < version.properties
-  echo -e "$BLUE_COLOR$LIBNAME ${MAPFILE[@]}$RESET"
+  LIBVERSION=${MAPFILE[@]}
+  LIBVERSION=${LIBVERSION:8}
+  echo -e $BLUE_COLOR$LIBNAME" v"$LIBVERSION$RESET
 }
 
 #Show manual function
@@ -163,11 +245,16 @@ manual () {
   local words
   local line
   local maxlinesize=60
+  local separator=$ret
+
+  for (( i=0 ; i < $maxlinesize ; i++ )) do
+    separator+="*"
+  done
 
   for (( i=0 ; i < ${#command_list[@]} ; i++ )) do
     cm=${command_list[$i]}
     #Separator
-    echo "|********************************************"
+    echo $separator
 
     #Title
     echo -e "$ret $BLUE_COLOR$cm$RESET"
@@ -218,19 +305,19 @@ manual () {
     echo -e "$ret "$tab${commands[$cm,output]}
     echo $ret
   done
-  echo "|********************************************"
+  echo $separator
 }
 
 #Error message
 err_msg () {
-  PRE="Error:"
+  local pre="Error:"
 
   if [ $# -eq 0 ] ; then
-    echo -e $RED_COLOR$PRE$RESET
+    echo -e $RED_COLOR$pre$RESET
   elif [ $# -eq 1 ] ; then
-    echo -e $RED_COLOR$PRE$1$RESET
+    echo -e $RED_COLOR$pre$1$RESET
   elif [ $# -eq 2 ] ; then
-    echo -e $RED_COLOR$PRE$1$RESET$2
+    echo -e $RED_COLOR$pre$1$RESET$2
   fi
 
   #show manual
@@ -240,27 +327,27 @@ err_msg () {
 #Confirmation message
 show_confirm () {
   read -p "$1 " -n 1 -r
-  echo $BR  # (optional) move to a new line
+  echo " "
   if [[ $REPLY =~ ^[Yy]$ ]] ; then
     # do dangerous stuff
-    result=1
+    return 1
   else
-    result=0
+    exit 0
   fi
 }
 
 #Warning message
 warn_msg () {
-  PRE="Warning:"
+  local pre="Warning:"
 
   if [ $# -eq 0 ] ; then
-    echo -e $PURPLE_COLOR$PRE$RESET
+    echo -e $PURPLE_COLOR$pre$RESET
   elif [ $# -eq 1 ] ; then
-    echo -e $PURPLE_COLOR$PRE$1$RESET
+    echo -e $PURPLE_COLOR$pre$1$RESET
   fi
 }
 
-#Goodbye message
+#Goodbye message, returns to initial directory
 goodbye () {
   echo -e $RESET
   cd $CURRENT_DIR
@@ -283,6 +370,7 @@ run_command () {
         filter="${commands[$cm,target]}"
         ${filters[$filter]}
         ${commands[$cm,method]}
+        return 1
       fi
     done
   done
@@ -318,20 +406,10 @@ init_commands () {
   commands[$ref,$output]="program"
   commands[$ref,$description]="Compiles the $LIBNAME classes into $LIBNAME.js (unminified) and $LIBNAME.min.js (Google Closure turbo compression) at location"
 
-  #Change destination command
-  ref="change destination"
-  command_list+=("$ref")
-  commands[$ref,$key]="-d,--destination"
-  commands[$ref,$target]="varies"
-  commands[$ref,$method]=change_dest
-  commands[$ref,$arguments]="Destination"
-  commands[$ref,$output]="Current build path"
-  commands[$ref,$description]="Changes the current output folder"
-
   #Build documentation command
   ref="documentation"
   command_list+=("$ref")
-  commands[$ref,$key]="--documentation"
+  commands[$ref,$key]="-d,--documentation"
   commands[$ref,$target]="global"
   commands[$ref,$method]=documentation
   commands[$ref,$arguments]="?Destination"
@@ -384,21 +462,20 @@ init_commands () {
 init_filters () {
   #Temp
   base_filter () {
-    #echo "base filter"
+    cd $LIBPATH
     return 1
   }
 
   #Temp
   varies_filter () {
     base_filter
-    #echo "varies filter"
     return 1
   }
 
   project_filter () {
     base_filter
-    #echo "project filter"
-    if [ $PROJECT == ""] ; then
+    cd $CURRENT_DIR
+    if [[ "$PROJECT" == "-" ]] ; then
       err_msg "Not currently in a project!"
       exit 0
     fi
