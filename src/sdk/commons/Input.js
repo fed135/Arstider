@@ -23,6 +23,7 @@ define("Arstider/commons/Input", ["Arstider/Tag"], /** @lends commons/Input */ f
 
 		if(props.className) txtField.className = props.className;
 		if(props.placeholder) txtField.placeholder = props.placeholder;
+		if(props.size) txtField.size = props.size;
 		if(!this.enabled) {
 			this.enabled = true;
 			this.disable();
