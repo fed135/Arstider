@@ -115,8 +115,14 @@ define("Arstider/commons/Radio",[
 	Radio.prototype.setChecked = function(value){
 		if(value){
 			if(!this.btnRadio.disabled){
-				this.btnRadio.checked = true ;	
-				this.changeState(this.btnRadio);
+				if(!this.isCheckBox){
+					this.btnRadio.checked = true ;	
+					this.changeState(this.btnRadio);
+				}
+				else{
+					this.btnRadio.checked = true;
+					this.updateState(this.btnRadio);
+				}
 			}
 			else{
 				this.btnRadio.checked = true ;	
@@ -124,7 +130,7 @@ define("Arstider/commons/Radio",[
 			}
 		}
 		else{
-			btnRadio.checked = false;
+			this.btnRadio.checked = false;
 			this.updateState(this.btnRadio);
 		}
 	};

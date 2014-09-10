@@ -252,6 +252,12 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 
 		return request;
 	}
+	
+	SpritesheetManager.prototype.reset = function()
+	{
+		this.spritesheets = {};
+		this.loadCallbacks = {};
+	};
 
 	function getCacheId(nameOrPath)
 	{
