@@ -54,7 +54,7 @@
 		HowlerInterface.prototype.create = function(id){
 			return new Howl({
 				//buffer:true,
-				autoplay:true,
+				//autoplay:true,
 				urls:singleton.managerRef.tracks[id].files,
 				loop:singleton.managerRef.tracks[id].loop || false
 			});
