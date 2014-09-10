@@ -11,11 +11,12 @@ define("Arstider/commons/Radio",[
 
 		Arstider.Super(this, DisplayObject, props);
 
-		thisRef = this;
-		this.disabled= Arstider.checkIn(props.disabled, false);
-
+		var thisRef = this;
+		this.disabled = Arstider.checkIn(props.disabled, false);
+		this.isCheckBox = Arstider.checkIn(props.checkBox, false);
 		///Add radio Button
 		var btnRadio = new DisplayObject({
+			name:"btnRadio"+this.name,
 			onclick:function(){
 						if(this.disabled || btnRadio.disabled) return;
 						thisRef.changeState(btnRadio);
@@ -143,6 +144,13 @@ define("Arstider/commons/Radio",[
 				btnRadio.checked = true;	
 			}
 		}
+		else if(btnRadio.checked && this.isCheckBox)
+		{
+			if(!btnRadio.disabled){
+				btnRadio.loadBitmap(btnRadio.image);
+				btnRadio.checked = false;
+			}
+		}	
 	};
 
 	Radio.prototype.updateState= function(btnRadio){
