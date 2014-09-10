@@ -117,7 +117,7 @@ compile () {
 
   echo "Compiling "$LIBNAME".min.js..."
   echo "$minified" > $DESTINATION/"_temp.js"
-  java -jar ./tools/compiler.jar --js $DESTINATION/"_temp.js" --js_output_file $DESTINATION/$LIBNAME".min.js" --compilation_level ADVANCED_OPTIMIZATIONS
+  java -jar ./tools/compiler.jar --js $DESTINATION/"_temp.js" --js_output_file $DESTINATION/$LIBNAME".min.js" --compilation_level SIMPLE_OPTIMIZATIONS
   rm -rf $DESTINATION/"_temp.js"
 
   echo -e $GREEN_COLOR"Build completed successfully!"$RESET

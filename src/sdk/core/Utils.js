@@ -10,7 +10,7 @@
  * @namespace Arstider
  * @type {Object}
  */
-window.Arstider = {};
+Arstider = {};
 
 /**
  * Gets a number timestamp, usefull for id-ing or cache busting
