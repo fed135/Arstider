@@ -336,17 +336,6 @@ show_confirm () {
   fi
 }
 
-#Warning message
-warn_msg () {
-  local pre="Warning:"
-
-  if [ $# -eq 0 ] ; then
-    echo -e $PURPLE_COLOR$pre$RESET
-  elif [ $# -eq 1 ] ; then
-    echo -e $PURPLE_COLOR$pre$1$RESET
-  fi
-}
-
 #Goodbye message, returns to initial directory
 goodbye () {
   echo -e $RESET
@@ -365,7 +354,7 @@ run_command () {
     cm=${command_list[$i]}
     IFS="," read -ra keys <<< "${commands[$cm,key]}"
     for u in "${keys[@]}" ; do
-      if [ $MAIN_COMMAND == $u ] ; then
+      if [[ "$MAIN_COMMAND" == "$u" ]] ; then
         command_found=1
         filter="${commands[$cm,target]}"
         ${filters[$filter]}
@@ -492,18 +481,17 @@ main () {
   welcome
   init_commands
   init_filters
+  if [ ${#ALL_ARGUMENTS} -eq 0 ] ; then
+    #No command
+    err_msg "No command specified"
+    exit 0
+  else
+    MAIN_COMMAND=${ALL_ARGUMENTS[0]}
+    MAIN_ARGUMENTS=("${ALL_ARGUMENTS[@]:1}")
+  fi
   run_command
   goodbye
 }
 
 #Entry point
-if [ $# -eq 0 ] ; then
-  #No command
-  err_msg "No command specified"
-  exit 0
-else
-  MAIN_COMMAND=$1
-  MAIN_ARGUMENTS=("${ALL_ARGUMENTS[@]:1}")
-fi
-
 main
