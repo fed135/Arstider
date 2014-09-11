@@ -264,6 +264,20 @@
 			});
 		};
 
+		/**
+		 * Loads a Bitmap into the DisplayObject
+		 * @type {function(this:DisplayObject)}
+		 * @param {string|Image|HTMLCanvasElement} url Loads an image to be used as data
+		 * @param {function(this:DisplayObject)} callback Optional function to be triggered upon successful loading.
+		 */
+		DisplayObject.prototype.loadOptional = function(url, success) {
+			var thisRef = this;
+			var img = new Image();
+
+			img.onload=thisRef.loadBitmap.bind(thisRef, url, success);
+			img.src = url;
+		};
+
 		DisplayObject.prototype.flatten = function(callback){
 			if(!this.data){
 				this.data = new Buffer({

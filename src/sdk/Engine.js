@@ -62,6 +62,11 @@
 			 */
 			this.debug = ("@debug@" == "true");
 			/**
+			 * Build date Timestamp
+			 * @type {string}
+			 */
+			this.timestamp = "@timestamp@"
+			/**
 			 * Whether or not the engine should skip the rendering of frames if performances are low
 			 * @type {boolean}
 			 */
