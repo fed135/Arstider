@@ -31,6 +31,10 @@
 		
 		<filter token="target" value="dev"/>
 		<filter token="debug" value="true"/>
+		<tstamp>
+	  		<format property="TODAY_GB" pattern="MM/dd/yyyy hh:mm aa" locale="en,GB"/>
+		</tstamp>
+		<filter token="timestamp" value="${TODAY_GB}"/>
 		
 		<copy toFile="${dest}/Arstider.js" file="${dest}/_temp.js" filtering="true" />
 		
