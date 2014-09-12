@@ -163,15 +163,16 @@
 		 * @param {boolean} synchronous Makes the logic run at the same speed as render
 		 */
 		Engine.prototype.start = function(tag, synchronous, vertex, fragment){
+			if(!window.console || this.debug){
+				Arstider.verbose = 0;
+				Arstider.disableConsole();
+			}
+
 			if(this.debug){
 				requirejs(["Arstider/core/Debugger"], function(Debugger){
 					singleton.profiler = new Debugger(singleton);
 					singleton.profiler.init();
 				});
-			}
-			else{
-				Arstider.verbose = 0;
-				Arstider.disableConsole();
 			}
 
             this.canvas = new Buffer({

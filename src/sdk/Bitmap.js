@@ -100,7 +100,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 	 * @param {string} url URL to load
 	 */
 	Bitmap.prototype._fetchUrl = function(url, callback){
-		var thisRef = this, compatMode = (Browser.name == "safari" && Browser.platformVersion < 7);
+		var thisRef = this, compatMode = (Browser.name == "safari");
 
 		if(compatMode){
 			this.compatPrivilege = true;

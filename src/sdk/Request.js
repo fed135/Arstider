@@ -115,7 +115,7 @@
 				this.url+= (this.url.indexOf('?') === -1 ? '?' : '&') + Request.urlArgs;
 			}
 
-			this._compatibilityMode = ((Browser.name == "ie" && Browser.version == 9) || (Browser.name == "safari" && Browser.platformVersion < 7));
+			this._compatibilityMode = ((Browser.name == "ie" && Browser.version == 9) || (Browser.name == "safari"));
 
 			/**
 			 * Callback function
@@ -301,7 +301,7 @@
 					
 			xhr.open(this.method, this.url, this.async, this.user, this.password);
 
-			if(!(Browser.name == "safari" && Browser.platformVersion < 7)){
+			if(!(Browser.name == "safari"/* && Browser.platformVersion < 7*/)){
             	if(this.async) xhr.responseType = this.type;
             	if(this.type == "json") xhr.responseType = "text";
             }
