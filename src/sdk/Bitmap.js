@@ -153,6 +153,11 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 				if(thisRef.callback) thisRef.callback(ret);
 			}
 		};
+		this.data.onerror= function(){
+			//IE randomly removes blobs...is there some sort of limit?
+			delete Arstider.blobCache[thisRef.url];
+			thisRef.load();
+		};
 		this.data.src = url;
 	};
 
