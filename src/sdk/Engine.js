@@ -163,7 +163,7 @@
 		 * @param {boolean} synchronous Makes the logic run at the same speed as render
 		 */
 		Engine.prototype.start = function(tag, synchronous, vertex, fragment){
-			if(!window.console || this.debug){
+			if(!window.console || !this.debug){
 				Arstider.verbose = 0;
 				Arstider.disableConsole();
 			}
