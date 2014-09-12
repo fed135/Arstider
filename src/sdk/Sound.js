@@ -136,7 +136,7 @@
 		 * @return {Object} Self reference, for chaining
 		 */
 		Sound.prototype.preload = function(id, playOnLoaded, props){
-			if(Browser.isMobile || Browser.name == "ie"){
+			if(Browser.isMobile || Browser.name == "ie" || (Browser.name == "safari" && Browser.version < 7)){
 				singleton.tracks[id].handle = singleton.lib.create(id);
 				if(playOnLoaded) singleton.play(id, props);
 			}
