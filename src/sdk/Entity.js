@@ -755,6 +755,7 @@
 			this.data = null;
 			
 			if(this.onunload) this.onunload();
+			this._requestedAsset = null;
 			
 			return this;
 		};
