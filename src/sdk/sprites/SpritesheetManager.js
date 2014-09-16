@@ -184,7 +184,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 						if(p=="frames")
 						{
 							var frames = animOverrides[p];
-							var frameList;
+							var frameList = [];
 
 							for (var i = 0; i < frames.length; i++) {
 
@@ -252,7 +252,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 
 		return request;
 	}
-	
+
 	SpritesheetManager.prototype.reset = function()
 	{
 		this.spritesheets = {};
