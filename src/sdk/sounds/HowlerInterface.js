@@ -8,6 +8,7 @@
 		
 		function HowlerInterface(){
 			this.managerRef;
+			this.ieTimer = null;
 		}
 
 		HowlerInterface.prototype.init = function(s, url, callback){
@@ -91,13 +92,24 @@
 		};
 
 		HowlerInterface.prototype.playSound = function(handle, id, options, callback){
-			handle._audioNode[0].paused = false;
+			if(Browser.name == "ie") handle.stop();	//Force stop off all sounds before playing new ones
+
 			handle.play(id, function(howlId){
 				howlId = parseInt(howlId+"");
 				singleton.managerRef._addInstance(id, howlId);
 				handle.volume(Arstider.checkIn(options.volume, 1), howlId);
-				if(options.startCallback) options.startCallback(howlId);
-				if(options.endCallback) singleton.managerRef._callbacks[howlId].push(options.endCallback);
+				//sfx should just fire and go, no questions or ties. for anything longer, make tracks.
+
+				//safety net for IE
+				if(Browser.name == "ie"){
+					clearTimeout(singleton.ieTimer);
+					singleton.ieTimer = setTimeout(function(){
+						handle.stop(howlId); //stop after playing
+					}, singleton.managerRef.sounds[id].duration + 50);
+				}
+
+				//if(options.startCallback) options.startCallback(howlId);
+				//if(options.endCallback) singleton.managerRef._callbacks[howlId].push(options.endCallback);
 			});
 			return singleton.managerRef;
 		};

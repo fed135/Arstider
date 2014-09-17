@@ -78,9 +78,6 @@
 			singleton._spriteUrl = url;
 
 			var i;
-			for(i in singleton.tracks){
-				singleton.tracks[i] = new Track(singleton.tracks[i]);
-			}
 
 			//default
 			if(singleton.lib == null) singleton.lib = "howler";
@@ -91,6 +88,10 @@
 			else if(singleton.lib == "sm2") singleton.lib = SM2Interface;
 			
 			singleton.lib.init(singleton, url);
+			for(i in singleton.tracks){
+				singleton.tracks[i] = new Track(singleton.tracks[i]);
+				singleton.preload(i);
+			}
 		};
 
 		
