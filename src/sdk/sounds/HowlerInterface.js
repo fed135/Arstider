@@ -91,6 +91,7 @@
 		};
 
 		HowlerInterface.prototype.playSound = function(handle, id, options, callback){
+			handle._audioNode[0].paused = false;
 			handle.play(id, function(howlId){
 				howlId = parseInt(howlId+"");
 				singleton.managerRef._addInstance(id, howlId);

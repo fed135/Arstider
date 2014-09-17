@@ -118,7 +118,11 @@
 					this.platformVersion = parseFloat(ver);
 				}
 			}
-			if(uagent.indexOf("mobile") != -1){
+			else if(uagent.indexOf('iemobile') != -1){
+				this.isMobile = true;
+				this.platform = 'windows';
+			}
+			if(uagent.indexOf("mobile") != -1 || uagent.indexOf("arm") != -1 || uagent.indexOf("touch") != -1){
 				this.isMobile = true;
 			}
 				
