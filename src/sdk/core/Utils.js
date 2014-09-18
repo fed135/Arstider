@@ -29,6 +29,8 @@ Arstider.timestamp = function(){
  */
 Arstider.pageHidden = false;
 
+Arstider.tempBufferLabel = "_temp_";
+
 /**
  * Get Node from Arstider Element
  * @memberof Arstider

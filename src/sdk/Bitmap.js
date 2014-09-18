@@ -100,14 +100,14 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 	 * @param {string} url URL to load
 	 */
 	Bitmap.prototype._fetchUrl = function(url, callback){
-		var thisRef = this, compatMode = (Browser.name == "safari");
+		var thisRef = this, compatMode = (Browser.name == "safari" && Browser.platformVersion < 7);
 
 		if(compatMode){
 			this.compatPrivilege = true;
-			if(Arstider.bufferPool[this.url] && Arstider.bufferPool[this.url].data != null){
-				if(callback) callback(Arstider.bufferPool[this.url]);
+			if(Arstider.bufferPool[Arstider.tempBufferLabel + this.url] && Arstider.bufferPool[Arstider.tempBufferLabel +this.url].data != null){
+				if(callback) callback(Arstider.bufferPool[Arstider.tempBufferLabel +this.url]);
 				else{
-					if(thisRef.callback) thisRef.callback(Arstider.bufferPool[this.url]);
+					if(thisRef.callback) thisRef.callback(Arstider.bufferPool[Arstider.tempBufferLabel +this.url]);
 				}
 				return;
 			}
@@ -134,11 +134,11 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 			thisRef.data.onload = null;
 			ret = thisRef;
 			if(compatMode){
-				if(Arstider.bufferPool[thisRef.url] && Arstider.bufferPool[thisRef.url].data != null){
-					ret = Arstider.bufferPool[thisRef.url];
+				if(Arstider.bufferPool[Arstider.tempBufferLabel +thisRef.url] && Arstider.bufferPool[Arstider.tempBufferLabel +thisRef.url].data != null){
+					ret = Arstider.bufferPool[Arstider.tempBufferLabel +thisRef.url];
 				}
 				else{
-					ret = Arstider.saveToBuffer(thisRef.url, thisRef.data);
+					ret = Arstider.saveToBuffer(Arstider.tempBufferLabel +thisRef.url, thisRef.data);
 					ret.compatPrivilege = true;
 				}
 			}

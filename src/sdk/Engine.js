@@ -448,7 +448,7 @@
 					singleton.protectData(Watermark);
 
 					for(var i in Arstider.bufferPool){
-	                	if(i.indexOf("_compatBuffer_") != -1 || i.indexOf("Arstider_Gradient") != -1 || i.indexOf("Arstider_TextField") != -1){
+	                	if(i.indexOf(Arstider.tempBufferLabel) != -1 || i.indexOf("Arstider_Gradient") != -1 || i.indexOf("Arstider_TextField") != -1){
 	                		if(Arstider.bufferPool[i].data && !Arstider.bufferPool[i]._protected){
 	                			Arstider.bufferPool[i].kill();
 	                		}

@@ -115,7 +115,7 @@
 				this.url+= (this.url.indexOf('?') === -1 ? '?' : '&') + Request.urlArgs;
 			}
 
-			this._compatibilityMode = ((Browser.name == "ie" && Browser.version == 9) || (Browser.name == "safari"));
+			this._compatibilityMode = ((Browser.name == "ie" && Browser.version == 9) || (Browser.name == "safari" && Browser.platformVersion < 7));
 
 			/**
 			 * Callback function

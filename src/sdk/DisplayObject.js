@@ -283,12 +283,12 @@
 				this.data = new Buffer({
 					width:this.width,
 					height:this.height,
-					name:this.name+"_flattened"
+					name:Arstider.tempBufferLabel + this.name+"_flattened"
 				});
 			}
 
 			if(!this.data.context){
-				this.data = Arstider.saveToBuffer(this.name+"_flattened", this.data, this.width, this.height);
+				this.data = Arstider.saveToBuffer(Arstider.tempBufferLabel +this.name+"_flattened", this.data, this.width, this.height);
 			}
 
 			var 
