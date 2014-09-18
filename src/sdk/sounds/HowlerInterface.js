@@ -30,7 +30,7 @@
 			}
 			
 			for(i in singleton.managerRef.sounds){
-				sprite[i] = [singleton.managerRef.sounds[i].offset - padding, singleton.managerRef.sounds[i].duration, singleton.managerRef.sounds[i].loop];
+				sprite[i] = [Math.max(0, singleton.managerRef.sounds[i].offset - padding), singleton.managerRef.sounds[i].duration, singleton.managerRef.sounds[i].loop];
 			}
 			
 			singleton.managerRef.sounds['empty'] = {};
