@@ -301,7 +301,7 @@
 					
 			xhr.open(this.method, this.url, this.async, this.user, this.password);
 
-			if(!(Browser.name == "safari"/* && Browser.platformVersion < 7*/)){
+			if(!(Browser.name == "safari" && Browser.platformVersion < 7)){
             	if(this.async) xhr.responseType = this.type;
             	if(this.type == "json") xhr.responseType = "text";
             }

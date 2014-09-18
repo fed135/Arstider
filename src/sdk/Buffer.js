@@ -84,8 +84,8 @@
 		 * Destroys the buffer from memory
 		 * @type {function(this:Buffer)}
 		 */
-		Buffer.prototype.kill = function(){
-			if(this.compatPrivilege) return;
+		Buffer.prototype.kill = function(force){
+			if(this.compatPrivilege || force !== true) return;
 
 			delete Arstider.bufferPool[this.name];
 			this.width = 0;
