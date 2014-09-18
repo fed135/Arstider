@@ -60,14 +60,6 @@
 		};
 
 		HowlerInterface.prototype.playTrack = function(handle, id, options){
-			//Really, really bad hack... I hate myself
-			if(handle._audioNode && handle._audioNode.length){
-				for(var i = 0; i< handle._audioNode.length; i++){
-					if(handle._audioNode[i].paused) handle._audioNode[i].paused = false;
-					break;
-				}
-			}
-
 			handle.play();
 
 			options = options || {};
