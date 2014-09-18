@@ -87,6 +87,18 @@
 			else if(singleton.lib == "soundjs") singleton.lib = SoundJSInterface;
 			else if(singleton.lib == "sm2") singleton.lib = SM2Interface;
 			
+
+			//Do some actual sdk preloading
+			var ext = ".mp3";
+			if(Browser.name == "firefox") ext = ".ogg";
+
+			var req = new Request({
+				url:url+ext,
+				caller:singleton,
+				cache:false,
+				track:true
+			}).send();
+
 			singleton.lib.init(singleton, url);
 			for(i in singleton.tracks){
 				singleton.tracks[i] = new Track(singleton.tracks[i]);
