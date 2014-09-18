@@ -94,10 +94,12 @@
 		HowlerInterface.prototype.playSound = function(handle, id, options, callback){
 			if(Browser.name == "ie") handle.stop();	//Force stop off all sounds before playing new ones
 
-			//REally, really bad hack... I hate myself
-			for(var i = 0; i< handle._audioNode.length; i++){
-				if(handle._audioNode[i].paused) handle._audioNode[i].paused = false;
-				break;
+			//Really, really bad hack... I hate myself
+			if(handle._audioNode && handle._audioNode.length){
+				for(var i = 0; i< handle._audioNode.length; i++){
+					if(handle._audioNode[i].paused) handle._audioNode[i].paused = false;
+					break;
+				}
 			}
 
 			handle.play(id, function(howlId){
