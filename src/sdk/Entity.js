@@ -415,6 +415,8 @@
 			 * @type {boolean}
 			 */
 			this.complexTouching = Arstider.checkIn(props.complexTouching, false);
+
+			if(props.update) this.update = props.update;
 		};
 		
 		/**

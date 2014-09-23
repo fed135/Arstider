@@ -73,7 +73,11 @@
 		 * @return {Object} Self reference for chaining
 		 */
 		DisplayObject.prototype.addChild = function(clip){
-			if(clip.parent != null && Arstider.verbose > 1) console.warn("Arstider.DisplayObject.addChild: object already has a parent");
+			if(!clip) {
+				Arstider.log("Arstider.DisplayObject.addChild: no object given");
+				return;
+			}
+			if(clip.parent != null && Arstider.verbose > 1) console.error("Arstider.DisplayObject.addChild: object already has a parent");
 			clip.parent = this;
 			clip.onStage = this.onStage;
 			if(clip.children && clip.children.length > 0){

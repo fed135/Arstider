@@ -62,6 +62,29 @@ Arstider.getNode = function(obj, maxDepth){
 	return orig;
 };
 
+Arstider.log = function(data, level){
+	level = level || 1; 
+
+	var 
+		message = "",
+		asset = null
+	;
+
+	if(typeof data === 'string') message=data;
+	else{
+		if(data.message) message=data.message;
+		if(data.asset) asset=data.asset;
+	}
+
+	if(Arstider.verbose >= level){
+		//Error output, for stack info
+		if(asset!=null){
+			console.log('%c', 'padding:'+(asset.height || null)+'px '+(asset.width || null)+'px;line-height:'+(asset.height || null)+'px;background:url('+(asset.src || null)+')');
+		}
+		console.error('%c'+message, 'color:purple');
+	}
+};
+
 Arstider.powerOf2 = function(num){
 	return (num > 0 && (num & (num - 1)) === 0);
 };

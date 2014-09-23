@@ -39,6 +39,8 @@
 			 * @type {Object}
 			 */
 			this.collection = {};
+
+			this.loadCallback = null;
 		};
 		
 		/**
@@ -82,22 +84,30 @@
 		 * @param {function} callback The callback function, once all fonts have been initialized
 		 */
 		Fonts.prototype.load = function(filename, callback){
-			var req = new Request({
-				url:filename,
-				caller:this,
-				track:true,
-				type:"json",
-				cache:false,
-				callback:function(file){
-					var fontList = file;
-					for(var i in fontList){
-						fontList[i].name = i;
-						this.create(fontList[i]);
-					}
-					
-					if(callback) callback();
-				}
-			}).send();
+			this.loadCallback = callback;
+
+			if(filename instanceof String || typeof filename == "string"){
+				var req = new Request({
+					url:filename,
+					caller:this,
+					track:true,
+					type:"json",
+					cache:false,
+					callback:this._parseFile
+				}).send();
+			}
+			else{
+				this._parseFile(filename);
+			}
+		};
+
+		Fonts.prototype._parseFile = function(fontList){
+			for(var i in fontList){
+				fontList[i].name = i;
+				this.create(fontList[i]);
+			}
+
+			if(this.loadCallback) this.loadCallback();
 		};
 			
 		singleton = new Fonts();

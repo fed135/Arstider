@@ -60,6 +60,8 @@
 			 */
 			this.canvasRatio = 1;
 			
+			this.preserveAspect = false;
+
 			/**
 			 * Canvas left offset in the parent in pixel (automatically centers in the window)
 			 * @type {number}
@@ -336,6 +338,20 @@
 			}
 			else return;
 			
+			if(singleton.preserveAspect){
+				singleton.tag.style.left = "0px";
+				singleton.tag.style.top = "0px";
+				singleton.tag.style.width = singleton.maxWidth+"px";
+				singleton.tag.style.height = singleton.maxWidth+"px";
+				singleton.tag.style.position = "absolute";
+				singleton.tag.width = singleton.maxWidth;
+				singleton.tag.height = singleton.maxHeight;
+				Events.broadcast("Viewport.resize", singleton);
+                        
+				if(Browser.isMobile) window.document.body.scrollTop=0;
+				return;
+			}
+
 			//Retina detection
 			if( Browser.isMobile &&
 			    windowW*2 >= singleton.minWidth &&
