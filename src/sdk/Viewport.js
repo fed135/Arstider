@@ -341,8 +341,8 @@
 			if(singleton.preserveAspect){
 				singleton.tag.style.left = "0px";
 				singleton.tag.style.top = "0px";
-				singleton.tag.style.width = singleton.maxWidth+"px";
-				singleton.tag.style.height = singleton.maxWidth+"px";
+				singleton.tag.style.width = (singleton.maxWidth/(window.devicePixelRatio || 1))+"px";
+				singleton.tag.style.height = (singleton.maxHeight/(window.devicePixelRatio || 1))+"px";
 				singleton.tag.style.position = "absolute";
 				singleton.tag.width = singleton.maxWidth;
 				singleton.tag.height = singleton.maxHeight;
