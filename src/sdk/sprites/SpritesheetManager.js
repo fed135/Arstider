@@ -75,7 +75,11 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 
 			// Texture packer JSON Array format
 			else if(data.frames && data.frames.length>=1)
-			{
+			{	
+				if(data.overrides && !context.overrides[name])
+				{
+					context.registerOverrides(data.overrides);
+				}
 				spritesheet = new JsonSpritesheet(data, params, fileInfo);
 				spritesheet.name = name;
 				spritesheet.url = fileInfo.url;
@@ -174,10 +178,8 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 						// Anim does not exists
 						if(!anim)
 						{
-							// TODO: create anim if possible
-							console.error("SpritesheetManager error: Anim '"+animName+"' not found for overrides: ", animName, animOverrides);
-
-							continue;
+							spritesheet.animations[animName] = {};
+							anim = spritesheet.animations[animName];
 						}
 
 						// Frame re-indexing
@@ -202,7 +204,7 @@ function (Request, JsonSpritesheet, ZoeSpritesheet, GridSpritesheet)
 								// Numeric frame re-indexing
 								else if(frame>0 || frame===0)
 								{
-									console.log(spritesheet)
+									//console.log(spritesheet)
 									var frameData = spritesheet.frames[frame];
 
 									if(!frameData)
