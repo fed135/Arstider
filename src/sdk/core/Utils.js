@@ -62,6 +62,20 @@ Arstider.getNode = function(obj, maxDepth){
 	return orig;
 };
 
+Arstider.min = function(){
+	for(var i =1, min=0, len = arguments.length; i<len; i++){
+		if(arguments[i]<arguments[min])min = i;
+    }
+	return arguments[min];
+};
+
+Arstider.max = function(){
+	for(var i =1, max=0, len = arguments.length; i<len; i++){
+		if(arguments[max]<arguments[i])max = i;
+	}
+	return arguments[max];
+};
+
 Arstider.log = function(data, level){
 	level = level || 1; 
 
@@ -338,6 +352,22 @@ Arstider.verbose = 0;
  */
 Arstider.distance = function(x1, y1, x2, y2){
 	return Math.sqrt(Math.pow((x2 - x1),2) + Math.pow((y2 - y1),2));
+};
+
+/**
+ * Calculate the distance between 2 coordinates in 3d space
+ * @memberof Arstider
+ * @type {function}
+ * @param {number} x1 The x coordinate of the first point
+ * @param {number} y1 The y coordinate of the first point
+ * @param {number} z1 The z coordinate of the first point
+ * @param {number} x2 The x coordinate of the second point
+ * @param {number} y2 The y coordinate of the second point
+ * @param {number} z2 The z coordinate of the second point
+ * @return {number} the distance between the 2 points
+ */
+Arstider.distance3 = function(x1, y1, z1, x2, y2, z2){
+	return Math.sqrt(Math.pow((x2 - x1),2) + Math.pow((y2 - y1),2) + Math.pow((z2 - z1),2));
 };
 
 /**
@@ -731,7 +761,7 @@ Arstider.Inherit = function(child, parent){
  */
 Arstider.fixedAnimationFrame = function(callback, dt){
 	var targetFPS = Math.floor(1000/Arstider.FPS);
-	var nextFrame = Math.max(0, targetFPS - (dt - targetFPS));
+	var nextFrame = Arstider.max(0, targetFPS - (dt - targetFPS));
 	Arstider.__animTimer = window.setTimeout(callback, nextFrame);
 };
 

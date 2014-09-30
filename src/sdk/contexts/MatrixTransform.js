@@ -9,7 +9,8 @@ define("Arstider/contexts/MatrixTransform", [], function(){
 	function MatrixTransform(pencil, context){
 	    this.pencil = pencil;
 	    this.context = context;
-	    this.matrix = [1,0,0,1,0,0]; //initialize with the identity matrix
+        this.baseMatrix = [1,0,0,1,0,0];
+	    this.matrix = this.baseMatrix; //initialize with the identity matrix
 	    this.stack = [];
 	}  
     
@@ -56,15 +57,16 @@ define("Arstider/contexts/MatrixTransform", [], function(){
 
     MatrixTransform.prototype.setTransform = function() {
         if (this.pencil){
-        	//this.pencil.reset(this.context);
-            this.pencil.setTransform(this.context,
-                this.matrix[0],
-                this.matrix[1],
-                this.matrix[2],
-                this.matrix[3],
-                this.matrix[4],
-                this.matrix[5]
-            );
+        	if(this.matrix != this.baseMatrix){
+                this.pencil.setTransform(this.context,
+                    this.matrix[0],
+                    this.matrix[1],
+                    this.matrix[2],
+                    this.matrix[3],
+                    this.matrix[4],
+                    this.matrix[5]
+                );
+            }
         }
     };
     
@@ -119,7 +121,7 @@ define("Arstider/contexts/MatrixTransform", [], function(){
     };
     
     MatrixTransform.prototype.identity = function() {
-        this.m = [1,0,0,1,0,0];
+        this.m = this.baseMatrix;
         //this.setTransform();
     };
 

@@ -33,6 +33,7 @@
 		function Renderer(){
 			this.pencil = null;
 			this.padding = 100;
+			this.pendingRemoval = 0;
 		}
 
 		Renderer.prototype.checkOnScreen = function(context, element, matrix, xo, yo){
@@ -224,10 +225,15 @@
 						if(element.children[li] && !element.children[li].__skip){
 							this.renderChild(context, element.children[li], complex, pre, post, t, debug);
 						}
+						else{
+							this.pendingRemoval=1;
+						}
 					}
 					len = li = null;
 				}
 			}
+
+			if(element.postDraw) element.postDraw.call(element, context);
 				
 			//Restore
 			if(!main){
@@ -278,6 +284,7 @@
 		 * @param {Object} showBoxes Whether or not to show the debug outlines
 		 */
 		Renderer.prototype.draw = function(context, element, pre, post, debug, callback){
+			this.pendingRemoval = 0;
 			this._recoverContextPencil(context, function recoverContext(){
 				//singleton.pencil.clip(context, 0, 0, context.canvas.width, context.canvas.height);	//not great for rpX/rpY greater than 0
 				singleton.renderChild.call(singleton, context, element, false, pre, post, null, debug, callback, true);

@@ -35,7 +35,7 @@ define( "Arstider/Sequence", [], /** @lends Sequence */ function () {
 		if(stop === true || stop === 0) this.stop = 0;
 
 		//Minimum 1 frame interval
-		var currFPS = Math.round(1000/Arstider.FPS);
+		var currFPS = Arstider.chop(1000/Arstider.FPS);
 		if(this.time < currFPS) this.time = currFPS;
 
 		this.chainedAnim = null;

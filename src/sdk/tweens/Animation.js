@@ -61,7 +61,7 @@ define("Arstider/tweens/Animation", ["Arstider/tweens/Transformation", "Arstider
 	 * @param {Tween} target The tween chain holding the animation
 	 */
 	Animation.prototype.step = function(target){
-		var i = this.changes.length-1, progress = Math.min(this.time / this.startTime, 1);
+		var i = this.changes.length-1, progress = Arstider.min(this.time / this.startTime, 1);
 		
 		for(i; i>= 0; i--){
 			this.changes[i].lastStep = target.target[this.changes[i].property];
@@ -97,7 +97,7 @@ define("Arstider/tweens/Animation", ["Arstider/tweens/Transformation", "Arstider
 			B2 = t&0xFF
 		;
 		
-    	return "#"+(0x1000000+(Math.round((R2-R1)*progress)+R1)*0x10000+(Math.round((G2-G1)*progress)+G1)*0x100+(Math.round((B2-B1)*progress)+B1)).toString(16).slice(1);
+    	return "#"+(0x1000000+(Arstider.chop((R2-R1)*progress)+R1)*0x10000+(Arstider.chop((G2-G1)*progress)+G1)*0x100+(Arstider.chop((B2-B1)*progress)+B1)).toString(16).slice(1);
 	};
 	
 	/**

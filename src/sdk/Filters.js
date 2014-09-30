@@ -106,9 +106,9 @@ define("Arstider/Filters", ["Arstider/Buffer", "Arstider/Browser"], /** @lends F
 		f = Arstider.checkIn(f, 1);
 		
 		for (i; i >= 0; i--) {  
-		    pixels[i*4] = Math.min(r + pixels[i*4] * f);
-	    	pixels[i*4+1] = Math.min(r + pixels[i*4+1] * f); 
-	    	pixels[i*4+2] = Math.min(r + pixels[i*4+2] * f); 
+		    pixels[i*4] = Arstider.min(r + pixels[i*4] * f);
+	    	pixels[i*4+1] = Arstider.min(r + pixels[i*4+1] * f); 
+	    	pixels[i*4+2] = Arstider.min(r + pixels[i*4+2] * f); 
 		}
 			
 		ret.context.putImageData(imageData, 0, 0);

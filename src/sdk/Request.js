@@ -5,8 +5,9 @@
  * @status Stable
  * @author frederic charette <fredericcharette@gmail.com>
  */
-;(function(){
+define("Arstider/Request", ["Arstider/Browser", "Arstider/Preloader"], /** @lends Request */ function(Browser, Preloader){
 	
+	Request.urlArgs = null;
 	var
 		/**
 		 * Pending response calls
@@ -50,7 +51,7 @@
 			"Via"
 		]
 	;
-	
+
 	/**
 	 * Look for a call in the list of pending calls
 	 * @private
@@ -86,301 +87,276 @@
 			}
 		}
 	};
+	/**
+	 * Request constructor
+	 * A cover-all-situations network call class
+	 * @class Request
+	 * @constructor
+	 * @param {Object} props Request properties
+	 */
+	function Request(props){
+		/**
+		 * Url to hit
+		 * @type {string}
+		 */
+		this.url = props.url;
+		// Runtime urlArguments appending (Like Require.js config.urlArgs)
+		// Mostly used for cachebusting json files in your game
+		if(Request.urlArgs)
+		{
+			this.url+= (this.url.indexOf('?') === -1 ? '?' : '&') + Request.urlArgs;
+		}
+		this._compatibilityMode = ((Browser.name == "ie" && Browser.version == 9) || (Browser.name == "safari" && Browser.platformVersion < 7));
+		/**
+		 * Callback function
+		 * @type {function}
+		 */
+		this.callback = Arstider.checkIn(props.callback, null);
+		/**
+		 * Method to call on progress
+		 * @type {function}
+		 */
+		this.progress = Arstider.checkIn(props.progress, null);
+		/**
+		 * Whether to track the call in the preloader or not
+		 * @type {boolean}
+		 */
+		this.track = Arstider.checkIn(props.track, false);
+		/**
+		 * Returning data type
+		 * @type {string}
+		 */
+		this.type = Arstider.checkIn(props.type, (this._compatibilityMode)?"arraybuffer":"blob");
+		/**
+		 * Whether to cache the response for this call
+		 * @type {boolean}
+		 */
+		this.cache = Arstider.checkIn(props.cache, true);
+		/**
+		 * On error function
+		 * @type {function}
+		 */
+		this.error = Arstider.checkIn(props.error, null);
+		/**
+		 * Reference to the calling object, for callback scope
+		 * @type {string}
+		 */
+		this.caller = Arstider.checkIn(props.caller, this);
+		
+		/**
+		 * Advanced
+		 */
+		this.timeout = Arstider.checkIn(props.timeout, 12000); //10 Seconds
+		this.timeoutTimer = null;
+		
+		/**
+		 * Request method (GET, POST, PUT, CHANGE, UPDATE, etc.)
+		 * @type {string}
+		 */
+		this.method = Arstider.checkIn(props.method, "GET");
+		/**
+		 * Is call asynchronous (true is prefered)
+		 * @type {boolean}
+		 */
+		this.async = Arstider.checkIn(props.async, true);
+           /**
+            * Mime override
+            * @type {string|null}
+            */
+           this.mimeOverride = Arstider.checkIn(props.mimeOverride, null);
+		/**
+		 * Optional server user name
+		 * @type {string}
+		 */
+		this.user = Arstider.checkIn(props.user, Arstider.emptyString);
+		/**
+		 * Optional server password
+		 * @type {string}
+		 */
+		this.password = Arstider.checkIn(props.password, Arstider.emptyString);
+		/**
+		 * Optional list of headers to send {key:value} format
+		 * @type {Object}
+		 */
+		this.headers = Arstider.checkIn(props.headers, Arstider.emptyObj);
+		/**
+		 * Post data to send
+		 * @type {*}
+		 */
+		this.postData = Arstider.checkIn(props.postData, Arstider.checkIn(props.data, null));
+		
+		/**
+		 * Defines a unique call id
+		 * @type {string}
+		 */
+		this.id = this.url+"_"+Arstider.timestamp();
+		this.completed = false;
+	}
 	
 	/**
-	 * Defines the Request module
+	 * Sends the request
+	 * @type {function(this:Request)}
 	 */
-	define("Arstider/Request", ["Arstider/Browser", "Arstider/Preloader"], /** @lends Request */ function(Browser, Preloader){
+	Request.prototype.send = function(){
+		var 
+			xhr,
+			thisRef = this,
+			header
+		;
+		this.completed = false;
+		if(this.timeoutTimer != null) clearTimeout(this.timeoutTimer);
+		this.timeoutTimer = null;
 		
-		Request.urlArgs = null;
-
-		/**
-		 * Request constructor
-		 * A cover-all-situations network call class
-		 * @class Request
-		 * @constructor
-		 * @param {Object} props Request properties
-		 */
-		function Request(props){
-			/**
-			 * Url to hit
-			 * @type {string}
-			 */
-			this.url = props.url;
-
-			// Runtime urlArguments appending (Like Require.js config.urlArgs)
-			// Mostly used for cachebusting json files in your game
-			if(Request.urlArgs)
-			{
-				this.url+= (this.url.indexOf('?') === -1 ? '?' : '&') + Request.urlArgs;
+		function handleError(e){
+			if(thisRef.error){
+				thisRef.error.apply(thisRef.caller, [e]);
 			}
-
-			this._compatibilityMode = ((Browser.name == "ie" && Browser.version == 9) || (Browser.name == "safari" && Browser.platformVersion < 7));
-
-			/**
-			 * Callback function
-			 * @type {function}
-			 */
-			this.callback = Arstider.checkIn(props.callback, null);
-			/**
-			 * Method to call on progress
-			 * @type {function}
-			 */
-			this.progress = Arstider.checkIn(props.progress, null);
-			/**
-			 * Whether to track the call in the preloader or not
-			 * @type {boolean}
-			 */
-			this.track = Arstider.checkIn(props.track, false);
-			/**
-			 * Returning data type
-			 * @type {string}
-			 */
-			this.type = Arstider.checkIn(props.type, (this._compatibilityMode)?"arraybuffer":"blob");
-			/**
-			 * Whether to cache the response for this call
-			 * @type {boolean}
-			 */
-			this.cache = Arstider.checkIn(props.cache, true);
-			/**
-			 * On error function
-			 * @type {function}
-			 */
-			this.error = Arstider.checkIn(props.error, null);
-			/**
-			 * Reference to the calling object, for callback scope
-			 * @type {string}
-			 */
-			this.caller = Arstider.checkIn(props.caller, this);
-			
-			/**
-			 * Advanced
-			 */
-			this.timeout = Arstider.checkIn(props.timeout, 12000); //10 Seconds
-			this.timeoutTimer = null;
-			
-			/**
-			 * Request method (GET, POST, PUT, CHANGE, UPDATE, etc.)
-			 * @type {string}
-			 */
-			this.method = Arstider.checkIn(props.method, "GET");
-			/**
-			 * Is call asynchronous (true is prefered)
-			 * @type {boolean}
-			 */
-			this.async = Arstider.checkIn(props.async, true);
-            /**
-             * Mime override
-             * @type {string|null}
-             */
-            this.mimeOverride = Arstider.checkIn(props.mimeOverride, null);
-			/**
-			 * Optional server user name
-			 * @type {string}
-			 */
-			this.user = Arstider.checkIn(props.user, Arstider.emptyString);
-			/**
-			 * Optional server password
-			 * @type {string}
-			 */
-			this.password = Arstider.checkIn(props.password, Arstider.emptyString);
-			/**
-			 * Optional list of headers to send {key:value} format
-			 * @type {Object}
-			 */
-			this.headers = Arstider.checkIn(props.headers, Arstider.emptyObj);
-			/**
-			 * Post data to send
-			 * @type {*}
-			 */
-			this.postData = Arstider.checkIn(props.postData, Arstider.checkIn(props.data, null));
-			
-			/**
-			 * Defines a unique call id
-			 * @type {string}
-			 */
-			this.id = this.url+"_"+Arstider.timestamp();
-
-			this.completed = false;
-		}
+			if(thisRef.track) Preloader.progress(thisRef.id, 100);
+		};
 		
-		/**
-		 * Sends the request
-		 * @type {function(this:Request)}
-		 */
-		Request.prototype.send = function(){
-
-			var 
-				xhr,
-				thisRef = this,
-				header
-			;
-
-			this.completed = false;
-			if(this.timeoutTimer != null) clearTimeout(this.timeoutTimer);
-			this.timeoutTimer = null;
-			
-			function handleError(e){
-				if(thisRef.error){
-					thisRef.error.apply(thisRef.caller, [e]);
+		if(this.track) Preloader.progress(this.id, 0);
+		if(this.cache){
+			if(!(this.type == "arraybuffer" && Browser.name == "safari" && Browser.platformVersion < 7)){
+				if(cache[this.url] !== undefined){
+					this.callback.apply(this.caller, [cache[this.url]]);
+					updateInPending(this.url);
+					if(this.track) Preloader.progress(this.id, 100);
+					return;
 				}
+					
+				if(findInPending(this.url)){
+					pending.push(this);
+					return;
+				}
+				else{
+					pending.push({url:this.url});
+				}
+			}
+		}
+		if(this.type == "arraybuffer"){
+			var loader = new Image();
+			loader.onerror = function(){
 				if(thisRef.track) Preloader.progress(thisRef.id, 100);
 			};
-			
-			if(this.track) Preloader.progress(this.id, 0);
-
-			if(this.cache){
-				if(!(this.type == "arraybuffer" && Browser.name == "safari" && Browser.platformVersion < 7)){
-					if(cache[this.url] !== undefined){
-						this.callback.apply(this.caller, [cache[this.url]]);
-						updateInPending(this.url);
-						if(this.track) Preloader.progress(this.id, 100);
-						return;
-					}
-						
-					if(findInPending(this.url)){
-						pending.push(this);
-						return;
-					}
-					else{
-						pending.push({url:this.url});
-					}
-				}
-			}
-
-			if(this.type == "arraybuffer"){
-				var loader = new Image();
-				loader.onerror = function(){
-					if(thisRef.track) Preloader.progress(thisRef.id, 100);
-				};
-
-				loader.onload = function(){
-					var ret, bucket;
-					loader.onload = null;
-					//Only for images
-					if(thisRef.url.indexOf(".jpg") || thisRef.url.indexOf(".png") || thisRef.url.indexOf(".gif")){
-						setTimeout(function loadBitmapDelay(){
-							ret = Arstider.saveToBuffer(thisRef.id, loader);
-							bucket = ret.getPixelAt(1,1,1,1);
-							//if(Browser.name == "ie"){
-								ret = ret.getURL("image/png", 0);
-								cache[thisRef.url] = ret;
-								if(Arstider.bufferPool[thisRef.id] && Arstider.bufferPool[thisRef.id].kill) Arstider.bufferPool[thisRef.id].kill();
-							//}
-							if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [ret]);
-							if(thisRef.track) Preloader.progress(thisRef.id, 100);
-							loader.src = Arstider.emptyImgSrc;
-						}, 50);
-					}
-					else{
-						cache[thisRef.url] = ret;
+			loader.onload = function(){
+				var ret, bucket;
+				loader.onload = null;
+				//Only for images
+				if(thisRef.url.indexOf(".jpg") || thisRef.url.indexOf(".png") || thisRef.url.indexOf(".gif")){
+					setTimeout(function loadBitmapDelay(){
+						ret = Arstider.saveToBuffer(thisRef.id, loader);
+						bucket = ret.getPixelAt(1,1,1,1);
+						//if(Browser.name == "ie"){
+							ret = ret.getURL("image/png", 0);
+							cache[thisRef.url] = ret;
+							if(Arstider.bufferPool[thisRef.id] && Arstider.bufferPool[thisRef.id].kill) Arstider.bufferPool[thisRef.id].kill();
+						//}
 						if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [ret]);
 						if(thisRef.track) Preloader.progress(thisRef.id, 100);
 						loader.src = Arstider.emptyImgSrc;
-					}
-					this.completed = true;
-					if(thisRef.timeoutTimer != null) clearTimeout(thisRef.timeoutTimer);
-					thisRef.timeoutTimer = null;
-				};
-				loader.src = this.url;
-
-				if(this.track){
-					this.timeoutTimer = setTimeout(function imageLoadTimeout(){
-						if(!thisRef.completed){
-							Preloader.progress(thisRef.id, 100);
-						}
-					}, this.timeout*2);
-				}
-				return;
-			}
-				
-			/**
-			 * Older browser, need to use Tag-loading method, not xhr
-			 */
-			xhr = new XMLHttpRequest();
-					
-			xhr.open(this.method, this.url, this.async, this.user, this.password);
-
-			if(!(Browser.name == "safari" && Browser.platformVersion < 7)){
-            	if(this.async) xhr.responseType = this.type;
-            	if(this.type == "json") xhr.responseType = "text";
-            }
-                                       
-            if(this.mimeOverride != null && xhr.overrideMimeType) xhr.overrideMimeType(this.mimeOverride);
-
-            if(this.method.toLowerCase() == "post"){
-               		//check for content-type header
-           		if(this.headers === Arstider.emptyObj) this.headers = {};
-           		if(this.headers["Content-Type"] == undefined) this.headers["Content-Type"] = "application/x-www-form-urlencoded";
-           	}
-
-			for(header in this.headers){
-				if(refusedHeaders.indexOf(header) === -1){
-					xhr.setRequestHeader(header, this.headers[header]);
+					}, 50);
 				}
 				else{
-					if(Arstider.verbose > 1) console.warn("Arstider.Request.send: header ",header," is not accepted and will be ignored");
-				}
-			}
-				
-			xhr.onprogress = function(e) {
-				if(thisRef.progress) {
-					thisRef.progress.apply(thisRef.caller, [e]);
-				}
-				if(thisRef.track) Preloader.progress(thisRef.id, Math.round((e.loaded/e.total)*100));
-			};
-						
-			xhr.onload = function(){
-				if(this.status == 200){
-					var res;
-					if(thisRef.type == "json"){
-						try{
-							res = JSON.parse(this.responseText);
-						}
-						catch(e){
-							console.error(e);
-							res = {};
-						}
-					}
-					else{
-						if(thisRef.type == "text"){
-							res = this.responseText;
-						}
-						else res = this.response;
-					}
-
-					if(thisRef.cache){
-						cache[thisRef.url] = res;
-						updateInPending(thisRef.url, Preloader);
-					}
-					
-					if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [res]);
+					cache[thisRef.url] = ret;
+					if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [ret]);
 					if(thisRef.track) Preloader.progress(thisRef.id, 100);
+					loader.src = Arstider.emptyImgSrc;
 				}
-				else{
-					if(thisRef.track) Preloader.progress(thisRef.id, 100);
-				}
-				thisRef.completed = true;
+				this.completed = true;
 				if(thisRef.timeoutTimer != null) clearTimeout(thisRef.timeoutTimer);
 				thisRef.timeoutTimer = null;
 			};
-						
-			xhr.onerror = handleError;
-						
-			xhr.send(Arstider.serialize(this.postData));
-
+			loader.src = this.url;
 			if(this.track){
 				this.timeoutTimer = setTimeout(function imageLoadTimeout(){
 					if(!thisRef.completed){
-						//xhr.abort(); -> they might eventually complete, they'll just pop-in. no big deal.
 						Preloader.progress(thisRef.id, 100);
 					}
-				}, this.timeout);
+				}, this.timeout*2);
 			}
-
-			return xhr;
+			return;
+		}
+			
+		/**
+		 * Older browser, need to use Tag-loading method, not xhr
+		 */
+		xhr = new XMLHttpRequest();
+				
+		xhr.open(this.method, this.url, this.async, this.user, this.password);
+		if(!(Browser.name == "safari" && Browser.platformVersion < 7)){
+           	if(this.async) xhr.responseType = this.type;
+           	if(this.type == "json") xhr.responseType = "text";
+           }
+                                      
+           if(this.mimeOverride != null && xhr.overrideMimeType) xhr.overrideMimeType(this.mimeOverride);
+           if(this.method.toLowerCase() == "post"){
+              		//check for content-type header
+          		if(this.headers === Arstider.emptyObj) this.headers = {};
+          		if(this.headers["Content-Type"] == undefined) this.headers["Content-Type"] = "application/x-www-form-urlencoded";
+          	}
+		for(header in this.headers){
+			if(refusedHeaders.indexOf(header) === -1){
+				xhr.setRequestHeader(header, this.headers[header]);
+			}
+			else{
+				if(Arstider.verbose > 1) console.warn("Arstider.Request.send: header ",header," is not accepted and will be ignored");
+			}
+		}
+			
+		xhr.onprogress = function(e) {
+			if(thisRef.progress) {
+				thisRef.progress.apply(thisRef.caller, [e]);
+			}
+			if(thisRef.track) Preloader.progress(thisRef.id, Arstider.chop((e.loaded/e.total)*100));
 		};
-		
-		return Request;
-	});
-})();			
+					
+		xhr.onload = function(){
+			if(this.status == 200){
+				var res;
+				if(thisRef.type == "json"){
+					try{
+						res = JSON.parse(this.responseText);
+					}
+					catch(e){
+						console.error(e);
+						res = {};
+					}
+				}
+				else{
+					if(thisRef.type == "text"){
+						res = this.responseText;
+					}
+					else res = this.response;
+				}
+				if(thisRef.cache){
+					cache[thisRef.url] = res;
+					updateInPending(thisRef.url, Preloader);
+				}
+				
+				if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [res]);
+				if(thisRef.track) Preloader.progress(thisRef.id, 100);
+			}
+			else{
+				if(thisRef.track) Preloader.progress(thisRef.id, 100);
+			}
+			thisRef.completed = true;
+			if(thisRef.timeoutTimer != null) clearTimeout(thisRef.timeoutTimer);
+			thisRef.timeoutTimer = null;
+		};
+					
+		xhr.onerror = handleError;
+					
+		xhr.send(Arstider.serialize(this.postData));
+		if(this.track){
+			this.timeoutTimer = setTimeout(function imageLoadTimeout(){
+				if(!thisRef.completed){
+					//xhr.abort(); -> they might eventually complete, they'll just pop-in. no big deal.
+					Preloader.progress(thisRef.id, 100);
+				}
+			}, this.timeout);
+		}
+		return xhr;
+	};
+	
+	return Request;
+});
