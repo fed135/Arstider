@@ -372,7 +372,7 @@ function (DisplayObject, SpriteSheetManager, Signal)
 		this.animPosition = frame;
 
 		// Current frame index
-		this.currentFrame = Math.floor(frame);
+		this.currentFrame = Arstider.floor(frame);
 
 		// Min/max
 		if(this.currentFrame<1) this.currentFrame=1;

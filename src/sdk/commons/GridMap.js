@@ -66,10 +66,10 @@ define( "Arstider/commons/GridMap", ["Arstider/commons/GridLayer", "Arstider/Dis
         
         GridMap.prototype.getTilesOf = function(layer, obj){
             var occupied = [], i=0, u=0;
-            var startTileX = Math.floor(obj.global.x / this.tileSizeX);
-            var startTileY = Math.floor(obj.global.y / this.tileSizeY);
-            var numTilesX = Math.ceil(obj.global.width / this.tileSizeX);
-            var numTilesY = Math.ceil(obj.global.height / this.tileSizeY);
+            var startTileX = Arstider.floor(obj.global.x / this.tileSizeX);
+            var startTileY = Arstider.floor(obj.global.y / this.tileSizeY);
+            var numTilesX = Arstider.ceil(obj.global.width / this.tileSizeX);
+            var numTilesY = Arstider.ceil(obj.global.height / this.tileSizeY);
             
             while(i<numTilesX){
                 while(u<numTilesY){
@@ -121,10 +121,10 @@ define( "Arstider/commons/GridMap", ["Arstider/commons/GridLayer", "Arstider/Dis
 	 * @return {Array} The render zone
 	 */
 	GridMap.prototype._getRenderZone = function(){
-		this.__renderZone[0] = (Math.ceil(this.global.x/ this.tileSizeX)*-1) - this.fov;
-		this.__renderZone[1] = this.__renderZone[0] + (Math.ceil(Viewport.maxWidth / this.tileSizeX)+(this.fov*2));
-		this.__renderZone[2] = (Math.ceil(this.global.y/ this.tileSizeY)*-1) - this.fov;
-		this.__renderZone[3] = this.__renderZone[2] + (Math.ceil(Viewport.maxHeight / this.tileSizeY)+(this.fov*2));
+		this.__renderZone[0] = (Arstider.ceil(this.global.x/ this.tileSizeX)*-1) - this.fov;
+		this.__renderZone[1] = this.__renderZone[0] + (Arstider.ceil(Viewport.maxWidth / this.tileSizeX)+(this.fov*2));
+		this.__renderZone[2] = (Arstider.ceil(this.global.y/ this.tileSizeY)*-1) - this.fov;
+		this.__renderZone[3] = this.__renderZone[2] + (Arstider.ceil(Viewport.maxHeight / this.tileSizeY)+(this.fov*2));
 		
 		return this.__renderZone;
 	};

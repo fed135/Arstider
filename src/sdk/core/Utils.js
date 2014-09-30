@@ -76,6 +76,14 @@ Arstider.max = function(){
 	return arguments[max];
 };
 
+Arstider.floor = function(num){
+	return num >>> 0;
+};
+
+Arstider.ceil = function(num){
+	return num << 1;
+};
+
 Arstider.log = function(data, level){
 	level = level || 1; 
 
@@ -121,7 +129,7 @@ Arstider.nextPowerOf2 = function(number){
  */
 Arstider.guid = function() {
   function s4(){
-    return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+    return Arstider.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
   }
   return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
 }
@@ -548,7 +556,7 @@ Arstider.randomSort = function(arr){
 	var i = arr.length, j, temp;
 	if ( i === 0 ) return false;
 	while ( --i ) {
-	   j = Math.floor( Math.random() * ( i + 1 ) );
+	   j = Arstider.floor( Math.random() * ( i + 1 ) );
 	   temp = arr[i];
 	   arr[i] = arr[j];
 	   arr[j] = temp;
@@ -760,7 +768,7 @@ Arstider.Inherit = function(child, parent){
  * @param {function()} callback The called method for rendering
  */
 Arstider.fixedAnimationFrame = function(callback, dt){
-	var targetFPS = Math.floor(1000/Arstider.FPS);
+	var targetFPS = Arstider.floor(1000/Arstider.FPS);
 	var nextFrame = Arstider.max(0, targetFPS - (dt - targetFPS));
 	Arstider.__animTimer = window.setTimeout(callback, nextFrame);
 };

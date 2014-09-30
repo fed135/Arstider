@@ -24,16 +24,11 @@ define("Arstider/contexts/MatrixTransform", [], function(){
     
     MatrixTransform.prototype.setMatrix = function(m) {
         this.matrix = [m[0],m[1],m[2],m[3],m[4],m[5]];
-        //this.setTransform();
     };
     
     MatrixTransform.prototype.cloneMatrix = function(m) {
         return [m[0],m[1],m[2],m[3],m[4],m[5]];
     };
-    
-    //==========================================
-    // Stack
-    //==========================================
     
     MatrixTransform.prototype.save = function() {
         var matrix = this.cloneMatrix(this.getMatrix());
@@ -45,19 +40,20 @@ define("Arstider/contexts/MatrixTransform", [], function(){
     MatrixTransform.prototype.restore = function() {
         if (this.stack.length > 0) {
             var matrix = this.stack.pop();
-            this.setMatrix(matrix, true);
+            this.setMatrix(matrix);
         }
         
         if (this.pencil) this.pencil.restore(this.context);
     };
 
-    //==========================================
-    // Matrix
-    //==========================================
+    MatrixTransform.prototype.reset = function(){
+        this.setMatrix(this.baseMatrix);
+        this.setTransform(true);
+    }
 
-    MatrixTransform.prototype.setTransform = function() {
+    MatrixTransform.prototype.setTransform = function(force) {
         if (this.pencil){
-        	if(this.matrix != this.baseMatrix){
+        	if(this.matrix != this.baseMatrix || force){
                 this.pencil.setTransform(this.context,
                     this.matrix[0],
                     this.matrix[1],
@@ -73,8 +69,6 @@ define("Arstider/contexts/MatrixTransform", [], function(){
     MatrixTransform.prototype.translate = function(x, y) {
         this.matrix[4] += this.matrix[0] * x + this.matrix[2] * y;
         this.matrix[5] += this.matrix[1] * x + this.matrix[3] * y;
-        
-        //this.setTransform();
     };
     
     MatrixTransform.prototype.rotate = function(rad) {
@@ -88,8 +82,6 @@ define("Arstider/contexts/MatrixTransform", [], function(){
         this.matrix[1] = m12;
         this.matrix[2] = m21;
         this.matrix[3] = m22;
-        
-        //this.setTransform();
     };
 
     MatrixTransform.prototype.scale = function(sx, sy) {
@@ -97,32 +89,20 @@ define("Arstider/contexts/MatrixTransform", [], function(){
         this.matrix[1] *= sx;
         this.matrix[2] *= sy;
         this.matrix[3] *= sy;
-        
-        //this.setTransform();
     };
-    
-    //==========================================
-    // Matrix extensions
-    //==========================================
-
 
     MatrixTransform.prototype.rotateAbout = function(rad, x, y) {
         this.translate(x, y);
         this.rotate(rad);
-        //this.translate(-x, -y);
-        //this.setTransform();
     };
 
     MatrixTransform.prototype.scaleAbout = function(scaleX, scaleY, x, y) {
         this.translate(x, y);
         this.scale(scaleX, scaleY);
-        //this.translate(-x, -y);
-        //this.setTransform();
     };
     
     MatrixTransform.prototype.identity = function() {
         this.m = this.baseMatrix;
-        //this.setTransform();
     };
 
     MatrixTransform.prototype.multiply = function(matrix) {
@@ -141,7 +121,6 @@ define("Arstider/contexts/MatrixTransform", [], function(){
         this.matrix[3] = m22;
         this.matrix[4] = dx;
         this.matrix[5] = dy;
-        //this.setTransform();
     };
 
     MatrixTransform.prototype.invert = function() {
@@ -158,12 +137,7 @@ define("Arstider/contexts/MatrixTransform", [], function(){
         this.matrix[3] = m3;
         this.matrix[4] = m4;
         this.matrix[5] = m5;
-        //this.setTransform();
     };
-    
-    //==========================================
-    // Helpers
-    //==========================================
 
     MatrixTransform.prototype.transformPoint = function(x, y) {
         return {
