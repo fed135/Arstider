@@ -333,7 +333,7 @@ define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], /** @lends
 			singleton.tag.height = singleton.maxHeight;
 			Events.broadcast("Viewport.resize", singleton);
                        
-			if(Browser.isMobile) window.document.body.scrollTop=0;
+			/*if(Browser.isMobile)*/ window.document.body.scrollTop=0;
 			return;
 		}
 		//Retina detection

@@ -425,6 +425,8 @@ define( "Arstider/Engine", [
 			target = (singleton.handbreak) ? Preloader._screen : singleton.currentScreen;
 		}
 
+		if(!target.touchAccuracy || target.touchAccuracy == 0) return;
+
 		var
 			i,
 			u,
@@ -476,6 +478,9 @@ define( "Arstider/Engine", [
 			i,
 			inputId = null
 		;
+
+		if(!target || !target.touchAccuracy || target.touchAccuracy == 0) return;
+
 		if(Browser.isMobile){
 			for(i=0; i< inputs.length; i++){
 				if(Arstider.__cancelBubble[i] !== true && target.isTouched){
