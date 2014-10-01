@@ -12,7 +12,7 @@ define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], /** @lends
 		 * @private
 		 * @type {Viewport|null}
 		 */
-		singleton = null,
+		singleton,
 		/**
 		 * Portrait orientation static
 		 * @private
