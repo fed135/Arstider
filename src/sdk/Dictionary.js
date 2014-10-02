@@ -114,25 +114,34 @@
 		Dictionary.prototype.load = function(filename, callback){
 			
 			this._isLoading = true;
-			
-			var req = new Request({
-				url:filename,
-				caller:this,
-				cache:false,
-				track:true,
-				type:"json",
-				callback:function(file){
-					this.strList = file;
-					this._isLoading = false;
-					if(this._pendingStrings.length > 0){
-						for(var i = 0; i < this._pendingStrings.length; i++){
-							this.translate(this._pendingStrings[i][0], this._pendingStrings[i][1], this._pendingStrings[i][2]);
-						}
-						this._pendingStrings.length = 0;
+
+			function parse(file){
+				this.strList = file;
+				this._isLoading = false;
+				if(this._pendingStrings.length > 0){
+					for(var i = 0; i < this._pendingStrings.length; i++){
+						this.translate(this._pendingStrings[i][0], this._pendingStrings[i][1], this._pendingStrings[i][2]);
 					}
-					if(callback) callback();
+					this._pendingStrings.length = 0;
 				}
-			}).send();
+				if(callback) callback();
+			}
+
+			if(filename instanceof String || typeof filename == "string"){
+				var req = new Request({
+					url:filename,
+					caller:this,
+					cache:false,
+					track:true,
+					type:"json",
+					callback:function(file){
+						parse.call(singleton, file);
+					}
+				}).send();
+			}
+			else{
+				parse.call(singleton, filename);
+			}
 		};
 		
 		singleton = new Dictionary();
