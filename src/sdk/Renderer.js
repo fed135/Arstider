@@ -64,7 +64,7 @@ define( "Arstider/Renderer", ["Arstider/contexts/Webgl", "Arstider/contexts/Canv
 			
 		if(!element) return;
 		Performance.elements++;
-		if(!element._skipUpdateBubble && element.update) Performance.numUpdates++; 
+		if(!element._skipUpdateBubble && !element._skipUpdate && element.update) Performance.numUpdates++; 
 		if(element.alpha <= 0) return;
 		
 		if(!t){
@@ -124,7 +124,7 @@ define( "Arstider/Renderer", ["Arstider/contexts/Webgl", "Arstider/contexts/Canv
 		}
 			
 		if(element.skewX != 0 || element.skewY != 0){
-			Performance.transforms++;
+			//Performance.transforms++;
 			//TODO
 		}
 		//Composite Mode / Mask

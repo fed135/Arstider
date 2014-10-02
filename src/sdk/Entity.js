@@ -342,6 +342,8 @@ define("Arstider/Entity", [], /** @lends Entity */ function(){
 		 * @type {boolean}
 		 */
 		this._skipUpdateBubble = false;
+
+		this._skipUpdate = 0;
 		
 		/**
 		 * Flag to drag element
@@ -492,14 +494,15 @@ define("Arstider/Entity", [], /** @lends Entity */ function(){
 		}
 		
 		if(!this._skipUpdateBubble && this.update) this.update(dt);
-		if(this.children){
+		if(this.children && !this._skipUpdateBubble){
 			len = this.children.length;
 			if(len > 0){
 				for(i = 0; i<len; i++){
 					c = this.children[i];
 					if(c && c._update){
-						if(this._skipUpdateBubble && c.cancelBubble) c.cancelBubble();
-						c._update(dt);
+						if(this._skipUpdateBubble && c.cancelBubble) c._skipUpdateBubble = true;
+						if(c._skipUpdate <= 0) c._update(dt);
+						else c._skipUpdate--;
 					}
 				}
 			}
@@ -700,6 +703,16 @@ define("Arstider/Entity", [], /** @lends Entity */ function(){
 	 */
 	Entity.prototype.cancelBubble = function(){
 		this._skipUpdateBubble = true;
+		
+		return this;
+	};
+
+	/**
+	 * Stops update propagation during that frame
+	 * @type {function(this:Entity)}
+	 */
+	Entity.prototype.cancelUpdate = function(num){
+		this._skipUpdate = num || 1;
 		
 		return this;
 	};

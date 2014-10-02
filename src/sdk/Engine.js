@@ -98,12 +98,6 @@ define( "Arstider/Engine", [
 		 */
 		this.pausedByRequest = false;
 		/**
-		 * Saved copy of a screen with a popup over it
-		 * @private
-		 * @type {Screen}
-		 */
-		this._savedScreen = null;
-		/**
 		 * Tells if engine is in the preloading process
 		 * @type {boolean}
 		 */
@@ -425,7 +419,9 @@ define( "Arstider/Engine", [
 			target = (singleton.handbreak) ? Preloader._screen : singleton.currentScreen;
 		}
 
-		if(!target.touchAccuracy || target.touchAccuracy == 0) return;
+		if(!target || !target.touchAccuracy || target.touchAccuracy == 0) return;
+
+		if(target.global.x + target.global.width < 0 || target.global.x > Viewport.maxWidth || target.global.y + target.global.height < 0 || target.global.y > Viewport.maxHeight) return;
 
 		var
 			i,
@@ -459,7 +455,7 @@ define( "Arstider/Engine", [
 						}
 					}
 					//recursion
-					if(target && target.children && target.children[i] && !target.children[i].__skip && target.children[i].children && target.children[i].children.length > 0) singleton.applyTouch(e, target.children[i]);
+					if(target && target.children && target.children[i] && !target.children[i].__skip && target.children[i].children && target.children[i].children.length > 0 && target.children[i].children.touchAccuracy != 0) singleton.applyTouch(e, target.children[i]);
 				}
 			}
 		}
@@ -480,6 +476,8 @@ define( "Arstider/Engine", [
 		;
 
 		if(!target || !target.touchAccuracy || target.touchAccuracy == 0) return;
+
+		if(target.global.x + target.global.width < 0 || target.global.x > Viewport.maxWidth || target.global.y + target.global.height < 0 || target.global.y > Viewport.maxHeight) return;
 
 		if(Browser.isMobile){
 			for(i=0; i< inputs.length; i++){
