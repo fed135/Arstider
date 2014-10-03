@@ -168,13 +168,18 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 	 * @return {number} The number of inputs
 	 */
 	Mouse.prototype.count = function(includeReleased){
-		if(includeReleased) return singleton._ongoingTouches.length;
+		if(Browser.isMobile){
+			if(includeReleased) return singleton._ongoingTouches.length;
 
-		var i = 0;
-		for(i; i<singleton._ongoingTouches.length; i++){
-			if(!singleton._ongoingTouches[i].pressed) break;
+			var i = 0;
+			for(i; i<singleton._ongoingTouches.length; i++){
+				if(!singleton._ongoingTouches[i].pressed) break;
+			}
+			return i;
 		}
-		return i;
+		else{
+			return 1;
+		}
 	};
 		
 	/**
