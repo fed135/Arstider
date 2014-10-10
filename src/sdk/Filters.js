@@ -95,7 +95,7 @@ define("Arstider/Filters", ["Arstider/Buffer", "Arstider/Browser"], /** @lends F
 		var 
 			imageData = buffer.context.getImageData(Arstider.checkIn(x,0),Arstider.checkIn(y,0), Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height)), 
 			pixels = imageData.data, 
-			i = (Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height))-1,
+			i = (Arstider.checkIn(w,buffer.width) * Arstider.checkIn(h,buffer.height))-1,
 			ret = new Buffer({
 				name:buffer.name + "_tint"+r+g+b,
 				width:Arstider.checkIn(w, buffer.width),
@@ -104,11 +104,11 @@ define("Arstider/Filters", ["Arstider/Buffer", "Arstider/Browser"], /** @lends F
 		;
 		
 		f = Arstider.checkIn(f, 1);
-		
+		//console.log("tinting ", i, " pixels");
 		for (i; i >= 0; i--) {  
 		    pixels[i*4] = Arstider.min(r + pixels[i*4] * f);
-	    	pixels[i*4+1] = Arstider.min(r + pixels[i*4+1] * f); 
-	    	pixels[i*4+2] = Arstider.min(r + pixels[i*4+2] * f); 
+	    	pixels[i*4+1] = Arstider.min(g + pixels[i*4+1] * f); 
+	    	pixels[i*4+2] = Arstider.min(b + pixels[i*4+2] * f); 
 		}
 			
 		ret.context.putImageData(imageData, 0, 0);
