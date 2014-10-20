@@ -127,12 +127,14 @@
 		};
 			
 		Canvas2d.prototype.renderAt = function(context, data, x, y, width, height, pX, pY, destWidth, destHeight){
-			if(pX == undefined) pX = 0;
-            if(pY == undefined) pY = 0;
-            destWidth = destWidth || data.width;
-            destHeight = destHeight || data.height;
+			if(data instanceof Image || data instanceof HTMLCanvasElement){
+				if(pX == undefined) pX = 0;
+	            if(pY == undefined) pY = 0;
+	            destWidth = destWidth || data.width;
+	            destHeight = destHeight || data.height;
 
-			context.drawImage(data, pX, pY, destWidth, destHeight, x, y, width, height);
+				context.drawImage(data, pX, pY, destWidth, destHeight, x, y, width, height);
+			}
 		};
 
 		Canvas2d.prototype.debugOutline = function(context, x, y, w, h, fill){
