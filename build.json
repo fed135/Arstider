@@ -1,0 +1,6 @@
+{
+	"dest": "./build/",
+	"js": {
+		"license": "/* <%= pkg.name %> <%= grunt.template.today('dd-mm-yyyy') %> */\n"
+	}
+}
