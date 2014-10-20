@@ -45,7 +45,7 @@ define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], /** @lends
 		 * Current device orientation
 		 * @type {string|null}
 		 */
-		this.orientation = null;
+		this.orientation = LANDSCAPE;
 		/**
 		 * Current canvas scale ratio (automatically scales on smaller resolution devices)
 		 * @type {number}
@@ -169,26 +169,24 @@ define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], /** @lends
 	 * @param {Buffer} canvas The Buffer object to append to the tag
 	 */
 	Viewport.prototype.init = function(tag, canvas){
-		var thisRef = this;
-		
-		if(tag.appendChild) this.container = tag;
-		else this.container = window.document.getElementById(tag);
-		if(this.container){
-			this.container.appendChild(canvas);
-			this.tag = canvas;
+		if(tag.appendChild) singleton.container = tag;
+		else singleton.container = window.document.getElementById(tag);
+		if(singleton.container){
+			singleton.container.appendChild(canvas);
+			singleton.tag = canvas;
 			
-			this.container.style.position = "relative";
-			this.container.style.display = "block";
-			this.container.style.width = "100%";
-			this.container.style.height = "100%";
+			singleton.container.style.position = "relative";
+			singleton.container.style.display = "block";
+			singleton.container.style.width = "100%";
+			singleton.container.style.height = "100%";
 			
-			window.addEventListener("resize", this._resize);
+			window.addEventListener("resize", singleton._resize);
 			if(Browser.isMobile){
-				window.addEventListener("orientationchange", this._rotate);
+				window.addEventListener("orientationchange", singleton._rotate);
 			}
 			
-			window.onbeforeunload = this._unload;
-			window.addEventListener('pagehide', this._pagehide);
+			window.onbeforeunload = singleton._unload;
+			window.addEventListener('pagehide', singleton._pagehide);
 			var hidden, visibilityChange;
 			/*if(Browser.platform == "android"){
 				hidden = "body";
@@ -228,28 +226,28 @@ define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], /** @lends
 				})();
 			}
 			else{
-				window.addEventListener('focus', this._pageshow);
+				window.addEventListener('focus', singleton._pageshow);
 			}
 			window.document.addEventListener(visibilityChange, function(){
-				if(window.document[hidden]) thisRef._pagehide();
-				else thisRef._pageshow();
+				if(window.document[hidden]) singleton._pagehide();
+				else singleton._pageshow();
 			});
 			
-			this._requestFullscreenEvent = (this.tag.requestFullScreen)?"requestFullScreen":(this.tag.mozRequestFullScreen)?"mozRequestFullScreen":(this.tag.webkitRequestFullScreenWithKeys)?"webkitRequestFullScreenWithKeys":(this.tag.webkitRequestFullScreen)?"webkitRequestFullScreen":"FullscreenError";
-			this._cancelFullscreenEvent =  (window.document.cancelFullScreen)?"cancelFullScreen":(window.document.mozCancelFullScreen)?"mozCancelFullScreen":(window.document.webkitCancelFullScreen)?"webkitCancelFullScreen":"FullscreenError";
+			singleton._requestFullscreenEvent = (singleton.tag.requestFullScreen)?"requestFullScreen":(singleton.tag.mozRequestFullScreen)?"mozRequestFullScreen":(singleton.tag.webkitRequestFullScreenWithKeys)?"webkitRequestFullScreenWithKeys":(singleton.tag.webkitRequestFullScreen)?"webkitRequestFullScreen":"FullscreenError";
+			singleton._cancelFullscreenEvent =  (window.document.cancelFullScreen)?"cancelFullScreen":(window.document.mozCancelFullScreen)?"mozCancelFullScreen":(window.document.webkitCancelFullScreen)?"webkitCancelFullScreen":"FullscreenError";
 			
 			
 			window.ondevicemotion = function(event) {
 				event = event || window.event;
 				if(event.accelerationIncludingGravity.x == null || event.accelerationIncludingGravity.y == null || event.accelerationIncludingGravity.z == null) return;
 				
-				thisRef.accelerometerEnabled = true;
-			    thisRef._tilt.x = event.accelerationIncludingGravity.x;  
-			    thisRef._tilt.y = event.accelerationIncludingGravity.y;  
-			    thisRef._tilt.z = event.accelerationIncludingGravity.z;  
+				singleton.accelerometerEnabled = true;
+			    singleton._tilt.x = event.accelerationIncludingGravity.x;  
+			    singleton._tilt.y = event.accelerationIncludingGravity.y;  
+			    singleton._tilt.z = event.accelerationIncludingGravity.z;  
 			};
 			
-			this._rotate();
+			singleton._rotate();
 		}
 		else{
 			if(Arstider.verbose > 0) console.warn("Arstider.Viewport.init: no DOM element specified, viewport broken");
@@ -266,10 +264,10 @@ define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], /** @lends
 		
 		scale = Arstider.checkIn(scale, false);
 	
-		if(scale) this.tag.classList.add("fs_scaled_element");
-		else this.tag.classList.remove("fs_scaled_element");
+		if(scale) singleton.tag.classList.add("fs_scaled_element");
+		else singleton.tag.classList.remove("fs_scaled_element");
 		
-		var res = this.tag[this._requestFullscreenEvent]();
+		var res = singleton.tag[singleton._requestFullscreenEvent]();
 		
 		Events.broadcast("Viewport.enterFullscreen", singleton);
 		
@@ -282,7 +280,7 @@ define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], /** @lends
 	 * @return {*} The result of the fullscreen request
 	 */
 	Viewport.prototype.quitFullScreen = function(){
-		var res = window.document[this._cancelFullscreenEvent]();
+		var res = window.document[singleton._cancelFullscreenEvent]();
 		
 		Events.broadcast("Viewport.quitFullscreen", singleton);
 		
@@ -326,8 +324,8 @@ define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], /** @lends
 		if(singleton.preserveAspect){
 			singleton.tag.style.left = "0px";
 			singleton.tag.style.top = "0px";
-			singleton.tag.style.width = (singleton.maxWidth/(window.devicePixelRatio || 1))+"px";
-			singleton.tag.style.height = (singleton.maxHeight/(window.devicePixelRatio || 1))+"px";
+			singleton.tag.style.width = singleton.maxWidth+"px";
+			singleton.tag.style.height = singleton.maxHeight+"px";
 			singleton.tag.style.position = "absolute";
 			singleton.tag.width = singleton.maxWidth;
 			singleton.tag.height = singleton.maxHeight;
@@ -450,10 +448,10 @@ define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], /** @lends
 	 * @param {function} callback The method to call once the geolocation object has returned
 	 */
 	Viewport.prototype.getGeolocation = function(callback){
-		if(this._geoloc == null){
-			this.updateGeolocation(callback);
+		if(singleton._geoloc == null){
+			singleton.updateGeolocation(callback);
 		}
-		else callback(this._geoloc);
+		else callback(singleton._geoloc);
 	};
 	
 	/**
@@ -462,25 +460,24 @@ define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], /** @lends
 	 * @param {function} callback The method to call once the geolocation object has returned
 	 */
 	Viewport.prototype.updateGeolocation = function(callback){
-		var thisRef = this;
 		if(navigator.geolocation){
-			this.geolocationEnabled = true;
+			singleton.geolocationEnabled = true;
 			try{
 				navigator.geolocation.getCurrentPosition(function(p){
-					thisRef._geoloc = p;
-					if(callback) callback(thisRef._geoloc);
+					singleton._geoloc = p;
+					if(callback) callback(singleton._geoloc);
 				});
 			}
 			catch(e){
-				this.geolocationEnabled = false;
-				this._geoloc = {};
+				singleton.geolocationEnabled = false;
+				singleton._geoloc = {};
 				if(Arstider.verbose > 0) console.warn("Arstider.Viewport.updateGeolocation: ", e);
 			}
 		}
 		else{
-			this.geolocationEnabled = false;
-			this._geoloc = {};
-			if(callback) callback(this._geoloc);
+			singleton.geolocationEnabled = false;
+			singleton._geoloc = {};
+			if(callback) callback(singleton._geoloc);
 		}
 	};
 	
@@ -518,7 +515,7 @@ define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], /** @lends
 	 * @return {Object} The current tilt {x:,y:,z:}
 	 */
 	Viewport.prototype.getDeviceTilt = function(){
-		return this._tilt;
+		return singleton._tilt;
 	};
 	
 	/**
@@ -542,13 +539,13 @@ define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], /** @lends
 	 * @param {number} num The new global scale of the game
 	 */
 	Viewport.prototype.setGlobalScale = function(num){		
-		var numRevert = 1/this.globalScale;
-		this.visibleWidth = this.visibleWidth / numRevert;
-		this.visibleHeight = this.visibleHeight / numRevert;
+		var numRevert = 1/singleton.globalScale;
+		singleton.visibleWidth = singleton.visibleWidth / numRevert;
+		singleton.visibleHeight = singleton.visibleHeight / numRevert;
 		
-		this.globalScale = num;
-		this.visibleWidth = this.visibleWidth / num;
-		this.visibleHeight = this.visibleHeight / num;
+		singleton.globalScale = num;
+		singleton.visibleWidth = singleton.visibleWidth / num;
+		singleton.visibleHeight = singleton.visibleHeight / num;
 		
 		Events.broadcast("Viewport.globalScaleChange", num);
 	};
@@ -561,11 +558,11 @@ define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], /** @lends
 	 * @param {number} maxHeight The new maximum height
 	 */
 	Viewport.prototype.changeResolution = function(minWidth, maxWidth, minHeight, maxHeight){
-		this.maxWidth = maxWidth;
-		this.maxHeight = maxHeight;
-		this.minWidth = minWidth || 0;
-		this.minHeight = minHeight || 0;
-		this._resize();
+		singleton.maxWidth = maxWidth;
+		singleton.maxHeight = maxHeight;
+		singleton.minWidth = minWidth || 0;
+		singleton.minHeight = minHeight || 0;
+		singleton._resize();
 	};
 		
 	singleton = new Viewport();
