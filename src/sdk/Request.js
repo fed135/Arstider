@@ -149,6 +149,8 @@ define("Arstider/Request", ["Arstider/Browser", "Arstider/Preloader"], /** @lend
 		this.timeout = Arstider.checkIn(props.timeout, 12000); //10 Seconds
 		this.timeoutTimer = null;
 		
+		this.crossDomain = Arstider.checkIn(props.crossDomain, false);
+
 		/**
 		 * Request method (GET, POST, PUT, CHANGE, UPDATE, etc.)
 		 * @type {string}
@@ -301,6 +303,10 @@ define("Arstider/Request", ["Arstider/Browser", "Arstider/Preloader"], /** @lend
 			else{
 				if(Arstider.verbose > 1) console.warn("Arstider.Request.send: header ",header," is not accepted and will be ignored");
 			}
+		}
+
+		if(this.crossDomain){
+			xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
 		}
 			
 		xhr.onprogress = function(e) {
