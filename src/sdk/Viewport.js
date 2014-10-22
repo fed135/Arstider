@@ -401,11 +401,16 @@ define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], /** @lends
 	 */
 	Viewport.prototype._rotate = function(e){
 		var prevOrientation = singleton.orientation;
-		if(Browser.isMobile)
-			singleton.orientation = (window.innerHeight>window.innerWidth)?PORTRAIT:LANDSCAPE;
-		else
+		if(Browser.isMobile){
+			if(Browser.name == "android"){
+				singleton.orientation = (window.outerHeight>window.outerWidth)?PORTRAIT:LANDSCAPE;
+			}
+			else{
+				singleton.orientation = (window.innerHeight>window.innerWidth)?PORTRAIT:LANDSCAPE;
+			}
+		else{
 			singleton.orientation = LANDSCAPE;
-		
+		}
 		if(singleton.orientation != prevOrientation){
 			Events.broadcast("Viewport.rotate", singleton);
 		}
