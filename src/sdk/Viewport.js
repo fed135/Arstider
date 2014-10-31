@@ -403,11 +403,12 @@ define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], /** @lends
 		var prevOrientation = singleton.orientation;
 		if(Browser.isMobile){
 			if(Browser.name == "android"){
-				singleton.orientation = (window.outerHeight>window.outerWidth)?PORTRAIT:LANDSCAPE;
+				singleton.orientation = (window.orientation == 90 || window.orientation == -90)?PORTRAIT:LANDSCAPE;
 			}
 			else{
 				singleton.orientation = (window.innerHeight>window.innerWidth)?PORTRAIT:LANDSCAPE;
 			}
+		}
 		else{
 			singleton.orientation = LANDSCAPE;
 		}

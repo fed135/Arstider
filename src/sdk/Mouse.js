@@ -78,11 +78,11 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 	Mouse.prototype.init = function(div){
 		if(div){
 			if(Browser.isMobile || ('ontouchmove' in window)){
-				window.addEventListener('touchmove', this._handleTouchMove);
-				window.addEventListener('touchstart',  this._handleTouchStart, false);			
-				window.addEventListener('touchend',  this._handleTouchEnd,false);
-				window.addEventListener('touchcancel', this._handleTouchEnd, false);
-				window.addEventListener('touchleave', this._handleTouchEnd, false);
+				div.addEventListener('touchmove', this._handleTouchMove);
+				div.addEventListener('touchstart',  this._handleTouchStart, false);			
+				div.addEventListener('touchend',  this._handleTouchEnd,false);
+				div.addEventListener('touchcancel', this._handleTouchEnd, false);
+				div.addEventListener('touchleave', this._handleTouchEnd, false);
 			}
 			
 			if(!Browser.isMobile && ('onmousemove' in window)){

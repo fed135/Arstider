@@ -25,6 +25,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 		this.attempt = 0;
 		this.url = Arstider.checkIn(props.data, (props.url || ""));
 		this.data = new Image();
+		this.error = props.error || null;
 		this.callback = props.callback || null;
 		this.width = Arstider.checkIn(props.width, 0);
 		this.height = Arstider.checkIn(props.height, 0);
@@ -47,7 +48,8 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 					caller:this,
 					callback:this._parse,
 					cache:false,
-					track:true
+					track:true,
+					error:this.error
 				});
 				
 				this.req.send();
@@ -153,10 +155,13 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 				if(thisRef.callback) thisRef.callback(ret);
 			}
 		};
-		this.data.onerror= function(){
+		this.data.onerror= function(e){
 			//IE randomly removes blobs...is there some sort of limit?
 			delete Arstider.blobCache[thisRef.url];
-			thisRef.load();
+			if(thisRef.error) thisRef.error(e);
+
+			if(e && e.preventDefault) e.preventDefault();
+			return false;
 		};
 		this.data.src = url;
 	};

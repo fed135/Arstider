@@ -214,6 +214,9 @@ define("Arstider/Request", ["Arstider/Browser", "Arstider/Preloader"], /** @lend
 				thisRef.error.apply(thisRef.caller, [e]);
 			}
 			if(thisRef.track) Preloader.progress(thisRef.id, 100);
+
+			if(e && e.preventDefault) e.preventDefault();
+			return false;
 		};
 		
 		if(this.track) Preloader.progress(this.id, 0);
@@ -344,6 +347,7 @@ define("Arstider/Request", ["Arstider/Browser", "Arstider/Preloader"], /** @lend
 			}
 			else{
 				if(thisRef.track) Preloader.progress(thisRef.id, 100);
+				handleError(this.status);
 			}
 			thisRef.completed = true;
 			if(thisRef.timeoutTimer != null) clearTimeout(thisRef.timeoutTimer);
