@@ -79,7 +79,7 @@ define("Arstider/Request", ["Arstider/Browser", "Arstider/Preloader"], /** @lend
 		for(i;i>=0;i--){
 			if(url == pending[i].url){
 				if(pending[i].callback){
-					pending[i].callback.apply(pending[i].caller, [cache[url]]);
+					pending[i].callback.call(pending[i].caller, cache[url]);
 					if(preloaderRef) preloaderRef.progress(pending[i].id, 100);
 				} 
 				
@@ -211,7 +211,7 @@ define("Arstider/Request", ["Arstider/Browser", "Arstider/Preloader"], /** @lend
 		
 		function handleError(e){
 			if(thisRef.error){
-				thisRef.error.apply(thisRef.caller, [e]);
+				thisRef.error.call(thisRef.caller, Arstider.error(URIError, {code:e, module:"Arstider/Request", message:"Error while loading "+ thisRef.url +", server returned " + e}));
 			}
 			if(thisRef.track) Preloader.progress(thisRef.id, 100);
 
@@ -223,7 +223,7 @@ define("Arstider/Request", ["Arstider/Browser", "Arstider/Preloader"], /** @lend
 		if(this.cache){
 			if(!(this.type == "arraybuffer" && Browser.name == "safari" && Browser.platformVersion < 7)){
 				if(cache[this.url] !== undefined){
-					this.callback.apply(this.caller, [cache[this.url]]);
+					this.callback.call(this.caller, cache[this.url]);
 					updateInPending(this.url);
 					if(this.track) Preloader.progress(this.id, 100);
 					return;
@@ -256,14 +256,14 @@ define("Arstider/Request", ["Arstider/Browser", "Arstider/Preloader"], /** @lend
 							cache[thisRef.url] = ret;
 							if(Arstider.bufferPool[thisRef.id] && Arstider.bufferPool[thisRef.id].kill) Arstider.bufferPool[thisRef.id].kill();
 						//}
-						if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [ret]);
+						if(thisRef.callback) thisRef.callback.call(thisRef.caller, ret);
 						if(thisRef.track) Preloader.progress(thisRef.id, 100);
 						loader.src = Arstider.emptyImgSrc;
 					}, 50);
 				}
 				else{
 					cache[thisRef.url] = ret;
-					if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [ret]);
+					if(thisRef.callback) thisRef.callback.call(thisRef.caller, ret);
 					if(thisRef.track) Preloader.progress(thisRef.id, 100);
 					loader.src = Arstider.emptyImgSrc;
 				}
@@ -314,7 +314,7 @@ define("Arstider/Request", ["Arstider/Browser", "Arstider/Preloader"], /** @lend
 			
 		xhr.onprogress = function(e) {
 			if(thisRef.progress) {
-				thisRef.progress.apply(thisRef.caller, [e]);
+				thisRef.progress.call(thisRef.caller, e);
 			}
 			if(thisRef.track) Preloader.progress(thisRef.id, Arstider.chop((e.loaded/e.total)*100));
 		};
@@ -342,7 +342,7 @@ define("Arstider/Request", ["Arstider/Browser", "Arstider/Preloader"], /** @lend
 					updateInPending(thisRef.url, Preloader);
 				}
 				
-				if(thisRef.callback) thisRef.callback.apply(thisRef.caller, [res]);
+				if(thisRef.callback) thisRef.callback.call(thisRef.caller, res);
 				if(thisRef.track) Preloader.progress(thisRef.id, 100);
 			}
 			else{

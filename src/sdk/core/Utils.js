@@ -62,6 +62,14 @@ Arstider.getNode = function(obj, maxDepth){
 	return orig;
 };
 
+Arstider.error = function(type, props){
+	var i, err = new type(props.message);
+	for(i in props){
+		if(i != "message") err[i] = props[i];
+	}
+	return err;
+}
+
 Arstider.min = function(){
 	for(var i =1, min=0, len = arguments.length; i<len; i++){
 		if(arguments[i]<arguments[min])min = i;

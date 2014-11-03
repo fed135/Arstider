@@ -127,7 +127,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 			this.data.style.msInterpolationMode = 'auto';
 		}
 		else{
-			if(Arstider.verbose > 0) console.warn("Arstider.setRenderStyle: Cannot apply mode '",Arstider.defaultRenderStyle,"'");
+			Arstider.log("Arstider.setRenderStyle: Cannot apply mode '"+Arstider.defaultRenderStyle+"'", 1);
 		}
 
 		this.data.onload = function(){
@@ -158,7 +158,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 		this.data.onerror= function(e){
 			//IE randomly removes blobs...is there some sort of limit?
 			delete Arstider.blobCache[thisRef.url];
-			if(thisRef.error) thisRef.error(e);
+			if(thisRef.error) thisRef.error(Arstider.error(URIError, {code:500, module:"Arstider/Bitmap", message:"Error while parsing saved blob information for "+ thisRef.url}));
 
 			if(e && e.preventDefault) e.preventDefault();
 			return false;
@@ -177,7 +177,7 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 				if(Arstider.blobCache[this.url].url) window.URL.revokeObjectURL(Arstider.blobCache[this.url].url);
 			}
 			catch(e){
-				if(Arstider.verbose > 2) console.log("Arstider.Bitmap.kill: could not revoke blob url '",this.url, "'");
+				Arstider.log("Arstider.Bitmap.kill: could not revoke blob url '"+this.url+ "'", 2);
 			}
 			delete Arstider.blobCache[this.url];
 		}

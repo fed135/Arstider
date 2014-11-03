@@ -4,35 +4,13 @@
  * @version 1.1
  * @author frederic charette <fredericcharette@gmail.com>
  */
-
-/*
- * Self-invoked singleton wrapper
- */
-;(function(){
-
-	var 
-		/**
-		 * Singleton static
-		 * @private
-		 * @type {Background|null}
-		 */
-		singleton = null
-	;
+define( "Arstider/Background", ["Arstider/DisplayObject"], /** @lends Background */ function (DisplayObject) {	
 	
-	/*
-	 * Defines the Background module
+	/**
+	 * Background layer module definition
+	 * Static redraw layer
+	 * @class Background
+	 * @constructor
 	 */
-	define( "Arstider/Background", ["Arstider/DisplayObject"], /** @lends Background */ function (DisplayObject) {
-		
-		/**
-		 * Returns singleton if it has been instantiated
-		 */
-		if(singleton != null) return singleton;
-		
-		/**
-		 * Instantiates the singleton
-		 */
-		singleton = new DisplayObject();
-		return singleton;
-	});
-})();		
+	return new DisplayObject();
+});	
