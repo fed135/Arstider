@@ -17,7 +17,9 @@ define( "Arstider/TextField", [
 	 * @private
 	 * @type {Object|null}
 	 */
-	var entityRef = new Entity();
+	TextField._entityRef = new Entity();
+
+	TextField.CROP_PADDING = 1;
 
 	/**
 	 * TextField constructor
@@ -198,11 +200,11 @@ define( "Arstider/TextField", [
 			longestLine =  this._getLineWidth(lines[0]);
 		}
 
-		heightVal = (lines.length * f.lineSpacing) + (f.paddingTop * 2) + Math.abs(f.fontOffsetY) + f.shadowBlur + (f.lineSpacing * 0.25);
+		heightVal = (lines.length * f.lineSpacing) + (f.paddingTop * 2) + Math.abs(f.fontOffsetY) + (f.lineWidth * 2) + f.shadowBlur/* + (f.lineSpacing * 0.25)*/;
 
 		//set buffer width 
 		if(fieldWidth <= 0){
-			this.data.setSize(longestLine + (f.paddingLeft * 2) + Math.abs(f.fontOffsetX) + f.shadowBlur, heightVal);
+			this.data.setSize(longestLine + Math.abs(f.paddingLeft * 2) + Math.abs(f.fontOffsetX) + (TextField.CROP_PADDING * 2) + (f.lineWidth * 2) + f.shadowBlur, heightVal);
 			fieldWidth = longestLine;
 		}
 		else{
@@ -218,7 +220,7 @@ define( "Arstider/TextField", [
 		this.data.context.textAlign = "left";
 
 		for(i = 0; i< lines.length; i++){
-			caret.x = f.paddingLeft + f.fontOffsetX;
+			caret.x = f.paddingLeft + f.fontOffsetX + Math.abs(f.lineWidth) + TextField.CROP_PADDING;
 			if(f.textAlign == "right") caret.x += fieldWidth;
 			else if(f.textAlign == "center"){
 				l = this._getLineWidth(lines[i]);
@@ -250,7 +252,7 @@ define( "Arstider/TextField", [
 
 	TextField.prototype.applyFont = function(f){
 		for(var i in f){
-			if(this[i] != undefined && !(i in entityRef)) this.data.context[i] = [i];
+			if(this[i] != undefined && !(i in TextField._entityRef)) this.data.context[i] = [i];
 			else this.data.context[i] = f[i];
 		}
 		this.data.context.font = ((f.bold)?"bold ":"") + ((f.italic)?"italic ":"") + f.size + " " + f.family;
