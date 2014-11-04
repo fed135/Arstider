@@ -56,7 +56,7 @@ define("Arstider/Dictionary", ["Arstider/Request"], /** @lends Dictionary */ fun
 	Dictionary.prototype.translate = function(key, delimiters, callback){
 		
 		if(this.strList === null && !this._isLoading){
-			if(Arstider.verbose > 2) console.warn("Arstider.Dictionary.translate: no string file");
+			Arstider.log("Arstider.Dictionary.translate: no string file", 2);
 			return key;
 		} 
 		
@@ -79,7 +79,7 @@ define("Arstider/Dictionary", ["Arstider/Request"], /** @lends Dictionary */ fun
 			}
 		}
 		else{
-			if(Arstider.verbose > 2) console.warn("Arstider.Dictionary.translate: string not found");
+			Arstider.log("Arstider.Dictionary.translate: string not found", 2);
 		}
 		if(callback) callback(ret);
 		return ret;
