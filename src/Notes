@@ -1,0 +1,24 @@
+audio: everything sound-related
+core: everything 'under-the-hood' that the engine uses but that devs shouldn't really use directly
+data: data handling, manipulating
+debug: profiling, debugging
+display: things that go on stage
+events: events
+lang: strings/file format management, parsing
+managers: global handling of various pools (fonts, events, etc.)
+net: network stuff
+system: everything related to the browser and it's methods
+utils: general tools and stuff
+
+
+
+Planned stuff:
+
+- will feature layers of canvases, all with adjustable fps.
+
+
+New stuff:
+
+- Core class named DataSet. Super-class used to load a config file for a module and do the data management for runtime, config, defaults and local storage.
+(On my laptop)
+
