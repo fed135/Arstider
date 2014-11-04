@@ -4,7 +4,7 @@
  * @version 1.1.2
  * @author frederic charette <fredericcharette@gmail.com>
  */
-define( "Arstider/Renderer", ["Arstider/contexts/Webgl", "Arstider/contexts/Canvas2d", "Arstider/core/Performance", "Arstider/contexts/MatrixTransform"], /** @lends core/Renderer */ function (Webgl, Canvas2d, Performance, MatrixTransform){
+define( "Arstider/Renderer", ["Arstider/Buffer", "Arstider/contexts/Webgl", "Arstider/contexts/Canvas2d", "Arstider/core/Performance", "Arstider/contexts/MatrixTransform"], /** @lends core/Renderer */ function (Buffer, Webgl, Canvas2d, Performance, MatrixTransform){
 		
 	var singleton;
 		
@@ -219,7 +219,7 @@ define( "Arstider/Renderer", ["Arstider/contexts/Webgl", "Arstider/contexts/Canv
 		});
 	};
 	Renderer.prototype._recoverContextPencil = function(context, callback){
-		if(context && context.canvas.buffer.contextType == "canvas2d"){
+		if(context && context.canvas.buffer.contextType == Buffer.CANVAS2D){
 				this.pencil = Canvas2d;
 			}
 			else{
@@ -227,7 +227,7 @@ define( "Arstider/Renderer", ["Arstider/contexts/Webgl", "Arstider/contexts/Canv
 			}
 		if(!context.__init){
 			context.__init = true;
-			if(context && context.canvas.buffer.contextType == "canvas2d"){
+			if(context && context.canvas.buffer.contextType == Buffer.CANVAS2D){
 				this.pencil = Canvas2d;
 			}
 			else{

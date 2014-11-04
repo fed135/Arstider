@@ -18,11 +18,11 @@ define("Arstider/Buffer", ["Arstider/Browser", "Arstider/core/Pixel"], /** @lend
 	 * @param {Object} props The proprieties of the Buffer
 	 */
 	function Buffer(props){
-           props = props || {};
+        props = props || {};
 		this.data = window.document.createElement("canvas");
 		this.preferedContext = (props.webgl)?Buffer.WEBGL:Buffer.CANVAS2D;
-          	this.renderStyle = Arstider.checkIn(props.renderStyle, Arstider.defaultRenderStyle);
-          	this.contextType = null;
+        this.renderStyle = Arstider.checkIn(props.renderStyle, Arstider.defaultRenderStyle);
+        this.contextType = null;
 		
 		this.name = props.name || ("buffer"+(Buffer._anonymousBuffers++));
 		this.data.id = props.id || this.name;
@@ -57,8 +57,8 @@ define("Arstider/Buffer", ["Arstider/Browser", "Arstider/core/Pixel"], /** @lend
 			this.context = this.data.getContext(Buffer.CANVAS2D);
 		} 
 		this.context.__init = false;
-           this.updateRenderStyle();
-           return this.context;
+        this.updateRenderStyle();
+        return this.context;
 	};
 	
 	/**

@@ -34,7 +34,7 @@ define("Arstider/texts/Segment", [], function(){
 
 		context.save();
 		this.applyStyles(context, Arstider.clone(font));
-		this.width = context.measureText(this.text).width + this.xOffset;
+		this.width = Math.ceil(context.measureText(this.text).width + this.xOffset);
 		context.restore();
 	};
 
@@ -55,12 +55,12 @@ define("Arstider/texts/Segment", [], function(){
 
 		this.applyStyles(context, Arstider.clone(font));
 
-		if(stroke) context.strokeText(this.text, Arstider.chop(x+this.xOffset), Arstider.chop(y+this.yOffset));
+		if(stroke) context.strokeText(this.text, Arstider.chop(x+this.xOffset), Arstider.chop(y+this.yOffset), this.width);
 		if(fill){
 			if(stroke && font.shadowColor){
 				context.shadowColor = Arstider.defaultColor;
 			}
-			context.fillText(this.text, Arstider.chop(x+this.xOffset), Arstider.chop(y+this.yOffset));
+			context.fillText(this.text, Arstider.chop(x+this.xOffset), Arstider.chop(y+this.yOffset), this.width);
 		}
 
 		context.restore();
