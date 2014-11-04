@@ -160,6 +160,7 @@ define( "Arstider/TextField", [
 			i,
 			u,
 			heightVal,
+			widthVal,
 			headRoom = 0
 		;
 
@@ -204,7 +205,9 @@ define( "Arstider/TextField", [
 
 		//set buffer width 
 		if(fieldWidth <= 0){
-			this.data.setSize(longestLine + Math.abs(f.paddingLeft * 2) + Math.abs(f.fontOffsetX) + (TextField.CROP_PADDING * 2) + (f.lineWidth * 2) + f.shadowBlur, heightVal);
+			widthVal = longestLine + Math.abs(f.paddingLeft * 2) + Math.abs(f.fontOffsetX) + Math.abs(f.shadowBlur * 2) + (TextField.CROP_PADDING * 2);
+			if(this.strokeText) widthVal += Math.abs(f.lineWidth * 2);
+			this.data.setSize(widthVal, heightVal);
 			fieldWidth = longestLine;
 		}
 		else{

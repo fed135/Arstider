@@ -55,12 +55,12 @@ define("Arstider/texts/Segment", [], function(){
 
 		this.applyStyles(context, Arstider.clone(font));
 
-		if(stroke) context.strokeText(this.text, Arstider.chop(x+this.xOffset), Arstider.chop(y+this.yOffset), this.width);
+		if(stroke) context.strokeText(this.text, Math.round(x+this.xOffset), Math.round(y+this.yOffset), this.width);
 		if(fill){
 			if(stroke && font.shadowColor){
 				context.shadowColor = Arstider.defaultColor;
 			}
-			context.fillText(this.text, Arstider.chop(x+this.xOffset), Arstider.chop(y+this.yOffset), this.width);
+			context.fillText(this.text, Math.round(x+this.xOffset), Math.round(y+this.yOffset), this.width);
 		}
 
 		context.restore();
