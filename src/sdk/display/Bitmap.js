@@ -43,10 +43,48 @@
 			props = props || Arstider.emptyObject;	
 			
 			/**
-			 * List of children
-			 * @type {Array}
+			 * Data to render
+			 * @type {HTMLCanvasElement|Image|null}
 			 */
-			this.children = [];
+			this.data = null;
+			
+			
+			
+			/**
+			 * Drawing horizontal offset of the data
+			 * @type {number}
+			 */
+			this.xOffset = Arstider.checkIn(props.xOffset, 0);
+			
+			/**
+			 * Drawing vertical offset of the data
+			 * @type {number}
+			 */
+			this.yOffset = Arstider.checkIn(props.yOffset, 0);
+			
+			/**
+			 * Drawing width portion of the data
+			 * @type {number}
+			 */
+			this.dataWidth = Arstider.checkIn(props.dataWidth, 0);
+			
+			/**
+			 * Drawing height portion of the data
+			 * @type {number}
+			 */
+			this.dataHeight = Arstider.checkIn(props.dataHeight, 0);
+			
+			/**
+			 * User-defined behavior when element data has finished loading
+			 * @override
+			 * @type {function(this:Entity)}
+			 */
+			this.onload = Arstider.checkIn(props.onload, null);
+			/**
+			 * Called after disposal of data
+			 * @type {function(this:Entity)}
+			 */
+			this.onunload = Arstider.checkIn(props.onunload, null);
 			
 			/**
 			 * Prevents loop in preloading sequence, prevents load stacks of the same element
@@ -66,168 +104,7 @@
 		 */
 		Arstider.Inherit(DisplayObject, Entity);
 		
-		/**
-		 * Adds an Entity-type to the list of children.
-		 * @type {function(this:DisplayObject)}
-		 * @param {Entity} clip The Entity to be added to the DisplayObject's list of children
-		 * @return {Object} Self reference for chaining
-		 */
-		DisplayObject.prototype.addChild = function(clip){
-			if(!clip) {
-				Arstider.log("Arstider.DisplayObject.addChild: no object given");
-				return;
-			}
-			if(clip.parent != null && Arstider.verbose > 1) console.error("Arstider.DisplayObject.addChild: object already has a parent");
-			clip.parent = this;
-			clip.onStage = this.onStage;
-			if(clip.children && clip.children.length > 0){
-				for(var i = 0; i< clip.children.length; i++){
-					clip.children[i].onStage = this.onStage;
-				}
-			}
-			this.children[this.children.length]=clip;
-
-			if(clip.cancelBubble) clip.cancelBubble()._update();
-			return this;
-		};
 		
-		/**
-		 * Removes an Entity-type from the list of children.
-		 * @type {function(this:DisplayObject)}
-		 * @param {string} name The name of the Entity to be removed from the DisplayObject's list of children
-		 * @return {Object} Self reference for chaining
-		 */
-		DisplayObject.prototype.removeChildByName = function(name) {
-			var index = getChildIndexByName(this.children, name);
-			if(index != -1) {
-				if(this.children[index].removeChildren && this.children[index].children.length != 0) this.children[index].removeChildren(true);
-				
-				if(this.children[index].onStage){
-					this.children[index].__skip = true;
-				}
-				else{
-					this.children[index].onStage = false;
-					if(this.children[index].killBuffer) this.children[index].killBuffer();
-					this.children[index].parent = null;
-					
-					this.children.splice(index,1);
-				}
-			}
-			else{
-				if(Arstider.verbose > 1) console.warn("Arstider.DisplayObject.removeChildByName: could not find children "+name);
-			}
-			return this;
-		};
-		
-		/**
-		 * Removes an Entity from the list of children.
-		 * @type {function(this:DisplayObject)}
-		 * @param {Entity} ref The reference of the Entity to be removed from the DisplayObject's list of children
-		 * @return {Object} Self reference for chaining
-		 */
-		DisplayObject.prototype.removeChild = function(ref, keepBuffer) {
-			var index = this.children.indexOf(ref);
-			if(index != -1){
-				if(this.children[index].removeChildren && this.children[index].children.length != 0) this.children[index].removeChildren(true);
-				
-				if(this.children[index].onStage){
-					this.children[index].__skip = true;
-				}
-				else{
-					this.children[index].onStage = false;
-					if(this.children[index].killBuffer) this.children[index].killBuffer();
-					this.children[index].parent = null;
-					
-					this.children.splice(index,1);
-				}
-			}
-			else{
-				if(Arstider.verbose > 1) console.warn("Arstider.DisplayObject.removeChild: could not find child");
-			}
-			return this;
-		};
-		
-		/**
-		 * Get an Entity from the list of children by name.
-		 * @type {function(this:DisplayObject)}
-		 * @param {string} name The name of the desired Entity.
-		 * @return {Entity|null} The desired Entity or null if not found.
-		 */
-		DisplayObject.prototype.getChild = function(name) {
-			var index = getChildIndexByName(this.children, name);
-			if(index != -1) return this.children[index];
-			if(Arstider.verbose > 1) console.warn("Arstider.DisplayObject.getChild: could not find child ", name);
-			return null;
-		};
-		
-		/**
-		 * Get the list of children.
-		 * @type {function(this:DisplayObject)}
-		 * @return {Array} The list of children.
-		 */
-		DisplayObject.prototype.getChildren = function(){
-			if(this.children.length === 0 && Arstider.verbose > 2) console.warn("Arstider.DisplayObject.getChildren: object has no children");
-			return this.children;
-		};
-		
-		/**
-		 * Removes all children from stage and destroys their buffers.
-		 * @type {function(this:DisplayObject)}
-		 * @return {Object} Self reference for chaining
-		 */
-		DisplayObject.prototype.removeChildren = function(force){
-			var someKept = false;
-			if(this.children.length === 0 && Arstider.verbose > 2) console.warn("Arstider.DisplayObject.removeChildren: object has no children");
-			for(var i=0; i<this.children.length; i++) {
-				if(this.children[i]){
-					if(this.children[i].children && this.children[i].removeChildren && this.children[i].children.length != 0){
-						this.children[i].removeChildren(true);
-					}
-					
-					if(this.children[i].onStage && !force){
-						this.children[i].__skip = true;
-						someKept = true;
-					}
-					else{
-						if(this.children[i].killBuffer) this.children[i].killBuffer();
-						this.children[i].parent = null;
-						this.children[i].onStage = false;
-						delete this.children[i];
-					}
-				}
-			}
-			
-			if(!someKept) this.children.length = 0;
-
-			return this;
-		};
-
-		/**
-		 * Detaches a child from it's parent while keeping buffers and children intact
-		 * @type {function(this:DisplayObject)}
-		 * @param {string|Object} ref The name or reference of the child to detach
-		 * @return {Object} Self reference for chaining
-		 */
-		DisplayObject.prototype.detachChild = function(ref){
-			var i = this.children.indexOf(ref);
-			if(i != -1){
-				this.children[i].parent = null;
-				this.children[i].onStage = false;
-				this.children.splice(i,1);
-			}
-			else{
-				i = getChildIndexByName(this.children, ref);
-				if(i != -1){
-					this.children[i].parent = null;
-					this.children[i].onStage = false;
-					this.children.splice(i,1);
-				}
-				else{
-					if(Arstider.verbose > 1) console.warn("Arstider.DisplayObject.detachChild: could not find child ", ref);
-				}
-			}
-			return this;
-		};
 		
 		/**
 		 * Loads a Bitmap into the DisplayObject
@@ -266,20 +143,6 @@
 					}
 				}
 			});
-		};
-
-		/**
-		 * Loads a Bitmap into the DisplayObject
-		 * @type {function(this:DisplayObject)}
-		 * @param {string|Image|HTMLCanvasElement} url Loads an image to be used as data
-		 * @param {function(this:DisplayObject)} callback Optional function to be triggered upon successful loading.
-		 */
-		DisplayObject.prototype.loadOptional = function(url, success) {
-			var thisRef = this;
-			var img = new Image();
-
-			img.onload=thisRef.loadBitmap.bind(thisRef, url, success);
-			img.src = url;
 		};
 
 		DisplayObject.prototype.flatten = function(callback){

@@ -163,5 +163,48 @@ define("Arstider/Filters", ["Arstider/Buffer", "Arstider/Browser"], /** @lends F
 		return ret;
 	};
 
+	//Drop shadow
+	/**
+		 * Element's shadow color
+		 * @type {string}
+		 */
+		this.shadowColor = Arstider.checkIn(props.shadowColor, Arstider.defaultColor);
+		
+		/**
+		 * Element's shadow blur
+		 * @type {number}
+		 */
+		this.shadowBlur = Arstider.checkIn(props.shadowBlur, 0);
+		
+		/**
+		 * Element's shadow horizontal offset
+		 * @type {number}
+		 */
+		this.shadowOffsetX = Arstider.checkIn(props.shadowOffsetX, 0);
+		
+		/**
+		 * Element's shadow vertical offset
+		 * @type {number}
+		 */
+		this.shadowOffsetY = Arstider.checkIn(props.shadowOffsetY, 0);
+
+		//composite
+		/**
+		 * Composite mode to draw the data in. Cancels masking!
+		 * @type {string}
+		 */
+		this.compositeMode = Arstider.checkIn(props.compositeMode, Arstider.defaultComposition);
+		
+
+
+
+		//Mask
+
+		/**
+		 * Is element a mask for inferior layers
+		 * @type {boolean}
+		 */
+		this.mask = false;
+
 	return Filters;
 });

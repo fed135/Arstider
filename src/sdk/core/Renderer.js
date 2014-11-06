@@ -161,12 +161,7 @@ define( "Arstider/Renderer", ["Arstider/Buffer", "Arstider/contexts/Webgl", "Ars
 						var node = Arstider.getNode(element);
 						if(node && node.data){
 							Performance.draws++;
-							if(element.largeData === true){
-								this.pencil.renderAt(context, node.data, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
-							}
-							else{
-								this.pencil.renderAt(context, node.data, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y, element.width, element.height);
-							}
+							this.pencil.renderAt(context, node.data, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
 						}
 						node = null;
 					}

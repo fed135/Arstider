@@ -4,13 +4,12 @@
  * @version 1.1
  * @author frederic charette <fredericcharette@gmail.com>
  */	
-define("Arstider/Entity", [], /** @lends Entity */ function(){
+define("Arstider/core/Entity", 
+[], 
+/** @lends Entity */ 
+function(){
 
-	Entity.anonymousEntities = 0;
-
-	Entity.PASSIVE = 0;
-	Entity.ACTIVE = 1;
-	Entity.COMPLEX = 2;
+	Entity._anonymousEntities = 0;
 
 	/**
 	 * Entity constructor
@@ -24,440 +23,52 @@ define("Arstider/Entity", [], /** @lends Entity */ function(){
 		/**
 		 * If props is undefined, use the Engine's empty object constant
 		 */
-		props = props || Arstider.emptyObject;	
-			
-		/** 
-		 * Name of the element
-		 * @type {string} 
-		 */
-		this.name = props.name || ( "entity" + (++Entity.anonymousEntities) );
-			
-		/**
-		 * Opacity of the element
-		 * @type {number}
-		 */
-		this.alpha = Arstider.checkIn(props.alpha, 1); 
-			
-		/**
-		 * X position of the element
-		 * @type {number}
-		 */
-		this.x = Arstider.checkIn(props.x, 0);
-		
-		/**
-		 * Y position of the element
-		 * @type {number}
-		 */
-		this.y = Arstider.checkIn(props.y, 0);
-		
-		/**
-		 * Width of the element
-		 * @type {number}
-		 */
-		this.width = Arstider.checkIn(props.width, 0);
-		
-		/**
-		 * Height of the element
-		 * @type {number}
-		 */
-		this.height = Arstider.checkIn(props.height, 0);
-		
-		/**
-		 * Horizontal scale of the element
-		 * @type {number}
-		 */
-		this.scaleX = Arstider.checkIn(props.scaleX, 1);
-		
-		/**
-		 * Vertical scale of the element
-		 * @type {number}
-		 */
-		this.scaleY = Arstider.checkIn(props.scaleY, 1);
-		
-		/**
-		 * X Skew of the element
-		 * @type {number}
-		 */
-		this.skewX = Arstider.checkIn(props.skewX, 0);
-		
-		/**
-		 * Y Skew of the element
-		 * @type {number}
-		 */
-		this.skewY = Arstider.checkIn(props.skewY, 0);
-		
-		/**
-		 * Rotation of the element in degrees
-		 * @type {number}
-		 */
-		this.rotation =	Arstider.checkIn(props.rotation, 0);
-		
-		/**
-		 * Horizontal reference point of the element for transformations (0-1)
-		 * @type {number}
-		 */
-		this.rpX = Arstider.checkIn(props.rpX, 0);
-		
-		/**
-		 * Vertical reference point of the element for transformations (0-1)
-		 * @type {number}
-		 */
-		this.rpY = Arstider.checkIn(props.rpY, 0);
-		
-		/**
-		 * Indicates if the element is on stage 
-		 * @type {boolean}
-		 */
-		this.onStage = false;
-		
-		/**
-		 * Global values for the element's properties. Updated by the renderer. (Read-only)
-		 * @type {Object}
-		 */
-		this.global = {
-			alpha:1,
-			x:0,
-			y:0,
-			rotation:0,
-			scaleX:1,
-			scaleY:1,
-			skewX:0,
-			skewY:0,
-			width:0,
-			height:0
-		};
-		
-		/**
-		 * Data to render
-		 * @type {HTMLCanvasElement|Image|null}
-		 */
-		this.data = null;
-		
-		/**
-		 * Is element a mask for inferior layers
-		 * @type {boolean}
-		 */
-		this.mask = false;
-		
-		/**
-		 * Element's shadow color
-		 * @type {string}
-		 */
-		this.shadowColor = Arstider.checkIn(props.shadowColor, Arstider.defaultColor);
-		
-		/**
-		 * Element's shadow blur
-		 * @type {number}
-		 */
-		this.shadowBlur = Arstider.checkIn(props.shadowBlur, 0);
-		
-		/**
-		 * Element's shadow horizontal offset
-		 * @type {number}
-		 */
-		this.shadowOffsetX = Arstider.checkIn(props.shadowOffsetX, 0);
-		
-		/**
-		 * Element's shadow vertical offset
-		 * @type {number}
-		 */
-		this.shadowOffsetY = Arstider.checkIn(props.shadowOffsetY, 0);
-		
-		/**
-		 * Composite mode to draw the data in. Cancels masking!
-		 * @type {string}
-		 */
-		this.compositeMode = Arstider.checkIn(props.compositeMode, Arstider.defaultComposition);
-		
-		/**
-		 * Drawing horizontal offset of the data
-		 * @type {number}
-		 */
-		this.xOffset = Arstider.checkIn(props.xOffset, 0);
-		
-		/**
-		 * Drawing vertical offset of the data
-		 * @type {number}
-		 */
-		this.yOffset = Arstider.checkIn(props.yOffset, 0);
-		
-		/**
-		 * Drawing width portion of the data
-		 * @type {number}
-		 */
-		this.dataWidth = Arstider.checkIn(props.dataWidth, 0);
-		
-		/**
-		 * Drawing height portion of the data
-		 * @type {number}
-		 */
-		this.dataHeight = Arstider.checkIn(props.dataHeight, 0);
+		props = props || Arstider.emptyObject;
 
 		/**
-		 * Enables data slicing (xOffset, yOffset, dataWidth, dataHeight)
-		 * @type {boolean}
-		 */	
-		this.largeData = Arstider.checkIn(props.largeData, false);
-
-		/**
-		 * The element's parent
-		 * @type {*}
-		 */	
-		this.parent = null;			
-		
-		/**
-		 * User-defined behavior when element is pressed
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.onpress = Arstider.checkIn(props.onpress, null);
-		
-		/**
-		 * User-defined behavior when element is pressed
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.onrelease = Arstider.checkIn(props.onrelease, null);
-		
-		/**
-		 * User-defined behavior when element is pressed
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.onhover = Arstider.checkIn(props.onhover, null);
-		
-		/**
-		 * User-defined behavior when element is pressed
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.onleave = Arstider.checkIn(props.onleave, null);
-		
-		/**
-		 * User-defined behavior when element is pressed, then released
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.onclick = Arstider.checkIn(props.onclick, null);
-		
-		/**
-		 * User-defined behavior when element is pressed with the right mouse button, then released
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.onrightclick = Arstider.checkIn(props.onrightclick, null);
-		
-		/**
-		 * User-defined behavior when element is pressed with the right mouse button, then released
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.ondoubleclick = Arstider.checkIn(props.ondoubleclick, null);
-		
-		/**
-		 * User-defined behavior when element data has finished loading
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.onload = Arstider.checkIn(props.onload, null);
-		
-		/**
-		 * Whether or not to display de debug outline
-		 * @type {boolean}
-		 */
-		this.showOutline = Arstider.checkIn(props.showOutline, false);
-		
-		/**
-		 * Whenever the element is hovered
-		 * @private
-		 * @type {boolean}
-		 */
-		this._hovered = false;
-		
-		/**
-		 * Whenever the element is pressed
-		 * @private
-		 * @type {boolean}
-		 */
-		this._pressed = false;
-		
-		/**
-		 * Whenever an element is entered with mouse up, used to determine click behavior
-		 * @private
-		 * @type {boolean}
-		 */
-		this._preclick = false;
-		
-		/**
-		 * Whenever the element is pressed with the right mouse button
-		 * @private
-		 * @type {boolean}
-		 */
-		this._rightPressed = false;
-		
-		/**
-		 * Double-click delay saver
-		 * @private
+		 * Entity unique ID
 		 * @type {number}
 		 */
-		this._doubleClickCheck = 0;
-		
-		/**
-		 * Double-click max delay
-		 * @type {number}
-		 */
-		this._doubleClickDelay = 250;
-		
-		/**
-		 * Defines horizontal docking option
-		 * @private
-		 * @type {string|number|null}
-		 */
-		this._dockX = Arstider.checkIn(props.dockX, null);
-		
-		/**
-		 * Defines vertical docking option
-		 * @private
-		 * @type {string|number|null}
-		 */
-		this._dockY = Arstider.checkIn(props.dockY, null);
-		
-		/**
-		 * Defines horizontal filling option
-		 * @private
-		 * @type {string|number|null}
-		 */
-		this._fillX = Arstider.checkIn(props.fillX, null);
-		
-		/**
-		 * Defines vertical filling option
-		 * @private
-		 * @type {string|number|null}
-		 */
-		this._fillY = Arstider.checkIn(props.fillX, null);
+		this.id = Entity._anonymousEntities++;
 		
 		/**
 		 * Flag to skip update propagation
 		 * @private
 		 * @type {boolean}
 		 */
-		this._skipUpdateBubble = false;
+		this.cancelBubble = false;
 
-		this._skipUpdate = 0;
-		
 		/**
-		 * Flag to drag element
-		 * @private
-		 * @type {boolean} 
-		 */
-		this._dragged = false;
-		
-		/**
-		 * Flag to bound dragging to parent
-		 * @private
-		 * @type {boolean}
-		 */
-		this._boundDrag = false;
-		
-		/**
-		 * Drag x offset
+		 * Number of frames to skip update chain
 		 * @private
 		 * @type {number}
 		 */
-		this._dragOffsetX = 0;
+		this.cancelUpdate = false;
 		
 		/**
-		 * Drag y offset
-		 * @private
-		 * @type {number}
-		 */
-		this._dragOffsetY = 0;
+		 * The element's parent
+		 * @type {*}
+		 */	
+		this.parent = null;
+
 		/**
-		 * Called after disposal of data
+		 * List of children
+		 * @type {Array}
+		 */
+		this.children = [];
+		
+		/**
+		 * User-defined behavior for asynchronous, constant logic
+		 * @override
 		 * @type {function(this:Entity)}
 		 */
-		this.onunload = Arstider.checkIn(props.onunload, null);
+		this.update = props.update || null;
+
 		/**
-		 * Complex interactive element - prevents intensive lookup
-		 * @type {boolean}
+		 * List of components
+		 * @type {Array}
 		 */
-		this.touchAccuracy = Arstider.checkIn(props.touchAccuracy, Entity.ACTIVE);
-		if(props.update) this.update = props.update;
-	};
-	
-	/**
-	 * User-defined behavior for asynchronous, constant logic
-	 * @override
-	 * @type {function(this:Entity)}
-	 */
-	Entity.prototype.update = null;
-	
-	/**
-	 * Private logic when element is hovered
-	 * @protected
-	 * @type {function(this:Entity)}
-	 */
-	Entity.prototype._onhover = function(){
-		this._hovered = true;
-		
-		if(this.onhover) this.onhover();
-	};
-	
-	/**
-	 * Private logic when element is left
-	 * @protected
-	 * @type {function(this:Entity)}
-	 */
-	Entity.prototype._onleave = function(){
-		this._hovered = false;
-		this._preclick = false;
-		this._rightPressed = false;
-		
-		if(this.onleave) this.onleave();
-	};
-	
-	/**
-	 * Private logic when element is pressed
-	 * @protected
-	 * @type {function(this:Entity)}
-	 */
-	Entity.prototype._onpress = function(){
-		this._pressed = true;
-		
-		if(this.onpress) this.onpress();
-	};
-	
-	/**
-	 * Private logic when element is released
-	 * @protected
-	 * @type {function(this:Entity)}
-	 */
-	Entity.prototype._onrelease = function(){
-		this._pressed = false;
-		
-		var time = Arstider.timestamp();
-		
-		if(this._preclick){
-			if(time - this._doubleClickCheck < this._doubleClickDelay && this.ondoubleclick) this.ondoubleclick();
-			else{
-				if(this.onclick) this.onclick();
-			}
-			
-			this._doubleClickCheck = time;
-		}
-		if(this.onrelease) this.onrelease();
-		
-		this._preclick = false;
-	};
-	
-	/**
-	 * Private logic when element is clicked with the right mouse button
-	 * @protected
-	 * @type {function(this:Entity)}
-	 */
-	Entity.prototype._onrightclick = function(){
-		this._rightPressed = false;
-		if(this.onrightclick) this.onrightclick();
+		this._components = [];
 	};
 	
 	/**
@@ -468,188 +79,152 @@ define("Arstider/Entity", [], /** @lends Entity */ function(){
 	 */
 	Entity.prototype._update = function(dt){
 		
-		var i, c, len;
-		/**
-		 * Check for docking options
-		 */
-		if(this.parent != null){
-			if(this.global.alpha > 0){
-				if(this._fillX != null){
-					if((this._fillX + "").indexOf("px") !== -1) this.width = parseFloat(this._fillX);
-					else this.width = this.parent.width * parseFloat(this._fillX);
-				}
-				if(this._fillY != null){
-					if((this._fillY + "").indexOf("px") !== -1) this.height = parseFloat(this._fillY);
-					else this.height = this.parent.height * parseFloat(this._fillY);
-				}
-				if(this._dockX != null){
-					if((this._dockX + "").indexOf("px") !== -1) this.x = parseFloat(this._dockX);
-					else this.x = (this.parent.width * parseFloat(this._dockX)) - (this.width * parseFloat(this._dockX));
-				}
-				if(this._dockY != null){
-					if((this._dockY + "").indexOf("px") !== -1) this.y = parseFloat(this._dockY);
-					else this.y = (this.parent.height * parseFloat(this._dockY)) - (this.height * parseFloat(this._dockY));
+		var 
+			i, 
+			c, 
+			len
+		;
+		
+		if(!this.cancelBubble && this.update) this.update(dt);
+
+		if(this.children && !this.cancelBubble){
+			len = this._components.length;
+			if(len > 0){
+				for(i = 0; i<len; i++){
+					c = this[this._components[i]];
+					if(c && c.update) c.update(dt);
 				}
 			}
-		}
-		
-		if(!this._skipUpdateBubble && this.update) this.update(dt);
-		if(this.children && !this._skipUpdateBubble){
+
 			len = this.children.length;
 			if(len > 0){
 				for(i = 0; i<len; i++){
 					c = this.children[i];
 					if(c && c._update){
-						if(this._skipUpdateBubble && c.cancelBubble) c._skipUpdateBubble = true;
-						if(c._skipUpdate <= 0) c._update(dt);
-						else c._skipUpdate--;
+						if(this.cancelBubble && c.cancelBubble != undefined) c.cancelBubble = true;
+						if(!c.cancelUpdate) c._update(dt);
 					}
 				}
 			}
 		}
-		
-		if(this._skipUpdateBubble) this._skipUpdateBubble = false;
 	};
 	
 	/**
-	 * Starts dragging the element, following the mouse
+	 * Adds an Entity-type to the list of children.
 	 * @type {function(this:Entity)}
-	 * @param {boolean|null} snapToCenter Whether to snap the dragged object centered with the pointer.
-	 * @param {boolean|null} bound Whether to bound the dragging to the confines of the parent
+	 * @param {Entity} ref The Entity to be added to the Entity's list of children
+	 * @return {Object} Self reference for chaining
 	 */
-	Entity.prototype.startDrag = function(snapToCenter, bound){
-		var thisRef = this;
-		
-		if(this.parent == null){
-			if(Arstider.verbose > 0) console.warn("Arstider.Entity.startDrag: cannot drag an element with no parent");
-		}
-		
-		requirejs(["Arstider/Mouse"], function(Mouse){
-			var mouseX = Mouse.x();
-			var mouseY = Mouse.y();
-			
-			thisRef._dragged = true;
-			if(snapToCenter || mouseX == -1 || mouseY == -1){
-				thisRef._dragOffsetX = thisRef.width*0.5;
-				thisRef._dragOffsetY = thisRef.height*0.5;
-			}
-			else{
-				thisRef._dragOffsetX = mouseX - thisRef.global.x;
-				thisRef._dragOffsetY = mouseY - thisRef.global.y;
-			}
-			
-			thisRef._boundDrag = bound || false;
-		});
-		
-		return this;
-	};
-	
-	/**
-	 * Stops dragging the element
-	 * @type {function(this:Entity)}
-	 */
-	Entity.prototype.stopDrag = function(){
-		var thisRef = this;
-		setTimeout(function stopDragRelay(){
-			thisRef._dragged = false;
-			thisRef._dragOffsetX = 0;
-			thisRef._dragOffsetY = 0;
-			thisRef._boundDrag = false;
-		},0);
-		
-		return this;
-	};
-	
-	/**
-	 * Sets the value for horizontal and vertical docking of the Entity
-	 * @type {function(this:Entity)}
-	 * @param {string|number|null} x The horizontal docking propriety.
-	 * @param {string|number|null} y The vertical docking propriety.
-	 */
-	Entity.prototype.dock = function(x, y){
-		if(x === "left") this._dockX = 0;
-		else if(x === "center") this._dockX = 0.5;
-		else if(x === "right") this._dockX = 1;
-		else this._dockX = x || null;
-		
-		if(y === "top") this._dockY = 0;
-		else if(y === "center") this._dockY = 0.5;
-		else if(y === "bottom") this._dockY = 1;
-		else this._dockY = y || null;
-		
-		this.cancelBubble()._update();
-		return this;
-	};
-	
-	/**
-	 * Sets the value for horizontal and vertical filling of the Entity
-	 * @type {function(this:Entity)}
-	 * @param {string|number|null} x The horizontal filling propriety.
-	 * @param {string|number|null} y The vertical filling propriety.
-	 */
-	Entity.prototype.fill = function(x, y){
-		if(x === "full") this._fillX = 1;
-		else if(x === "half") this._fillX = 0.5;
-		else this._fillX = x || null;
-		
-		if(y === "full") this._fillY = 1;
-		else if(y === "half") this._fillY = 0.5;
-		else this._fillY = y || null;
-		
-		this.cancelBubble()._update();
-		return this;
-	};
-	
-	/**
-	 * Checks if coordinates fit in the global location of the Entity
-	 * @type {function(this:Entity)}
-	 * @param {number} x The x coordinate to check against.
-	 * @param {number} y The y coordinate to check against.
-	 * @return {boolean} Are the coordinates within the zone of the Entity
-	 */
-	Entity.prototype.isTouched = function(x,y){
-		if(this.touchAccuracy == Entity.PASSIVE) return false;
+	Entity.prototype.addChild = function(ref){
 
-		if(this.touchAccuracy == Entity.ACTIVE || !this.global.points){
-			// --Simple version
-			if(x > this.global.x && x < this.global.x + (this.width * this.global.scaleX)){
-				if(y > this.global.y && y < this.global.y + (this.height * this.global.scaleY)) return true;
-			}
-			return false;
+		if(!ref){
+			Arstider.log("Arstider.Entity.addChild: no object given");
+			return;
 		}
-		//-- Complex version, let's see how expensive this is.
-		var 
-			distAP = Arstider.distance(this.global.points[0], this.global.points[1], x, y),
-			distBP = Arstider.distance(this.global.points[2], this.global.points[3], x, y),
-			distCP = Arstider.distance(this.global.points[4], this.global.points[5], x, y),
-			distDP = Arstider.distance(this.global.points[6], this.global.points[7], x, y),
-			quad1 = ((distAP + distBP + this.global.width) * 0.5),
-			quad1 = Math.sqrt(quad1 * (quad1 - distAP) * (quad1 - distBP) * (quad1 - this.global.width)) || 0;
-			quad2 = ((distBP + distDP + this.global.height) * 0.5),
-			quad2 = Math.sqrt(quad2 * (quad2 - distBP) * (quad2 - distDP) * (quad2 - this.global.height)) || 0;
-			quad3 = ((distCP + distDP + this.global.width) * 0.5),
-			quad3 = Math.sqrt(quad3 * (quad3 - distCP) * (quad3 - distDP) * (quad3 - this.global.width)) || 0;
-			quad4 = ((distAP + distCP + this.global.height) * 0.5),
-			quad4 = Math.sqrt(quad4 * (quad4 - distAP) * (quad4 - distCP) * (quad4 - this.global.height)) || 0;
-			sum = quad1 + quad2 + quad3 + quad4,
-			total = this.global.width * this.global.height
-		;
-		if(sum >= total - 100 && sum <= total + 100) return true;
-		
-		return false;
+
+		if(ref.parent != null) Arstider.log("Arstider.Entity.addChild: object already has a parent", 1);
+		ref.parent = this;
+		this.children[this.children.length]=ref;
+		if(ref.cancelBubble) ref.cancelBubble()._update();
+		return this;
 	};
-               
-               /**
-	 * Checks if coordinates fit in the local location of the Entity
+	
+	/**
+	 * Removes an Entity from the list of children.
 	 * @type {function(this:Entity)}
-	 * @param {number} x The x coordinate to check against.
-	 * @param {number} y The y coordinate to check against.
-                * @param {number} w The width of the element to check against.
-	 * @param {number} h The height of the element to check against.
-	 * @return {boolean} Are the coordinates within the zone of the Entity
+	 * @param {Entity} ref The reference of the Entity to be removed from the Entity's list of children
+	 * @return {Object} Self reference for chaining
 	 */
-	Entity.prototype.collides = function(x,y,w,h){
-		return (this.x < x + w && this.x + this.width > x && this.y < y + h && this.y + this.height > y);
+	Entity.prototype.removeChild = function(ref, keepBuffer) {
+		
+		var 
+			index = this.children.indexOf(ref)
+		;
+
+		if(index != -1){
+			if(this.children[index].removeChildren && this.children[index].children.length > 0) this.children[index].removeChildren(true);
+			
+			this.children[index].destroyComponents();
+			this.children[index].parent = null;
+				
+			this.children.splice(index,1);
+		}
+		else{
+			Arstider.log("Arstider.Entity.removeChild: could not find child", 1);
+		}
+		return this;
+	};
+
+	/**
+	 * Destroys all the components of the entity.
+	 * @type {function(this:Entity)}
+	 * @return {Object} Self reference for chaining
+	 */
+	Entity.prototype.destroyComponents = function(){
+
+		var
+			i,
+			len = this._components.length -1
+		;
+
+		for(i = len; i >= 0; i--){
+			this[this._components[i]].dispose();
+			delete this[this._components[i]];
+			this._components.splice(i, 1);
+		}
+	};
+	
+	/**
+	 * Get an Entity from the list of children by it's index.
+	 * @type {function(this:Entity)}
+	 * @param {string} index The index position of the desired Entity.
+	 * @return {Entity|null} The desired Entity or null if not found.
+	 */
+	Entity.prototype.getChildAt = function(index) {
+
+		if(this.children[index]) return this.children[index];
+		Arstider.log("Arstider.Entity.getChild: could not find child at index "+index, 1);
+
+		return null;
+	};
+	
+	/**
+	 * Removes all children from stage and destroys their buffers.
+	 * @type {function(this:Entity)}
+	 * @return {Object} Self reference for chaining
+	 */
+	Entity.prototype.removeChildren = function(){
+
+		var
+			i,
+			len = this.children.length -1
+		;
+
+		for(i = len; i >= 0; i--){
+			this.removeChild(this.children[i]);
+		}
+		
+		return this;
+	};
+
+	/**
+	 * Detaches a child from it's parent while keeping buffers and children intact
+	 * @type {function(this:Entity)}
+	 * @param {string|Object} ref The name or reference of the child to detach
+	 * @return {Object} Self reference for chaining
+	 */
+	Entity.prototype.detachChild = function(ref){
+		
+		var 
+			i = this.children.indexOf(ref)
+		;
+
+		if(i != -1){
+			this.children[i].parent = null;
+			this.children.splice(i,1);
+		}
+
+		return this;
 	};
 		
 	/**
@@ -659,6 +234,7 @@ define("Arstider/Entity", [], /** @lends Entity */ function(){
 	 * @returns {Entity} Returns the element for chaining
 	 */
 	Entity.prototype.setIndex = function(index) {
+
 		if(this.parent){
 			var myIndex = this.parent.children.indexOf(this);
 			if(myIndex > -1 && this.parent.children.length > 1){
@@ -671,11 +247,11 @@ define("Arstider/Entity", [], /** @lends Entity */ function(){
 				this.parent.children.splice(index,0,this.parent.children.splice(myIndex,1)[0]);
 			}
 			else{
-				if(Arstider.verbose > 1) console.warn("Arstider.Entity.setIndex: no re-order occured");
+				Arstider.log("Arstider.Entity.setIndex: no re-order occured", 1);
 			}
 		}
 		else{
-			if(Arstider.verbose > 0) console.warn("Arstider.Entity.setIndex: element has no parent");
+			Arstider.log("Arstider.Entity.setIndex: element has no parent", 1);
 		}
 		
 		return this;
@@ -687,63 +263,15 @@ define("Arstider/Entity", [], /** @lends Entity */ function(){
 	 * @returns {number} Returns the element index
 	 */
 	Entity.prototype.getIndex = function(index){
+
 		if(this.parent){
 			return this.parent.children.indexOf(this);
 		}
 		else{
-			if(Arstider.verbose > 0) console.warn("Arstider.Entity.getIndex: element has no parent");
+			Arstider.log("Arstider.Entity.getIndex: element has no parent", 1);
 		}
 		
 		return -1;
-	};
-	
-	/**
-	 * Stops update propagation during that frame
-	 * @type {function(this:Entity)}
-	 */
-	Entity.prototype.cancelBubble = function(){
-		this._skipUpdateBubble = true;
-		
-		return this;
-	};
-
-	/**
-	 * Stops update propagation during that frame
-	 * @type {function(this:Entity)}
-	 */
-	Entity.prototype.cancelUpdate = function(num){
-		this._skipUpdate = num || 1;
-		
-		return this;
-	};
-	
-	/**
-	 * Kills the Entity's Buffer(s).
-	 * @type {function(this:Entity)}
-	 */
-	Entity.prototype.killBuffer = function(wipe){
-		if(this.data && this.data.kill) this.data.kill();
-		
-		this.data = null;
-		
-		if(this.onunload) this.onunload();
-		this._requestedAsset = null;
-		
-		return this;
-	};
-		
-	/**
-	 * Getter for the global 'id' attribute. (Includes parents' value)
-	 * @type {function(this:Entity)}
-	 * @return {string} final value for 'id'
-	 */
-	Entity.prototype.id = function(){
-		if(this.parent){
-			if(this.parent.id() != ""){
-				return this.parent.id()+"."+this.name;
-			}
-		}
-		return this.name || "";
 	};
 	
 	return Entity; 
