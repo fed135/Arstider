@@ -4,70 +4,42 @@
  * @version 1.1.3
  * @author frederic charette <fredericcharette@gmail.com>
  */
-define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Events"], /** @lends Mouse */ function (Browser, Viewport, Events){
-		
-	var singleton;
-		
-	/**
-	 * Copies a touch event
-	 * @private
-	 * @type {function}
-	 * @param {Object} touch The touch event object
-	 * @return {Object} The simplified copy of the event object
-	 */
-	function copyTouch(touch, state){
-		return {
-			id:Arstider.checkIn(touch.identifier, -1), 
-			x:((touch.clientX - Viewport.xOffset) / Viewport.canvasRatio) / Viewport.globalScale,
-			y:((touch.clientY - Viewport.yOffset) / Viewport.canvasRatio) / Viewport.globalScale,
-			pressed:Arstider.checkIn(state, true)
-		};
-	}
+define( "Arstider/system/Mouse", 
+[
+	"Arstider/events/Signal",
+	"Arstider/system/Browser", 
+	"Arstider/system/Viewport"
+], 
+/** @lends system/Mouse */ 
+function (Signal, Browser, Viewport){
 
 	/**
 	 * Mouse constructor
 	 * A mouse events mapper
-	 * @class Mouse 
+	 * @class system/Mouse 
 	 * @constructor
 	 */
 	function Mouse(){
-		/**
-		 * Whether the mouse is pressed/finger[0] is down
-		 * @type {boolean}
-		 */
-		this.pressed = false;
-		/**
-		 * Whether the mouse right click button is pressed (desktop only)
-		 * @type {boolean}
-		 */
-		this.rightPressed = false;
-			
-		/**
-		 * Mouse position raw (desktop) ***Use the Mouse.x() and Mouse.y() methods for cross-platform final result***
-		 * @private
-		 * @type {Object}
-		 */
-		this._mouse = {x:0,y:0};
 
-		/**
-		 * Overriden by the engine. Called on input to keep the event chain
-		 * @type {function}
-		 */
-		this._touchRelay = Arstider.emptyFunction;
+		this._status = {
+			pressed:false,
+			rightPressed:false
+		};
+
+		this.onmousewheel = new Signal();
 
 		/**
 		 * Keeps track of the touches in progress
 		 * @private
 		 * @type {Array}
 		 */
-		this._ongoingTouches = [];
+		this._inputs = [];
 
 		/**
-		 * Current gestures to step on touchmove
-		 * @private
-		 * @type {Array}
+		 * Overriden by the engine. Called on input to keep the event chain
+		 * @type {function}
 		 */
-		this._currentGestures = [];
+		this._components = [];
 	}
 
 	/**
@@ -95,20 +67,59 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 			}
 		}
 		else{
-			Arstider.log("Arstider.Mouse: no Viewport tag, cannot bind mouse events");
+			Arstider.log("Arstider.Mouse: no Viewport tag, cannot bind mouse events", 1);
 		}
 	};
+
+	/**
+	 * Copies a touch event
+	 * @private
+	 * @type {function}
+	 * @param {Object} touch The touch event object
+	 * @return {Object} The simplified copy of the event object
+	 */
+	Mouse.prototype._copyTouch(touch, state){
+		return {
+			id:Arstider.checkIn(touch.identifier, -1), 
+			x:((touch.clientX - Viewport.xOffset) / Viewport.canvasRatio) / Viewport.globalScale,
+			y:((touch.clientY - Viewport.yOffset) / Viewport.canvasRatio) / Viewport.globalScale,
+			pressed:Arstider.checkIn(state, true)
+		};
+	}
+
+	Mouse.prototype.registerComponent = function(clickable){
+		
+		var 
+			index = this._components.indexOf(clickable)
+		;
+
+		if(index == -1) this._components.push(clickable);
+
+		return this;
+	};
+
+	Mouse.prototype.unregisterComponent = function(clickable){
+
+		var 
+			index = this._components.indexOf(clickable)
+		;
+
+		if(index != -1) this._components.splice(index, 1);
+
+		return this;
+	}
 		
 	/**
 	 * Resets mouse values
 	 * @type {function(this:Mouse)}
 	 */
 	Mouse.prototype.reset = function(){
-		singleton._ongoingTouches.length = 0;
-		singleton.pressed = false;
-		singleton.rightPressed = false;
-		singleton._mouse.x = 0;
-		singleton._mouse.y = 0;
+
+		this._inputs.length = 0;
+		this._status.pressed = false;
+		this._status.rightPressed = false;
+
+		return this;
 	};
 		
 	/**
@@ -118,13 +129,12 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 	 * @return {number}
 	 */
 	Mouse.prototype.x = function(input){
+
 		input = input || 0;
 		
-		if(Browser.isMobile){
-			if(singleton._ongoingTouches[input] != undefined) return parseInt(singleton._ongoingTouches[input].x);
-			else return -1;
-		}
-		else return parseInt(singleton._mouse.x);
+		if(this._inputs[input] != undefined) return this._inputs[input].x;
+
+		return -1;
 	};
 		
 	/**
@@ -134,13 +144,12 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 	 * @return {number}
 	 */
 	Mouse.prototype.y = function(input){
+
 		input = input || 0;
 	
-		if(Browser.isMobile){
-			if(singleton._ongoingTouches[input] != undefined) return parseInt(singleton._ongoingTouches[input].y);
-			else return -1;
-		}
-		else return parseInt(singleton._mouse.y);
+		if(this._inputs[input] != undefined) return this._inputs[input].y;
+
+		return -1;
 	};
 
 	/**
@@ -150,16 +159,12 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 	 * @return {boolean}
 	 */
 	Mouse.prototype.isPressed = function(input){
+		
 		input = input || 0;
 		
-		if(Browser.isMobile){
-			if(singleton._ongoingTouches[input] != undefined) return singleton._ongoingTouches[input].pressed;
-			else return false;
-		}
-		else{
-			if(input == "right") return singleton.rightPressed;
-			else return singleton.pressed;
-		} 
+		if(this._inputs[input] != undefined) return this._inputs[input].pressed;
+		
+		return false; 
 	};
 
 	/**
@@ -168,18 +173,18 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 	 * @return {number} The number of inputs
 	 */
 	Mouse.prototype.count = function(includeReleased){
-		if(Browser.isMobile){
-			if(includeReleased) return singleton._ongoingTouches.length;
+		
+		var
+			i = 0
+		;
 
-			var i = 0;
-			for(i; i<singleton._ongoingTouches.length; i++){
-				if(!singleton._ongoingTouches[i].pressed) break;
-			}
-			return i;
+		if(includeReleased) return this._inputs.length;
+
+		for(i; i<this._inputs.length; i++){
+			if(!this._inputs[i].pressed) break;
 		}
-		else{
-			return 1;
-		}
+
+		return i;
 	};
 		
 	/**
@@ -189,22 +194,28 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 	 * @param {event} event The touch event from the browser
 	 */
 	Mouse.prototype._handleTouchMove = function(event){
+
 		e = event || window.event;
 		e.preventDefault();
+
+		var
+			i = 0,
+			idx = -1,
+			touches = e.changedTouches,
+			len = touches.length,
+			prevState
+		;
 		
-		var i, idx = -1, touches = e.changedTouches, prevState;
-		for(i=0; i<touches.length; i++){
-			idx = singleton.getIndexFromId(touches[i].identifier);
+		for(i; i<len; i++){
+			idx = this.getIndexFromId(touches[i].identifier);
   			if(idx >= 0){
-  				prevState = singleton._ongoingTouches[idx].pressed;
-  				singleton._ongoingTouches.splice(idx, 1, copyTouch(touches[i], prevState));
+  				prevState = this._inputs[idx].pressed;
+  				this._inputs.splice(idx, 1, this._copyTouch(touches[i], prevState));
   			}
   			else{
   				Arstider.log("Arstider.Mouse.handleTouchMove: could not resolve input id "+idx);
   			}
   		}
-
-  		singleton.stepGestures();
 	};
 		
 	/**
@@ -214,26 +225,21 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 	 * @param {event} event The touch event from the browser
 	 */
 	Mouse.prototype._handleTouchStart = function(e){
+
 		e = e || window.event;
 		e.preventDefault();
 
-		var touches = e.changedTouches;
-		for(var i=0; i<touches.length; i++){
-			singleton._ongoingTouches.push(copyTouch(touches[i]));
+		var
+			i = 0,
+			touches = e.changedTouches,
+			len = touches.length
+		;
+
+		for(i; i<len; i++){
+			this._inputs.push(this._copyTouch(touches[i]));
 		}
-		singleton._touchRelay(e);
+		this.dispatch(e);
 	};
-		
-	/**
-	 * Steps all the current reccording gestures
-	 * @private
-	 * @type {function(this:Mouse)}
-	 */
-	Mouse.prototype.stepGestures = function(){
-		for(i = 0; i< singleton._currentGestures.length; i++){
-  			if(singleton._currentGestures[i] && singleton._currentGestures[i].reccording) singleton._currentGestures[i].step();
-  		}
-	}
 
 	/**
 	 * Internal handler for touch input end
@@ -242,20 +248,27 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 	 * @param {event} event The touch event from the browser
 	 */
 	Mouse.prototype._handleTouchEnd = function(e){
+
 		e = e || window.event;
 		e.preventDefault();
 
-		var idx = -1, touches = e.changedTouches;
-		for(var i=0; i<touches.length; i++){
-  			idx = singleton.getIndexFromId(touches[i].identifier);
+		var 
+			i = 0,
+			idx = -1, 
+			touches = e.changedTouches,
+			len = touches.length
+		;
+
+		for(i; i<len; i++){
+  			idx = this._getIndexFromId(touches[i].identifier);
   			if(idx >= 0){
-  				singleton._ongoingTouches[idx].pressed = false; 
+  				this._inputs[idx].pressed = false; 
 		    }
 		    else{
   				Arstider.log("Arstider.Mouse.handleTouchEnd: could not resolve input id " +idx);
   			}
   		}
-		singleton._touchRelay(e);
+		this.dispatch(e);
 	};
 
 	/**
@@ -264,7 +277,8 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 	 * @param {string} style The style rule to apply to the cursor
 	 */
 	Mouse.prototype.setCursor = function(style){
-		window.document.body.style.cursor = style;
+
+		Viewport.container.style.cursor = style;
 	};
 
 	/**
@@ -273,7 +287,8 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 	 * @return {string} The style rule to applied to the cursor
 	 */
 	Mouse.prototype.getCursor = function(){
-		return window.document.body.style.cursor;
+
+		return Viewport.container.style.cursor;
 	};
 		
 	/**
@@ -283,16 +298,22 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 	 * @param {event} event The mouse event from the browser
 	 */
 	Mouse.prototype._handleMouseDown = function(e){
-		var rightclick;
-		var e = e || window.event;
+
+		var 
+			rightclick,
+			e = e || window.event
+		;
+
 		if (e.which) rightclick = (e.which == 3);
     	else if (e.button) rightclick = (e.button == 2);
     	
-    	if(rightclick) singleton.rightPressed = true;
-		else singleton.pressed = true;
+    	if(rightclick) this._status.rightPressed = true;
+		else this._status.pressed = true;
+
+		if(this._inputs[0]) this._inputs[0].pressed = true; 
 			
-		singleton._handleMouseMove(e);
-		if(singleton._touchRelay) singleton._touchRelay(e);
+		this._handleMouseMove(e);
+		this.dispatch(e);
 	};
 		
 	/**
@@ -302,16 +323,22 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 	 * @param {event} event The mouse event from the browser
 	 */
 	Mouse.prototype._handleMouseUp = function(e){
-		var rightclick;
-		var e = e || window.event;
+		
+		var
+			rightclick
+			e = e || window.event
+		;
+
 		if (e.which) rightclick = (e.which == 3);
     	else if (e.button) rightclick = (e.button == 2);
     	
-    	if(rightclick) singleton.rightPressed = false;
-		else singleton.pressed = false;
+    	if(rightclick) this._status.rightPressed = false;
+		else this._status.pressed = false;
+
+		if(this._inputs[0]) this._inputs[0].pressed = false;
 			
-		singleton._handleMouseMove(e);
-		if(singleton._touchRelay) singleton._touchRelay(e);
+		this._handleMouseMove(e);
+		this.dispatch(e);
 	};
 		
 	/**
@@ -321,10 +348,10 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 	 * @param {event} event The mouse event from the browser
 	 */
 	Mouse.prototype._handleMouseMove = function(event){
+
 		event = event || window.event; // IE-ism
-	    var input = copyTouch(event);
-	    singleton._mouse.x = input.x;
-	    singleton._mouse.y = input.y;
+
+	    this._inputs[0] = this._copyTouch(event);
 	};
 		
 	/**
@@ -334,9 +361,14 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 	 * @param {event} event The mouse event from the browser
 	 */
 	Mouse.prototype._mouseWheel = function(event){
+
 		event = event || window.event; // IE-ism
-		var delta = Arstider.max(-1, Arstider.min(1, (event.wheelDelta || -event.detail)));
-		Events.broadcast("Mouse.wheel", delta);
+
+		var 
+			delta = Arstider.max(-1, Arstider.min(1, (event.wheelDelta || -event.detail)))
+		;
+
+		this.onmousewheel.dispatch(delta);
 	};
 
 	/**
@@ -344,8 +376,13 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 	 * @type {function(this:Mouse)}
 	 */
 	Mouse.prototype.cleanTouches = function(){
-		for(i=singleton._ongoingTouches.length-1; i>=0; i--){
-			if(!singleton._ongoingTouches[i].pressed) singleton._ongoingTouches.splice(i, 1);
+
+		var 
+			i = this._ongoingTouches.length-1
+		;
+
+		for(i; i>=0; i--){
+			if(!this._ongoingTouches[i].pressed) this._ongoingTouches.splice(i, 1);
 		}
 	};
 
@@ -354,12 +391,28 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 	 * @type {function(this:Mouse)}
 	 */
 	Mouse.prototype.getIndexFromId = function(id){
-		for (var i=0; i < singleton._ongoingTouches.length; i++){
-		    if(id == singleton._ongoingTouches[i].id) return i;
+
+		var 
+			i = 0
+		;
+
+		for (i; i < this._ongoingTouches.length; i++){
+		    if(id == this._ongoingTouches[i].id) return i;
 		}
+
 		return -1;
 	};
-		
-	singleton = new Mouse();	
-	return singleton;
+
+	Mouse.prototype.dispatch = function(event){
+
+		var 
+			i = this._components.length-1
+		;
+
+		for(i; i >= 0; i--){
+			this._components[i].applyTouchEvent(event);
+		}
+	};
+			
+	return new Mouse();
 });

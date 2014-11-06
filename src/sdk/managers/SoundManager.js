@@ -4,9 +4,7 @@
  * @version 1.1
  * @author frederic charette <fredericcharette@gmail.com>
  */
-define( "Arstider/Sound", ["Arstider/Browser", "Arstider/Request", "Arstider/Timer", "Arstider/sounds/Track", "Arstider/sounds/HowlerInterface"], /** @lends Sound */ function (Browser, Request, Timer, Track, HowlerInterface) {
-	
-	var singleton;
+define( "Arstider/Sound", ["Arstider/Dataset", "Arstider/Browser", "Arstider/sounds/Track", "Arstider/sounds/HowlerInterface"], /** @lends Sound */ function (Browser, Request, Timer, Track, HowlerInterface) {
 	
 	/**
 	 * Sound constructor
@@ -15,16 +13,12 @@ define( "Arstider/Sound", ["Arstider/Browser", "Arstider/Request", "Arstider/Tim
 	 * @constructor
 	 */
 	function Sound(){
-		/**
-		 * Individual tracks Sounds list
-		 * @type {Object}
-		 */
-		this.tracks = {};
-		/**
-		 * Sprited sfx sound list
-		 * @type {Object}
-		 */
-		this.sounds = {};
+		Arstider.Super(this, Dataset, {
+			sounds:{},
+			muted:false,
+			library:"howler",
+		}, this._parse);
+
 		/**
 		 * Sound queue (while waiting for sound file to enter the buffer)
 		 * @private
@@ -38,27 +32,22 @@ define( "Arstider/Sound", ["Arstider/Browser", "Arstider/Request", "Arstider/Tim
 		 * @type {Object}
 		 */
 		this._callbacks = {};
-		/**
-		 * Prevents sounds from playing
-		 * @type {boolean}
-		 */
-		this.muted = false;
+
 		/**
 		 * Interface to use
-		 * @type {string}
+		 * @type {Object}
 		 */
 		this.lib = null;
 	}
+	Arstider.Inherit(Sound, Dataset);
 	
 	/**
 	 * Starts howler and parses the sound object
 	 * @type {function(this:Sound)}
 	 * @param {string} url The url of the sound sprite
 	 */
-	Sound.prototype._init = function(url){
-		singleton._spriteUrl = url;
-		var i;
-		singleton.lib = HowlerInterface;
+	Sound.prototype._parse = function(config){
+		for()
 		//Do some actual sdk preloading
 		var ext = ".mp3";
 		if(Browser.name == "firefox") ext = ".ogg";

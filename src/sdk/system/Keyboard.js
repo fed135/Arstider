@@ -4,86 +4,87 @@
  * @version 1.1.3
  * @author frederic charette <fredericcharette@gmail.com>
  */
+define("Arstider/system/Keyboard", 
+[
+	"Arstider/core/Dataset"
+], 
+/** @lends system/Keyboard */ 
+function(){
+	
+	Keyboard.DEFAULTS = {
+		aliases:{
+			13:"enter",
+			16:"shift",
+			18:"alt",
+			27:"escape",
+			32:"space",
+			37:"left",
+			38:"up",
+			39:"right",
+			40:"down"
+		}
+		enabled:true,
+		preventScrolling:true
+	};
 
-;(function(){
-	
-	var 
-		/**
-		 * Singleton static
-		 * @private
-		 * @type {Keyboard|null}
-		 */
-		singleton = null,
-		/**
-		 * Key map holds states for the keys
-		 * @private
-		 * @type {Object}
-		 */
-		keyMap = {},
-		/**
-		 * Holds the list of binds with their properties
-		 * @private
-		 * @type {Object}
-		 */
-		binds = {}
-	;
-	
+	Keyboard.PRESSED = "pressed";
+	Keyboard.RELEASED = "released";
+
+	Keyboard.ANY_KEY = "any";
+
 	/**
-	 * Converts keyCode to readable character name
-	 * @private
-	 * @type {function}
-	 * @param {number} code The keyCode to convert
-	 * @return {string} The readable character name
+	 * Keyboard constructor
+	 * A keyboard event mapper
+	 * @class system/Keyboard
+	 * @constructor
 	 */
-	function keyCodeToCharName(code){
-		if(code == 16) return "shift";
-		if(code == 18) return "alt";
-		if(code == 13) return "enter";
-		if(code == 27) return "esc";
-		if(code == 32) return "space";
-		if(code == 37) return "left";
-		if(code == 38) return "up";
-		if(code == 39) return "right";
-		if(code == 40) return "down";
-		else return String.fromCharCode(code).toLowerCase();
+	function Keyboard(){
+
+		var
+			thisRef = this
+		;
+
+		this._map = {};
+		this._binds = {};
+
+		/**
+		 * Add document event listener for keydown
+		 */
+		window.document.addEventListener("keydown", function(event){
+			thisRef.handleKeyEvent.call(thisRef, event, Keyboard.PRESSED);
+		});
+
+		/**
+		 * Add document event listener for key release
+		 */
+		window.document.addEventListener("keyup", function(event){
+			thisRef.handleKeyEvent.call(thisRef, event, Keyboard.RELEASED);
+		});
+
+		Arstider.Super(this, Dataset, Keyboard.DEFAULTS);
 	}
-	
-	/**
-	 * Add document event listener for keydown
-	 */
-	window.document.addEventListener("keydown", function(event){
-		var key = keyCodeToCharName(event.keyCode);
+
+	Keyboard.prototype.handleKeyEvent = function(event, state){
 		
-		keyMap[key] = 1;
+		var 
+			e = event || window.event,
+			key = thisRef.getCharName(event.keyCode)
+		;
+			
+		this._map[key] = (state == Keyboard.PRESSED);
+		this.runCallbacks(key, state);
 		
-		runCallbacks(key, "down");
-		
-		if(key == "up" || key == "down" || key == "space"){
-			var e = event || window.event;
-			e.stopPropagation();
-			e.preventDefault();
-			return false;
+		if(this.preventScrolling){
+			//Prevent page scrolling. That very annoying browser behavior.
+			if(event.keyCode == 38 || event.keyCode == 40 || event.keyCode == 32){
+				e.stopPropagation();
+				e.preventDefault();
+
+				return false;
+			}
 		}
-	});
-	
-	/**
-	 * Add document event listener for key release
-	 */
-	window.document.addEventListener("keyup", function(event){
-		var key = keyCodeToCharName(event.keyCode);
-		
-		keyMap[key] = 0;
-		
-		runCallbacks(key, "up");
-		
-		if(key == "up" || key == "down" || key == "space"){
-			var e = event || window.event;
-			e.stopPropagation();
-			e.preventDefault();
-			return false;
-		}
-	});
-	
+	};
+
 	/**
 	 * Runs the list of callbacks associated with the keyboard event processed
 	 * @private
@@ -91,122 +92,99 @@
 	 * @param {string} key The key that changed
 	 * @param {string} action The action (up, down)
 	 */
-	function runCallbacks(key, action){
-		if(binds[key] != undefined){
-			for(var i = 0; i<binds[key].length; i++){
-				if(action === binds[key][i][0]){
-					if(binds[key][i][1] && (binds[key][i][1] instanceof Function || typeof binds[key][i][1] === 'function')){
-						binds[key][i][1]();
-					}
+	Keyboard.prototype.runCallbacks = function(key, action){
+
+		var
+			i = 0
+		;
+
+		if(this._binds[key] != undefined){
+			for(i; i<this._binds[key].length; i++){
+				if(action === this._binds[key][i][0]){
+					if(this._binds[key][i][1]) this._binds[key][i][1]();
 				}
 			}
 		}
 
-		if(binds["any"] != undefined){
-			for(var i = 0; i<binds["any"].length; i++){
-				if(action === binds["any"][i][0]){
-					if(binds["any"][i][1] && (binds["any"][i][1] instanceof Function || typeof binds["any"][i][1] === 'function')){
-						binds["any"][i][1]();
-					}
-				}
-			}
-		}
-	}
+		if(key != Keyboard.ANY_KEY) this.runCallbacks(Keyboard.ANY_KEY, action);
+	};
+	
+	Keyboard.prototype.getCharName = function(code){
+
+		if(this.aliases[code]) return this.aliases[code];
+		return String.fromCharCode(code).toLowerCase();
+	};
+
+	/**
+	 * Binds an event to a callback
+	 * @type {function(this:Keyboard)}
+	 * @param {Object} key The keyboard key
+	 * @param {Object} action The action (up, down)
+	 * @param {Object} callback The callback function
+	 */
+	Keyboard.prototype.bind = function(key, action, callback){
+
+		var
+			index = key.toLowerCase()
+		;
+
+		if(!this.enabled) return;
+		
+		if(this._binds[index] == undefined) this._binds[index] = [];
+		this._binds[index].push([action, callback]);
+	};
 	
 	/**
-	 * Defines the Keyboard module
+	 * Gets the status of a key in the map
+	 * @type {function(this:Keyboard)}
+	 * @param {string} key The readable character name to look for
+	 * @return {number|null} The status of the key (1 for pressed, 0 or null for released)
 	 */
-	define("Arstider/Keyboard", [], /** @lends Keyboard */ function(){
-		
-		if(singleton != null) return singleton;
-		
-		/**
-		 * Keyboard constructor
-		 * A keyboard event mapper
-		 * @class Keyboard
-		 * @constructor
-		 */
-		function Keyboard(){
-			this.enabled = true;
+	Keyboard.prototype.getKey = function(key){
+
+		var
+			i
+		;
+
+		if(key == Keyboard.ANY_KEY){
+			for(i in this._map){
+				if(this._map[i] == 1) return 1;
+			}
+			return 0;
 		}
+		else return this._map[key];
+	};
+	
+	/**
+	 * Unbinds an event
+	 * @type {function(this:Keyboard)}
+	 * @param {string} key The keyboard key
+	 * @param {Object} action The action (up, down)
+	 * @param {Object} callback The callback function
+	 */
+	Keyboard.prototype.unbind = function(key, action, callback){
 		
-		/**
-		 * Binds an event to a callback
-		 * @type {function(this:Keyboard)}
-		 * @param {Object} key The keyboard key
-		 * @param {Object} action The action (up, down)
-		 * @param {Object} callback The callback function
-		 */
-		Keyboard.prototype.bind = function(key, action, callback){
-			if(!this.enabled) return;
-			
-			if(binds[key.toLowerCase()] == undefined){
-				binds[key.toLowerCase()] = [];
-			}
-			
-			binds[key.toLowerCase()].push([action, callback]);
-		};
-		
-		/**
-		 * Gets the status of a key in the map
-		 * @type {function(this:Keyboard)}
-		 * @param {string} key The readable character name to look for
-		 * @return {number|null} The status of the key (1 for pressed, 0 or null for released)
-		 */
-		Keyboard.prototype.getKey = function(key){
-			if(key=="any"){
-				for(var i in keyMap){
-					if(keyMap[i] == 1) return 1;
+		var
+			index = key.toLowerCase(),
+			i = this._binds[index].length-1,
+			pos = this._binds[index].indexOf([action, callback])
+		;
+
+		if(action == undefined || this._binds[index] == undefined){
+			this._binds[index] = [];
+		}
+		else{
+			if(callback == undefined){
+				//keep stuff linked to other actions
+				for(i; i>=0; i--){
+					if(this._binds[index][i][0] == action) this._binds[index].splice(i,1);
 				}
-				return 0;
-			}
-			else return keyMap[key];
-		};
-		
-		/**
-		 * Unbinds an event
-		 * @type {function(this:Keyboard)}
-		 * @param {string} key The keyboard key
-		 * @param {Object} action The action (up, down)
-		 * @param {Object} callback The callback function
-		 */
-		Keyboard.prototype.unbind = function(key, action, callback){
-			
-			if(action == undefined || binds[key.toLowerCase()] == undefined){
-				binds[key.toLowerCase()] = [];
 			}
 			else{
-				if(callback == undefined){
-					//keep stuff linked to other actions
-					for(var i = binds[key.toLowerCase()].length; i>=0; i--){
-						if(binds[key.toLowerCase()][i][0] == action){
-							binds[key.toLowerCase()].splice(i,1);
-						}
-					}
-				}
-				else{
-					var pos = binds[key.toLowerCase()].indexOf([action, callback]);
-					if(pos != -1){
-						binds[key.toLowerCase()].splice(pos,1);
-					}
-				}
+				if(pos != -1) this._binds[index].splice(pos,1);
 			}
-		};
-
-		/**
-		 * Disables the spacebar page scrolling
-		 * @type {function(this:Keyboard)}
-		 */
-		Keyboard.prototype.disablePageScroll = function()
-		{
-			// http://stackoverflow.com/questions/2343573/pressing-spacebar-moves-page-down
-			window.onkeydown = function(e) { 
-			  return !(e.keyCode == 32);
-			};
-			return this;
 		}
-		
-		singleton = new Keyboard();
-		return singleton;
-	});
-})();
+	};
+	
+	return new Keyboard();
+});

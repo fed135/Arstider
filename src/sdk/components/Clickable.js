@@ -1,21 +1,175 @@
 /**
+ * Clickable Component
+ * 
+ * @version 2.0.1
+ * @author frederic charette <fredericcharette@gmail.com>
+ */
+define("Arstider/components/Clickable", 
+[
+	"Arstider/components/Component",
+	"Arstider/events/Signal",
+	"Arstider/system/Mouse"
+],
+/** @lends components/Clickable */
+function(Component, Signal, Mouse){
+	
+	/**
+	 * No click registering, temporary disabling method
+	 */
+	Clickable.PASSIVE = 0;
+	/**
+	 * Typical click detection.
+	 */
+	Clickable.ACTIVE = 1;
+	/**
+	 * Can detect clicks on element that have been rotated, skewed, etc.
+	 */
+	Clickable.COMPLEX = 2;
+
+	/**
+	 * Component defaults
+	 */
+	Clickable.DEFAULTS = {
+		type:Clickable.ACTIVE,
+		doubleClickDelay:250,
+		complexTouchPadding:100
+	};
+
+	/**
+	 * Clickable component constructor
+	 * Handles entity coordinates and transformations
+	 * @class components/Clickable
+	 * @constructor
+	 * @param {Object|null} props Can optionally overwrite build properties of the entity    
+	 */
+	function Clickable(data){
+
+		this._status = {
+			hovered:false,
+			pressed:false,
+			preclick:false,
+			rightPressed:false,
+			doubleClickCheck:0
+		};
+
+		/**
+		 * User-defined behavior when element is pressed
+		 * @override
+		 * @type {function(this:Entity)}
+		 */
+		this.onpress = null;
+		
+		/**
+		 * User-defined behavior when element is pressed
+		 * @override
+		 * @type {function(this:Entity)}
+		 */
+		this.onrelease = null;
+		
+		/**
+		 * User-defined behavior when element is pressed
+		 * @override
+		 * @type {function(this:Entity)}
+		 */
+		this.onhover = null;
+		
+		/**
+		 * User-defined behavior when element is pressed
+		 * @override
+		 * @type {function(this:Entity)}
+		 */
+		this.onleave = null;
+		
+		/**
+		 * User-defined behavior when element is pressed, then released
+		 * @override
+		 * @type {function(this:Entity)}
+		 */
+		this.onclick = null;
+		
+		/**
+		 * User-defined behavior when element is pressed with the right mouse button, then released
+		 * @override
+		 * @type {function(this:Entity)}
+		 */
+		this.onrightclick = null;
+		
+		/**
+		 * User-defined behavior when element is pressed with the right mouse button, then released
+		 * @override
+		 * @type {function(this:Entity)}
+		 */
+		this.ondoubleclick = null;
+
+		Arstider.Super(this, Component, data, Clickable.DEFAULTS);
+
+		Mouse.registerComponent()
+	}
+	Arstider.Inherit(Clickable, Component);
+
+	/**
 	 * Checks if coordinates fit in the global location of the Entity
 	 * @type {function(this:Entity)}
 	 * @param {number} x The x coordinate to check against.
 	 * @param {number} y The y coordinate to check against.
 	 * @return {boolean} Are the coordinates within the zone of the Entity
 	 */
-	Entity.prototype.isTouched = function(x,y){
-		if(this.touchAccuracy == Entity.PASSIVE) return false;
+	Clickable.prototype.isTouched = function(x,y){
 
-		if(this.touchAccuracy == Entity.ACTIVE || !this.global.points){
+		var 
+			t = this.owner.transform
+		;
+
+		if(this.touchAccuracy == Clickable.PASSIVE) return false;
+
+		if(this.touchAccuracy == Clickable.ACTIVE || !this.global.points){
 			// --Simple version
-			if(x > this.global.x && x < this.global.x + (this.width * this.global.scaleX)){
-				if(y > this.global.y && y < this.global.y + (this.height * this.global.scaleY)) return true;
+			if(x > t.global.x && x < t.global.x + (t.width * t.global.scale.x)){
+				if(y > t.global.y && y < t.global.y + (t.height * t.global.scale.y)) return true;
 			}
 			return false;
 		}
-		//-- Complex version, let's see how expensive this is.
+		
+		/**
+		 * Complex detection
+		 */
+		return this.isComplexTouched(x, y);
+	};
+
+	Clickable.prototype.addListener = function(event, method){
+
+		if(this[event] != undefined){
+			if(!this[event].add) this[event] = new Signal();
+			if(method) this[event].add(method); 
+		}
+		else Arstider.log("Arstider.Clickable.addListener: "+event+ " is not a valid event name.", 1);
+
+		return this;
+	};
+
+	Clickable.prototype.removeListener = function(event, method){
+
+		if(this[event] && this[event].remove){
+			if(method) this[event].remove(method);
+			else this[event] = null;
+		}
+
+		return this;
+	};
+
+	Clickable.prototype.dispose = function(){
+
+	};
+
+	/**
+	 * Checks if coordinates fit in the global location of a complex Entity
+	 * @type {function(this:Entity)}
+	 * @param {number} x The x coordinate to check against.
+	 * @param {number} y The y coordinate to check against.
+	 * @return {boolean} Are the coordinates within the zone of the Entity
+	 */
+	Clickable.prototype.isComplexTouched = function(){
+
 		var 
 			distAP = Arstider.distance(this.global.points[0], this.global.points[1], x, y),
 			distBP = Arstider.distance(this.global.points[2], this.global.points[3], x, y),
@@ -32,20 +186,21 @@
 			sum = quad1 + quad2 + quad3 + quad4,
 			total = this.global.width * this.global.height
 		;
-		if(sum >= total - 100 && sum <= total + 100) return true;
+		if(sum >= total - this.complexTouchPadding && sum <= total + this.complexTouchPadding) return true;
 		
 		return false;
 	};
 
-		/**
+	/**
 	 * Private logic when element is hovered
 	 * @protected
 	 * @type {function(this:Entity)}
 	 */
-	Entity.prototype._onhover = function(){
-		this._hovered = true;
+	Clickable.prototype._onhover = function(){
+
+		this._status.hovered = true;
 		
-		if(this.onhover) this.onhover();
+		if(this.onhover.dispatch) this.onhover.dispatch();
 	};
 	
 	/**
@@ -53,12 +208,13 @@
 	 * @protected
 	 * @type {function(this:Entity)}
 	 */
-	Entity.prototype._onleave = function(){
-		this._hovered = false;
-		this._preclick = false;
-		this._rightPressed = false;
+	Clickable.prototype._onleave = function(){
+
+		this._status.hovered = false;
+		this._status.preclick = false;
+		this._status.rightPressed = false;
 		
-		if(this.onleave) this.onleave();
+		if(this.onleave.dispatch) this.onleave.dispatch();
 	};
 	
 	/**
@@ -66,10 +222,11 @@
 	 * @protected
 	 * @type {function(this:Entity)}
 	 */
-	Entity.prototype._onpress = function(){
-		this._pressed = true;
+	Clickable.prototype._onpress = function(){
+
+		this._status.pressed = true;
 		
-		if(this.onpress) this.onpress();
+		if(this.onpress.dispatch) this.onpress.dispatch();
 	};
 	
 	/**
@@ -77,22 +234,23 @@
 	 * @protected
 	 * @type {function(this:Entity)}
 	 */
-	Entity.prototype._onrelease = function(){
-		this._pressed = false;
+	Clickable.prototype._onrelease = function(){
+
+		this._status.pressed = false;
 		
 		var time = Arstider.timestamp();
 		
-		if(this._preclick){
-			if(time - this._doubleClickCheck < this._doubleClickDelay && this.ondoubleclick) this.ondoubleclick();
+		if(this._status.preclick){
+			if(time - this._status.doubleClickCheck < this.doubleClickDelay && this.ondoubleclick.dispatch) this.ondoubleclick.dispatch();
 			else{
-				if(this.onclick) this.onclick();
+				if(this.onclick.dispatch) this.onclick.dispatch();
 			}
 			
-			this._doubleClickCheck = time;
+			this._status.doubleClickCheck = time;
 		}
-		if(this.onrelease) this.onrelease();
+		if(this.onrelease.dispatch) this.onrelease.dispatch();
 		
-		this._preclick = false;
+		this._status.preclick = false;
 	};
 	
 	/**
@@ -100,108 +258,12 @@
 	 * @protected
 	 * @type {function(this:Entity)}
 	 */
-	Entity.prototype._onrightclick = function(){
-		this._rightPressed = false;
-		if(this.onrightclick) this.onrightclick();
+	Clickable.prototype._onrightclick = function(){
+
+		this._status.rightPressed = false;
+
+		if(this.onrightclick.dispatch) this.onrightclick.dispatch();
 	};
 
-
-		Entity.PASSIVE = 0;
-	Entity.ACTIVE = 1;
-	Entity.COMPLEX = 2;
-
-/**
-		 * Complex interactive element - prevents intensive lookup
-		 * @type {boolean}
-		 */
-		this.touchAccuracy = Arstider.checkIn(props.touchAccuracy, Entity.ACTIVE);
-
-			/**
-		 * Whenever the element is hovered
-		 * @private
-		 * @type {boolean}
-		 */
-		this._hovered = false;
-		
-		/**
-		 * Whenever the element is pressed
-		 * @private
-		 * @type {boolean}
-		 */
-		this._pressed = false;
-		
-		/**
-		 * Whenever an element is entered with mouse up, used to determine click behavior
-		 * @private
-		 * @type {boolean}
-		 */
-		this._preclick = false;
-		
-		/**
-		 * Whenever the element is pressed with the right mouse button
-		 * @private
-		 * @type {boolean}
-		 */
-		this._rightPressed = false;
-		
-		/**
-		 * Double-click delay saver
-		 * @private
-		 * @type {number}
-		 */
-		this._doubleClickCheck = 0;
-		
-		/**
-		 * Double-click max delay
-		 * @type {number}
-		 */
-		this._doubleClickDelay = 250;
-
-				/**
-		 * User-defined behavior when element is pressed
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.onpress = Arstider.checkIn(props.onpress, null);
-		
-		/**
-		 * User-defined behavior when element is pressed
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.onrelease = Arstider.checkIn(props.onrelease, null);
-		
-		/**
-		 * User-defined behavior when element is pressed
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.onhover = Arstider.checkIn(props.onhover, null);
-		
-		/**
-		 * User-defined behavior when element is pressed
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.onleave = Arstider.checkIn(props.onleave, null);
-		
-		/**
-		 * User-defined behavior when element is pressed, then released
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.onclick = Arstider.checkIn(props.onclick, null);
-		
-		/**
-		 * User-defined behavior when element is pressed with the right mouse button, then released
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.onrightclick = Arstider.checkIn(props.onrightclick, null);
-		
-		/**
-		 * User-defined behavior when element is pressed with the right mouse button, then released
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.ondoubleclick = Arstider.checkIn(props.ondoubleclick, null);
+	return Clickable;
+});		

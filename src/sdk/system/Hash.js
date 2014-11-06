@@ -1,54 +1,47 @@
-;(function(){
-	
-	var singleton = null;
+define("Arstider/system/Hash", 
+[
+	"Arstider/events/Signal"
+],
+/** @lends system/Hash */ 
+function(Signal){
 
 	/**
-	 * Defines the Hash module
+	 * Hash constructor
+	 * @class system/Hash
+	 * @constructor
 	 */
-	define("Arstider/Hash", ["Arstider/Signal", "Arstider/Engine"], /** @lends Hash */ function(Signal, Engine){
+	function Hash(){
+
+		this.anchor = this.getAnchor();
+		this.onchange = new Signal();	
+	}
+
+	Hash.prototype.getAnchor= function(){
+
+		var anchor = window.location.hash;
+		anchor = anchor.substring(1,anchor.length); 
+
+		if (anchor == "") return false;
+		anchor = anchor.replace(".js", "");
+		return anchor
+	};
+
+	Hash.prototype.setAnchor= function(anchor){
+
+		anchor = anchor.replace("#", "");
+		window.location.hash = anchor;
+	};
+
+	Hash.prototype.listenHash= function(){
 			
-		if(singleton != null) return singleton;
+		var thisRef = this;
+		window.onhashchange = locationHashChanged;
 
-		/**
-		 * Hash constructor
-		 * @class Hash
-		 * @constructor
-		 */
-		function Hash(){
-
-			this.anchor = this.getAnchor();
-			this.onchange = new Signal();	
-		}
-
-		Hash.prototype.getAnchor= function(){
-
-			var anchor = window.location.hash;
-			anchor = anchor.substring(1,anchor.length); 
-
-			if (anchor == "") return false;
-			anchor = anchor.replace(".js", "");
-			return anchor
+		function locationHashChanged (){
+			thisRef.anchor = thisRef.getAnchor();
+			thisRef.onchange.dispatch(thisRef.anchor);
 		};
+	};
 
-		Hash.prototype.setAnchor= function(anchor){
-
-			anchor = anchor.replace("#", "");
-			window.location.hash = anchor;
-		};
-
-
-		Hash.prototype.listenHash= function(){
-			
-			var thisRef = this;
-			window.onhashchange = locationHashChanged;
-
-			function locationHashChanged (){
-				thisRef.anchor = thisRef.getAnchor();
-				thisRef.onchange.dispatch(thisRef.anchor);
-			};
-		};
-
-		singleton = new Hash();
-		return singleton;
-	});
-})();
+	return new Hash();
+});

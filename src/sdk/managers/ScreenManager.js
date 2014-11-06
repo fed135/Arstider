@@ -45,7 +45,7 @@ function(Signal, Preloader){
 	};
 
 	ScreenManager.prototype._createScreen = function(menu){
-		var screenObj = 
+		var screenObj = menu;
 	};
 
 

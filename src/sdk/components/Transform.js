@@ -12,10 +12,8 @@ define("Arstider/components/Transform",
 function(Component){
 	
 	Transform.DEFAULTS = {
-		position:{
-			x:0,
-			y:0
-		},
+		x:0,
+		y:0,
 		width:0,
 		height:0,
 		rotation:0,
@@ -99,8 +97,8 @@ function(Component){
 		if(this.owner.parent != null){
 			if(this.fill.x != null) this.width = pt.width * this.fill.x;
 			if(this.fill.y != null) this.height = pt.height * this.fill.y;
-			if(this.dockX != null) this.position.x = (pt.width * this.dock.x) - (this.width * this.dock.x);
-			if(this.dockY != null) this.position.y = (pt.height * this.dock.y) - (this.height * this.dock.y);
+			if(this.dockX != null) this.x = (pt.width * this.dock.x) - (this.width * this.dock.x);
+			if(this.dockY != null) this.y = (pt.height * this.dock.y) - (this.height * this.dock.y);
 		}
 	};
 

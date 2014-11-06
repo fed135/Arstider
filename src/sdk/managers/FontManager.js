@@ -1,116 +1,61 @@
 /**
- * Fonts. 
+ * Font Manager. 
  *
  * @version 1.1.2
  * @author frederic charette <fredericcharette@gmail.com>
  */
-;(function(){
+define( "Arstider/managers/FontManager", 
+[
+	"Arstider/core/Dataset", 
+	"Arstider/texts/Font"
+],
+/** @lends managers/FontManager */ 
+function (Dataset, Font){
 	
-	var 
-		/**
-		 * Singleton static
-		 * @private
-		 * @type {Fonts|null}
-		 */
-		singleton = null
-	;
-	
+	FontManager.DEFAULTS = {};
+
+	/**
+	 * FontManager constructor
+	 * A font loading and defining module
+	 * @class managers/FontManager
+	 * @constructor
+	 */
+	function FontManager(){
+
+		this.fontList = {};
+
+		Arstider.Super(this, Dataset, FontManager.DEFAULTS, this._parse);
+	};
+	Arstider.Inherit(FontManager, Dataset);
 	
 	/**
-	 * Defines the Fonts module
-	 */	
-	define( "Arstider/Fonts", ["Arstider/Request", "Arstider/texts/Font"], /** @lends Fonts */ function (Request, Font) {
+	 * Creates a font
+	 * @type {function(this:FontManager)}
+	 * @param {Object} props The font properties
+	 * @return {Object} The newly created font object
+	 */
+	FontManager.prototype.create = function(props){
 		
-		/**
-		 * Returns singleton if it has been instantiated
-		 */
-		if(singleton != null) return singleton;
-		
-		/**
-		 * Fonts constructor
-		 * A font loading and defining module
-		 * @class Fonts
-		 * @constructor
-		 */
-		function Fonts(){
-		 
-			/**
-			 * Collection of created font objects
-			 * @type {Object}
-			 */
-			this.collection = {};
+		if(props.name == undefined){
+			if(Arstider.verbose > 0) console.warn("Arstider.FontManager.create: name not specified, font not created");
+			return false;	
+		}
 
-			this.loadCallback = null;
-		};
-		
-		/**
-		 * Gets a font object by name
-		 * @type {function(this:Fonts)}
-		 * @param {string} name The name of the font to find
-		 * @return {Object} The font object, or a new temporary font if the requested one doesn't exist
-		 */
-		Fonts.prototype.get = function(name){
-			if(this.collection[name]) return this.collection[name];
-			
-			this.collection[name] = new Font({temp:true, name:name});
-			return this.collection[name];
-		};
-		
-		/**
-		 * Creates a font
-		 * @type {function(this:Fonts)}
-		 * @param {Object} props The font properties
-		 * @return {Object} The newly created font object
-		 */
-		Fonts.prototype.create = function(props){
-			
-			if(props.name == undefined){
-				if(Arstider.verbose > 0) console.warn("Arstider.Fonts.create: name not specified, font not created");
-				return false;	
-			}
-			
-			if(this.collection[props.name] && this.collection[props.name].temp == false) return this.collection[props.name];
-			
-			if(this.collection[props.name] && this.collection[props.name].loadCallbacks.length > 0) props.loadCallbacks = this.collection[props.name].loadCallbacks;
-			this.collection[props.name] = new Font(props);
-			
-			return this.collection[props.name];
-		};
-		
-		/**
-		 * Loads a list of font objects from a JSON file
-		 * @type {function(this:Fonts)}
-		 * @param {string} filename The JSON file to load
-		 * @param {function} callback The callback function, once all fonts have been initialized
-		 */
-		Fonts.prototype.load = function(filename, callback){
-			this.loadCallback = callback;
+		var nFont = new Font(props);
+		this.fontList[props.name] = nFont;
+		return nFont;
+	};
 
-			if(filename instanceof String || typeof filename == "string"){
-				var req = new Request({
-					url:filename,
-					caller:this,
-					track:true,
-					type:"json",
-					cache:false,
-					callback:this._parseFile
-				}).send();
-			}
-			else{
-				this._parseFile(filename);
-			}
-		};
-
-		Fonts.prototype._parseFile = function(fontList){
-			for(var i in fontList){
-				fontList[i].name = i;
-				this.create(fontList[i]);
-			}
-
-			if(this.loadCallback) this.loadCallback();
-		};
-			
-		singleton = new Fonts();
-		return singleton;
-	});
-})();
+	FontManager.prototype.get = function(font){
+		this.fontList[font]
+	};
+	
+	FontManager.prototype._parse = function(config){
+		for(var i in config.fonts){
+			config.fonts[i].name = i;
+			this.create(config.fonts[i]);
+		}
+	};
+		
+	return new FontManager();
+});
