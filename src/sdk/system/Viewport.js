@@ -4,7 +4,13 @@
  * @version 1.1.2
  * @author frederic charette <fredericcharette@gmail.com>
  */
-define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], /** @lends Viewport */ function(Browser, Events){
+define( "Arstider/system/Viewport", 
+[
+	"Arstider/events/Signal",
+	"Arstider/system/Browser"
+], 
+/** @lends Viewport */ 
+function(Signal, Browser){
 	
 	var 
 		/**
