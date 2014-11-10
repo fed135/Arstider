@@ -4,7 +4,7 @@
  * @version 1.1
  * @author frederic charette <fredericcharette@gmail.com>
  */
-define( "Arstider/Browser", [], /** @lends Browser */	function(){
+define( "Arstider/system/Browser", [], /** @lends Browser */	function(){
 	
 	/**
 	 * Returns the device's iOS version, based on User Agent
@@ -105,7 +105,7 @@ define( "Arstider/Browser", [], /** @lends Browser */	function(){
 			this.isMobile = true;
 			this.platform = 'windows';
 		}
-		if(uagent.indexOf("mobile") != -1 || uagent.indexOf("arm") != -1 || uagent.indexOf("touch") != -1){
+		if(uagent.indexOf("mobile") != -1 || uagent.indexOf("arm") != -1 || uagent.indexOf("touch") != -1){
 			this.isMobile = true;
 		}
 			

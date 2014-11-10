@@ -36,7 +36,7 @@ function(Component){
 		fill:{
 			x:null,
 			y:null
-		},
+		}
 	};
 
 	Transform.LEFT = 0;

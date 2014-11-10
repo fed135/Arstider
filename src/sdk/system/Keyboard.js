@@ -22,7 +22,7 @@ function(){
 			38:"up",
 			39:"right",
 			40:"down"
-		}
+		},
 		enabled:true,
 		preventScrolling:true
 	};

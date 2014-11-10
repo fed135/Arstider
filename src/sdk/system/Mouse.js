@@ -78,7 +78,7 @@ function (Signal, Browser, Viewport){
 	 * @param {Object} touch The touch event object
 	 * @return {Object} The simplified copy of the event object
 	 */
-	Mouse.prototype._copyTouch(touch, state){
+	Mouse.prototype._copyTouch = function(touch, state){
 		return {
 			id:Arstider.checkIn(touch.identifier, -1), 
 			x:((touch.clientX - Viewport.xOffset) / Viewport.canvasRatio) / Viewport.globalScale,

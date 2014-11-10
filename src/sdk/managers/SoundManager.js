@@ -4,19 +4,27 @@
  * @version 1.1
  * @author frederic charette <fredericcharette@gmail.com>
  */
-define( "Arstider/Sound", ["Arstider/Dataset", "Arstider/Browser", "Arstider/sounds/Track", "Arstider/sounds/HowlerInterface"], /** @lends Sound */ function (Browser, Request, Timer, Track, HowlerInterface) {
+define( "Arstider/managers/SoundManager", 
+[
+	"Arstider/Dataset", 
+	"Arstider/Browser", 
+	"Arstider/sounds/Track", 
+	"Arstider/sounds/HowlerInterface"
+], 
+/** @lends managers/SoundManager */ 
+function (Browser, Request, Timer, Track, HowlerInterface) {
 	
 	/**
 	 * Sound constructor
 	 * Used to play sound tracks
-	 * @class Sound
+	 * @class managers/SoundManager
 	 * @constructor
 	 */
-	function Sound(){
+	function SoundManager(){
 		Arstider.Super(this, Dataset, {
 			sounds:{},
 			muted:false,
-			library:"howler",
+			library:"howler"
 		}, this._parse);
 
 		/**
@@ -47,7 +55,6 @@ define( "Arstider/Sound", ["Arstider/Dataset", "Arstider/Browser", "Arstider/sou
 	 * @param {string} url The url of the sound sprite
 	 */
 	Sound.prototype._parse = function(config){
-		for()
 		//Do some actual sdk preloading
 		var ext = ".mp3";
 		if(Browser.name == "firefox") ext = ".ogg";

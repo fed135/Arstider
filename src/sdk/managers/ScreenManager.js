@@ -1,11 +1,11 @@
 define("Arstider/managers/ScreenManager", 
 [
-	"Arstider/core/Entity"
+	"Arstider/core/Entity",
 	"Arstider/events/Signal",
 	"Arstider/managers/Preloader"
 ], 
 /** @lends managers/ScreenManager */
-function(Signal, Preloader){
+function(Entity, Signal, Preloader){
 
 	function ScreenManager(){
 
