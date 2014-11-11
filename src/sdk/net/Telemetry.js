@@ -12,6 +12,11 @@ define( "Arstider/net/Telemetry",
 /** @lends net/Telemetry */ 
 function (Net){
 		
+	Telemetry.CATEGORY = "[category]";
+	Telemetry.EVENT_NAME = "[name]";
+
+	Telemetry.ALL = "*";
+
 	/**
 	 * Telemetry constructor
 	 * Stores and sends internal/custom events for tracking purposes
@@ -30,14 +35,12 @@ function (Net){
 		 * @type {Object}
 		 */
 		this._events = {};
-		
 		/**
 		 * Session ID
 		 * @private
 		 * @type
 		 */
 		this._sessionId = null;
-		
 		/**
 		 * Target server urls
 		 * @private
@@ -66,7 +69,7 @@ function (Net){
 	
 	Telemetry.prototype.sendTo = function(req, category){
 		this.enabled = true;
-           category = category || ["*"];
+           category = category || [Telemetry.ALL];
            for(var i = 0; i<category.length; i++){
                this._targetURLs[category[i]] = req;
            }
@@ -87,19 +90,18 @@ function (Net){
 			i, 
 			o, 
 			u, 
-			thisRef = this,
 			req
 		;
 		
 		for(i in this._events){
-			if(i in this._targetURLs || "*" in this._targetURLs){
+			if(i in this._targetURLs || Telemetry.ALL in this._targetURLs){
 				for(o in this._events[i]){
 					for(u = 0; u<this._events[i][o].length; u++){
 						if(!this._events[i][o][u].__sent){
 							this._events[i][o][u].__sent = Arstider.timestamp();
 							
-							req = Arstider.clone((this._targetURLs[i] || this._targetURLs["*"] || {});
-							req.url = req.url.split("[category]").join(i).split("[name]").join(o);
+							req = Arstider.clone((this._targetURLs[i] || this._targetURLs[Telemetry.ALL] || {});
+							req.url = req.url.split(Telemetry.CATEGORY).join(i).split(Telemetry.EVENT_NAME).join(o);
 							req.data = JSON.stringify(this._events[i][o][u]);
 
 							Net.post(req);
