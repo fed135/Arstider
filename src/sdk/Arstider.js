@@ -129,19 +129,6 @@ Arstider.nextPowerOf2 = function(number){
     }
 };
 
-/**
- * Generates a Unique UID string
- * @memberof Arstider
- * @type {function}
- * @return {String} the resulting unique ID
- */
-Arstider.guid = function() {
-  function s4(){
-    return Arstider.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-  }
-  return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
-}
-
 //IE9 iframe fallback
 if(Object.create == undefined){
 	Object.create = function(parent){

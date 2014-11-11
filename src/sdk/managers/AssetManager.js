@@ -18,6 +18,7 @@ function(_Image){
 	};
 
 	AssetManager.prototype.get = function(id){
+
 		return this._assetList[id];
 	};
 
@@ -29,7 +30,23 @@ function(_Image){
 		}
 
 		return true;
-	}
+	};
+
+	AssetManager.prototype.getMemoryInfo = function(){
+
+		var
+			i,
+			total = 0
+		;
+
+		for(i in this._assetList){
+			if(this._assetList[i] && this._assetList[i].width && this._assetList[i].height){
+				total += (this._assetList[i].width * this._assetList[i].height * 4);
+			}
+		}
+
+		return total;
+	};
 
 	return new AssetManager();
 });
