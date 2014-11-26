@@ -177,34 +177,36 @@
 				thisRef.spawn.apply(thisRef, [type]);
 			}, type.options.spawnRate || 150);
 			
-			Pool.get(type.module, function(particle){
-				
-				resetParticleSettings(particle, type.options);
-				
-				//adjust starting variants
-				if(particle.__particleInfo.maxLifeTimeVariant != 0) particle.__particleInfo.maxLifetime 	= rollVariant(particle.__particleInfo.maxLifetime, 	particle.__particleInfo.maxLifeTimeVariant);
-				if(particle.__particleInfo.xVelocityVariant != 0) particle.__particleInfo.xVelocity 		= rollVariant(particle.__particleInfo.xVelocity, 	particle.__particleInfo.xVelocityVariant);
-				if(particle.__particleInfo.yVelocityVariant != 0) particle.__particleInfo.yVelocity 		= rollVariant(particle.__particleInfo.yVelocity, 	particle.__particleInfo.yVelocityVariant);
-				if(particle.__particleInfo.scaleVariant != 0) particle.__particleInfo.scale 				= rollVariant(particle.__particleInfo.scale, 		particle.__particleInfo.scaleVariant);
-				if(particle.__particleInfo.rotationVariant != 0) particle.__particleInfo.rotation 			= rollVariant(particle.__particleInfo.rotation, 	particle.__particleInfo.rotationVariant);
-				if(particle.__particleInfo.alphaVariant != 0) particle.__particleInfo.alpha 				= rollVariant(particle.__particleInfo.alpha, 		particle.__particleInfo.alphaVariant);
-				
-				particle.rotation = particle.__particleInfo.rotation;
-				particle.alpha = particle.__particleInfo.alpha;
-				if(particle.alpha >1) particle.alpha = 1;
-				if(particle.alpha < 0) particle.alpha = 0;
-				particle.scaleX = particle.scaleY = particle.__particleInfo.scale;
-				particle.x = this.x;
-				particle.y = this.y;
-				
-				particle.parent = this._container;
-				if(particle.__particleInfo.startingIndex < this._container.children.length){
-					this._container.children.splice(particle.__particleInfo.startingIndex, 0, particle);
-				}
-				else{
-					this._container.children[this.children.length] = particle;
-				}
-			});
+			Pool.get(type.module, this.callback.bind(this, type));
+		};
+		
+		Emitter.prototype.callback = function(type, particle)
+		{
+			resetParticleSettings(particle, type.options);
+			
+			//adjust starting variants
+			if(particle.__particleInfo.maxLifeTimeVariant != 0) particle.__particleInfo.maxLifetime 	= rollVariant(particle.__particleInfo.maxLifetime, 	particle.__particleInfo.maxLifeTimeVariant);
+			if(particle.__particleInfo.xVelocityVariant != 0) particle.__particleInfo.xVelocity 		= rollVariant(particle.__particleInfo.xVelocity, 	particle.__particleInfo.xVelocityVariant);
+			if(particle.__particleInfo.yVelocityVariant != 0) particle.__particleInfo.yVelocity 		= rollVariant(particle.__particleInfo.yVelocity, 	particle.__particleInfo.yVelocityVariant);
+			if(particle.__particleInfo.scaleVariant != 0) particle.__particleInfo.scale 				= rollVariant(particle.__particleInfo.scale, 		particle.__particleInfo.scaleVariant);
+			if(particle.__particleInfo.rotationVariant != 0) particle.__particleInfo.rotation 			= rollVariant(particle.__particleInfo.rotation, 	particle.__particleInfo.rotationVariant);
+			if(particle.__particleInfo.alphaVariant != 0) particle.__particleInfo.alpha 				= rollVariant(particle.__particleInfo.alpha, 		particle.__particleInfo.alphaVariant);
+			
+			particle.rotation = particle.__particleInfo.rotation;
+			particle.alpha = particle.__particleInfo.alpha;
+			if(particle.alpha >1) particle.alpha = 1;
+			if(particle.alpha < 0) particle.alpha = 0;
+			particle.scaleX = particle.scaleY = particle.__particleInfo.scale;
+			particle.x = this.x;
+			particle.y = this.y;
+			
+			particle.parent = this._container;
+			if(particle.__particleInfo.startingIndex < this._container.children.length){
+				this._container.children.splice(particle.__particleInfo.startingIndex, 0, particle);
+			}
+			else{
+				this._container.children[this.children.length] = particle;
+			}
 		};
 		
 		/**
