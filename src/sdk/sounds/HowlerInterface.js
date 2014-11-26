@@ -25,21 +25,23 @@
 				padding = 0
 			;
 
-			if(Browser.name == "ie"){
-				padding = 100;
+			if(url){
+				if(Browser.name == "ie"){
+					padding = 100;
+				}
+				
+				for(i in singleton.managerRef.sounds){
+					sprite[i] = [Arstider.max(0, singleton.managerRef.sounds[i].offset - padding), singleton.managerRef.sounds[i].duration, singleton.managerRef.sounds[i].loop];
+				}
+				
+				singleton.managerRef.sounds['empty'] = {};
+				
+				singleton.managerRef.sounds.handle = new Howl({
+					urls:[url+".mp3",url+".ogg"],
+					sprite:sprite,
+					onend:singleton.managerRef._removeInstance
+				});
 			}
-			
-			for(i in singleton.managerRef.sounds){
-				sprite[i] = [Arstider.max(0, singleton.managerRef.sounds[i].offset - padding), singleton.managerRef.sounds[i].duration, singleton.managerRef.sounds[i].loop];
-			}
-			
-			singleton.managerRef.sounds['empty'] = {};
-			
-			singleton.managerRef.sounds.handle = new Howl({
-				urls:[url+".mp3",url+".ogg"],
-				sprite:sprite,
-				onend:singleton.managerRef._removeInstance
-			});
 
 			if(callback) callback();
 		};
