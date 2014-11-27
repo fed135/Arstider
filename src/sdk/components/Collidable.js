@@ -6,21 +6,21 @@
  */
 define("Arstider/components/Collidable", 
 [
-	"Arstider/components/Component",
 	"Arstider/events/Signal"
 ],
 /** @lends components/Collidable */
-function(Component, Signal){
+function(Signal){
 
 	Collidable.DEFAULTS = {
 
 	};
 
+	Collidable.namespace = "collidable";
+
 	function Collidable(data){
 
-		Arstider.Super(this, Component, data, Collidable.DEFAULTS);
+		Arstider.mixin(this, Collidable.DEFAULTS);
 	}
-	Arstider.Inherit(Collidable, Component);
 
     /**
 	 * Checks if coordinates fit in the local location of the Entity

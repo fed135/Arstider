@@ -42,6 +42,8 @@ function (Signal, Browser, Viewport){
 		this._components = [];
 	}
 
+	Mouse.MAX_INPUT = 5;
+
 	/**
 	 * Setups the event listeners on the provided DOM Element
 	 * @type {function(this:Mouse)}
@@ -79,6 +81,7 @@ function (Signal, Browser, Viewport){
 	 * @return {Object} The simplified copy of the event object
 	 */
 	Mouse.prototype._copyTouch = function(touch, state){
+
 		return {
 			id:Arstider.checkIn(touch.identifier, -1), 
 			x:((touch.clientX - Viewport.xOffset) / Viewport.canvasRatio) / Viewport.globalScale,

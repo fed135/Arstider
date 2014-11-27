@@ -6,18 +6,19 @@
  */
 define("Arstider/components/Draggable", 
 [
-	"Arstider/components/Component",
 	"Arstider/system/Mouse"
 ],
 /** @lends components/Draggable */
-function(Component, Mouse){
+function(Mouse){
 
 	Draggable.DEFAULTS = {
 		bindToParent:false,
 		snapToCenter:false
 	};
 
-	function Draggable(data){
+	Draggable.namespace = "draggable";
+
+	function Draggable(){
 
 		this._status = {
 			dragged:false
@@ -28,9 +29,8 @@ function(Component, Mouse){
 			y:null
 		};
 
-		Arstider.Super(this, Component, data, Draggable.DEFAULTS);
+		Arstider.mixin(this, Draggable.DEFAULTS);
 	}
-	Arstider.Inherit(Draggable, Component);
 
 	/**
 	 * Starts dragging the element, following the mouse

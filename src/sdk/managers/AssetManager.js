@@ -1,8 +1,8 @@
 define("Arstider/managers/AssetManager", 
 [
-	"Arstider/display/bitmap/Image"
+	"Arstider/display/bitmap/ImageData"
 ],
-function(_Image){
+function(ImageData){
 
 	function AssetManager(){
 
@@ -12,14 +12,22 @@ function(_Image){
 	AssetManager.prototype.register = function(id, data){
 
 		data.name = id;
-		this._assetList[id] = new _Image(data);
+		this._assetList[id] = new ImageData(data);
 
 		return this._assetList[id];
 	};
 
-	AssetManager.prototype.get = function(id){
+	AssetManager.prototype.get = function(id, callback){
 
-		return this._assetList[id];
+		if(id in this._assetList){
+			if(callback) callback(this._assetList[id]);
+		}
+		else{
+			this.register(id, {
+				url:id,
+				callback:callback
+			});
+		}
 	};
 
 	AssetManager.prototype.dispose = function(id){
@@ -40,8 +48,13 @@ function(_Image){
 		;
 
 		for(i in this._assetList){
-			if(this._assetList[i] && this._assetList[i].width && this._assetList[i].height){
-				total += (this._assetList[i].width * this._assetList[i].height * 4);
+			if(this._assetList[i].size){
+				total += this._assetList[i].size;
+			}
+			else{
+				if(this._assetList[i] && this._assetList[i].width && this._assetList[i].height){
+					total += (this._assetList[i].width * this._assetList[i].height * 4);
+				}
 			}
 		}
 

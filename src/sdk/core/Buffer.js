@@ -4,12 +4,20 @@
  * @version 1.1
  * @author frederic charette <fredericcharette@gmail.com>
  */
-define("Arstider/Buffer", ["Arstider/Browser", "Arstider/core/Pixel"], /** @lends Buffer */ function(Browser, Pixel){
+define("Arstider/core/Buffer", 
+[
+	"Arstider/system/Browser", 
+	"Arstider/core/Pixel"
+],
+/** @lends Buffer */
+function(Browser, Pixel){
+
 	Buffer._anonymousBuffers = 0;
 	Buffer.WEBGL = "webgl";
 	Buffer.CANVAS2D = "2d";
 	Buffer.SHARP = "sharp";
 	Buffer.SMOOTH = "auto";
+
 	/**
 	 * Buffer constructor
 	 * Displayable data container (offscreen canvas)
@@ -32,8 +40,6 @@ define("Arstider/Buffer", ["Arstider/Browser", "Arstider/core/Pixel"], /** @lend
 		this.data.buffer = this;
 		this.vertexShader = props.vertexShader || null;
 		this.fragmentShader = props.fragmentShader || null;
-		//TODO: Remove this confusing iOS6 compatibility hack
-		this.compatPrivilege = false;
 		
 		this.getContext();
 		
@@ -44,6 +50,7 @@ define("Arstider/Buffer", ["Arstider/Browser", "Arstider/core/Pixel"], /** @lend
 		
 		Arstider.bufferPool[this.name] = this;
 	}
+
 	Buffer.prototype.getContext = function(){
 		if(this.context && this.preferedContext == this.contextType) return this.context;
 		if(this.preferedContext == Buffer.WEBGL){
@@ -65,10 +72,7 @@ define("Arstider/Buffer", ["Arstider/Browser", "Arstider/core/Pixel"], /** @lend
 	 * Destroys the buffer from memory
 	 * @type {function(this:Buffer)}
 	 */
-	Buffer.prototype.kill = function(force){
-		if(this.compatPrivilege){
-			if(force !== true) return;
-		}
+	Buffer.prototype.kill = function(){
 		delete Arstider.bufferPool[this.name];
 		this.width = 0;
 		this.height = 0;
@@ -142,6 +146,7 @@ define("Arstider/Buffer", ["Arstider/Browser", "Arstider/core/Pixel"], /** @lend
 		if(!this.data) return;
 		return this.data.toDataURL(type || "image/png", Arstider.checkIn(quality, 10));
 	};
+	
 	Buffer.prototype.setShaders = function(vertex, fragment){
 		this.vertexShader = vertex;
 		this.fragmentShader = fragment;

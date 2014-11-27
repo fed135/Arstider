@@ -8,7 +8,7 @@
 /**
  * Defines the Signal module
  */
-define("Arstider/Signal", [], /** @lends commons/Signal */ function(){
+define("Arstider/events/Signal", [], /** @lends commons/Signal */ function(){
 
     /**
      * Signal constructor

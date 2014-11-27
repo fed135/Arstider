@@ -614,7 +614,9 @@ Arstider.clone = function(obj, includeMethods, prefix){
  * @const
  * @param {Object} obj The object to copy
  */
-Arstider.deepClone = function(obj) {
+Arstider.deepClone = function(obj, exclude) {
+
+	exclude = exclude || [];
 
     // Handle the 3 simple types, and null or undefined
     if (null == obj || "object" != typeof obj) return obj;
@@ -639,6 +641,7 @@ Arstider.deepClone = function(obj) {
     if (obj instanceof Object) {
         var copy = {};
         for (var attr in obj) {
+        	if(exclude.indexOf(attr) != -1) continue;
             if (obj.hasOwnProperty(attr)) copy[attr] = Arstider.deepClone(obj[attr]);
         }
         return copy;
@@ -656,13 +659,13 @@ Arstider.deepClone = function(obj) {
  * @param {Object} target The object to copy to
  * @param {Boolean} clone Clones the source object first when true
  */
-Arstider.deepMerge = function(src, target, clone)
+Arstider.deepMerge = function(src, target, clone, includeMethods, exclude)
 {
 	if(clone) src = Arstider.deepClone(src);
+	exclude = exclude || [];
 
 	var isArray = Array.isArray(src);
-	if (isArray)
-	{
+	if (isArray){
 		target = target || [];
 		src.forEach(function(val, i)
 		{
@@ -670,36 +673,38 @@ Arstider.deepMerge = function(src, target, clone)
 			if (typeof src[i] === 'undefined') {
 				target[i] = val;
 			} else if (typeof val === 'object') {
-				target[i] = Arstider.deepMerge(val, target[i]);
+				target[i] = Arstider.deepMerge(val, target[i], false, includeMethods, exclude);
 			} else if (Array.isArray(val)){
-				target[i] = Arstider.deepMerge(val, target[i]);
+				target[i] = Arstider.deepMerge(val, target[i], false, includeMethods, exclude);
 			} else {
 				target[i] = val;
 			}
 		});
 	}
-	else
-	{
+	else{
 		target = target || {};
 
-		Object.keys(src).forEach(function (key)
-		{
+		for(var key in src){
+			if(exclude.indexOf(key) != -1) continue;
+			if(!(key in src) || src[key] == undefined) continue;
+
 			var val = src[key];
 			if(Array.isArray(val)){
-				target[key] = Arstider.deepMerge(val, target[key]);
+				target[key] = Arstider.deepMerge(val, target[key], false, includeMethods, exclude);
 			}
 			else if(typeof val === 'object'){
 				target[key] = target[key] || {};
 				if (!src[key]) {
 					target[key] = val;
 				} else {
-					target[key] = Arstider.deepMerge(val, target[key]);
+					target[key] = Arstider.deepMerge(val, target[key], false, includeMethods, exclude);
 				}
 			}
 			else{
+				if(!includeMethods && src[key] instanceof Function) continue;
 				target[key] = val;
 			}
-		});
+		}
 	}
 
 	return target;

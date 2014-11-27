@@ -26,7 +26,8 @@ function(){
 				statusText = "Network error.";
 			}
 			else{
-				Arstider.deepMerge(props, this);
+				Arstider.deepMerge(props, this, false, false, ["responseText", "responseXML", "DONE", "HEADERS_RECEIVED", "LOADING", "OPENED", "UNSENT", "upload", "response"]);
+				this.response = props.response;
 			}
 		}
 

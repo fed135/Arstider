@@ -87,7 +87,7 @@ function(Header, Response){
         xhr.parseType = this.parser;                   
         
 		if(this.onprogress) xhr.onprogress = this.onprogress.bind(this);	
-		xhr.onload = function(e){
+		xhr.onloadend = function(e){
 			if(xhr.status == 200){
 				resolve(new Response(xhr));
 			}
@@ -95,10 +95,7 @@ function(Header, Response){
 				reject(new Response(xhr));
 			}
 		};
-		xhr.onerror = function(e){
-			reject(new Response(xhr));
-		};
-					
+
 		xhr.send(Arstider.serialize(this.postData));
 		return xhr;
 	};

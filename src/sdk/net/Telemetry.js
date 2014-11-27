@@ -100,7 +100,7 @@ function (Net){
 						if(!this._events[i][o][u].__sent){
 							this._events[i][o][u].__sent = Arstider.timestamp();
 							
-							req = Arstider.clone((this._targetURLs[i] || this._targetURLs[Telemetry.ALL] || {});
+							req = Arstider.clone(this._targetURLs[i] || this._targetURLs[Telemetry.ALL] || {});
 							req.url = req.url.split(Telemetry.CATEGORY).join(i).split(Telemetry.EVENT_NAME).join(o);
 							req.data = JSON.stringify(this._events[i][o][u]);
 

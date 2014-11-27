@@ -36,33 +36,20 @@ function(){
 		 * @private
 		 * @type {boolean}
 		 */
-		this.cancelBubble = false;
+		this._cancelBubble = false;
 
 		/**
 		 * Number of frames to skip update chain
 		 * @private
 		 * @type {number}
 		 */
-		this.cancelUpdate = false;
+		this._cancelUpdate = false;
 		
 		/**
 		 * The element's parent
 		 * @type {*}
 		 */	
 		this.parent = null;
-
-		/**
-		 * List of children
-		 * @type {Array}
-		 */
-		this.children = [];
-		
-		/**
-		 * User-defined behavior for asynchronous, constant logic
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.update = props.update || null;
 
 		/**
 		 * List of components
@@ -85,9 +72,9 @@ function(){
 			len
 		;
 		
-		if(!this.cancelBubble && this.update) this.update(dt);
+		if(!this._cancelBubble && this.update) this.update(dt);
 
-		if(this.children && !this.cancelBubble){
+		if(this.children && !this._cancelBubble){
 			len = this._components.length;
 			if(len > 0){
 				for(i = 0; i<len; i++){
@@ -95,66 +82,9 @@ function(){
 					if(c && c.update) c.update(dt);
 				}
 			}
-
-			len = this.children.length;
-			if(len > 0){
-				for(i = 0; i<len; i++){
-					c = this.children[i];
-					if(c && c._update){
-						if(this.cancelBubble && c.cancelBubble != undefined) c.cancelBubble = true;
-						if(!c.cancelUpdate) c._update(dt);
-					}
-				}
-			}
 		}
 	};
 	
-	/**
-	 * Adds an Entity-type to the list of children.
-	 * @type {function(this:Entity)}
-	 * @param {Entity} ref The Entity to be added to the Entity's list of children
-	 * @return {Object} Self reference for chaining
-	 */
-	Entity.prototype.addChild = function(ref){
-
-		if(!ref){
-			Arstider.log("Arstider.Entity.addChild: no object given");
-			return;
-		}
-
-		if(ref.parent != null) Arstider.log("Arstider.Entity.addChild: object already has a parent", 1);
-		ref.parent = this;
-		this.children[this.children.length]=ref;
-		if(ref.cancelBubble) ref.cancelBubble()._update();
-		return this;
-	};
-	
-	/**
-	 * Removes an Entity from the list of children.
-	 * @type {function(this:Entity)}
-	 * @param {Entity} ref The reference of the Entity to be removed from the Entity's list of children
-	 * @return {Object} Self reference for chaining
-	 */
-	Entity.prototype.removeChild = function(ref, keepBuffer) {
-		
-		var 
-			index = this.children.indexOf(ref)
-		;
-
-		if(index != -1){
-			if(this.children[index].removeChildren && this.children[index].children.length > 0) this.children[index].removeChildren(true);
-			
-			this.children[index].destroyComponents();
-			this.children[index].parent = null;
-				
-			this.children.splice(index,1);
-		}
-		else{
-			Arstider.log("Arstider.Entity.removeChild: could not find child", 1);
-		}
-		return this;
-	};
-
 	/**
 	 * Destroys all the components of the entity.
 	 * @type {function(this:Entity)}
@@ -164,67 +94,66 @@ function(){
 
 		var
 			i,
-			len = this._components.length -1
+			len = this._components.length -1,
+			ns
 		;
 
 		for(i = len; i >= 0; i--){
-			this[this._components[i]].dispose();
-			delete this[this._components[i]];
-			this._components.splice(i, 1);
+			ns = this._components[i];
+			if(this[ns].dispose) this[ns].dispose();
+			delete this[ns];
 		}
-	};
-	
-	/**
-	 * Get an Entity from the list of children by it's index.
-	 * @type {function(this:Entity)}
-	 * @param {string} index The index position of the desired Entity.
-	 * @return {Entity|null} The desired Entity or null if not found.
-	 */
-	Entity.prototype.getChildAt = function(index) {
 
-		if(this.children[index]) return this.children[index];
-		Arstider.log("Arstider.Entity.getChild: could not find child at index "+index, 1);
-
-		return null;
+		this._components.length = 0;
 	};
-	
-	/**
-	 * Removes all children from stage and destroys their buffers.
-	 * @type {function(this:Entity)}
-	 * @return {Object} Self reference for chaining
-	 */
-	Entity.prototype.removeChildren = function(){
+
+	Entity.prototype.addComponents = function(components){
 
 		var
-			i,
-			len = this.children.length -1
+			i = 0,
+			len = components.length,
+			ns,
+			a
 		;
 
-		for(i = len; i >= 0; i--){
-			this.removeChild(this.children[i]);
+		for(i; i<len;i++){
+			if(!components[i].namespace){
+				Arstider.log("ERROR: component has no namespace attribute:");
+				Arstider.log(components[i]);
+				return;
+			}
+
+			ns = components[i].namespace;
+
+			if(ns in this){
+				Arstider.log("Arstider.Entity.addComponent: overriding component " + ns);
+				a = this._components.indexOf(ns);
+				if(a != -1){
+					this._components.splice(a, 1);
+				}
+			}
+
+			this[ns] = new components[i]();
+			this[ns].owner = this;
+			this._components.push(ns);
 		}
-		
-		return this;
 	};
 
-	/**
-	 * Detaches a child from it's parent while keeping buffers and children intact
-	 * @type {function(this:Entity)}
-	 * @param {string|Object} ref The name or reference of the child to detach
-	 * @return {Object} Self reference for chaining
-	 */
-	Entity.prototype.detachChild = function(ref){
-		
-		var 
-			i = this.children.indexOf(ref)
+	Entity.prototype.removeComponent = function(component){
+
+		var
+			ns = component.namespace || component || null,
+			i = this._components.indexOf(ns)
 		;
 
-		if(i != -1){
-			this.children[i].parent = null;
-			this.children.splice(i,1);
+		if(ns in this){
+			if(this[ns].dispose) this[ns].dispose();
+			delete this[ns];
 		}
 
-		return this;
+		if(i != -1){
+			this._components.splice(i, 1);
+		}
 	};
 		
 	/**
@@ -272,6 +201,27 @@ function(){
 		}
 		
 		return -1;
+	};
+
+	Entity.prototype.addListener = function(event, method){
+
+		if(this[event] != undefined){
+			if(!this[event].add) this[event] = new Signal();
+			if(method) this[event].add(method); 
+		}
+		else Arstider.log("Arstider.Clickable.addListener: "+event+ " is not a valid event name.", 1);
+
+		return this;
+	};
+
+	Entity.prototype.removeListener = function(event, method){
+
+		if(this[event] && this[event].remove){
+			if(method) this[event].remove(method);
+			else this[event] = null;
+		}
+
+		return this;
 	};
 	
 	return Entity; 

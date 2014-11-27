@@ -5,11 +5,9 @@
  * @author frederic charette <fredericcharette@gmail.com>
  */
 define("Arstider/components/Transform", 
-[
-	"Arstider/components/Component"
-],
+[],
 /** @lends components/Transform */
-function(Component){
+function(){
 	
 	Transform.DEFAULTS = {
 		x:0,
@@ -46,6 +44,8 @@ function(Component){
 	Transform.TOP = 0;
 	Transform.BOTTOM = 1;
 
+	Transform.namespace = "transform";
+
 	/**
 	 * Transform component constructor
 	 * Handles entity coordinates and transformations
@@ -53,10 +53,10 @@ function(Component){
 	 * @constructor
 	 * @param {Object|null} props Can optionally overwrite build properties of the entity    
 	 */
-	function Transform(data){
+	function Transform(){
 		this.global = {};
 
-		Arstider.Super(this, Component, data, Transform.DEFAULTS);
+		Arstider.mixin(this, Transform.DEFAULTS);
 	}
 
 	/**

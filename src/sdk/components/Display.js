@@ -6,12 +6,11 @@
  */
 define("Arstider/components/Display",
 [
-	"Arstider/components/Component",
 	"Arstider/managers/AssetManager",
 	"Arstider/events/Signal"
 ],
 /** @lends components/Display */
-function(Component, AssetManager, Signal){
+function(AssetManager, Signal){
 	
 	Display.DEFAULTS = {
 		alpha:1,
@@ -30,23 +29,11 @@ function(Component, AssetManager, Signal){
 		composite:Arstider.defaultComposition
 	};
 
-	function Display(data){
+	Display.namespace = "display";
+
+	function Display(){
+
 		this.data = null;
-
-		/**
-		 * Dispatched when element data has finished loading
-		 */
-		this.onload = new Signal();
-
-		/**
-		 * Called after disposal of data
-		 */
-		this.onunload = new Signal();
-
-		/**
-		 * Called in case of a load error
-		 */
-		this.onerror = new Signal()
 	}
 
 	Display.prototype.load = function(url, callback, errorCallback){
@@ -58,11 +45,11 @@ function(Component, AssetManager, Signal){
 		AssetManager.get(url, 
 			function(data){
 				thisRef.data = data;
-				thisRef.onload.dispatch();
+				if(thisRef.owner.onload) thisRef.owner.onload.dispatch();
 				if(callback) callback(data);
 			},
 			function(error){
-				thisRef.onerror.dispatch();
+				if(thisRef.owner.onerror) thisRef.owner.onerror.dispatch();
 				if(errorCallback) errorCallback(error);
 			}
 		);

@@ -6,12 +6,11 @@
  */
 define("Arstider/components/Clickable", 
 [
-	"Arstider/components/Component",
 	"Arstider/events/Signal",
 	"Arstider/system/Mouse"
 ],
 /** @lends components/Clickable */
-function(Component, Signal, Mouse){
+function(Signal, Mouse){
 	
 	/**
 	 * No click registering, temporary disabling method
@@ -32,8 +31,10 @@ function(Component, Signal, Mouse){
 	Clickable.DEFAULTS = {
 		type:Clickable.ACTIVE,
 		doubleClickDelay:250,
-		complexTouchPadding:100
+		complexTouchPadding:0.05	//5% outside padding
 	};
+
+	Clickable.namespace = "clickable";
 
 	/**
 	 * Clickable component constructor
@@ -42,70 +43,20 @@ function(Component, Signal, Mouse){
 	 * @constructor
 	 * @param {Object|null} props Can optionally overwrite build properties of the entity    
 	 */
-	function Clickable(data){
+	function Clickable(){
 
 		this._status = {
-			hovered:false,
-			pressed:false,
-			preclick:false,
-			rightPressed:false,
-			doubleClickCheck:0
+			hovered:new Array(Mouse.MAX_INPUT),
+			pressed:new Array(Mouse.MAX_INPUT),
+			preclick:new Array(Mouse.MAX_INPUT),
+			rightPressed:new Array(Mouse.MAX_INPUT),
+			doubleClickCheck:new Array(Mouse.MAX_INPUT)
 		};
 
-		/**
-		 * User-defined behavior when element is pressed
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.onpress = null;
-		
-		/**
-		 * User-defined behavior when element is pressed
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.onrelease = null;
-		
-		/**
-		 * User-defined behavior when element is pressed
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.onhover = null;
-		
-		/**
-		 * User-defined behavior when element is pressed
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.onleave = null;
-		
-		/**
-		 * User-defined behavior when element is pressed, then released
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.onclick = null;
-		
-		/**
-		 * User-defined behavior when element is pressed with the right mouse button, then released
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.onrightclick = null;
-		
-		/**
-		 * User-defined behavior when element is pressed with the right mouse button, then released
-		 * @override
-		 * @type {function(this:Entity)}
-		 */
-		this.ondoubleclick = null;
+		Arstider.mixin(this, Clickable.DEFAULTS);
 
-		Arstider.Super(this, Component, data, Clickable.DEFAULTS);
-
-		Mouse.registerComponent()
+		Mouse.registerComponent(this);
 	}
-	Arstider.Inherit(Clickable, Component);
 
 	/**
 	 * Checks if coordinates fit in the global location of the Entity
@@ -134,27 +85,6 @@ function(Component, Signal, Mouse){
 		 * Complex detection
 		 */
 		return this.isComplexTouched(x, y);
-	};
-
-	Clickable.prototype.addListener = function(event, method){
-
-		if(this[event] != undefined){
-			if(!this[event].add) this[event] = new Signal();
-			if(method) this[event].add(method); 
-		}
-		else Arstider.log("Arstider.Clickable.addListener: "+event+ " is not a valid event name.", 1);
-
-		return this;
-	};
-
-	Clickable.prototype.removeListener = function(event, method){
-
-		if(this[event] && this[event].remove){
-			if(method) this[event].remove(method);
-			else this[event] = null;
-		}
-
-		return this;
 	};
 
 	Clickable.prototype.dispose = function(){
@@ -186,7 +116,8 @@ function(Component, Signal, Mouse){
 			sum = quad1 + quad2 + quad3 + quad4,
 			total = this.global.width * this.global.height
 		;
-		if(sum >= total - this.complexTouchPadding && sum <= total + this.complexTouchPadding) return true;
+
+		if(sum >= total - (total * this.complexTouchPadding) && sum <= total + (total * this.complexTouchPadding)) return true;
 		
 		return false;
 	};
@@ -200,7 +131,7 @@ function(Component, Signal, Mouse){
 
 		this._status.hovered = true;
 		
-		if(this.onhover.dispatch) this.onhover.dispatch();
+		if(this.owner.onhover) this.owner.onhover.dispatch();
 	};
 	
 	/**
@@ -214,7 +145,7 @@ function(Component, Signal, Mouse){
 		this._status.preclick = false;
 		this._status.rightPressed = false;
 		
-		if(this.onleave.dispatch) this.onleave.dispatch();
+		if(this.owner.onleave) this.owner.onleave.dispatch();
 	};
 	
 	/**
@@ -226,7 +157,7 @@ function(Component, Signal, Mouse){
 
 		this._status.pressed = true;
 		
-		if(this.onpress.dispatch) this.onpress.dispatch();
+		if(this.owner.onpress) this.owner.onpress.dispatch();
 	};
 	
 	/**
@@ -241,16 +172,20 @@ function(Component, Signal, Mouse){
 		var time = Arstider.timestamp();
 		
 		if(this._status.preclick){
-			if(time - this._status.doubleClickCheck < this.doubleClickDelay && this.ondoubleclick.dispatch) this.ondoubleclick.dispatch();
+			if(time - this._status.doubleClickCheck < this.doubleClickDelay && this.owner.ondoubleclick) this.owner.ondoubleclick.dispatch();
 			else{
-				if(this.onclick.dispatch) this.onclick.dispatch();
+				if(this.owner.onclick) this.owner.onclick.dispatch();
 			}
 			
 			this._status.doubleClickCheck = time;
 		}
-		if(this.onrelease.dispatch) this.onrelease.dispatch();
+		if(this.owner.onrelease) this.owner.onrelease.dispatch();
 		
 		this._status.preclick = false;
+	};
+
+	Clickable.prototype.applyTouchEvent = function(event){
+
 	};
 	
 	/**
@@ -262,7 +197,7 @@ function(Component, Signal, Mouse){
 
 		this._status.rightPressed = false;
 
-		if(this.onrightclick.dispatch) this.onrightclick.dispatch();
+		if(this.owner.onrightclick) this.owner.onrightclick.dispatch();
 	};
 
 	return Clickable;

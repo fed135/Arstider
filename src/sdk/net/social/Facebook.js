@@ -133,7 +133,9 @@ function(){
 		if(!permissions || permissions.length === 0) return "";
 
 		for(i; i<Facebook.requiredPermissions.length; i++){
-			if(permissions.indexOf(Facebook.requiredPermissions[i]) == -1)
+			if(permissions.indexOf(Facebook.requiredPermissions[i]) == -1){
+				permissions.push(Facebook.requiredPermissions[i]);
+			}
 		}
 
 		return permissions;
