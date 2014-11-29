@@ -12,6 +12,8 @@
  */
 Arstider = {};
 
+Arstider.scene = new THREE.Scene();
+
 /**
  * Gets a number timestamp, usefull for id-ing or cache busting
  * @memberof Arstider

@@ -10,30 +10,45 @@ define("Arstider/components/Transform",
 function(){
 	
 	Transform.DEFAULTS = {
-		x:0,
-		y:0,
-		width:0,
-		height:0,
-		rotation:0,
+		position:{
+			x:0,
+			y:0,
+			z:0
+		},
+		size:{
+			x:0,
+			y:0,
+			z:1
+		},
+		rotation:{
+			x:0,
+			y:0,
+			z:0
+		},
 		scale:{
 			x:1,
-			y:1
+			y:1,
+			z:1
 		},
 		skew:{
 			x:0,
-			y:0
+			y:0,
+			z:0
 		},
 		origin:{
 			x:0,
-			y:0
+			y:0,
+			z:0
 		},
 		dock:{
 			x:null,
-			y:null
+			y:null,
+			z:null
 		},
 		fill:{
 			x:null,
-			y:null
+			y:null,
+			z:null
 		}
 	};
 
@@ -43,6 +58,9 @@ function(){
 
 	Transform.TOP = 0;
 	Transform.BOTTOM = 1;
+
+	Transform.FRONT = 0;
+	Transform.BACK = 1;
 
 	Transform.namespace = "transform";
 
@@ -54,6 +72,7 @@ function(){
 	 * @param {Object|null} props Can optionally overwrite build properties of the entity    
 	 */
 	function Transform(){
+
 		this.global = {};
 
 		Arstider.mixin(this, Transform.DEFAULTS);
@@ -65,9 +84,11 @@ function(){
 	 * @param {number|null} x The horizontal docking propriety.
 	 * @param {number|null} y The vertical docking propriety.
 	 */
-	Transform.prototype.dock = function(x, y){
+	Transform.prototype.dock = function(x, y, z){
+
 		this.dock.x = x || null;
 		this.dock.y = y || null;
+		this.dock.z = z || null;
 		
 		this.owner.cancelBubble()._update();
 		return this;
@@ -79,9 +100,11 @@ function(){
 	 * @param {string|number|null} x The horizontal filling propriety.
 	 * @param {string|number|null} y The vertical filling propriety.
 	 */
-	Transform.prototype.fill = function(x, y){
+	Transform.prototype.fill = function(x, y, z){
+		
 		this.fill.x = x || null;
 		this.fill.y = y || null;
+		this.fill.z = z || null;
 		
 		this.owner.cancelBubble()._update();
 		return this;
@@ -95,10 +118,13 @@ function(){
 		;
 	
 		if(this.owner.parent != null){
-			if(this.fill.x != null) this.width = pt.width * this.fill.x;
-			if(this.fill.y != null) this.height = pt.height * this.fill.y;
-			if(this.dockX != null) this.x = (pt.width * this.dock.x) - (this.width * this.dock.x);
-			if(this.dockY != null) this.y = (pt.height * this.dock.y) - (this.height * this.dock.y);
+			if(this.fill.x != null) this.size.x = pt.size.x * this.fill.x;
+			if(this.fill.y != null) this.size.y = pt.size.y * this.fill.y;
+			if(this.fill.z != null) this.size.z = pt.size.z * this.fill.z;
+
+			if(this.dock.x != null) this.position.x = (pt.size.x * this.dock.x) - (this.size.x * this.dock.x);
+			if(this.dock.y != null) this.position.y = (pt.size.y * this.dock.y) - (this.size.y * this.dock.y);
+			if(this.dock.z != null) this.position.z = (pt.size.z * this.dock.z) - (this.size.z * this.dock.z);
 		}
 	};
 

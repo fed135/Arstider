@@ -54,7 +54,6 @@ function(Buffer, Net){
 				dataType:"blob"
 			}).then(
 				function(data){
-					console.log(data);
 					thisRef.size = data.response.size;
 					thisRef.data.onload = function() {
       					window.URL.revokeObjectURL(thisRef.data.src);
@@ -79,6 +78,8 @@ function(Buffer, Net){
 	ImageData.prototype._handleLoadComplete = function(callback){
 
 		this.data.onload = null;
+
+		console.log("test!", Buffer.SHARP);
 
 		if(this.renderStyle === Buffer.SHARP){
 			this.data.style.imageRendering = "crisp-edges";

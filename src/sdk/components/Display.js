@@ -7,10 +7,11 @@
 define("Arstider/components/Display",
 [
 	"Arstider/managers/AssetManager",
+	"Arstider/scene/Materials",
 	"Arstider/events/Signal"
 ],
 /** @lends components/Display */
-function(AssetManager, Signal){
+function(AssetManager, Materials, Signal){
 	
 	Display.DEFAULTS = {
 		alpha:1,
@@ -26,7 +27,9 @@ function(AssetManager, Signal){
 			height:null
 		},
 		mask:false,
-		composite:Arstider.defaultComposition
+		composite:Arstider.defaultComposition,
+		material:null,
+		materialType:null
 	};
 
 	Display.namespace = "display";
@@ -34,19 +37,48 @@ function(AssetManager, Signal){
 	function Display(){
 
 		this.data = null;
+
+		Arstider.mixin(this, Display.DEFAULTS);
 	}
 
-	Display.prototype.load = function(url, callback, errorCallback){
+	Display.prototype.load = function(url, materialType, callback, errorCallback){
 
 		var
-			thisRef = this
+			thisRef = this,
+			mat
 		;
 
+		if(!(materialType instanceof String)){
+			errorCallback = callback;
+			callback = materialType;
+			materialType = Materials.MESH_PHONG;
+		}
+
+		mat = Materials.get(url);
+		if(mat){
+			this.data = mat;
+			this.material = url;
+			this.materialType = materialType;
+			if(callback) callback(mat);
+			return;
+		}
+
+		this.material = url;
+		this.materialType = materialType;
+
 		AssetManager.get(url, 
-			function(data){
-				thisRef.data = data;
+			function(imageData){
+				if(thisRef.owner.transform){
+					if(thisRef.owner.transform.size.x == 0) thisRef.owner.transform.size.x = imageData.width;
+					if(thisRef.owner.transform.size.y == 0) thisRef.owner.transform.size.y = imageData.height;
+				}
+				thisRef.crop.width = thisRef.crop.width || imageData.width;
+				thisRef.crop.height = thisRef.crop.height || imageData.height;
+
+				thisRef.data = Materials.create(url, materialType, {map:imageData.data});
+
 				if(thisRef.owner.onload) thisRef.owner.onload.dispatch();
-				if(callback) callback(data);
+				if(callback) callback(thisRef.data);
 			},
 			function(error){
 				if(thisRef.owner.onerror) thisRef.owner.onerror.dispatch();

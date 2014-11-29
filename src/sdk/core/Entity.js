@@ -223,6 +223,11 @@ function(){
 
 		return this;
 	};
+
+	Entity.prototype.cancelBubble = function(){
+		
+		this._cancelBubble = true;
+	};
 	
 	return Entity; 
 });

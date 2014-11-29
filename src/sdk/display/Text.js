@@ -1,25 +1,24 @@
 /**
- * Text Field.
- * @version 1.1.3
+ * Static Text
+ * @version 2.0.3
  * @author frederic charette <fredericcharette@gmail.com>
  */
-define( "Arstider/TextField", [
-		"Arstider/Buffer", 
-		"Arstider/Entity", 
-		"Arstider/Fonts",
-		"Arstider/Signal",
-		"Arstider/texts/Segment",
-		"Arstider/texts/BBParser"  
-	], /** @lends TextField */ function (Buffer, Entity, Fonts, Signal, Segment, Parser) {
+define( "Arstider/display/Text", 
+[
+	"Arstider/core/Entity",
+	"Arstider/core/Buffer",
 
-	/**
-	 * Static entity reference
-	 * @private
-	 * @type {Object|null}
-	 */
-	TextField._entityRef = new Entity();
+	"Arstider/events/Signal",
 
-	TextField.CROP_PADDING = 1;
+	"Arstider/managers/FontManager",
+
+	"Arstider/display/text/Segment",
+	"Arstider/lang/Parser"  
+],
+/** @lends TextField */ 
+function (Entity, Buffer, Signal, FontManager, Segment, Parser){
+
+	Text.BUFFER_PADDING = 1;
 
 	/**
 	 * TextField constructor
@@ -28,28 +27,19 @@ define( "Arstider/TextField", [
 	 * @constructor
 	 * @param {Object=} props Can optionally overwrite build properties of the entity
 	 */
-	function TextField(props) {
+	function Text(props) {
 
 		/**
 		 * Defines if text should be filled
 		 * @type {boolean}
 		 */
-		this.fillText = Arstider.checkIn(props.fillText, true);
+		this.fill = Arstider.checkIn(props.fill, true);
 
 		/**
 		 * Defines if text should be stroked
 		 * @type {boolean}
 		 */
-		this.strokeText = Arstider.checkIn(props.strokeText, false);
-
-		/**
-		 * Stores the text value of the TextField.
-		 * Changed through the setText method.
-		 *
-		 * @private
-		 * @type {string|null}
-		 */
-		this._textValue = null;
+		this.stroke = Arstider.checkIn(props.stroke, false);
 
 		/**
 		 * An Array of parsed Words
@@ -88,33 +78,33 @@ define( "Arstider/TextField", [
 
 		Arstider.Super(this, Entity, props);
 
+		this.addComponents([Display, Transform]);
+
         if(props.font != undefined) this.setFont(props.font);
         if(props.text != undefined) this.setText(props.text);
 	};
 
-	Arstider.Inherit(TextField, Entity);
+	Arstider.Inherit(Text, Entity);
 
 	/**
 	 * Sets the text of the TextField and re-renders it's data.
 	 * @type {function(this:TextField)}
 	 * @param {string} name The desired text.
 	 */
-	TextField.prototype.setText = function(txt){
+	Text.prototype.setText = function(txt){
+
 		txt = txt + "";
 
-		if(txt != this._textValue){
-			if(txt.indexOf(Parser.breakLine) != -1) this.textWrap = true;
-			this._textValue = txt;
-			if(txt.indexOf(Parser.openSegment) != -1 || this.textWrap){
-				this._words = Parser.parse(txt);
-				this._words = Parser.splitSymbol(this._words, Parser.breakLine, false, true);
-				this._words = Parser.trimSpaces(this._words);
-			}
-			else{
-				this._words = [new Segment(txt)];
-			}
-			this.render();
+		if(txt.indexOf(Parser.breakLine) != -1) this.textWrap = true;
+		if(txt.indexOf(Parser.openSegment) != -1 || this.textWrap){
+			this._words = Parser.parse(txt);
+			this._words = Parser.splitSymbol(this._words, Parser.breakLine, false, true);
+			this._words = Parser.trimSpaces(this._words);
 		}
+		else{
+			this._words = [new Segment(txt)];
+		}
+		this.render();
 	};
 
 	/**
@@ -122,14 +112,11 @@ define( "Arstider/TextField", [
 	 * @type {function(this:TextField)}
 	 * @param {Font|Object} name The desired text.
 	 */
-	TextField.prototype.setFont = function(font, specials){
-		this._custom = specials || {};
-		this._font = Fonts.get(font);
+	Text.prototype.setFont = function(font, specials){
 
-		var thisRef = this;
-		this._font._onFontLoaded(function(){
-			thisRef.render.call(thisRef);
-		});
+		this._custom = specials || {};
+		this._font = FontManager.get(font);
+		this._font._onFontLoaded(this.render.bind(this));
 	};
 
 	/**
@@ -137,7 +124,8 @@ define( "Arstider/TextField", [
 	 * @private
 	 * @type {function(this:TextField)}
 	 */
-	TextField.prototype._makeBuffer = function(){
+	Text.prototype._makeBuffer = function(){
+
 		if(this.data == null) this.data = new Buffer({name:"Arstider_TextField_"+this.name});
 	};
 
@@ -148,7 +136,9 @@ define( "Arstider/TextField", [
 	 * @param {Object} fontRef Final transformation options
 	 * @param {number} maxWidth The maximum width allowed
 	 */
-	TextField.prototype._renderWordList = function(f){
+	Text.prototype._renderWordList = function(f){
+
+		//TODO: cleanup
 
 		var 
 			caret = {x:0, y:0},
@@ -245,18 +235,28 @@ define( "Arstider/TextField", [
 		}
 	};
 
-	TextField.prototype._getLineWidth = function(l){
-		var total = 0;
-		for(var i = 0; i<l.length; i++){
+	Text.prototype._getLineWidth = function(l){
+
+		var
+			total = 0,
+			i = 0,
+			len = l.length
+		;
+
+		for(i; i<len; i++){
 			total += l[i].width;
 		}
 		return total;
 	};
 
-	TextField.prototype.applyFont = function(f){
-		for(var i in f){
-			if(this[i] != undefined && !(i in TextField._entityRef)) this.data.context[i] = [i];
-			else this.data.context[i] = f[i];
+	Text.prototype.applyFont = function(f){
+
+		var
+			i
+		;
+
+		for(i in f){
+			this.data.context[i] = f[i];
 		}
 		this.data.context.font = ((f.bold)?"bold ":"") + ((f.italic)?"italic ":"") + f.size + " " + f.family;
 	};
@@ -266,7 +266,7 @@ define( "Arstider/TextField", [
 	 * @private
 	 * @type {function(this:TextField)}
 	 */
-	TextField.prototype.render = function(){
+	Text.prototype.render = function(){
 
 		this._makeBuffer();
 
@@ -285,7 +285,7 @@ define( "Arstider/TextField", [
 		/**
 		 * Cancel operation if not all required fields are filled
 		 */
-		if(this._font === null || this._textValue === null || this._textValue === "") return;
+		if(this._font === null || this._words.length === 0) return;
 		if(this._font.loaded === false) return;
 		if(this._font.temp && !Fonts.collection[this._font.name].temp) this.setFont(Fonts.get(this._font.name));
 
@@ -295,5 +295,5 @@ define( "Arstider/TextField", [
 		this.onchange.dispatch(this);
 	};
 
-	return TextField;
+	return Text;
 });
