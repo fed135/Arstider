@@ -79,8 +79,6 @@ function(Buffer, Net){
 
 		this.data.onload = null;
 
-		console.log("test!", Buffer.SHARP);
-
 		if(this.renderStyle === Buffer.SHARP){
 			this.data.style.imageRendering = "crisp-edges";
 		}

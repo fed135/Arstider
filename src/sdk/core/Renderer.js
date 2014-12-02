@@ -4,22 +4,15 @@
  * @version 1.1.2
  * @author frederic charette <fredericcharette@gmail.com>
  */
-define( "Arstider/Renderer", ["Arstider/Buffer", "Arstider/contexts/Webgl", "Arstider/contexts/Canvas2d", "Arstider/core/Performance", "Arstider/contexts/MatrixTransform"], /** @lends core/Renderer */ function (Buffer, Webgl, Canvas2d, Performance, MatrixTransform){
+define("Arstider/core/Renderer", 
+[],
+/** @lends core/Renderer */
+function(){
 		
-	var singleton;
-		
-	/**
-	 * Renderer class
-     * Every draw frame, this module is called upon to render every child of every container
-     * @class core/Renderer
-     * @name core/Renderer
-	 * @constructor 
-	 */
 	function Renderer(){
-		this.pencil = null;
 		this.padding = 100;
-		this.pendingRemoval = 0;
 	}
+
 	Renderer.prototype.checkOnScreen = function(context, element, matrix, xo, yo){
 		var 
 			mW = context.canvas.width,
@@ -34,16 +27,16 @@ define( "Arstider/Renderer", ["Arstider/Buffer", "Arstider/contexts/Webgl", "Ars
 			p4 = matrix.transformPoint(fw, fh),
 			pc = {x:(p1.x+p2.x+p3.x+p4.x)*0.25, y:(p1.y+p2.y+p3.y+p4.y)*0.25}
 		;
-		if((p1.x - singleton.padding < mW && p1.x >=  -singleton.padding) ||
-		(p2.x - singleton.padding <= mW && p2.x >  -singleton.padding) ||
-		(p3.x - singleton.padding < mW && p3.x >=  -singleton.padding) ||
-		(p4.x - singleton.padding <= mW && p4.x >  -singleton.padding) ||
-		(pc.x - singleton.padding <= mW && pc.x >  -singleton.padding)){
-			if((p1.y - singleton.padding < mH && p1.y >=  -singleton.padding) ||
-				(p2.y - singleton.padding <= mH && p2.y >  -singleton.padding) ||
-				(p3.y - singleton.padding < mH && p3.y >=  -singleton.padding) ||
-				(p4.y - singleton.padding <= mH && p4.y >  -singleton.padding) ||
-				(pc.y - singleton.padding <= mH && pc.y >  -singleton.padding)){
+		if((p1.x - this.padding < mW && p1.x >=  -this.padding) ||
+		(p2.x - this.padding <= mW && p2.x >  -this.padding) ||
+		(p3.x - this.padding < mW && p3.x >=  -this.padding) ||
+		(p4.x - this.padding <= mW && p4.x >  -this.padding) ||
+		(pc.x - this.padding <= mW && pc.x >  -this.padding)){
+			if((p1.y - this.padding < mH && p1.y >=  -this.padding) ||
+				(p2.y - this.padding <= mH && p2.y >  -this.padding) ||
+				(p3.y - this.padding < mH && p3.y >=  -this.padding) ||
+				(p4.y - this.padding <= mH && p4.y >  -this.padding) ||
+				(pc.y - this.padding <= mH && pc.y >  -this.padding)){
 				return true;
 			}
 		}
@@ -208,31 +201,10 @@ define( "Arstider/Renderer", ["Arstider/Buffer", "Arstider/contexts/Webgl", "Ars
 			if(callback) callback();
 		}
 	};
-	Renderer.prototype.clear = function(context, x, y, width, height){
-		this._recoverContextPencil(context, function(){
-			singleton.pencil.clear(context, x,y,width,height);
-		});
-	};
-	Renderer.prototype._recoverContextPencil = function(context, callback){
-		if(context && context.canvas.buffer.contextType == Buffer.CANVAS2D){
-				this.pencil = Canvas2d;
-			}
-			else{
-				this.pencil = Webgl;
-			}
-		if(!context.__init){
-			context.__init = true;
-			if(context && context.canvas.buffer.contextType == Buffer.CANVAS2D){
-				this.pencil = Canvas2d;
-			}
-			else{
-				this.pencil = Webgl;
-			}
-			this.pencil.init(context, callback);
-		}
-		else{
-			callback();
-		}
+
+	Renderer.prototype.clear = function(context){
+		context.renderer.clear();
+		Arstider.scene.children.length = 0;
 	};
 		
 	/**
@@ -244,13 +216,8 @@ define( "Arstider/Renderer", ["Arstider/Buffer", "Arstider/contexts/Webgl", "Ars
 	 * @param {Object} showBoxes Whether or not to show the debug outlines
 	 */
 	Renderer.prototype.draw = function(context, element, pre, post, debug, callback){
-		this.pendingRemoval = 0;
-		this._recoverContextPencil(context, function recoverContext(){
-			//singleton.pencil.clip(context, 0, 0, context.canvas.width, context.canvas.height);	//not great for rpX/rpY greater than 0
-			singleton.renderChild.call(singleton, context, element, false, pre, post, null, debug, callback, true);
-		});
+		this.renderChild(context, element, false, pre, post, null, debug, callback, true);
 	};
-		
-	singleton = new Renderer();
-	return singleton;
+	
+	return new Renderer();
 });

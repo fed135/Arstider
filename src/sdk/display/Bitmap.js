@@ -8,11 +8,15 @@ define("Arstider/display/Bitmap",
 [
 	"Arstider/core/DisplayObjectContainer", 
 
-	"Arstider/components/Display",
-	"Arstider/components/Transform"
+	"Arstider/components/Material",
+	"Arstider/components/Geometry",
+	"Arstider/components/Transform",
+	"Arstider/components/WorldObject",
+
+	"Arstider/events/Signal"
 ], 
 /** @lends display/Bitmap */ 
-function (DisplayObjectContainer, Display, Transform){
+function (DisplayObjectContainer, Material, Geometry, Transform, WorldObject, Signal){
 	
 	/**
 	 * Bitmap constructor
@@ -25,10 +29,26 @@ function (DisplayObjectContainer, Display, Transform){
 	function Bitmap(props) {
 		Arstider.Super(this, DisplayObjectContainer, props);
 		
-		this.addComponents([Display, Transform]);
+		this.addComponents([Material, Geometry, Transform, WorldObject]);
+
+		this.onready = new Signal();
 	};
 	
 	Arstider.Inherit(Bitmap, DisplayObjectContainer);
 	
+	Bitmap.prototype.load = function(url){
+		this.material.load(url, this._updateMesh.bind(this));
+	};
+
+	Bitmap.prototype._updateMesh = function(){
+		this.geometry.load({
+			meshType:Geometry.PLANE,
+			width:this.material.crop.width,
+			height:this.material.crop.height
+		});
+		this.worldObject.create();
+		this.onready.dispatch();
+	};
+
 	return Bitmap; 
 });

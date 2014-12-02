@@ -4,16 +4,15 @@
  * @version 2.0.1
  * @author frederic charette <fredericcharette@gmail.com>
  */
-define("Arstider/components/Display",
+define("Arstider/components/Material",
 [
 	"Arstider/managers/AssetManager",
-	"Arstider/scene/Materials",
-	"Arstider/events/Signal"
+	"Arstider/scene/Materials"
 ],
-/** @lends components/Display */
-function(AssetManager, Materials, Signal){
+/** @lends components/Material */
+function(AssetManager, Materials){
 	
-	Display.DEFAULTS = {
+	Material.DEFAULTS = {
 		alpha:1,
 		outline:{
 			color:"red",
@@ -32,16 +31,16 @@ function(AssetManager, Materials, Signal){
 		materialType:null
 	};
 
-	Display.namespace = "display";
+	Material.namespace = "material";
 
-	function Display(){
+	function Material(){
 
 		this.data = null;
 
-		Arstider.mixin(this, Display.DEFAULTS);
+		Arstider.mixin(this, Material.DEFAULTS);
 	}
 
-	Display.prototype.load = function(url, materialType, callback, errorCallback){
+	Material.prototype.load = function(url, materialType, callback, errorCallback){
 
 		var
 			thisRef = this,
@@ -59,6 +58,7 @@ function(AssetManager, Materials, Signal){
 			this.data = mat;
 			this.material = url;
 			this.materialType = materialType;
+			if(this.owner.onload) this.owner.onload.dispatch();
 			if(callback) callback(mat);
 			return;
 		}
@@ -68,10 +68,13 @@ function(AssetManager, Materials, Signal){
 
 		AssetManager.get(url, 
 			function(imageData){
-				if(thisRef.owner.transform){
-					if(thisRef.owner.transform.size.x == 0) thisRef.owner.transform.size.x = imageData.width;
-					if(thisRef.owner.transform.size.y == 0) thisRef.owner.transform.size.y = imageData.height;
+				if(thisRef.owner){
+					if(thisRef.owner.transform){
+						if(thisRef.owner.transform.size.x == 0) thisRef.owner.transform.size.x = imageData.width;
+						if(thisRef.owner.transform.size.y == 0) thisRef.owner.transform.size.y = imageData.height;
+					}
 				}
+
 				thisRef.crop.width = thisRef.crop.width || imageData.width;
 				thisRef.crop.height = thisRef.crop.height || imageData.height;
 
@@ -87,9 +90,9 @@ function(AssetManager, Materials, Signal){
 		);
 	}
 
-	Display.prototype.dispose = function(){
+	Material.prototype.dispose = function(){
 		this.data = null;
 	};
 
-	return Display;
+	return Material;
 });

@@ -27,8 +27,6 @@ function(){
 			Arstider.log("Arstider.Materials.create: material "+id+" already exists, it will be replaced.");
 		}
 
-		console.log(id, type, data);
-
 		switch(type){
 			case this.LINE_BASIC:
 				this.list[id] = new THREE.LineBasicMaterial(data);
@@ -72,8 +70,6 @@ function(){
 			default:
 				Arstider.log("Arstider.Materials.create: material type not found "+type);
 		}
-
-		console.log("me?", this.list);
 
 		return this.list[id];
 	};
