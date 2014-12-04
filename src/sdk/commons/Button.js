@@ -22,7 +22,23 @@ function(DisplayObject, TextField, Mouse, Browser){
 		if(this.enabled) this.showState("normal");
 		else this.showState("disabled");
 
-		if(this.hitbox != null) this.addHitbox(this.hitbox);		
+		if(this.hitbox != null) this.addHitbox(this.hitbox);
+
+		var label = Arstider.firstOf([props.label, props.text], null);
+		
+		if(label != null){
+			this.label = new TextField({
+				strokeText: props.strokeText || false
+			});
+
+			this.label.setText(label);
+			if(props.font){
+				this.label.setFont(props.font);
+			}
+
+			this.label.dock(0.5, 0.5);
+			this.addChild(this.label);
+		}		
 	}
 	Arstider.Inherit(Button, DisplayObject);
 
@@ -88,24 +104,6 @@ function(DisplayObject, TextField, Mouse, Browser){
 				if(this.height == 0) this.height = bg.height;
 				if(this.width == 0) this.width = bg.width;
 			}
-		}
-
-		var label = Arstider.checkIn(props.label, Arstider.checkIn(props.text, null));
-		
-		if(label != null){
-			state.label = new TextField({
-				text:label,
-				width:props.textWidth || 100,
-				//height: props.textHeight || 50,
-				strokeText: props.strokeText || false
-			});
-
-			if(props.font){
-				state.label.setFont(props.font);
-			}
-
-			state.label.dock(0.5, 0.5);
-			state.addChild(state.label);
 		}
 
 		if(props.icon != null){
