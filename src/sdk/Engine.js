@@ -459,7 +459,7 @@ define( "Arstider/Engine", [
 				}
 			}
 		}
-		Arstider.__cancelBubble = {};
+		
 		i = u = numInputs = null;
 	};
 	/**
@@ -521,6 +521,7 @@ define( "Arstider/Engine", [
 			}
 		}
 		mouseX = mouseY = i = inputId = null;
+		Arstider.__cancelBubble = {};
 	};
 	/**
 	 * Recursively wipes pending deletion item (remove child is an async operation)
