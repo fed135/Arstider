@@ -51,6 +51,8 @@ define( "Arstider/TextField", [
 		 */
 		this._textValue = null;
 
+		this.rightToLeft = false;
+
 		/**
 		 * An Array of parsed Words
 		 *
@@ -177,7 +179,8 @@ define( "Arstider/TextField", [
 			u,
 			heightVal,
 			widthVal,
-			headRoom = 0
+			headRoom = 0,
+			p
 		;
 
 		//get width
@@ -255,6 +258,8 @@ define( "Arstider/TextField", [
 			}
 
 			caret.y = f.paddingTop + ((i+1)*f.lineSpacing) + f.fontOffsetY - headRoom;
+
+			lines[i] = lines[i].reverse();
 
 			for(u = 0; u<lines[i].length; u++){
 				if(f.textAlign == "right"){
