@@ -10,61 +10,80 @@
  * @namespace Arstider
  * @type {Object}
  */
-Arstider = {};
-
-Arstider.scene = new THREE.Scene();
-
-/**
- * Gets a number timestamp, usefull for id-ing or cache busting
- * @memberof Arstider
- * @type {function}
- * @return {number} the timestamp
- */
-Arstider.timestamp = function(){
-	return Date.now();
+Arstider = {
+	_core : {
+		emptyObject : {},
+		emptyFunction : function(){},
+		emptyString : "",
+		emptyImgSrc : "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=",
+		savedStates : {}
+	},
+	debug : {
+		logEnabled : true,
+		profilerEnabled : true,
+		optimizerEnabled : true,
+		verboseLevel : 0
+	},
+	math : {
+		degToRad : Math.PI/180,
+		radToDeg : 180/Math.PI
+	},
+	scene : null,
+	settings : {
+		fps : 60,
+		defaultComposition : "source-over",
+		defaultColor : "transparent",
+		defaultRenderStyle : "smooth"
+	},
+	utils: {}
 };
 
-/**
- * Global access to check if page is visible or not
- * @memberof Arstider
- * @type {boolean}
- */
-Arstider.pageHidden = false;
-
-Arstider.tempBufferLabel = "_temp_";
 
 /**
- * Get Node from Arstider Element
- * @memberof Arstider
- * @type {function}
+ * 	======================
+ * 	=====	 		 =====
+ * 	===	     CORE 	   ===
+ * 	=====			 =====
+ * 	======================
  */
-Arstider.getNode = function(obj, maxDepth){
-	maxDepth = Arstider.checkIn(maxDepth, 5);
 
+/**
+ * Fixed drawing rate, when vendor-prefixed is unavailable or because of platform restrictions
+ * @memberof Arstider
+ * @const
+ * @param {function()} callback The called method for rendering
+ */
+Arstider._core.fixedAnimationFrame = function(callback, dt){
+	
 	var 
-		orig = obj,
-		depth = 0
+		targetFPS = Math.round(1000/Arstider.FPS),
+		nextFrame = Math.max(10, targetFPS - (dt - targetFPS))
 	;
 
-	if(orig){
-		//add protected flag to buffer tags of background/watermark 
-		if(orig.data){
-			while(orig.data.nodeName == undefined){
-				depth++;
-				if(depth > maxDepth) break;
-
-				if(orig.data.data){
-					orig = orig.data;
-				}
-				else break;
-			}
-		}
-	}
-
-	return orig;
+	Arstider.__animTimer = window.setTimeout(callback, nextFrame);
 };
 
-Arstider.error = function(type, props){
+/**
+ * Cancels the fixed drawing rate, when vendor-prefixed is unavailable or because of platform restrictions
+ * @memberof Arstider
+ * @const
+ * @param {*} ref The requestAnimationFrame method
+ */
+Arstider._core.fixedCancelAnimationFrame = function(ref){
+
+	if(Arstider.__animTimer != undefined) window.clearTimeout(Arstider.__animTimer);
+};
+
+
+/**
+ * 	======================
+ * 	=====	 		 =====
+ * 	===	    DEBUG 	   ===
+ * 	=====			 =====
+ * 	======================
+ */
+
+Arstider.debug.error = function(type, props){
 	var i, err = new type(props.message);
 	for(i in props){
 		if(i != "message") err[i] = props[i];
@@ -72,29 +91,7 @@ Arstider.error = function(type, props){
 	return err;
 }
 
-Arstider.min = function(){
-	for(var i =1, min=0, len = arguments.length; i<len; i++){
-		if(arguments[i]<arguments[min])min = i;
-    }
-	return arguments[min];
-};
-
-Arstider.max = function(){
-	for(var i =1, max=0, len = arguments.length; i<len; i++){
-		if(arguments[max]<arguments[i])max = i;
-	}
-	return arguments[max];
-};
-
-Arstider.floor = function(num){
-	return num >>> 0;
-};
-
-Arstider.ceil = function(num){
-	return num << 1;
-};
-
-Arstider.log = function(data, level){
+Arstider.debug.log = function(data, level){
 	level = level || 1; 
 
 	var 
@@ -117,11 +114,34 @@ Arstider.log = function(data, level){
 	}
 };
 
-Arstider.powerOf2 = function(num){
+/**
+ * Disables the console element
+ * @memberof Arstider
+ * @type {function}
+ */
+Arstider.debug.disableConsole = function(){
+	window.console = {
+		log:Arstider.emptyFunction,
+		warn:Arstider.emptyFunction
+		//error:Arstider.emptyFunction
+	};
+};
+
+/**
+ * 	======================
+ * 	=====	 		 =====
+ * 	===	    MATH 	   ===
+ * 	=====			 =====
+ * 	======================
+ */
+
+Arstider.math.powerOf2 = function(num){
+
 	return (num > 0 && (num & (num - 1)) === 0);
 };
 
-Arstider.nextPowerOf2 = function(number){
+Arstider.math.nextPowerOf2 = function(number){
+	
     if (number > 0 && (number & (number - 1)) === 0) // see: http://goo.gl/D9kPj
         return number;
     else{
@@ -131,165 +151,85 @@ Arstider.nextPowerOf2 = function(number){
     }
 };
 
-//IE9 iframe fallback
-if(Object.create == undefined){
-	Object.create = function(parent){
-		function F () {}  // An empty constructor.
-    	F.prototype = parent;  // Set its prototype to the parent object.
-    	return new F;  // Instantiate it to get an empty object that inherits `parent`.
+/**
+ * Calculate the distance between 2 coordinates in 3d space
+ * @memberof Arstider.math
+ * @type {function}
+ * @param {object} pointA The coordinates of the first point
+ * @param {object} pointB The coordinates of the second point
+ * @return {number} the distance between the 2 points
+ */
+Arstider.math.distance = function(pointA, pointB){
+
+	return Math.sqrt(Math.pow((pointB.x - pointA.x),2) + Math.pow((pointB.y - pointA.y),2) + Math.pow((pointB.z - pointA.z),2));
+};
+
+/**
+ * Calculate direction in radians of pointB in relation to pointA
+ * @memberof math.Arstider
+ * @type {function}
+ * @param {object} pointA The coordinates of the first point
+ * @param {object} pointB The coordinates of the second point
+ * @return {object} the rotation matrix between the 2 points
+ */
+Arstider.math.direction = function(pointA, pointB){
+
+	return {
+		x:Math.arctan((pointB.z-pointA.z)/(pointB.y - pointA.y)),
+		y:Math.arctan((pointB.x-pointA.x)/(pointB.z - pointA.z)),
+		z:Math.arctan((pointB.y-pointA.y)/(pointB.x - pointA.x)),
 	};
-}
-
-/**
- * Disables the console element
- * @memberof Arstider
- * @type {function}
- */
-Arstider.disableConsole = function(){
-	window.console = {
-		log:Arstider.emptyFunction,
-		warn:Arstider.emptyFunction
-		//error:Arstider.emptyFunction
-	};
 };
 
 /**
- * Indicates if the engine should remain with canvas2D context or attempt WebGl rendering
- * @memberof Arstider
- * @type {boolean}
+ * 	======================
+ * 	=====	 		 =====
+ * 	===	   SETTINGS	   ===
+ * 	=====			 =====
+ * 	======================
  */
-Arstider.force2d = true;
 
 /**
- * Re-usable empty object
- * @memberof Arstider
- * @const
- * @type {Object}
- */
-Arstider.emptyObject = {};
-
-/**
- * Re-usable empty function
- * @memberof Arstider
- * @const
- * @type {function()}
- */
-Arstider.emptyFunction = function(){};
-
-/**
- * Re-usable empty string
- * @memberof Arstider
- * @const
- * @type {string}
- */
-Arstider.emptyString = "";
-
-/**
- * Skip update logic flag
- * memberof Arstider
- * @type {boolean}
- */
-Arstider.skipUpdate = false;
-
-/**
- * Cancel bubbleFlag
- * @type {Object}
- */
-Arstider.__cancelBubble = {};
-
-/**
- * Cancels input Bubble for the selected input
+ * Sets the FPS of the game (max 60)
  * @memberof Arstider
  * @type {function}
  */
-Arstider.cancelBubble = function(id){
-	id = Arstider.checkIn(id, 0);
-	Arstider.__cancelBubble[id] = true;
-};
+Arstider.settings.setFPS = function(val){
+	val = val || 60;
 
-/**
- * Re-usable empty images url
- * @memberof Arstider
- * @const
- * @type {string}
- */
-Arstider.emptyImgSrc = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
-
-/**
- * Max FPS value
- * @memberof Arstider
- * @type {number}
- */
-Arstider.FPS = 60;
-
-/**
- * Saved screen states
- * @memberof Arstider
- * @const
- * @type {Object}
- */
-Arstider.savedStates = {};
-
-
-Arstider.queryStringToObject = function(str) {
-	return (str || document.location.search).replace(/(^\?)/,'').split("&").map(function(n){return n = n.split("="),this[n[0]] = n[1],this}.bind({}))[0];
-};
-
-/**
- * Disposes of a saved screen state
- * @memberof Arstider
- * @type {function}
- */
-Arstider.disposeSavedState = function(name){
-	if(name in Arstider.savedStates){
-		if(Arstider.savedStates[name]._unload) Arstider.savedStates[name]._unload();
-		delete Arstider.savedStates[name];
+	if(val == "auto" || val >= 60){
+		Arstider.settings.FPS = 60;
+		Arstider._core.requestAnimFrame = window.requestAnimationFrame;
+		Arstider._core.cancelAnimFrame = window.cancelAnimationFrame;
+	}
+	else{
+		Arstider.settings.FPS = val;
+		Arstider._core.requestAnimFrame = Arstider.fixedAnimationFrame;
+		Arstider._core.cancelAnimFrame = Arstider.fixedCancelAnimationFrame;
 	}
 };
 
 /**
- * Degrees-to-radians constant
- * @memberof Arstider
- * @const
- * @type {number}
+ * 	======================
+ * 	=====	 		 =====
+ * 	===	    UTILS 	   ===
+ * 	=====			 =====
+ * 	======================
  */
-Arstider.degToRad = Math.PI/180;
 
 /**
- * Radians to degrees constant
+ * Gets a number timestamp, usefull for id-ing or cache busting
  * @memberof Arstider
- * @const
- * @type {number}
+ * @type {function}
+ * @return {number} the timestamp
  */
-Arstider.radToDeg = 180/Math.PI;
+Arstider.utils.timestamp = function(){
 
-/**
- * Default composition mode constant
- * @memberof Arstider
- * @const
- * @type {string}
- */
-Arstider.defaultComposition = "source-over";
+	return Date.now();
+};
 
-/**
- * Default color constant
- * @memberof Arstider
- * @const
- * @type {string}
- */
-Arstider.defaultColor = "transparent";
-
-/**
- * Utility function to apply a method through a desired scope
- * @memberof Arstider
- * @const
- * @param {function(this:selfObj)} fn Method to call
- * @param {*} selfObj The scope
- * @param {Array|null} var_args Arguments
- * @return {function()} The function with the proper scope
- */
-Arstider.delegate = function(fn, selfObj, var_args){
-	return (fn.call.apply(fn.bind, arguments));
+Arstider.utils.queryStringToObject = function(str) {
+	return (str || document.location.search).replace(/(^\?)/,'').split("&").map(function(n){return n = n.split("="),this[n[0]] = n[1],this}.bind({}))[0];
 };
 
 /**
@@ -300,22 +240,10 @@ Arstider.delegate = function(fn, selfObj, var_args){
  * @param {*} def The default value to provide is val is undefined
  * @return {*} The final value
  */
-Arstider.checkIn = function(val, def){
+Arstider.utils.checkIn = function(val, def){
 	if(val === undefined) return def;
 	return val;
 };
-
-/**
- * Test if a value exist
- * @memberof Arstider
- * @const
- * @param {*} val The value to check against undefined
- * @return {*} A boolean
- */
-Arstider.isDefine = function(val){
-	return typeof val != 'undefined';
-};
-
 
 /**
  * Multiple check-if-exist method in order of fallback
@@ -325,7 +253,7 @@ Arstider.isDefine = function(val){
  * @param {*} def The default value to provide if all val are undefined
  * @return {*} The final value
  */
- Arstider.firstOf = function(val, def){
+ Arstider.utils.firstOf = function(val, def){
  	if(!val.length) return def;
  	for(var i = 0; i<val.length; i++){
  		if(val[i] != undefined) return val[i];
@@ -334,73 +262,13 @@ Arstider.isDefine = function(val){
  };
 
 /**
- * Indicates whether or not to output full verbose warnings
- *
- * 0 = nothing,
- * 1 = important warnings
- * 2 = notices
- * 3+ = EVERYTHING!
- * @memberof Arstider
- * @type {number}
- */
-Arstider.verbose = 0;
-
-/**
- * Calculate the distance between 2 coordinates
- * @memberof Arstider
- * @type {function}
- * @param {number} x1 The x coordinate of the first point
- * @param {number} y1 The y coordinate of the first point
- * @param {number} x2 The x coordinate of the second point
- * @param {number} y2 The y coordinate of the second point
- * @return {number} the distance between the 2 points
- */
-Arstider.distance = function(x1, y1, x2, y2){
-	return Math.sqrt(Math.pow((x2 - x1),2) + Math.pow((y2 - y1),2));
-};
-
-/**
- * Calculate the distance between 2 coordinates in 3d space
- * @memberof Arstider
- * @type {function}
- * @param {number} x1 The x coordinate of the first point
- * @param {number} y1 The y coordinate of the first point
- * @param {number} z1 The z coordinate of the first point
- * @param {number} x2 The x coordinate of the second point
- * @param {number} y2 The y coordinate of the second point
- * @param {number} z2 The z coordinate of the second point
- * @return {number} the distance between the 2 points
- */
-Arstider.distance3 = function(x1, y1, z1, x2, y2, z2){
-	return Math.sqrt(Math.pow((x2 - x1),2) + Math.pow((y2 - y1),2) + Math.pow((z2 - z1),2));
-};
-
-/**
- * Calculate direction in degrees with 2 points
- * @memberof Arstider
- * @type {function}
- * @param {number} x1 The x coordinate of the first point
- * @param {number} y1 The y coordinate of the first point
- * @param {number} x2 The x coordinate of the second point
- * @param {number} y2 The y coordinate of the second point
- * @return {number} the distance between the 2 points
- */
-Arstider.direction = function(x1, y1, x2, y2){
-	var relX = x2 - x1;
-	var relY = y2 - y1;
-	var theta = Math.atan2(-relY, relX);
-
-	return theta * Arstider.radToDeg;
-};
-
-/**
  * Removes duplicate entries from an array
  * @memberof Arstider
  * @const
  * @param {Array} arr The array to shuffle
  * @return {Array} The shuffled array
  */
-Arstider.trimDuplicates = function(arr){
+Arstider.utils.trimDuplicates = function(arr){
     var
     	o = {},
         i = 0,
@@ -425,52 +293,11 @@ Arstider.trimDuplicates = function(arr){
  * @memberof Arstider
  * @const
  */
- Arstider.reload = function() {
+ Arstider.utils.reload = function() {
     if("reload" in window.location) window.location.reload();
     else if("history" in window && "go" in window.history) window.history.go(0);
     else window.location.href = window.location.href;
 };
-
-/**
- * Detects if an element is a plain object
- * @memberof Arstider
- * @const
- * @param {*} obj The object to analyse
- * @return {boolean}
- */
-Arstider.isObject = function(obj){
-	if(!obj || !(typeof obj === "object") || obj.nodeType || Arstider.isWindow(obj)) return false;
-	if (obj.constructor && !Object.prototype.hasOwnProperty.call(obj, "constructor") && !Object.prototype.hasOwnProperty.call(obj.constructor.prototype, "isPrototypeOf")) return false;
-    var key;
-    for (key in obj) {
-        if(obj.hasOwnProperty(key)) continue;
-    }
-
-    return (key == undefined) || Object.prototype.hasOwnProperty.call(obj, key);
-};
-
-/**
- * Detects if an element is the window element
- * @memberof Arstider
- * @const
- * @param {*} obj The object to analyse
- * @return {boolean}
- */
-Arstider.isWindow = function(obj){
-	return obj && (typeof obj === "object") && "setInterval" in obj;
-};
-
-/**
- * Detects if an object is a function
- * @memberof Arstider
- * @const
- * @param {*} obj The object or function to analyse
- * @return {boolean}
- */
-Arstider.isFunction = function(functionToCheck) {
-	var getType = {};
-	return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
-}
 
 /**
  * Find the length of an Object or array
@@ -479,7 +306,7 @@ Arstider.isFunction = function(functionToCheck) {
  * @param {*} obj The object to find the length of
  * @return {number} The length
  */
-Arstider.lengthOf = function(obj){
+Arstider.utils.lengthOf = function(obj){
     if(typeof obj === "array") return obj.length;
     else if(Arstider.isObject(obj)){
         var
@@ -504,7 +331,7 @@ Arstider.lengthOf = function(obj){
  * @param {*} b The second element
  * @return {boolean}
  */
-Arstider.compare = function(a, b){
+Arstider.utils.compare = function(a, b){
     var i;
 
     if(typeof a !== typeof b) return false;
@@ -549,7 +376,7 @@ Arstider.compare = function(a, b){
  * @param {Array} arr The array to shuffle
  * @return {Array} The shuffled array
  */
-Arstider.randomSort = function(arr){
+Arstider.utils.randomSort = function(arr){
 	var i = arr.length, j, temp;
 	if ( i === 0 ) return false;
 	while ( --i ) {
@@ -562,17 +389,6 @@ Arstider.randomSort = function(arr){
 };
 
 /**
- * Quick number rounding method (see jsperf)
- * @memberof Arstider
- * @const
- * @param {number} i The number to round
- * @return {number} The rounded number
- */
-Arstider.chop = function(i){
-	return (0.5 + i) | 0;
-};
-
-/**
  * Generic, simple mixin function. Replaces undefined elements in obj A with properties of obj B
  * @memberof Arstider
  * @const
@@ -582,7 +398,7 @@ Arstider.chop = function(i){
  * @param {boolean} includeMethods Whether or not to include functions, defaults to false
  * @return {Object} Returns the updated objA
  */
-Arstider.mixin = function(objA, objB, force, includeMethods, prefix){
+Arstider.utils.mixin = function(objA, objB, force, includeMethods, prefix){
 
 	for(var i in objB){
 		if(objA[i] == undefined || force){
@@ -606,7 +422,7 @@ Arstider.mixin = function(objA, objB, force, includeMethods, prefix){
  * @param {boolean} includeMethods Whether or not to include functions, defaults to false
  * @return {Object} The newly created object
  */
-Arstider.clone = function(obj, includeMethods, prefix){
+Arstider.utils.clone = function(obj, includeMethods, prefix){
 	return Arstider.mixin({}, obj, true, includeMethods, prefix);
 };
 
@@ -616,7 +432,7 @@ Arstider.clone = function(obj, includeMethods, prefix){
  * @const
  * @param {Object} obj The object to copy
  */
-Arstider.deepClone = function(obj, exclude) {
+Arstider.utils.deepClone = function(obj, exclude) {
 
 	exclude = exclude || [];
 
@@ -661,7 +477,7 @@ Arstider.deepClone = function(obj, exclude) {
  * @param {Object} target The object to copy to
  * @param {Boolean} clone Clones the source object first when true
  */
-Arstider.deepMerge = function(src, target, clone, includeMethods, exclude)
+Arstider.utils.deepMerge = function(src, target, clone, includeMethods, exclude)
 {
 	if(clone) src = Arstider.deepClone(src);
 	exclude = exclude || [];
@@ -717,7 +533,7 @@ Arstider.deepMerge = function(src, target, clone, includeMethods, exclude)
  * @memberof Arstider
  * @param {*} child The child that will super to a defined inherited parent - requires the constructor to have been Inherited at least once
  */
-Arstider.Super = function(child, parent){
+Arstider.utils.Super = function(child, parent){
 	if(arguments.length > 2) parent.apply(child, Array.prototype.slice.call(arguments,2));
 	else parent.call(child);
 };
@@ -730,7 +546,7 @@ Arstider.Super = function(child, parent){
  * @param {string} val The string to make uri-safe
  * @return {string} The uri-safe string
  */
-Arstider.URIEncode = function(val){
+Arstider.utils.URIEncode = function(val){
 	var encodedVal;
 	if(!encodeURIComponent){
 		encodedVal = escape(val);
@@ -755,7 +571,7 @@ Arstider.URIEncode = function(val){
  * @param {*} child The child module
  * @param {*} parent The module that will gives it's properties to the child
  */
-Arstider.Inherit = function(child, parent){
+Arstider.utils.Inherit = function(child, parent){
 	if(parent instanceof Function || typeof parent === 'function'){
 		child.prototype = Object.create(parent.prototype);
 		child.prototype.constructor = child;
@@ -764,103 +580,13 @@ Arstider.Inherit = function(child, parent){
 };
 
 /**
- * Fixed drawing rate, when vendor-prefixed is unavailable or because of platform restrictions
- * @memberof Arstider
- * @const
- * @param {function()} callback The called method for rendering
- */
-Arstider.fixedAnimationFrame = function(callback, dt){
-	var targetFPS = Arstider.chop(1000/Arstider.FPS);
-	var nextFrame = Arstider.max(10, targetFPS - (dt - targetFPS));
-
-	Arstider.__animTimer = window.setTimeout(callback, nextFrame);
-};
-
-/**
- * Cancels the fixed drawing rate, when vendor-prefixed is unavailable or because of platform restrictions
- * @memberof Arstider
- * @const
- * @param {*} ref The requestAnimationFrame method
- */
-Arstider.fixedCancelAnimationFrame = function(ref){
-	if(Arstider.__animTimer != undefined) window.clearTimeout(Arstider.__animTimer);
-};
-
-/**
- * Global blobURL cache
- * @memberof Arstider
- * @private
- * @type {Object}
- */
-Arstider.blobCache = {empty:{url:Arstider.emptyImgSrc, size:0}};
-
-/**
- * Sets the FPS of the game (max 60)
- * @memberof Arstider
- * @type {function}
- */
-Arstider.setFPS = function(val){
-	val = val || 60;
-
-	if(val == "auto" || val >= 60){
-		Arstider.FPS = 60;
-		/**
-		 * Parses vendor-prefixed values for requesting an animation frame
-		 * @memberof Arstider
-		 * @const
-		 */
-		Arstider.requestAnimFrame = (function(){
-			return window.requestAnimationFrame    ||
-				window.webkitRequestAnimationFrame ||
-				window.mozRequestAnimationFrame    ||
-				window.oRequestAnimationFrame      ||
-				window.msRequestAnimationFrame     ||
-				Arstider.fixedAnimationFrame;
-		})();
-
-		/**
-		 * Parses vendor-prefixed values for canceling request animation frame
-		 * @memberof Arstider
-		 * @const
-		 */
-		Arstider.cancelAnimFrame = (function(){
-			return	window.cancelAnimationFrame    ||
-				window.webkitCancelAnimationFrame  ||
-				window.mozCancelAnimationFrame     ||
-				window.oCancelAnimationFrame       ||
-				window.msCancelAnimationFrame      ||
-				Arstider.fixedCancelAnimationFrame;
-		})();
-	}
-	else{
-		Arstider.FPS = val;
-		Arstider.requestAnimFrame = Arstider.fixedAnimationFrame;
-		Arstider.cancelAnimFrame = Arstider.fixedCancelAnimationFrame;
-	}
-};
-
-/**
- * Default rendering style
- * @memberof Arstider
- * @type {string}
- */
-Arstider.defaultRenderStyle = "auto";
-
-/**
- * Collection of the intantiated buffers
- * @memberof Arstider
- * @type {Object}
- */
-Arstider.bufferPool = {};
-
-/**
  * Serializes Objects for XHR data
  * @memberof Arstider
  * @type {function}
  * @param {Object} obj The object to serialize
  * @return {string} The serialized Object
  */
-Arstider.serialize = function(obj, prefix) {
+Arstider.utils.serialize = function(obj, prefix) {
 	if(typeof obj === "string" || obj == null) return obj;
 
 	var str = [];
@@ -871,47 +597,4 @@ Arstider.serialize = function(obj, prefix) {
 		encodeURIComponent(k) + "=" + encodeURIComponent(v));
   	}
   	return str.join("&");
-};
-
-/**
- * Counts the number of buffers in the system
- * @memberof Arstider
- * @type {function}
- * @return {number} The number of buffers
- */
-Arstider.countBuffers = function(){
-	var
-		i,
-		total = 0
-	;
-
-	for(i in Arstider.bufferPool){
-		total ++;
-	}
-
-	return total;
-};
-
-/**
- * Returns the total size of assets in memory
- * @memberof Arstider
- * @type {function}
- * @return {number} memory (in MB)
- */
-Arstider.getMemory = function(){
-	var
-		i,
-		total = 0
-	;
-
-	for(i in Arstider.blobCache){
-		total += ((Arstider.blobCache[i].size || 0) >> 10);
-	}
-
-	for(i in Arstider.bufferPool){
-		total += ((Arstider.bufferPool[i].getMemory()) >> 20);
-	}
-
-
-	return (total/1024).toFixed(2);
 };
