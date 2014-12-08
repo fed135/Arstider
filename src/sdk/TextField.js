@@ -259,7 +259,9 @@ define( "Arstider/TextField", [
 
 			caret.y = f.paddingTop + ((i+1)*f.lineSpacing) + f.fontOffsetY - headRoom;
 
-			lines[i] = lines[i].reverse();
+			if(this.rightToLeft){
+				lines[i] = lines[i].reverse();
+			}
 
 			for(u = 0; u<lines[i].length; u++){
 				if(f.textAlign == "right"){
