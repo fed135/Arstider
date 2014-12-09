@@ -5,26 +5,27 @@
  * @author frederic charette <fredericcharette@gmail.com>
  */
 define("Arstider/components/Geometry",
-[],
+[
+	"Arstider/components/IComponent"
+],
 /** @lends components/Geometry */
-function(){
+function(IComponent){
 	
 	Geometry.DEFAULTS = {
 		meshType:null
 	};
 
 	Geometry.namespace = "geometry";
-
 	Geometry.PLANE = "planeBufferGeometry";
 
 	function Geometry(){
 
+		Arstider.utils.Super(this, IComponent, Geometry.DEFAULTS);
+
 		this.data = null;
-
 		this.sceneElement = null;
-
-		Arstider.mixin(this, Geometry.DEFAULTS);
 	}
+	Arstider.utils.Inherit(Geometry, IComponent);
 
 	Geometry.prototype.load = function(data){
 

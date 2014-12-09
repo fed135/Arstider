@@ -29,6 +29,7 @@ function(Buffer, Net){
 		this.width = Arstider.checkIn(props.width, 0);
 		this.height = Arstider.checkIn(props.height, 0);
 		this.renderStyle = props.renderStyle || Arstider.defaultRenderStyle;
+		this.usedBy = 0;
 			
 		this.load(props.url, props.callback);
 	}

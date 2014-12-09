@@ -6,11 +6,13 @@
  */
 define("Arstider/components/Clickable", 
 [
+	"Arstider/components/IComponent",
+	"Arstider/components/LComponents",
 	"Arstider/events/Signal",
 	"Arstider/system/Mouse"
 ],
 /** @lends components/Clickable */
-function(Signal, Mouse){
+function(IComponent, List, Signal, Mouse){
 	
 	/**
 	 * No click registering, temporary disabling method
@@ -45,18 +47,28 @@ function(Signal, Mouse){
 	 */
 	function Clickable(){
 
+		Arstider.utils.Super(this, IComponent, Clickable.DEFAULTS);
+
+		this.availableInputs = 1;
+
 		this._status = {
-			hovered:new Array(Mouse.MAX_INPUT),
-			pressed:new Array(Mouse.MAX_INPUT),
-			preclick:new Array(Mouse.MAX_INPUT),
-			rightPressed:new Array(Mouse.MAX_INPUT),
-			doubleClickCheck:new Array(Mouse.MAX_INPUT)
+			hovered:[],
+			pressed:[],
+			preclick:[],
+			rightPressed:false,
+			doubleClickCheck:[]
 		};
 
-		Arstider.mixin(this, Clickable.DEFAULTS);
+		this.onleave = new Signal();
+		this.onhover = new Signal();
+		this.onpress = new Signal();
+		this.ondoubleclick = new Signal();
+		this.onclick = new Signal();
+		this.onrightclick = new Signal();
 
 		Mouse.registerComponent(this);
 	}
+	Arstider.utils.Inherit(Clickable, IComponent);
 
 	/**
 	 * Checks if coordinates fit in the global location of the Entity
@@ -68,7 +80,7 @@ function(Signal, Mouse){
 	Clickable.prototype.isTouched = function(x,y){
 
 		var 
-			t = this.owner.transform
+			t = this.owner.getComponent(List.transform)
 		;
 
 		if(this.touchAccuracy == Clickable.PASSIVE) return false;
@@ -87,8 +99,19 @@ function(Signal, Mouse){
 		return this.isComplexTouched(x, y);
 	};
 
-	Clickable.prototype.dispose = function(){
+	Clickable.prototype.setMaxInputs = function(num){
 
+		this.availableInputs = num;
+		this.reset();
+	};
+
+	Clickable.prototype.reset = function(){
+
+		this._status.hovered.length = new Array(availableInputs);
+		this._status.pressed.length = new Array(availableInputs);
+		this._status.preclick.length = new Array(availableInputs);
+		this._status.rightPressed = false;
+		this._status.doubleClickCheck.length = new Array(availableInputs);
 	};
 
 	/**
@@ -98,23 +121,24 @@ function(Signal, Mouse){
 	 * @param {number} y The y coordinate to check against.
 	 * @return {boolean} Are the coordinates within the zone of the Entity
 	 */
-	Clickable.prototype.isComplexTouched = function(){
+	Clickable.prototype.isComplexTouched = function(x, y){
 
 		var 
-			distAP = Arstider.distance(this.global.points[0], this.global.points[1], x, y),
-			distBP = Arstider.distance(this.global.points[2], this.global.points[3], x, y),
-			distCP = Arstider.distance(this.global.points[4], this.global.points[5], x, y),
-			distDP = Arstider.distance(this.global.points[6], this.global.points[7], x, y),
-			quad1 = ((distAP + distBP + this.global.width) * 0.5),
-			quad1 = Math.sqrt(quad1 * (quad1 - distAP) * (quad1 - distBP) * (quad1 - this.global.width)) || 0;
-			quad2 = ((distBP + distDP + this.global.height) * 0.5),
-			quad2 = Math.sqrt(quad2 * (quad2 - distBP) * (quad2 - distDP) * (quad2 - this.global.height)) || 0;
-			quad3 = ((distCP + distDP + this.global.width) * 0.5),
-			quad3 = Math.sqrt(quad3 * (quad3 - distCP) * (quad3 - distDP) * (quad3 - this.global.width)) || 0;
-			quad4 = ((distAP + distCP + this.global.height) * 0.5),
-			quad4 = Math.sqrt(quad4 * (quad4 - distAP) * (quad4 - distCP) * (quad4 - this.global.height)) || 0;
+			t = this.owner.getComponent(List.transform),
+			distAP = Arstider.math.distance(t.global.points[0], t.global.points[1], x, y),
+			distBP = Arstider.math.distance(t.global.points[2], t.global.points[3], x, y),
+			distCP = Arstider.math.distance(t.global.points[4], t.global.points[5], x, y),
+			distDP = Arstider.math.distance(t.global.points[6], t.global.points[7], x, y),
+			quad1 = ((distAP + distBP + t.global.width) * 0.5),
+			quad1 = Math.sqrt(quad1 * (quad1 - distAP) * (quad1 - distBP) * (quad1 - t.global.width)) || 0;
+			quad2 = ((distBP + distDP + t.global.height) * 0.5),
+			quad2 = Math.sqrt(quad2 * (quad2 - distBP) * (quad2 - distDP) * (quad2 - t.global.height)) || 0;
+			quad3 = ((distCP + distDP + t.global.width) * 0.5),
+			quad3 = Math.sqrt(quad3 * (quad3 - distCP) * (quad3 - distDP) * (quad3 - t.global.width)) || 0;
+			quad4 = ((distAP + distCP + t.global.height) * 0.5),
+			quad4 = Math.sqrt(quad4 * (quad4 - distAP) * (quad4 - distCP) * (quad4 - t.global.height)) || 0;
 			sum = quad1 + quad2 + quad3 + quad4,
-			total = this.global.width * this.global.height
+			total = t.global.width * t.global.height
 		;
 
 		if(sum >= total - (total * this.complexTouchPadding) && sum <= total + (total * this.complexTouchPadding)) return true;
@@ -127,11 +151,12 @@ function(Signal, Mouse){
 	 * @protected
 	 * @type {function(this:Entity)}
 	 */
-	Clickable.prototype._onhover = function(){
+	Clickable.prototype._onhover = function(id, event){
 
-		this._status.hovered = true;
-		
-		if(this.owner.onhover) this.owner.onhover.dispatch();
+		if(id >= this.availableInputs) return;
+
+		this._status.hovered[id] = true;
+		this.onhover.dispatch(event);
 	};
 	
 	/**
@@ -139,13 +164,14 @@ function(Signal, Mouse){
 	 * @protected
 	 * @type {function(this:Entity)}
 	 */
-	Clickable.prototype._onleave = function(){
+	Clickable.prototype._onleave = function(id, event){
 
-		this._status.hovered = false;
-		this._status.preclick = false;
+		if(id >= this.availableInputs) return;
+
+		this._status.hovered[id] = false;
+		this._status.preclick[id] = false;
 		this._status.rightPressed = false;
-		
-		if(this.owner.onleave) this.owner.onleave.dispatch();
+		this.onleave.dispatch(event);
 	};
 	
 	/**
@@ -153,11 +179,12 @@ function(Signal, Mouse){
 	 * @protected
 	 * @type {function(this:Entity)}
 	 */
-	Clickable.prototype._onpress = function(){
+	Clickable.prototype._onpress = function(id, event){
 
-		this._status.pressed = true;
-		
-		if(this.owner.onpress) this.owner.onpress.dispatch();
+		if(id >= this.availableInputs) return;
+
+		this._status.pressed[id] = true;
+		this.onpress.dispatch(event);
 	};
 	
 	/**
@@ -165,23 +192,28 @@ function(Signal, Mouse){
 	 * @protected
 	 * @type {function(this:Entity)}
 	 */
-	Clickable.prototype._onrelease = function(){
+	Clickable.prototype._onrelease = function(id, event){
 
-		this._status.pressed = false;
+		var
+			time
+		;
+
+		if(id >= this.availableInputs) return;
+
+		this._status.pressed[id] = false;
+		time = Arstider.timestamp();
 		
-		var time = Arstider.timestamp();
-		
-		if(this._status.preclick){
-			if(time - this._status.doubleClickCheck < this.doubleClickDelay && this.owner.ondoubleclick) this.owner.ondoubleclick.dispatch();
+		if(this._status.preclick[id]){
+			if(time - (this._status.doubleClickCheck[id] || 0) < this.doubleClickDelay) this.ondoubleclick.dispatch(event);
 			else{
-				if(this.owner.onclick) this.owner.onclick.dispatch();
+				this.onclick.dispatch(event);
 			}
 			
-			this._status.doubleClickCheck = time;
+			this._status.doubleClickCheck[id] = time;
 		}
-		if(this.owner.onrelease) this.owner.onrelease.dispatch();
+		this.onrelease.dispatch(event);
 		
-		this._status.preclick = false;
+		this._status.preclick[id] = false;
 	};
 
 	Clickable.prototype.applyTouchEvent = function(event){
@@ -193,11 +225,10 @@ function(Signal, Mouse){
 	 * @protected
 	 * @type {function(this:Entity)}
 	 */
-	Clickable.prototype._onrightclick = function(){
+	Clickable.prototype._onrightclick = function(event){
 
 		this._status.rightPressed = false;
-
-		if(this.owner.onrightclick) this.owner.onrightclick.dispatch();
+		this.onrightclick.dispatch(event);
 	};
 
 	return Clickable;

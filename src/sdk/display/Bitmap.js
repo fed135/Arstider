@@ -6,17 +6,15 @@
  */
 define("Arstider/display/Bitmap",
 [
-	"Arstider/core/DisplayObjectContainer", 
+	"Arstider/managers/EntityFactory", 
 
 	"Arstider/components/Material",
 	"Arstider/components/Geometry",
 	"Arstider/components/Transform",
-	"Arstider/components/WorldObject",
-
-	"Arstider/events/Signal"
+	"Arstider/components/WorldObject"
 ], 
 /** @lends display/Bitmap */ 
-function (DisplayObjectContainer, Material, Geometry, Transform, WorldObject, Signal){
+function (EntityFactory, Material, Geometry, Transform, WorldObject){
 	
 	/**
 	 * Bitmap constructor
@@ -26,18 +24,11 @@ function (DisplayObjectContainer, Material, Geometry, Transform, WorldObject, Si
 	 * @extends {Entity}
 	 * @param {Object|null} props Optional properties for the element.
 	 */
-	function Bitmap(props) {
-		Arstider.Super(this, DisplayObjectContainer, props);
+	EntityFactory.register("bitmap", [Material, Geometry, Transform, WorldObject]);
 		
-		this.addComponents([Material, Geometry, Transform, WorldObject]);
-
-		this.onready = new Signal();
-	};
 	
-	Arstider.Inherit(Bitmap, DisplayObjectContainer);
-	
-	Bitmap.prototype.load = function(url){
-		this.material.load(url, this._updateMesh.bind(this));
+	/*Bitmap.prototype.loadImage = function(url){
+		this.material.load(url);
 	};
 
 	Bitmap.prototype._updateMesh = function(){
@@ -48,7 +39,7 @@ function (DisplayObjectContainer, Material, Geometry, Transform, WorldObject, Si
 		});
 		this.worldObject.create();
 		this.onready.dispatch();
-	};
+	};*/
 
-	return Bitmap; 
+	return null; 
 });

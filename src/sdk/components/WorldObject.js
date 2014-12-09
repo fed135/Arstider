@@ -5,34 +5,41 @@
  * @author frederic charette <fredericcharette@gmail.com>
  */
 define("Arstider/components/WorldObject",
-[],
+[
+	"Arstider/components/IComponent",
+	"Arstider/components/LComponents"
+],
 /** @lends components/WorldObject */
-function(){
+function(IComponent, List){
 	
 	WorldObject.DEFAULTS = {
 		objectType:null
 	};
 
 	WorldObject.namespace = "worldObject";
-
 	WorldObject.MESH = "mesh";
 
 	function WorldObject(){
 
-		this.data = null;
+		Arstider.utils.Super(this, IComponent, WorldObject.DEFAULTS);
 
-		Arstider.mixin(this, WorldObject.DEFAULTS);
+		this.data = null;
 	}
+	Arstider.utils.Inherit(WorldObject, IComponent);
 
 	WorldObject.prototype.create = function(data){
 
-		data = data || {};
+		var
+			mat = this.owner.getComponent(List.material),
+			geo	= this.owner.getComponent(List.geometry)
+		;
 
+		data = data || {};
 		this.objectType = data.objectType || WorldObject.MESH;
 
 		//TODO: Allow more than one type - only 2d for now
-		if(this.owner.material && this.owner.material.data && this.owner.geometry && this.owner.geometry.data){
-			this.data = new THREE.Mesh(this.owner.geometry.data, this.owner.material.data);
+		if(mat && mat.data && geo && geo.data){
+			this.data = new THREE.Mesh(geo.data, mat.data);
 		}
 	};
 

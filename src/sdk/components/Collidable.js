@@ -6,21 +6,22 @@
  */
 define("Arstider/components/Collidable", 
 [
+	"Arstider/components/IComponent",
+	"Arstider/components/LComponents",
 	"Arstider/events/Signal"
 ],
 /** @lends components/Collidable */
-function(Signal){
+function(IComponent, List, Signal){
 
-	Collidable.DEFAULTS = {
-
-	};
+	Collidable.DEFAULTS = {};
 
 	Collidable.namespace = "collidable";
 
 	function Collidable(data){
 
-		Arstider.mixin(this, Collidable.DEFAULTS);
+		Arstider.utils.Super(this, IComponent, Collidable.DEFAULTS);
 	}
+	Arstider.utils.Inherit(Collidable, IComponent);
 
     /**
 	 * Checks if coordinates fit in the local location of the Entity
@@ -34,7 +35,7 @@ function(Signal){
 	Collidable.prototype.collides = function(x,y,w,h){
 
 		var
-			t = this.owner.transform
+			t = this.owner.getComponent(List.transform)
 		;
 
 		return (t.x < x + w && t.x + t.width > x && t.y < y + h && t.y + t.height > y);

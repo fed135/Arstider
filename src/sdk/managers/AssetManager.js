@@ -13,6 +13,7 @@ function(ImageData){
 
 		data.name = id;
 		this._assetList[id] = new ImageData(data);
+		this._assetList[id].usedBy++;
 
 		return this._assetList[id];
 	};
@@ -20,6 +21,7 @@ function(ImageData){
 	AssetManager.prototype.get = function(id, callback){
 
 		if(id in this._assetList){
+			this._assetList[id].usedBy++;
 			if(callback) callback(this._assetList[id]);
 		}
 		else{
@@ -38,6 +40,16 @@ function(ImageData){
 		}
 
 		return true;
+	};
+
+	AssetManager.prototype.unassign = function(id){
+
+		if(this._assetList[id]){
+			this._assetList[id].usedBy--;
+			if(this._assetList[id].usedBy <= 0){
+				this.dispose(id);
+			}
+		}
 	};
 
 	AssetManager.prototype.getMemoryInfo = function(){

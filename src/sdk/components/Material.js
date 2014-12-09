@@ -6,11 +6,13 @@
  */
 define("Arstider/components/Material",
 [
+	"Arstider/components/IComponent",
+	"Arstider/components/LComponents",
 	"Arstider/managers/AssetManager",
 	"Arstider/scene/Materials"
 ],
 /** @lends components/Material */
-function(AssetManager, Materials){
+function(IComponent, List, AssetManager, Materials){
 	
 	Material.DEFAULTS = {
 		alpha:1,
@@ -26,7 +28,7 @@ function(AssetManager, Materials){
 			height:null
 		},
 		mask:false,
-		composite:Arstider.defaultComposition,
+		composite:Arstider._core.defaultComposition,
 		material:null,
 		materialType:null
 	};
@@ -35,15 +37,19 @@ function(AssetManager, Materials){
 
 	function Material(){
 
+		Arstider.utils.Super(this, IComponent, Material.DEFAULTS);
+
 		this.data = null;
 
-		Arstider.mixin(this, Material.DEFAULTS);
+		this.onload = new Signal();
+		this.onunload = new Signal();
+		this.onerror = new Signal();
 	}
+	Arstider.utils.Inherit(Material, IComponent);
 
-	Material.prototype.load = function(url, materialType, callback, errorCallback){
+	Material.prototype.load = function(url, materialType){
 
 		var
-			thisRef = this,
 			mat
 		;
 
@@ -58,7 +64,7 @@ function(AssetManager, Materials){
 			this.data = mat;
 			this.material = url;
 			this.materialType = materialType;
-			if(this.owner.onload) this.owner.onload.dispatch();
+			this.onload.dispatch();
 			if(callback) callback(mat);
 			return;
 		}
@@ -66,32 +72,42 @@ function(AssetManager, Materials){
 		this.material = url;
 		this.materialType = materialType;
 
-		AssetManager.get(url, 
-			function(imageData){
-				if(thisRef.owner){
-					if(thisRef.owner.transform){
-						if(thisRef.owner.transform.size.x == 0) thisRef.owner.transform.size.x = imageData.width;
-						if(thisRef.owner.transform.size.y == 0) thisRef.owner.transform.size.y = imageData.height;
-					}
-				}
+		AssetManager.get(url, this._handleLoadSuccess.bind(this), this._handleLoadError.bind(this));
+	};
 
-				thisRef.crop.width = thisRef.crop.width || imageData.width;
-				thisRef.crop.height = thisRef.crop.height || imageData.height;
+	Material.prototype._handleLoadSuccess = function(imageData){
+		
+		var
+			t = this.owner.getComponent(List.transform)
+		;
 
-				thisRef.data = Materials.create(url, materialType, {map:imageData.data});
+		if(t){
+			if(t.size.x == 0) t.size.x = imageData.width;
+			if(t.size.y == 0) t.size.y = imageData.height;
+		}
 
-				if(thisRef.owner.onload) thisRef.owner.onload.dispatch();
-				if(callback) callback(thisRef.data);
-			},
-			function(error){
-				if(thisRef.owner.onerror) thisRef.owner.onerror.dispatch();
-				if(errorCallback) errorCallback(error);
-			}
-		);
-	}
+		this.crop.width = this.crop.width || imageData.width;
+		this.crop.height = this.crop.height || imageData.height;
 
-	Material.prototype.dispose = function(){
+		this.data = Materials.create(url, materialType, {map:imageData.data});
+
+		this.onload.dispatch();
+		if(callback) callback(this.data);
+	};
+
+	Material.prototype._handleLoadError = function(error){
+
+		this.onerror.dispatch();
+		if(errorCallback) errorCallback(error);
+	};
+
+	Material.prototype.onremoved = function(){
+
+		AssetManager.unassign(this.material);
 		this.data = null;
+		this.material = Material.DEFAULTS.material;
+		this.materialType = Material.DEFAULTS.materialType;
+		this.crop = Material.DEFAULTS.crop;
 	};
 
 	return Material;

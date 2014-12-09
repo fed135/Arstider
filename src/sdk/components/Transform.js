@@ -5,9 +5,12 @@
  * @author frederic charette <fredericcharette@gmail.com>
  */
 define("Arstider/components/Transform", 
-[],
+[
+	"Arstider/components/IComponent",
+	"Arstider/components/LComponents"
+],
 /** @lends components/Transform */
-function(){
+function(IComponent, List){
 	
 	Transform.DEFAULTS = {
 		position:{
@@ -73,9 +76,9 @@ function(){
 	 */
 	function Transform(){
 
-		this.global = {};
+		Arstider.utils.Super(this, IComponents, Transform.DEFAULTS);
 
-		Arstider.mixin(this, Transform.DEFAULTS);
+		this.global = {};
 	}
 
 	/**
@@ -90,7 +93,7 @@ function(){
 		this.dock.y = y || null;
 		this.dock.z = z || null;
 		
-		this.owner.cancelBubble()._update();
+		this.onupdate();
 		return this;
 	};
 	
@@ -106,15 +109,15 @@ function(){
 		this.fill.y = y || null;
 		this.fill.z = z || null;
 		
-		this.owner.cancelBubble()._update();
+		this.onupdate();
 		return this;
 	};
 
 
-	Transform.prototype.update = function(){
+	Transform.prototype.onupdate = function(){
 
 		var 
-			pt = this.owner.parent.transform
+			pt = this.owner.parent.getComponent(List.transform)
 		;
 	
 		if(this.owner.parent != null){
