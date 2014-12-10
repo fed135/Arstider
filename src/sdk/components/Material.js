@@ -9,10 +9,11 @@ define("Arstider/components/Material",
 	"Arstider/components/IComponent",
 	"Arstider/components/LComponents",
 	"Arstider/managers/AssetManager",
-	"Arstider/scene/Materials"
+	"Arstider/scene/Materials",
+	"Arstider/events/Signal"
 ],
 /** @lends components/Material */
-function(IComponent, List, AssetManager, Materials){
+function(IComponent, List, AssetManager, Materials, Signal){
 	
 	Material.DEFAULTS = {
 		alpha:1,

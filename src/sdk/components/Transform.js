@@ -76,10 +76,11 @@ function(IComponent, List){
 	 */
 	function Transform(){
 
-		Arstider.utils.Super(this, IComponents, Transform.DEFAULTS);
+		Arstider.utils.Super(this, IComponent, Transform.DEFAULTS);
 
 		this.global = {};
 	}
+	Arstider.utils.Inherit(Transform, IComponent);
 
 	/**
 	 * Sets the value for horizontal and vertical docking of the Entity

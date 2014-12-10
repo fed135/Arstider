@@ -5,9 +5,11 @@
  * @author frederic charette <fredericcharette@gmail.com>
  */	
 define( "Arstider/managers/EntityPool", 
-[], 
+[
+	"Arstider/core/Entity"
+], 
 /** @lends managers/Pool */ 
-function (){
+function (Entity){
 	
 	/**
 	 * Pool constructor
@@ -74,7 +76,6 @@ function (){
 		
 		var poolItem = new Entity();
 		poolItem.addComponents(components);
-		poolItem[this._useKey] = false;
 		
 		if(!(type in this._sets)){
 			this._addSet(type, poolItem);

@@ -43,10 +43,10 @@ function(){
 		}
 	};
 
-	IComponent.prototype._update = function(){
+	IComponent.prototype._update = function(dt){
 
 		if(this.enabled === true && this.owner != null){
-			this.onupdate();
+			this.onupdate(dt);
 		}
 	};
 

@@ -177,7 +177,7 @@ Arstider.math.direction = function(pointA, pointB){
 	return {
 		x:Math.arctan((pointB.z-pointA.z)/(pointB.y - pointA.y)),
 		y:Math.arctan((pointB.x-pointA.x)/(pointB.z - pointA.z)),
-		z:Math.arctan((pointB.y-pointA.y)/(pointB.x - pointA.x)),
+		z:Math.arctan((pointB.y-pointA.y)/(pointB.x - pointA.x))
 	};
 };
 
@@ -307,20 +307,19 @@ Arstider.utils.trimDuplicates = function(arr){
  * @return {number} The length
  */
 Arstider.utils.lengthOf = function(obj){
-    if(typeof obj === "array") return obj.length;
-    else if(Arstider.isObject(obj)){
-        var
-        	l = 0,
-            i
-        ;
 
-        for (i in obj) {
-            if (obj.hasOwnProperty(i)) l ++;
-        }
+	if(typeof obj === "array") return obj.length;
 
-        return l;
-    }
-    return 0;
+    var
+		l = 0,
+		i
+	;
+
+	for (i in obj) {
+		if (obj.hasOwnProperty(i)) l ++;
+	}
+
+	return l;
 };
 
 /**
@@ -338,11 +337,11 @@ Arstider.utils.compare = function(a, b){
 
     switch (typeof a){
         case "object":
-            if(Arstider.lengthOf(a) !== Arstider.lengthOf(b)) return false;
+            if(Arstider.utils.lengthOf(a) !== Arstider.utils.lengthOf(b)) return false;
 
             for(i in a) {
                 if (a.hasOwnProperty(i)){
-                    if(!b.hasOwnProperty(i) || !Arstider.compare(a[i], b[i])) return false;
+                    if(!b.hasOwnProperty(i) || !Arstider.utils.compare(a[i], b[i])) return false;
                 }
             }
 
@@ -357,7 +356,7 @@ Arstider.utils.compare = function(a, b){
 
             i--;
             while(i >= 0){
-                if(!Arstider.compare(a[i], b[i])) return false;
+                if(!Arstider.utils.compare(a[i], b[i])) return false;
                 i--;
             }
 
@@ -377,10 +376,11 @@ Arstider.utils.compare = function(a, b){
  * @return {Array} The shuffled array
  */
 Arstider.utils.randomSort = function(arr){
+
 	var i = arr.length, j, temp;
 	if ( i === 0 ) return false;
 	while ( --i ) {
-	   j = Arstider.floor( Math.random() * ( i + 1 ) );
+	   j = Math.floor( Math.random() * ( i + 1 ) );
 	   temp = arr[i];
 	   arr[i] = arr[j];
 	   arr[j] = temp;
@@ -423,7 +423,8 @@ Arstider.utils.mixin = function(objA, objB, force, includeMethods, prefix){
  * @return {Object} The newly created object
  */
 Arstider.utils.clone = function(obj, includeMethods, prefix){
-	return Arstider.mixin({}, obj, true, includeMethods, prefix);
+
+	return Arstider.utils.mixin({}, obj, true, includeMethods, prefix);
 };
 
 /**
@@ -450,7 +451,7 @@ Arstider.utils.deepClone = function(obj, exclude) {
     if (obj instanceof Array) {
         var copy = [];
         for (var i = 0, len = obj.length; i < len; i++) {
-            copy[i] = Arstider.deepClone(obj[i]);
+            copy[i] = Arstider.utils.deepClone(obj[i]);
         }
         return copy;
     }
@@ -460,13 +461,11 @@ Arstider.utils.deepClone = function(obj, exclude) {
         var copy = {};
         for (var attr in obj) {
         	if(exclude.indexOf(attr) != -1) continue;
-            if (obj.hasOwnProperty(attr)) copy[attr] = Arstider.deepClone(obj[attr]);
+            if (obj.hasOwnProperty(attr)) copy[attr] = Arstider.utils.deepClone(obj[attr]);
         }
         return copy;
     }
-    if(Arstider.verbose > 0){
-   		console.warn("Arstider.deepClone: Object type unsupported ",obj);
-   	}
+    Arstider.debug.log("Arstider.deepClone: Object type unsupported");
 }
 
 /**
@@ -479,7 +478,7 @@ Arstider.utils.deepClone = function(obj, exclude) {
  */
 Arstider.utils.deepMerge = function(src, target, clone, includeMethods, exclude)
 {
-	if(clone) src = Arstider.deepClone(src);
+	if(clone) src = Arstider.utils.deepClone(src);
 	exclude = exclude || [];
 
 	var isArray = Array.isArray(src);
@@ -491,9 +490,9 @@ Arstider.utils.deepMerge = function(src, target, clone, includeMethods, exclude)
 			if (typeof src[i] === 'undefined') {
 				target[i] = val;
 			} else if (typeof val === 'object') {
-				target[i] = Arstider.deepMerge(val, target[i], false, includeMethods, exclude);
+				target[i] = Arstider.utils.deepMerge(val, target[i], false, includeMethods, exclude);
 			} else if (Array.isArray(val)){
-				target[i] = Arstider.deepMerge(val, target[i], false, includeMethods, exclude);
+				target[i] = Arstider.utils.deepMerge(val, target[i], false, includeMethods, exclude);
 			} else {
 				target[i] = val;
 			}
@@ -508,14 +507,14 @@ Arstider.utils.deepMerge = function(src, target, clone, includeMethods, exclude)
 
 			var val = src[key];
 			if(Array.isArray(val)){
-				target[key] = Arstider.deepMerge(val, target[key], false, includeMethods, exclude);
+				target[key] = Arstider.utils.deepMerge(val, target[key], false, includeMethods, exclude);
 			}
 			else if(typeof val === 'object'){
 				target[key] = target[key] || {};
 				if (!src[key]) {
 					target[key] = val;
 				} else {
-					target[key] = Arstider.deepMerge(val, target[key], false, includeMethods, exclude);
+					target[key] = Arstider.utils.deepMerge(val, target[key], false, includeMethods, exclude);
 				}
 			}
 			else{
@@ -534,6 +533,7 @@ Arstider.utils.deepMerge = function(src, target, clone, includeMethods, exclude)
  * @param {*} child The child that will super to a defined inherited parent - requires the constructor to have been Inherited at least once
  */
 Arstider.utils.Super = function(child, parent){
+
 	if(arguments.length > 2) parent.apply(child, Array.prototype.slice.call(arguments,2));
 	else parent.call(child);
 };
@@ -547,6 +547,7 @@ Arstider.utils.Super = function(child, parent){
  * @return {string} The uri-safe string
  */
 Arstider.utils.URIEncode = function(val){
+
 	var encodedVal;
 	if(!encodeURIComponent){
 		encodedVal = escape(val);
@@ -572,11 +573,12 @@ Arstider.utils.URIEncode = function(val){
  * @param {*} parent The module that will gives it's properties to the child
  */
 Arstider.utils.Inherit = function(child, parent){
+
 	if(parent instanceof Function || typeof parent === 'function'){
 		child.prototype = Object.create(parent.prototype);
 		child.prototype.constructor = child;
 	}
-	else console.warn("Arstider.Inherit: Could not make ",child, " inherit", parent);
+	else console.error("Arstider.Inherit: Could not make ",child, " inherit", parent);
 };
 
 /**
@@ -587,13 +589,14 @@ Arstider.utils.Inherit = function(child, parent){
  * @return {string} The serialized Object
  */
 Arstider.utils.serialize = function(obj, prefix) {
+	
 	if(typeof obj === "string" || obj == null) return obj;
 
 	var str = [];
 	for(var p in obj){
 		var k = prefix ? prefix + "[" + p + "]" : p, v = obj[p];
     	str.push(typeof v == "object" ?
-      	Arstider.serialize(v, k) :
+      	Arstider.utils.serialize(v, k) :
 		encodeURIComponent(k) + "=" + encodeURIComponent(v));
   	}
   	return str.join("&");

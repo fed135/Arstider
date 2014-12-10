@@ -35,7 +35,7 @@ function(IComponent, List, Mouse){
 			y:null
 		};
 	}
-	Arstider.utils.Inherit(Draggable, )
+	Arstider.utils.Inherit(Draggable, IComponent);
 
 	/**
 	 * Starts dragging the element, following the mouse

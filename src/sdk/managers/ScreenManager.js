@@ -16,7 +16,7 @@ function(Entity, Signal, Preloader){
 		this.screenReady = new Signal();
 	}
 
-	ScreenManager.prototype.goto = function(name, props){
+	ScreenManager.prototype.goToScreen = function(name, props){
 		
 		var 
 			thisRef

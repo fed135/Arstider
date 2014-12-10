@@ -26,7 +26,14 @@ function (EntityFactory, Material, Geometry, Transform, WorldObject){
 	 */
 	EntityFactory.register("bitmap", [Material, Geometry, Transform, WorldObject]);
 		
-	
+	function create(props, callback){
+
+		EntityFactory.create("bitmap", function(actor){
+			Arstider.utils.deepMerge(actor, props);
+			callback(actor);
+		});
+	} 
+
 	/*Bitmap.prototype.loadImage = function(url){
 		this.material.load(url);
 	};
@@ -41,5 +48,7 @@ function (EntityFactory, Material, Geometry, Transform, WorldObject){
 		this.onready.dispatch();
 	};*/
 
-	return null; 
+	return {
+		create:create
+	}; 
 });

@@ -12,7 +12,7 @@ function(EntityPool, Entity){
 	EntityFactory.prototype.register = function(type, components, preallocate, instanceCap){
 
 		this.registeredTemplates[type] = components;
-		EntityPool.preallocate(type, components, preallocate, instanceCap);
+		EntityPool.preallocate(type, components, preallocate || 1, instanceCap);
 	};
 
 
