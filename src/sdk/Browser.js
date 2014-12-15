@@ -105,7 +105,7 @@ define( "Arstider/Browser", [], /** @lends Browser */	function(){
 			this.isMobile = true;
 			this.platform = 'windows';
 		}
-		if(uagent.indexOf("mobile") != -1 || uagent.indexOf("arm") != -1 || uagent.indexOf("touch") != -1){
+		if(uagent.indexOf("mobile") != -1 || uagent.indexOf("arm") != -1 || uagent.indexOf("touch") != -1){
 			this.isMobile = true;
 		}
 			
