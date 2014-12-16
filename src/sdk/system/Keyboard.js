@@ -9,7 +9,7 @@ define("Arstider/system/Keyboard",
 	"Arstider/core/Dataset"
 ], 
 /** @lends system/Keyboard */ 
-function(){
+function(Dataset){
 	
 	Keyboard.DEFAULTS = {
 		aliases:{
@@ -61,14 +61,15 @@ function(){
 			thisRef.handleKeyEvent.call(thisRef, event, Keyboard.RELEASED);
 		});
 
-		Arstider.Super(this, Dataset, Keyboard.DEFAULTS);
+		Arstider.utils.Super(this, Dataset, Keyboard.DEFAULTS);
 	}
+	Arstider.utils.Inherit(Keyboard, Dataset);
 
 	Keyboard.prototype.handleKeyEvent = function(event, state){
 		
 		var 
 			e = event || window.event,
-			key = thisRef.getCharName(event.keyCode)
+			key = this.getCharName(event.keyCode)
 		;
 			
 		this._map[key] = (state == Keyboard.PRESSED);

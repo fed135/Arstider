@@ -2,7 +2,7 @@ define("Arstider/system/Device",
 [
 	"Arstider/system/Browser"
 ],
-function(){
+function(Browser){
 
 	function Device(){
 

@@ -24,42 +24,28 @@ function (Entity){
 		 * @type {Object}
 		 */
 		this._sets = {};
-		
-		/**
-		 * The current pool limits for sets
-		 * @private
-		 * @type {Object}
-		 */
-		this._caps = {};
-		
-		/**
-		 * Pending fetch requests in sets
-		 * @private
-		 * @type {Object}
-		 */
-		this._pending = {};
 	}
 	
 	/**
-	 * Pre-allocates a set number of instances and optionally set a cap
+	 * Pre-allocates a set number of instances
 	 * @type {function(this:EntityPool)}
 	 * @param {function} type The constructor to instantiate
-	 * @param {number} number The number of instances to prepare
-	 * @param {number|null} cap The maximum number of allowed instances for that constructor
+	 * @param {number|null} number The number of instances to prepare
 	 * @return {EntityPool} Returns pool singleton for chaining
 	 */
-	EntityPool.prototype.preallocate = function(type, components, number, cap){
+	EntityPool.prototype.preallocate = function(type, components, num){
 
 		var 
-			cap = (cap || 9999),
-			i = Math.min(number-1, cap-1)
+			i = (num || 1)-1
 		;
-		
-		for(i; i>= 0; i--){
-			this._spawn(type, components);
+
+		if(!(type in this._sets)){
+			this._addSet(type);
 		}
 		
-		this._caps[type] = cap;
+		for(i; i>= 0; i--){
+			this._sets[type].push(this._spawn(type, components));
+		}
 		
 		return this;
 	};
@@ -76,19 +62,6 @@ function (Entity){
 		
 		var poolItem = new Entity();
 		poolItem.addComponents(components);
-		
-		if(!(type in this._sets)){
-			this._addSet(type, poolItem);
-		}
-		else{
-			if(this._sets[type][0] == undefined){
-				this._sets[type][0] = poolItem;
-			}
-			else{
-				this._sets[type].push(poolItem);
-			}
-		}
-		
 		return poolItem;
 	};
 	
@@ -104,11 +77,6 @@ function (Entity){
 		var 
 			i
 		;
-		
-		if(this._pending[type].length > 0){
-			(this._pending[type].shift())(item);
-			return this;
-		}
 
 		if(type in this._sets){
 			i = this._sets[type].indexOf(item);
@@ -117,8 +85,6 @@ function (Entity){
 				this._sets[type].push(item);
 			}
 		}
-
-
 		
 		return this;
 	};
@@ -129,24 +95,15 @@ function (Entity){
 	 * @param {function} type The constructor to get an instance of
 	 * @param {function} callback The callback method with the instance as a parameter
 	 */
-	EntityPool.prototype.get = function(type, components, callback){
+	EntityPool.prototype.get = function(type, components){
 		
 		if(type in this._sets){
 			if(this._sets[type].length > 0){
-				callback(this._sets[type].shift());
-				return this;
+				return this._sets[type].shift();
 			}
 		}
 		
-		if(this._sets[type] == undefined || this._sets[type].length < this._caps[type]){
-			this._spawn(type, components);
-			callback(this._sets[type].shift());
-		} 
-		else{
-			this._pending[type].push(callback);
-		}
-
-		return this;
+		return this._spawn(type, components || []);
 	};
 	
 	/**
@@ -156,10 +113,9 @@ function (Entity){
 	 * @param {string} typeName The name of the constructor
 	 * @param {Object} item An instance of the constructor
 	 */
-	EntityPool.prototype._addSet = function(type, item){
+	EntityPool.prototype._addSet = function(type){
 
-		this._sets[type] = [item];
-		this._pending[type] = [];
+		this._sets[type] = [];
 	};
 	
 	/**

@@ -16,7 +16,7 @@ function(IComponent){
 		 */
 		this.children = [];
 	}
-	Arstider.utils.Inherit(Clickable, IComponent);
+	Arstider.utils.Inherit(Container, IComponent);
 
 	/**
 	 * Frame updates
