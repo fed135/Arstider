@@ -179,19 +179,32 @@ define( "Arstider/TextField", [
 			u,
 			heightVal,
 			widthVal,
-			headRoom = 0,
+			headRoom = Math.max(0, f.lineSpacing - parseInt(f.size)),
 			p
 		;
 
 		//get width
-		for(i = 0; i<this._words.length; i++){
-			if(!this._words[i].width){
-				this._words[i].calculateWidth(this.data.context, f);
+		if(!fastRender){
+			for(i = 0; i<this._words.length; i++){
+				if(!this._words[i].width){
+					this._words[i].calculateWidth(this.data.context, f);
+				}
 			}
 		}
-
-		//get height to calculate topSpace
-		headRoom = Math.max(0, f.lineSpacing - parseInt(f.size));
+		else{
+			caret.y = f.paddingTop + f.lineSpacing + f.fontOffsetY - headRoom;
+			if(f.textAlign == "right"){
+				caret.x = this.width - f.paddingLeft;
+			}
+			else if(f.textAlign == "center"){
+				caret.x = this.width*0.5;
+			}
+			this.data.context.textAlign = f.textAlign;
+			this.data.context.clearRect(0,0,this.width,this.height);
+			this._words[0].width = this.data.width;
+			this._words[0].render(this.data.context, f, caret.x, caret.y, this.strokeText, this.fillText);
+			return;
+		}
 
 		//need to manually parse
 		if((fieldWidth > 0 || this.textWrap) && !fastRender){
@@ -285,6 +298,7 @@ define( "Arstider/TextField", [
 	};
 
 	TextField.prototype.applyFont = function(f){
+
 		for(var i in f){
 			if(this[i] != undefined && !(i in TextField._entityRef)) this.data.context[i] = [i];
 			else this.data.context[i] = f[i];

@@ -93,7 +93,7 @@ define( "Arstider/contexts/Canvas2d", [], /** @lends contexts/Canvas2d */ functi
 	};
 		
 	Canvas2d.prototype.renderAt = function(context, data, x, y, width, height, pX, pY, destWidth, destHeight){
-		if((data instanceof Image && data.src) || data instanceof HTMLCanvasElement){
+		if(data instanceof Image || data instanceof HTMLCanvasElement){
 			if(pX == undefined || pX < 0) pX = 0;
             if(pY == undefined || pY < 0) pY = 0;
 
