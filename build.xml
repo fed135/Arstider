@@ -72,7 +72,7 @@
 	<target name="-build.minify.offline">
 		<echo> - minifying game code</echo>
         <exec executable="java" failonerror="false">
-			<arg line='-jar ./tools/compiler.jar --js "${dest}/_temp.parsed.js"  --js_output_file "${dest}/Arstider.${target}.js" --compilation_level ${compiler.level}' />
+			<arg line='-jar ./tools/compiler.jar --js "${dest}/_temp.parsed.js" --language_in ECMASCRIPT5 --js_output_file "${dest}/Arstider.${target}.js" --compilation_level ${compiler.level}' />
 		</exec>
 	</target>
 	
