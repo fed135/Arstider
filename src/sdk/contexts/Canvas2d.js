@@ -14,7 +14,7 @@ define( "Arstider/contexts/Canvas2d", [], /** @lends contexts/Canvas2d */ functi
 	 * @constructor 
 	 */
 	function Canvas2d(){}
-	
+
 	Canvas2d.prototype.init = function(context, callback){
 		//context = context.canvas.buffer.getContext();
 		if(callback) callback();
@@ -94,10 +94,35 @@ define( "Arstider/contexts/Canvas2d", [], /** @lends contexts/Canvas2d */ functi
 		
 	Canvas2d.prototype.renderAt = function(context, data, x, y, width, height, pX, pY, destWidth, destHeight){
 		if((data instanceof Image && data.src) || data instanceof HTMLCanvasElement){
-			if(pX == undefined) pX = 0;
-            if(pY == undefined) pY = 0;
-            destWidth = destWidth || data.width;
-            destHeight = destHeight || data.height;
+			if(pX == undefined || pX < 0) pX = 0;
+            if(pY == undefined || pY < 0) pY = 0;
+
+            if(pX >= data.width || pY >= data.height){
+            	Arstider.log("Attempting to draw a sprite element using coordinates {x:"+pX+", y:"+pY+"} larger than the image size {width:"+data.width+", height:"+data.height+", type:'"+data.nodeName+"', id:'"+data.id+"', src:'"+data.src+"'}");
+            	return;
+            } 
+
+            if(destWidth == undefined){
+            	destWidth = width;
+            }
+            else{
+            	if(destWidth <= 0){
+            		Arstider.log("The provided destination width is inferior or equal to 0 : "+destWidth);
+            		return;
+            	}
+            	if(destWidth > data.width) destWidth = data.width;
+            }
+            if(destHeight == undefined){
+            	destHeight = height;
+            }
+            else{
+            	if(destHeight <= 0){
+            		Arstider.log("The provided destination height is inferior or equal to 0 : "+destHeight);
+            		return;
+            	}
+            	if(destHeight > data.height) destHeight = data.height;
+            }
+
 			context.drawImage(data, pX, pY, destWidth, destHeight, x, y, width, height);
 		}
 	};
