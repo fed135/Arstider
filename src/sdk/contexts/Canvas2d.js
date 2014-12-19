@@ -13,7 +13,9 @@ define( "Arstider/contexts/Canvas2d", [], /** @lends contexts/Canvas2d */ functi
      * @name contexts/Canvas2d
 	 * @constructor 
 	 */
-	function Canvas2d(){}
+	function Canvas2d(){
+		this.maxDataSize = 2048;
+	}
 
 	Canvas2d.prototype.init = function(context, callback){
 		//context = context.canvas.buffer.getContext();
@@ -100,28 +102,42 @@ define( "Arstider/contexts/Canvas2d", [], /** @lends contexts/Canvas2d */ functi
             if(pX >= data.width || pY >= data.height){
             	Arstider.log("Attempting to draw a sprite element using coordinates {x:"+pX+", y:"+pY+"} larger than the image size {width:"+data.width+", height:"+data.height+", type:'"+data.nodeName+"', id:'"+data.id+"', src:'"+data.src+"'}");
             	return;
-            } 
+            }
+
+            if(data.width > this.maxDataSize || data.height > this.maxDataSize){
+            	Arstider.log("Maximum data size exceeded! {type:'"+data.nodeName+"', id:'"+data.id+"', src:'"+data.src+"'}");
+            	return;
+            }
+
+            if(width <= 0){
+            	Arstider.log("Attempting to draw an image with negative width {type:'"+data.nodeName+"', id:'"+data.id+"', src:'"+data.src+"'}");
+            	return;
+            }
+            if(height <= 0){
+            	Arstider.log("Attempting to draw an image with negative height {type:'"+data.nodeName+"', id:'"+data.id+"', src:'"+data.src+"'}");
+            	return;
+            }
 
             if(destWidth == undefined){
             	destWidth = width;
             }
-            else{
-            	if(destWidth <= 0){
-            		Arstider.log("The provided destination width is inferior or equal to 0 : "+destWidth);
-            		return;
-            	}
-            	if(destWidth > data.width) destWidth = data.width;
+            
+            if(destWidth <= 0){
+            	Arstider.log("The provided destination width is inferior or equal to 0 : "+destWidth);
+            	return;
             }
+            if(destWidth + pX > data.width) destWidth = data.width - pX;
+            
             if(destHeight == undefined){
             	destHeight = height;
             }
-            else{
-            	if(destHeight <= 0){
-            		Arstider.log("The provided destination height is inferior or equal to 0 : "+destHeight);
-            		return;
-            	}
-            	if(destHeight > data.height) destHeight = data.height;
+            
+            if(destHeight <= 0){
+            	Arstider.log("The provided destination height is inferior or equal to 0 : "+destHeight);
+            	return;
             }
+            if(destHeight + pY > data.height) destHeight = data.height - pY;
+            
 
 			context.drawImage(data, pX, pY, destWidth, destHeight, x, y, width, height);
 		}
