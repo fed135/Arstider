@@ -166,8 +166,10 @@ function (Buffer, Canvas2d, Performance, MatrixTransform){
 				else{
 					if(element.global.height > 0 && element.global.width > 0){
 						//if(element.onScreen) {
-						var node = Arstider.getNode(element);
+						var node = /*Arstider.getNode(*/element/*)*/;
+
 						if(node && node.data){
+							if(node.data.data) node = node.data;
 							Performance.draws++;
 							if(element.largeData === true){
 								this.pencil.renderAt(context, node.data, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
