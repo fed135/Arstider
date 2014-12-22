@@ -1,0 +1,12 @@
+For sounds.
+
+Should we depend fully on Howler?
+
+Do we really need an interface?
+
+Sounds 	-> List of sounds (Track modules), like Fonts.
+		-> Global settings
+
+Tracks 	-> All single-track methods, calls howler object directly.
+
+Remove interfaces. Let's trust that howler will keep evolving.

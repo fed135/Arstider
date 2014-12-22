@@ -1,0 +1,32 @@
+Getting entries 
+
+1- Runtime
+2- Config
+3- Defaults
+
+
+
+
+Example:
+
+Sound.js
+
+defaults()
+{
+	volume:1,
+	pan:0,
+	sounds:[]
+}
+
+configs()
+{
+	sounds:[{...}, {...}, ...]
+}
+
+runtime()
+{
+	volume:0
+}
+
+
+Save puts the runtime in the localstorage... it's the user data!
