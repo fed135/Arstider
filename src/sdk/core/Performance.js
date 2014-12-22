@@ -122,7 +122,7 @@ define( "Arstider/core/Performance", [], /** @lends core/Performance */ function
 		if(this.lastLogicFrame == 0) this.lastLogicFrame = ts;
 		singleton.deltaTime = ts - singleton.lastLogicFrame;
 		singleton.lastLogicFrame = ts;
-		var nextFrame = Arstider.chop(Arstider.max(0, (1000/Arstider.FPS) - singleton.deltaTime));
+		var nextFrame = Math.round(Math.max(0, (1000/Arstider.FPS) - singleton.deltaTime));
 		setTimeout(singleton._stepLogic, nextFrame);
 			
 		singleton.updateLogic(singleton.deltaTime);

@@ -4,9 +4,15 @@
  * @version 1.1.2
  * @author frederic charette <fredericcharette@gmail.com>
  */
-define( "Arstider/Renderer", ["Arstider/Buffer", "Arstider/contexts/Webgl", "Arstider/contexts/Canvas2d", "Arstider/core/Performance", "Arstider/contexts/MatrixTransform"], /** @lends core/Renderer */ function (Buffer, Webgl, Canvas2d, Performance, MatrixTransform){
-		
-	var singleton;
+define( "Arstider/Renderer", 
+[
+	"Arstider/Buffer", 
+	"Arstider/contexts/Canvas2d", 
+	"Arstider/core/Performance", 
+	"Arstider/contexts/MatrixTransform"
+], 
+/** @lends core/Renderer */ 
+function (Buffer, Canvas2d, Performance, MatrixTransform){
 		
 	/**
 	 * Renderer class
@@ -16,10 +22,11 @@ define( "Arstider/Renderer", ["Arstider/Buffer", "Arstider/contexts/Webgl", "Ars
 	 * @constructor 
 	 */
 	function Renderer(){
-		this.pencil = null;
+		this.pencil = Canvas2d;
 		this.padding = 100;
 		this.pendingRemoval = 0;
 	}
+
 	Renderer.prototype.checkOnScreen = function(context, element, matrix, xo, yo){
 		var 
 			mW = context.canvas.width,
@@ -34,16 +41,16 @@ define( "Arstider/Renderer", ["Arstider/Buffer", "Arstider/contexts/Webgl", "Ars
 			p4 = matrix.transformPoint(fw, fh),
 			pc = {x:(p1.x+p2.x+p3.x+p4.x)*0.25, y:(p1.y+p2.y+p3.y+p4.y)*0.25}
 		;
-		if((p1.x - singleton.padding < mW && p1.x >=  -singleton.padding) ||
-		(p2.x - singleton.padding <= mW && p2.x >  -singleton.padding) ||
-		(p3.x - singleton.padding < mW && p3.x >=  -singleton.padding) ||
-		(p4.x - singleton.padding <= mW && p4.x >  -singleton.padding) ||
-		(pc.x - singleton.padding <= mW && pc.x >  -singleton.padding)){
-			if((p1.y - singleton.padding < mH && p1.y >=  -singleton.padding) ||
-				(p2.y - singleton.padding <= mH && p2.y >  -singleton.padding) ||
-				(p3.y - singleton.padding < mH && p3.y >=  -singleton.padding) ||
-				(p4.y - singleton.padding <= mH && p4.y >  -singleton.padding) ||
-				(pc.y - singleton.padding <= mH && pc.y >  -singleton.padding)){
+		if((p1.x - this.padding < mW && p1.x >=  -this.padding) ||
+		(p2.x - this.padding <= mW && p2.x >  -this.padding) ||
+		(p3.x - this.padding < mW && p3.x >=  -this.padding) ||
+		(p4.x - this.padding <= mW && p4.x >  -this.padding) ||
+		(pc.x - this.padding <= mW && pc.x >  -this.padding)){
+			if((p1.y - this.padding < mH && p1.y >=  -this.padding) ||
+				(p2.y - this.padding <= mH && p2.y >  -this.padding) ||
+				(p3.y - this.padding < mH && p3.y >=  -this.padding) ||
+				(p4.y - this.padding <= mH && p4.y >  -this.padding) ||
+				(pc.y - this.padding <= mH && pc.y >  -this.padding)){
 				return true;
 			}
 		}
@@ -57,6 +64,7 @@ define( "Arstider/Renderer", ["Arstider/Buffer", "Arstider/contexts/Webgl", "Ars
 	 * @param {Object} curChild Entity-type element to draw and call draw upon the children of
 	 */
 	Renderer.prototype.renderChild = function(context, element, complex, pre, post, t, debug, callback, main){
+
 		var 
 			xAnchor = 0,
 			yAnchor = 0
@@ -158,8 +166,10 @@ define( "Arstider/Renderer", ["Arstider/Buffer", "Arstider/contexts/Webgl", "Ars
 				else{
 					if(element.global.height > 0 && element.global.width > 0){
 						//if(element.onScreen) {
-						var node = Arstider.getNode(element);
+						var node = /*Arstider.getNode(*/element/*)*/;
+
 						if(node && node.data){
+							if(node.data.data) node = node.data;
 							Performance.draws++;
 							if(element.largeData === true){
 								this.pencil.renderAt(context, node.data, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
@@ -213,31 +223,9 @@ define( "Arstider/Renderer", ["Arstider/Buffer", "Arstider/contexts/Webgl", "Ars
 			if(callback) callback();
 		}
 	};
+
 	Renderer.prototype.clear = function(context, x, y, width, height){
-		this._recoverContextPencil(context, function(){
-			singleton.pencil.clear(context, x,y,width,height);
-		});
-	};
-	Renderer.prototype._recoverContextPencil = function(context, callback){
-		if(context && context.canvas.buffer.contextType == Buffer.CANVAS2D){
-				this.pencil = Canvas2d;
-			}
-			else{
-				this.pencil = Webgl;
-			}
-		if(!context.__init){
-			context.__init = true;
-			if(context && context.canvas.buffer.contextType == Buffer.CANVAS2D){
-				this.pencil = Canvas2d;
-			}
-			else{
-				this.pencil = Webgl;
-			}
-			this.pencil.init(context, callback);
-		}
-		else{
-			callback();
-		}
+		this.pencil.clear(context, x,y,width,height);
 	};
 		
 	/**
@@ -250,12 +238,10 @@ define( "Arstider/Renderer", ["Arstider/Buffer", "Arstider/contexts/Webgl", "Ars
 	 */
 	Renderer.prototype.draw = function(context, element, pre, post, debug, callback){
 		this.pendingRemoval = 0;
-		this._recoverContextPencil(context, function recoverContext(){
-			//singleton.pencil.clip(context, 0, 0, context.canvas.width, context.canvas.height);	//not great for rpX/rpY greater than 0
-			singleton.renderChild.call(singleton, context, element, false, pre, post, null, debug, callback, true);
-		});
+		this.pencil.reset(context);
+		this.pencil.clip(context, 0, 0, context.canvas.width, context.canvas.height);
+		this.renderChild(context, element, false, pre, post, null, debug, callback, true);
 	};
-		
-	singleton = new Renderer();
-	return singleton;
+	
+	return new Renderer();
 });

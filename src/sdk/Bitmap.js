@@ -43,6 +43,11 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 				this._fetchUrl(this.url);
 			}
 			else{
+				if(Browser.name == "ie" && Browser.version == 9){
+					this.compatibilityLoad(this.url);
+					return;
+				}
+
 				this.req = new Request({
 					url:this.url,
 					caller:this,
@@ -55,6 +60,31 @@ define("Arstider/Bitmap", ["Arstider/Request", "Arstider/Browser", "Arstider/Buf
 				this.req.send();
 			}
 		}
+	};
+
+	Bitmap.prototype.compatibilityLoad = function(url){
+		var thisRef = this;
+
+		Preloader.progress(url, 0);
+
+		this.data.onload = function(){
+			thisRef.data.onload = null;
+			thisRef.width = thisRef.data.width;
+			thisRef.height = thisRef.data.height;
+
+			Preloader.progress(url, 100);
+			if(thisRef.callback){
+				thisRef.callback(thisRef);
+			}
+		};
+
+		this.data.onerror= function(e){
+			if(thisRef.error) thisRef.error(Arstider.error(URIError, {code:500, module:"Arstider/Bitmap", message:"Error while parsing saved blob information for "+ thisRef.url}));
+
+			if(e && e.preventDefault) e.preventDefault();
+			return false;
+		};
+		this.data.src = url;
 	};
 	
 	/**

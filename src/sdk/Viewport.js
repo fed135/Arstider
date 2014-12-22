@@ -202,7 +202,7 @@ define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], /** @lends
 				} else if (typeof window.document.msHidden !== "undefined"){
 					hidden = "msHidden";
 					visibilityChange = "msvisibilitychange";
-				} else if (typeof window.document.webkitHidden !== "undefined"){
+				} else if (typeof window.document.webkitHidden !== "undefined" && hidden != "hidden"){
 					hidden = "webkitHidden";
 					visibilityChange = "webkitvisibilitychange";
 				}
@@ -213,7 +213,7 @@ define( "Arstider/Viewport", ["Arstider/Browser", "Arstider/Events"], /** @lends
 			//}
 			//Safari doesn't support page visibility properly when switching apps.
 			//We have to resort to this primitive check
-			if(Browser.name == "safari" && Browser.isMobile){
+			if(Browser.name == "safari" && Browser.isMobile && Browser.platformVersion < 8){
 				(function(){
 					var now, lastFired = Arstider.timestamp();
 					setInterval(function() {

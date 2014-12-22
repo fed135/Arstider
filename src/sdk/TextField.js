@@ -51,6 +51,8 @@ define( "Arstider/TextField", [
 		 */
 		this._textValue = null;
 
+		this.rightToLeft = false;
+
 		/**
 		 * An Array of parsed Words
 		 *
@@ -73,6 +75,8 @@ define( "Arstider/TextField", [
 		 * @type {Object|null}
 		 */
 		this._font = null;
+
+		this._finalFont = null;
 
 		/**
 		 * Custom unique mods
@@ -117,12 +121,26 @@ define( "Arstider/TextField", [
 		}
 	};
 
+	TextField.prototype.setFastText = function(txt){
+		txt = txt + "";
+		this.dynamic = false;
+		this.textWrap = false;
+
+		if(txt != this._textValue){
+			this._textValue = txt;
+			this._words = [new Segment(txt)];
+		}
+
+		this.render(true);
+	};
+
 	/**
 	 * Sets the font of the TextField and re-renders it's data.
 	 * @type {function(this:TextField)}
 	 * @param {Font|Object} name The desired text.
 	 */
 	TextField.prototype.setFont = function(font, specials){
+		this._finalFont = null;
 		this._custom = specials || {};
 		this._font = Fonts.get(font);
 
@@ -148,7 +166,7 @@ define( "Arstider/TextField", [
 	 * @param {Object} fontRef Final transformation options
 	 * @param {number} maxWidth The maximum width allowed
 	 */
-	TextField.prototype._renderWordList = function(f){
+	TextField.prototype._renderWordList = function(f, needToApply, fastRender){
 
 		var 
 			caret = {x:0, y:0},
@@ -161,19 +179,35 @@ define( "Arstider/TextField", [
 			u,
 			heightVal,
 			widthVal,
-			headRoom = 0
+			headRoom = Math.max(0, f.lineSpacing - parseInt(f.size)),
+			p
 		;
 
 		//get width
-		for(i = 0; i<this._words.length; i++){
-			this._words[i].calculateWidth(this.data.context, f);
+		if(!fastRender){
+			for(i = 0; i<this._words.length; i++){
+				if(!this._words[i].width){
+					this._words[i].calculateWidth(this.data.context, f);
+				}
+			}
+		}
+		else{
+			caret.y = f.paddingTop + f.lineSpacing + f.fontOffsetY - headRoom;
+			if(f.textAlign == "right"){
+				caret.x = this.width - f.paddingLeft;
+			}
+			else if(f.textAlign == "center"){
+				caret.x = this.width*0.5;
+			}
+			this.data.context.textAlign = f.textAlign;
+			this.data.context.clearRect(0,0,this.width,this.height);
+			this._words[0].width = this.data.width;
+			this._words[0].render(this.data.context, f, caret.x, caret.y, this.strokeText, this.fillText);
+			return;
 		}
 
-		//get height to calculate topSpace
-		headRoom = Math.max(0, f.lineSpacing - parseInt(f.size));
-
 		//need to manually parse
-		if(fieldWidth > 0 || this.textWrap){
+		if((fieldWidth > 0 || this.textWrap) && !fastRender){
 			for(i = 0; i<this._words.length; i++){
 				if(this._words[i].text.indexOf(Parser.breakLine) != -1){
 					if(l != null) lines.push(l);
@@ -211,13 +245,19 @@ define( "Arstider/TextField", [
 			fieldWidth = longestLine;
 		}
 		else{
-			this.data.setSize(this.width, this.height || heightVal);
+			if(this.data.width != this.width && this.data.height != this.height){
+				this.data.setSize(this.width, this.height || heightVal);
+				needToApply = true;
+			}
+			else{
+				this.data.context.clearRect(0,0,this.width,this.height);
+			}
 		}
 		this.width = this.data.width;
 		this.height = this.data.height;
 
 		//apply font
-		this.applyFont(f);
+		if(needToApply) this.applyFont(f);
 			
 		//We handle that here, thank you
 		this.data.context.textAlign = "left";
@@ -231,6 +271,10 @@ define( "Arstider/TextField", [
 			}
 
 			caret.y = f.paddingTop + ((i+1)*f.lineSpacing) + f.fontOffsetY - headRoom;
+
+			if(this.rightToLeft){
+				lines[i] = lines[i].reverse();
+			}
 
 			for(u = 0; u<lines[i].length; u++){
 				if(f.textAlign == "right"){
@@ -254,6 +298,7 @@ define( "Arstider/TextField", [
 	};
 
 	TextField.prototype.applyFont = function(f){
+
 		for(var i in f){
 			if(this[i] != undefined && !(i in TextField._entityRef)) this.data.context[i] = [i];
 			else this.data.context[i] = f[i];
@@ -266,9 +311,9 @@ define( "Arstider/TextField", [
 	 * @private
 	 * @type {function(this:TextField)}
 	 */
-	TextField.prototype.render = function(){
+	TextField.prototype.render = function(fastText){
 
-		this._makeBuffer();
+		var needApply = false;
 
 		if(this.dynamic == null){
 			if(this.width == 0){
@@ -282,6 +327,11 @@ define( "Arstider/TextField", [
 			this.height = 0;
 		}
 
+		if(this.dynamic || this.textWrap || this._finalFont == null){
+			this._makeBuffer();
+			needApply = true;
+		}
+
 		/**
 		 * Cancel operation if not all required fields are filled
 		 */
@@ -289,9 +339,14 @@ define( "Arstider/TextField", [
 		if(this._font.loaded === false) return;
 		if(this._font.temp && !Fonts.collection[this._font.name].temp) this.setFont(Fonts.get(this._font.name));
 
-		var _final = Arstider.mixin(Arstider.clone(this._font), this._custom, true);
+		if(this._finalFont == null){
+			this._finalFont = Arstider.mixin(Arstider.clone(this._font), this._custom, true);
+			this._renderWordList(this._finalFont, true, fastText);
+		}
+		else{
+			this._renderWordList(this._finalFont, needApply, fastText);
+		}
 
-		this._renderWordList(_final);
 		this.onchange.dispatch(this);
 	};
 

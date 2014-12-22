@@ -129,7 +129,7 @@ define( "Arstider/Engine", [
 	 * @param {HTMLDivElement} tag The div to start the engine in
 	 * @param {boolean} synchronous Makes the logic run at the same speed as render
 	 */
-	Engine.prototype.start = function(tag, synchronous, vertex, fragment){
+	Engine.prototype.start = function(tag, debug, synchronous, vertex, fragment){
 		if(!window.console || !this.debug){
 			Arstider.verbose = 0;
 			Arstider.disableConsole();
@@ -287,13 +287,16 @@ define( "Arstider/Engine", [
 		Events.unbind("Preloader.loadingCompleted", singleton.onScreenLoaded);
 		Events.bind("Preloader.loadingCompleted", singleton.onScreenLoaded);
 		// Preloader options
-		var preloaderParams = (params.preloader) ? params.preloader : {};
-		Preloader.interactive = Arstider.checkIn(preloaderParams.interactive, false);
-		Preloader.animated = Arstider.checkIn(preloaderParams.animated, false);
-		singleton.stop();
-		singleton.isPreloading = true;
-		Preloader.set(name);
-		Preloader.progress("__screen__", 0);
+		if(!params.noPreloader){
+			var preloaderParams = (params.preloader) ? params.preloader : {};
+			Preloader.interactive = Arstider.checkIn(preloaderParams.interactive, false);
+			Preloader.animated = Arstider.checkIn(preloaderParams.animated, false);
+			singleton.stop();
+			singleton.isPreloading = true;
+			Preloader.set(name);
+			Preloader.progress("__screen__", 0);
+		}
+
 		requirejs([name], function(_menu)
 		{
 			if(Viewport.unsupportedOrientation){
@@ -313,9 +316,15 @@ define( "Arstider/Engine", [
 
 				singleton.currentScreen.stage = singleton;
 				singleton.currentScreen.name = name;
-				setTimeout(function screenProgressRelay(){
-					Preloader.progress("__screen__", 100);
-				},100);
+
+				if(params.noPreloader){
+					setTimeout(singleton.startScreen, 10);
+				}
+				else{
+					setTimeout(function screenProgressRelay(){
+						Preloader.progress("__screen__", 100);
+					},100);
+				}
 			}
 		});
 	};
@@ -459,7 +468,7 @@ define( "Arstider/Engine", [
 				}
 			}
 		}
-		Arstider.__cancelBubble = {};
+		
 		i = u = numInputs = null;
 	};
 	/**
@@ -521,6 +530,7 @@ define( "Arstider/Engine", [
 			}
 		}
 		mouseX = mouseY = i = inputId = null;
+		Arstider.__cancelBubble = {};
 	};
 	/**
 	 * Recursively wipes pending deletion item (remove child is an async operation)
