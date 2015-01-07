@@ -51,7 +51,7 @@ define( "Arstider/TextField", [
 		 */
 		this._textValue = null;
 
-		this.rightToLeft = false;
+		this.rightToLeft = Arstider.RTL;
 
 		/**
 		 * An Array of parsed Words
