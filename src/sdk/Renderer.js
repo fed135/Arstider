@@ -56,32 +56,8 @@ function (Buffer, Canvas2d, Performance, MatrixTransform){
 		}
 		return false;
 	};
-		
-	/**
-	 * Render a single child and it's children
-	 * @private
-	 * @type {function}
-	 * @param {Object} curChild Entity-type element to draw and call draw upon the children of
-	 */
-	Renderer.prototype.renderChild = function(context, element, complex, pre, post, t, debug, callback, main){
 
-		var 
-			xAnchor = 0,
-			yAnchor = 0
-		;
-			
-		if(!element) return;
-		Performance.elements++;
-		if(!element._skipUpdateBubble && !element._skipUpdate && element.update) Performance.numUpdates++; 
-		if(element.alpha <= 0) return;
-		
-		if(!t){
-			t = new MatrixTransform(this.pencil, context);
-			t.reset();
-		}
-			
-		xAnchor = (element.width * element.rpX);
-		yAnchor = (element.height * element.rpY);
+	Renderer.prototype.updateGlobalProperties = function(element){
 		//Update globals
 		if(element.global){
 			element.global.x = element.x;
@@ -107,12 +83,17 @@ function (Buffer, Canvas2d, Performance, MatrixTransform){
 				element.global.alpha *= element.parent.global.alpha;
 			}
 		}
+	};
+
+	Renderer.prototype.updateAlpha = function(element, context){
 		//Alpha
 		if(element.alpha != 1){
 			Performance.transforms++;
 			this.pencil.alpha(context, element.alpha);
 		}
-		
+	};
+
+	Renderer.prototype.checkTransformations = function(element, t, complex, xAnchor, yAnchor){
 		if(element.rotation != 0 || element.scaleX != 1 || element.scaleY != 1 || complex){
 			t.save();
 			if (complex) {
@@ -122,19 +103,28 @@ function (Buffer, Canvas2d, Performance, MatrixTransform){
 			}
 			complex = true;
 		}
+		return complex;
+	};
+
+	Renderer.prototype.updateRotation = function(element, t){
 		if(element.rotation != 0){
 			Performance.transforms++;
 			t.rotate(element.rotation * Arstider.degToRad);
 		}
+	};
+
+	Renderer.prototype.updateScale = function(element, t){
 		if(element.scaleX != 1 || element.scaleY != 1){
 			Performance.transforms++;
 			t.scale(element.scaleX, element.scaleY);
 		}
-			
-		if(element.skewX != 0 || element.skewY != 0){
-			//Performance.transforms++;
-			//TODO
-		}
+	};
+	
+	Renderer.prototype.updateSkew = function(element){
+		//TODO
+	};
+
+	Renderer.prototype.checkCompositeMode = function(element, context, complex, xAnchor, yAnchor){
 		//Composite Mode / Mask
 		if(element.compositeMode != Arstider.defaultComposition){
 			Performance.transforms++;
@@ -145,20 +135,60 @@ function (Buffer, Canvas2d, Performance, MatrixTransform){
 			Performance.transforms++;
 			this.pencil.clip(context, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y, element.width, element.height);
 		}
-			
+	};
+
+	Renderer.prototype.updateShadow = function(element, context){
 		//Shadow
 		if(element.shadowColor != Arstider.defaultColor){
 			Performance.transforms++;
 			this.pencil.dropShadow(context, element.shadowOffsetX, element.shadowOffsetY, element.shadowBlur, element.shadowColor);
 		}
+	};
+
+	/**
+	 * Render a single child and it's children
+	 * @private
+	 * @type {function}
+	 * @param {Object} curChild Entity-type element to draw and call draw upon the children of
+	 */
+	Renderer.prototype.renderChild = function(context, element, complex, pre, post, t, debug, callback, main){
+
+		var 
+			xAnchor = 0,
+			yAnchor = 0
+		;
+			
+		if(!element) return;
+		Performance.elements++;
+		if(!element._skipUpdateBubble && !element._skipUpdate && element.update) Performance.numUpdates++; 
+		if(element.alpha <= 0) return;
+		
+		if(!t){
+			t = new MatrixTransform(this.pencil, context);
+			t.reset();
+		}
+			
+		xAnchor = (element.width * element.rpX);
+		yAnchor = (element.height * element.rpY);
+		
+		this.updateGlobalProperties(element);
+		this.updateAlpha(element, context);
+		complex = this.checkTransformations(element, t, complex, xAnchor, yAnchor);
+		this.updateRotation(element, t);
+		this.updateScale(element, t);
+		this.checkCompositeMode(element, context, complex, xAnchor, yAnchor);
+		this.updateShadow(element, context);	
+		
 		//Runs pre-render method:
 		if(pre) pre(element);
+
 		//Render data
 		if(element.data || element.draw){
-			if(!element.mask) t.setTransform();
-			var onScreen = (element.global.x < context.canvas.width && element.global.x + element.global.width > 0 && element.global.y < context.canvas.height && element.global.y + element.global.height > 0);
+			var onScreen = (element.global.x < context.canvas.width && element.global.x + element.global.width >= 0 && element.global.y < context.canvas.height && element.global.y + element.global.height >= 0);
 			if((!complex && onScreen) || complex){
 				//Custom draw method :: WARNING! Only context is provided... could be any of Webgl or Canvas2d !!!
+				if(!element.mask) t.setTransform();
+
 				if(element.draw){
 					Performance.draws++;
 					element.draw.call(element, context, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y);
@@ -175,7 +205,7 @@ function (Buffer, Canvas2d, Performance, MatrixTransform){
 								this.pencil.renderAt(context, node.data, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y, element.width, element.height, element.xOffset, element.yOffset, element.dataWidth, element.dataHeight);
 							}
 							else{
-								this.pencil.renderAt(context, node.data, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y, element.width, element.height);
+								this.pencil.renderAt(context, node.data, (complex)?-xAnchor:element.global.x, (complex)?-yAnchor:element.global.y, element.width, element.height, 0, 0, element.width, element.height);
 							}
 						}
 						node = null;
@@ -238,8 +268,8 @@ function (Buffer, Canvas2d, Performance, MatrixTransform){
 	 */
 	Renderer.prototype.draw = function(context, element, pre, post, debug, callback){
 		this.pendingRemoval = 0;
-		this.pencil.reset(context);
-		this.pencil.clip(context, 0, 0, context.canvas.width, context.canvas.height);
+		//this.pencil.reset(context);
+		//this.pencil.clip(context, 0, 0, context.canvas.width, context.canvas.height);
 		this.renderChild(context, element, false, pre, post, null, debug, callback, true);
 	};
 	

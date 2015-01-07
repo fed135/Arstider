@@ -79,12 +79,12 @@
 			}
 			if(clip.parent != null && Arstider.verbose > 1) console.error("Arstider.DisplayObject.addChild: object already has a parent");
 			clip.parent = this;
-			clip.onStage = this.onStage;
+			/*clip.onStage = this.onStage;
 			if(clip.children && clip.children.length > 0){
 				for(var i = 0; i< clip.children.length; i++){
 					clip.children[i].onStage = this.onStage;
 				}
-			}
+			}*/
 			this.children[this.children.length]=clip;
 
 			if(clip.cancelBubble) clip.cancelBubble()._update();
@@ -102,16 +102,16 @@
 			if(index != -1) {
 				if(this.children[index].removeChildren && this.children[index].children.length != 0) this.children[index].removeChildren(true);
 				
-				if(this.children[index].onStage){
+				/*if(this.children[index].onStage){
 					this.children[index].__skip = true;
 				}
-				else{
-					this.children[index].onStage = false;
+				else{*/
+					//this.children[index].onStage = false;
 					if(this.children[index].killBuffer) this.children[index].killBuffer();
 					this.children[index].parent = null;
 					
 					this.children.splice(index,1);
-				}
+				//}
 			}
 			else{
 				if(Arstider.verbose > 1) console.warn("Arstider.DisplayObject.removeChildByName: could not find children "+name);
@@ -130,16 +130,16 @@
 			if(index != -1){
 				if(this.children[index].removeChildren && this.children[index].children.length != 0) this.children[index].removeChildren(true);
 				
-				if(this.children[index].onStage){
+				/*if(this.children[index].onStage){
 					this.children[index].__skip = true;
 				}
-				else{
-					this.children[index].onStage = false;
+				else{*/
+					//this.children[index].onStage = false;
 					if(this.children[index].killBuffer) this.children[index].killBuffer();
 					this.children[index].parent = null;
 					
 					this.children.splice(index,1);
-				}
+				//}
 			}
 			else{
 				if(Arstider.verbose > 1) console.warn("Arstider.DisplayObject.removeChild: could not find child");
@@ -175,8 +175,8 @@
 		 * @type {function(this:DisplayObject)}
 		 * @return {Object} Self reference for chaining
 		 */
-		DisplayObject.prototype.removeChildren = function(force){
-			var someKept = false;
+		DisplayObject.prototype.removeChildren = function(){
+
 			if(this.children.length === 0 && Arstider.verbose > 2) console.warn("Arstider.DisplayObject.removeChildren: object has no children");
 			for(var i=0; i<this.children.length; i++) {
 				if(this.children[i]){
@@ -184,20 +184,13 @@
 						this.children[i].removeChildren(true);
 					}
 					
-					if(this.children[i].onStage && !force){
-						this.children[i].__skip = true;
-						someKept = true;
-					}
-					else{
-						if(this.children[i].killBuffer) this.children[i].killBuffer();
-						this.children[i].parent = null;
-						this.children[i].onStage = false;
-						delete this.children[i];
-					}
+					if(this.children[i].killBuffer) this.children[i].killBuffer();
+					this.children[i].parent = null;
+					delete this.children[i];
 				}
 			}
 			
-			if(!someKept) this.children.length = 0;
+			this.children.length = 0;
 
 			return this;
 		};
@@ -212,14 +205,12 @@
 			var i = this.children.indexOf(ref);
 			if(i != -1){
 				this.children[i].parent = null;
-				this.children[i].onStage = false;
 				this.children.splice(i,1);
 			}
 			else{
 				i = getChildIndexByName(this.children, ref);
 				if(i != -1){
 					this.children[i].parent = null;
-					this.children[i].onStage = false;
 					this.children.splice(i,1);
 				}
 				else{

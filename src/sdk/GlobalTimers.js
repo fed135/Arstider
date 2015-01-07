@@ -6,8 +6,6 @@
  */
 define( "Arstider/GlobalTimers", [], /** @lends GlobalTimers */ function (){
 		
-	var singleton;
-		
 	/**
 	 * GlobalTimers constructor
 	 * A list of timers to update every frame (to match display in synchronous mode)
@@ -17,13 +15,6 @@ define( "Arstider/GlobalTimers", [], /** @lends GlobalTimers */ function (){
 	function GlobalTimers(){
 		this.list = [];
 		this._roughStarted = false;
-
-		this.startTime = 0;
-		this.logicHeartbeats = 0;
-		this.maxHeartbeatsPerFrame = 3;
-		this.logicHeartbeatsPerSecond = 50;
-
-		this.paused = false
 	}
 			
 	/**
@@ -33,21 +24,6 @@ define( "Arstider/GlobalTimers", [], /** @lends GlobalTimers */ function (){
 	 */
 	GlobalTimers.prototype.step = function(dt){
 
-		var worldTime = (this.startTime += dt) *0.001;
-		var goalHeartbeats = Math.floor(worldTime * this.logicHeartbeatsPerSecond);
-		if ( (goalHeartbeats - this.logicHeartbeats) > this.maxHeartbeatsPerFrame ) this.logicHeartbeats = goalHeartbeats - this.maxHeartbeatsPerFrame;//eventually allow the game to just run slowly
-
-		if ( this.paused ) this.logicHeartbeats = goalHeartbeats;
-
-		if (this.logicHeartbeats < goalHeartbeats) {
-			while (this.logicHeartbeats < goalHeartbeats) {
-				this._updateTimers(17);
-				this.logicHeartbeats++;
-			}
-		}
-	};
-
-	GlobalTimers.prototype._updateTimers = function(dt){
 		for(var i=this.list.length-1; i>=0; i--){
 			if(this.list[i] && this.list[i].running){
 				if(this.list[i] && this.list[i].delay){
@@ -128,6 +104,5 @@ define( "Arstider/GlobalTimers", [], /** @lends GlobalTimers */ function (){
 		}
 	};
 
-	singleton = new GlobalTimers();
-	return singleton;	
+	return new GlobalTimers();	
 });

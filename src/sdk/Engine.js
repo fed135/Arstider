@@ -557,6 +557,7 @@ define( "Arstider/Engine", [
 		var
 			showFrames = false
 		;
+
 		if(Viewport.unsupportedOrientation) return;
 		if(singleton._isSynchronous){
 			Performance.deltaTime = Arstider.timestamp() - Performance.lastFrame;
@@ -575,18 +576,18 @@ define( "Arstider/Engine", [
 			}
 			return;
 		}
-		if(Viewport.tagParentNode) Viewport.tagParentNode.style.display = "block";
+		//if(Viewport.tagParentNode) Viewport.tagParentNode.style.display = "block";
 		if(Performance.getStatus() === 0){
 			Performance.endStep();
 			if(Arstider.verbose > 2) console.warn("Arstider.Engine.draw: skipping draw step");
-			singleton.onskip.dispatch();
+			//singleton.onskip.dispatch();
 			return;
 		}
 		if(singleton.profiler) showFrames = singleton.profiler.showFrames;
 		singleton.drawBackground(showFrames);
 		singleton.drawScreen(showFrames);
-		if(Renderer.pendingRemoval > 0) singleton.removePending(singleton.currentScreen);
-		singleton.drawOverlay(showFrames);
+		//if(Renderer.pendingRemoval > 0) singleton.removePending(singleton.currentScreen);
+		//singleton.drawOverlay(showFrames);
 		Performance.frames++;
 		Mouse.cleanTouches();
 		if(showFrames) singleton.profiler.drawFrames();

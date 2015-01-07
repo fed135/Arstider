@@ -776,10 +776,18 @@ Arstider.Inherit = function(child, parent){
  * @param {function()} callback The called method for rendering
  */
 Arstider.fixedAnimationFrame = function(callback, dt){
-	var targetFPS = Arstider.chop(1000/Arstider.FPS);
-	var nextFrame = Arstider.max(10, targetFPS - (dt - targetFPS));
+	/*var targetFPS = Arstider.chop();
+	var nextFrame = Math.max(10, targetFPS - (dt - targetFPS));
+	console.log(nextFrame);*/
 
-	Arstider.__animTimer = window.setTimeout(callback, nextFrame);
+	var targetFPS = 1000/Arstider.FPS;
+	var allowedMS = 3;
+
+	if(dt > targetFPS+allowedMS){
+		targetFPS = targetFPS - ((dt-targetFPS)*0.5);
+	}
+
+	Arstider.__animTimer = window.setTimeout(callback, targetFPS);
 };
 
 /**
