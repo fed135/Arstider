@@ -109,10 +109,13 @@ define( "Arstider/TextField", [
 		if(txt != this._textValue){
 			if(txt.indexOf(Parser.breakLine) != -1) this.textWrap = true;
 			this._textValue = txt;
-			if(txt.indexOf(Parser.openSegment) != -1 || this.textWrap){
+			if(txt.indexOf(Parser.openSegment) != -1 || this.textWrap || this.rightToLeft){
 				this._words = Parser.parse(txt);
 				this._words = Parser.splitSymbol(this._words, Parser.breakLine, false, true);
 				this._words = Parser.trimSpaces(this._words);
+				if(this.rightToLeft){
+					this._words = this._words.reverse();
+				}
 			}
 			else{
 				this._words = [new Segment(txt)];
@@ -271,10 +274,6 @@ define( "Arstider/TextField", [
 			}
 
 			caret.y = f.paddingTop + ((i+1)*f.lineSpacing) + f.fontOffsetY - headRoom;
-
-			if(this.rightToLeft){
-				lines[i] = lines[i].reverse();
-			}
 
 			for(u = 0; u<lines[i].length; u++){
 				if(f.textAlign == "right"){

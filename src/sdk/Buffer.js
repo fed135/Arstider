@@ -59,6 +59,7 @@ define("Arstider/Buffer", ["Arstider/Browser", "Arstider/core/Pixel"], /** @lend
 		} 
 		this.context.__init = false;
         this.updateRenderStyle();
+        if(Arstider.RTL) this.context.direction = "rtl";
         return this.context;
 	};
 	
