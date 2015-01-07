@@ -212,6 +212,8 @@ define( "Arstider/Tween", [
 	Tween.prototype.step = function(dt){
 		// To keep receiving step() from GlobalTimers
 		this.delay = 512;
+
+		dt = Arstider.checkIn(dt, Arstider.FPS/1000);
 				
 		if(this._currentStep < this._stack.length){
 			if(this._stack[this._currentStep].time > 0){
@@ -220,7 +222,7 @@ define( "Arstider/Tween", [
 			}
 			else{
 				this.nextStep();
-				this.step();
+				this.step(dt);
 			}
 		}
 		else{
@@ -306,7 +308,7 @@ define( "Arstider/Tween", [
 		for(var i = this._stack.length-1; i>=0; i--){
 			this._stack[i].rewind();
 		}
-		this.step();	
+		this.step(0);	
 		return this;
 	};
 	
