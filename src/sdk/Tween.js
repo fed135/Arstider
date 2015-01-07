@@ -209,15 +209,14 @@ define( "Arstider/Tween", [
 	 * Performs timed step, from engine global timers
 	 * @type {function(this:Tween)}
 	 */	
-	Tween.prototype.step = function()
-	{
+	Tween.prototype.step = function(dt){
 		// To keep receiving step() from GlobalTimers
 		this.delay = 512;
 				
 		if(this._currentStep < this._stack.length){
 			if(this._stack[this._currentStep].time > 0){
 				if(this._stack[this._currentStep].step) this._stack[this._currentStep].step(this);
-				this._stack[this._currentStep].time -= Arstider.chop(1000/Arstider.FPS);
+				this._stack[this._currentStep].time -= dt;
 			}
 			else{
 				this.nextStep();

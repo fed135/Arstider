@@ -28,7 +28,7 @@ define( "Arstider/GlobalTimers", [], /** @lends GlobalTimers */ function (){
 			if(this.list[i] && this.list[i].running){
 				if(this.list[i] && this.list[i].delay){
 					this.list[i].delay -= dt;
-					if(this.list[i] && this.list[i].step) this.list[i].step.call(this.list[i]);
+					if(this.list[i] && this.list[i].step) this.list[i].step.call(this.list[i], dt);
 					if(this.list[i] && this.list[i].delay <= 0 && this.list[i].completed == false) this.list[i].finish();
 				}
 			}
