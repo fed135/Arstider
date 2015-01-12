@@ -48,7 +48,7 @@
 			"S":{
 				param : true,
 				render:function(context, font, rule){
-					font.size = rule;
+					font.size = rule+"px";
 				}
 			},
 			"T":{
