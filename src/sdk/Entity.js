@@ -555,6 +555,37 @@ define("Arstider/Entity", [], /** @lends Entity */ function(){
 		
 		return this;
 	};
+
+	/**
+	 * 
+	 */
+	Entity.prototype.updateGlobalProperties = function(){
+		//Update globals
+		if(this.global){
+			this.global.x = this.x;
+			this.global.y = this.y;
+			this.global.scaleX = this.scaleX;
+			this.global.scaleY = this.scaleY;
+			this.global.skewX = this.skewX;
+			this.global.skewY = this.skewY;
+			this.global.width = this.width;
+			this.global.height = this.height;
+			this.global.rotation = this.rotation;
+			this.global.alpha = this.alpha;
+			if(this.parent){
+				this.global.x += this.parent.global.x;
+				this.global.y += this.parent.global.y;
+				this.global.scaleX *= this.parent.global.scaleX;
+				this.global.scaleY *= this.parent.global.scaleY;
+				this.global.skewX *= this.parent.global.skewX;
+				this.global.skewY *= this.parent.global.skewY;
+				this.global.width *= ((this.global.scaleX<0)?(this.global.scaleX*-1):this.global.scaleX);
+				this.global.height *= ((this.global.scaleY<0)?(this.global.scaleY*-1):this.global.scaleY);
+				this.global.rotation += this.parent.global.rotation;
+				this.global.alpha *= this.parent.global.alpha;
+			}
+		}
+	};
 	
 	/**
 	 * Sets the value for horizontal and vertical docking of the Entity
