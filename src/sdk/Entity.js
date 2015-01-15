@@ -397,10 +397,10 @@ define("Arstider/Entity", [], /** @lends Entity */ function(){
 	 * @protected
 	 * @type {function(this:Entity)}
 	 */
-	Entity.prototype._onhover = function(){
+	Entity.prototype._onhover = function(e){
 		this._hovered = true;
 		
-		if(this.onhover) this.onhover();
+		if(this.onhover) this.onhover(e);
 	};
 	
 	/**
@@ -408,12 +408,12 @@ define("Arstider/Entity", [], /** @lends Entity */ function(){
 	 * @protected
 	 * @type {function(this:Entity)}
 	 */
-	Entity.prototype._onleave = function(){
+	Entity.prototype._onleave = function(e){
 		this._hovered = false;
 		this._preclick = false;
 		this._rightPressed = false;
 		
-		if(this.onleave) this.onleave();
+		if(this.onleave) this.onleave(e);
 	};
 	
 	/**
@@ -421,10 +421,10 @@ define("Arstider/Entity", [], /** @lends Entity */ function(){
 	 * @protected
 	 * @type {function(this:Entity)}
 	 */
-	Entity.prototype._onpress = function(){
+	Entity.prototype._onpress = function(e){
 		this._pressed = true;
 		
-		if(this.onpress) this.onpress();
+		if(this.onpress) this.onpress(e);
 	};
 	
 	/**
@@ -432,20 +432,20 @@ define("Arstider/Entity", [], /** @lends Entity */ function(){
 	 * @protected
 	 * @type {function(this:Entity)}
 	 */
-	Entity.prototype._onrelease = function(){
+	Entity.prototype._onrelease = function(e){
 		this._pressed = false;
 		
 		var time = Arstider.timestamp();
 		
 		if(this._preclick){
-			if(time - this._doubleClickCheck < this._doubleClickDelay && this.ondoubleclick) this.ondoubleclick();
+			if(time - this._doubleClickCheck < this._doubleClickDelay && this.ondoubleclick) this.ondoubleclick(e);
 			else{
-				if(this.onclick) this.onclick();
+				if(this.onclick) this.onclick(e);
 			}
 			
 			this._doubleClickCheck = time;
 		}
-		if(this.onrelease) this.onrelease();
+		if(this.onrelease) this.onrelease(e);
 		
 		this._preclick = false;
 	};
@@ -455,9 +455,9 @@ define("Arstider/Entity", [], /** @lends Entity */ function(){
 	 * @protected
 	 * @type {function(this:Entity)}
 	 */
-	Entity.prototype._onrightclick = function(){
+	Entity.prototype._onrightclick = function(e){
 		this._rightPressed = false;
-		if(this.onrightclick) this.onrightclick();
+		if(this.onrightclick) this.onrightclick(e);
 	};
 	
 	/**
