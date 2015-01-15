@@ -20,6 +20,7 @@ define("Arstider/Buffer", ["Arstider/Browser", "Arstider/core/Pixel"], /** @lend
 	function Buffer(props){
         props = props || {};
 		this.data = window.document.createElement("canvas");
+		if(Arstider.RTL) this.data.dir = "rtl";
 		this.preferedContext = (props.webgl)?Buffer.WEBGL:Buffer.CANVAS2D;
         this.renderStyle = Arstider.checkIn(props.renderStyle, Arstider.defaultRenderStyle);
         this.contextType = null;
@@ -58,6 +59,7 @@ define("Arstider/Buffer", ["Arstider/Browser", "Arstider/core/Pixel"], /** @lend
 		} 
 		this.context.__init = false;
         this.updateRenderStyle();
+        if(Arstider.RTL) this.context.direction = "rtl";
         return this.context;
 	};
 	

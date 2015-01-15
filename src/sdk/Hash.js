@@ -5,7 +5,7 @@
 	/**
 	 * Defines the Hash module
 	 */
-	define("Arstider/Hash", ["Arstider/Signal", "Arstider/Engine"], /** @lends Hash */ function(Signal, Engine){
+	define("Arstider/Hash", ["Arstider/Signal"], /** @lends Hash */ function(Signal){
 			
 		if(singleton != null) return singleton;
 
@@ -27,7 +27,7 @@
 
 			if (anchor == "") return false;
 			anchor = anchor.replace(".js", "");
-			return anchor
+			return anchor;
 		};
 
 		Hash.prototype.setAnchor= function(anchor){

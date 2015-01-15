@@ -42,14 +42,19 @@ define("Arstider/texts/Segment", [], function(){
 
 		//context.textAlign = "left";
 		for(var i = 0; i<this.styles.length; i++){
+			//console.warn("applying style : ", this.styles[i].rule);
 			this.styles[i].render(context, font, this.styles[i].rule, this);
+			//console.log("result :", font);
 		}
 
 		context.font = ((font.bold)?"bold ":"") + ((font.italic)?"italic ":"") + font.size + " " + font.family;
 	};
 
 	Segment.prototype.render = function(context, font, x, y, stroke, fill){
+
 		if(this.text.indexOf("<br>") != -1 || this.text == "" || this.text == " ") return;
+
+		//console.log("==RENDER==");
 
 		context.save();
 
@@ -60,10 +65,13 @@ define("Arstider/texts/Segment", [], function(){
 			if(stroke && font.shadowColor){
 				context.shadowColor = Arstider.defaultColor;
 			}
+			//console.log("F:", context.font);
 			context.fillText(this.text, Math.round(x+this.xOffset), Math.round(y+this.yOffset), this.width);
 		}
 
 		context.restore();
+
+		//console.log("==========");
 	};
 
 	return Segment;
