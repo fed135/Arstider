@@ -57,8 +57,8 @@
 		keyMap[key] = 1;
 		
 		runCallbacks(key, "down");
-		
-		if(key == "up" || key == "down" || key == "space"){
+
+		if(key == "up" || key == "down" || key == "space" || key == "left" || key == "right"){
 			var e = event || window.event;
 			e.stopPropagation();
 			e.preventDefault();
@@ -76,7 +76,7 @@
 		
 		runCallbacks(key, "up");
 		
-		if(key == "up" || key == "down" || key == "space"){
+		if(key == "up" || key == "down" || key == "space" || key == "left" || key == "right"){
 			var e = event || window.event;
 			e.stopPropagation();
 			e.preventDefault();
@@ -204,7 +204,7 @@
 			  return !(e.keyCode == 32);
 			};
 			return this;
-		}
+		};
 		
 		singleton = new Keyboard();
 		return singleton;
