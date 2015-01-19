@@ -21,7 +21,7 @@ define("Arstider/Filters", ["Arstider/Buffer", "Arstider/Browser"], /** @lends F
 		var 
 			imageData = buffer.context.getImageData(Arstider.checkIn(x,0),Arstider.checkIn(y,0), Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height)), 
 			pixels = imageData.data, 
-			i = (Arstider.checkIn(w,buffer.width), Arstider.checkIn(h,buffer.height))-1,
+			i = (Arstider.checkIn(w,buffer.width) * Arstider.checkIn(h,buffer.height))-1,
 			ret = new Buffer({
 				name:buffer.name + "_inverted_",
 				width:Arstider.checkIn(w, buffer.width),
@@ -30,7 +30,7 @@ define("Arstider/Filters", ["Arstider/Buffer", "Arstider/Browser"], /** @lends F
 		;
 		
 		
-		for (i; i >= 0; i--) {  
+		for (; i >= 0; i--) {  
 		    pixels[i*4] = 255-pixels[i*4];
 	    	pixels[i*4+1] = 255-pixels[i*4+1];  
 	    	pixels[i*4+2] = 255-pixels[i*4+2];  
@@ -65,7 +65,7 @@ define("Arstider/Filters", ["Arstider/Buffer", "Arstider/Browser"], /** @lends F
 			avg = null
 		;
 		
-		for(i; i >= 0; i--){
+		for(; i >= 0; i--){
 			avg = (pixels[i*4] + pixels[i*4+1] + pixels[i*4+2])/3;
 			
 			pixels[i*4] = avg;
@@ -147,7 +147,7 @@ define("Arstider/Filters", ["Arstider/Buffer", "Arstider/Browser"], /** @lends F
 		
 		copy.setSize(copy.width*ratio, copy.height*ratio);
 		
-		for(i; i<quality; i++){
+		for(; i<quality; i++){
 			if(i === 0){
 				copy.context.drawImage(buffer.data, Arstider.checkIn(x, 0), Arstider.checkIn(y, 0), copy.width, copy.height);
 				ret.context.drawImage(copy.data, 0, 0, ret.width, ret.height);
