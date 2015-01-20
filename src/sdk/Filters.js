@@ -132,11 +132,13 @@ define("Arstider/Filters", ["Arstider/Buffer", "Arstider/Browser"], /** @lends F
 		
 		var 
 			i = 0,
+			ratio = (1/force),
 			copy = new Buffer({
 				name:buffer.name+"_blurred_temp",
+				width:Arstider.checkIn(w, buffer.width) * ratio,
+				height:Arstider.checkIn(h, buffer.height) * ratio,
 				renderStyle:"auto"
 			}), 
-			ratio = (1/force),
 			ret = new Buffer({
 				name:buffer.name+"_blur",
 				width:Arstider.checkIn(w, buffer.width),
@@ -144,12 +146,19 @@ define("Arstider/Filters", ["Arstider/Buffer", "Arstider/Browser"], /** @lends F
 				renderStyle:"auto"
 			})
 		;
-		
-		copy.setSize(copy.width*ratio, copy.height*ratio);
-		
+				
 		for(; i<quality; i++){
 			if(i === 0){
-				copy.context.drawImage(buffer.data, Arstider.checkIn(x, 0), Arstider.checkIn(y, 0), copy.width, copy.height);
+				copy.context.drawImage(
+					buffer.data,
+					Arstider.checkIn(x, 0),
+					Arstider.checkIn(y, 0),
+					Arstider.checkIn(w, buffer.width),
+					Arstider.checkIn(h, buffer.height),
+					0,
+					0,
+					copy.width,
+					copy.height);
 				ret.context.drawImage(copy.data, 0, 0, ret.width, ret.height);
 			}
 			else{
@@ -159,7 +168,7 @@ define("Arstider/Filters", ["Arstider/Buffer", "Arstider/Browser"], /** @lends F
 				ret.context.drawImage(copy.data, 0, 0, ret.width, ret.height);
 			}
 		}
-			
+		
 		return ret;
 	};
 
