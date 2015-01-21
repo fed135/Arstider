@@ -131,12 +131,16 @@ define( "Arstider/Browser", [], /** @lends Browser */	function(){
 			if (/chrome[\/\s](\d+\.\d+)/.test(uagent))
 				this.version = parseFloat(RegExp.$1);
 		}
+        else if(uagent.indexOf('crios') != -1){
+            this.name = 'chrome';
+            if (/crios[\/\s](\d+\.\d+)/.test(uagent))
+                this.version = parseFloat(RegExp.$1);
+        }
 		else if(uagent.indexOf('applewebkit') != -1){
-		    if (navigator.standalone) {
-		        this.name = 'homescreen';
-		        this.version = 1;
+            this.name = 'safari';
+		    if (uagent.indexOf('version') == -1) {
+		        this.version = 6; // Support for ios 'add to homescreen'
 		    } else {
-    			this.name = 'safari';
     			if (/version[\/\s](\d+\.\d+)/.test(uagent)) {
     				this.version = parseFloat(RegExp.$1);
     			}
@@ -154,13 +158,11 @@ define( "Arstider/Browser", [], /** @lends Browser */	function(){
 	 * @type {function(this:Browser)}
 	 */
 	Browser.prototype.checkSupport = function(list){
-	
 		var requirements = list || [
 				{"name":"ie","minVersion":8},
 				{"name":"firefox","minVersion":3.5},
 				{"name":"safari","minVersion":5},
 				{"name":"chrome"},
-                {"name":"homescreen"},
 				{"name":"unknown"}	//Can remove if major issues appear
 			]
 		;
