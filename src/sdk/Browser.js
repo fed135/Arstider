@@ -132,9 +132,15 @@ define( "Arstider/Browser", [], /** @lends Browser */	function(){
 				this.version = parseFloat(RegExp.$1);
 		}
 		else if(uagent.indexOf('applewebkit') != -1){
-			this.name = 'safari';
-			if (/version[\/\s](\d+\.\d+)/.test(uagent))
-				this.version = parseFloat(RegExp.$1);
+		    if (navigator.standalone) {
+		        this.name = 'homescreen';
+		        this.version = 1;
+		    } else {
+    			this.name = 'safari';
+    			if (/version[\/\s](\d+\.\d+)/.test(uagent)) {
+    				this.version = parseFloat(RegExp.$1);
+    			}
+    		}
 		}
 		else {
 			this.name = 'unknown';
@@ -154,6 +160,7 @@ define( "Arstider/Browser", [], /** @lends Browser */	function(){
 				{"name":"firefox","minVersion":3.5},
 				{"name":"safari","minVersion":5},
 				{"name":"chrome"},
+                {"name":"homescreen"},
 				{"name":"unknown"}	//Can remove if major issues appear
 			]
 		;
