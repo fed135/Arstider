@@ -51,16 +51,8 @@ define("Arstider/texts/Font", ["Arstider/Request"], /** @lends texts/Font */ fun
 				type:"blob",
 				caller:thisRef,
 				callback:function(){
-					var div = window.document.getElementById("Arstider_font_loader_"+this.name);
-					div.value += ".";
-					setTimeout(function fontLoadRelay(){
-						thisRef.loaded = true;
-						thisRef._runCallbacks.apply(thisRef);
-						setTimeout(function fontFinishLoadRelay(){
-							thisRef._runCallbacks.apply(thisRef, [true]);
-							if(div) div.parentNode.removeChild(div);
-						}, 150);
-					}, 150);
+					thisRef.loaded = true;
+					thisRef._runCallbacks.apply(thisRef, [true]);
 				}
 			}).send();
 		}
