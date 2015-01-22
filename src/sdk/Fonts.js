@@ -40,6 +40,7 @@
 			 */
 			this.collection = {};
 
+            this.numFileToLoad = 0;
 			this.loadCallback = null;
 		};
 		
@@ -102,12 +103,24 @@
 		};
 
 		Fonts.prototype._parseFile = function(fontList){
+		    this.numFileToLoad = Object.keys(fontList).length;
+		     
 			for(var i in fontList){
 				fontList[i].name = i;
+				fontList[i].loadCallbacks =
+				[
+				    this._singleFontLoadCallback.bind(this)
+				];
 				this.create(fontList[i]);
 			}
-
-			if(this.loadCallback) this.loadCallback();
+		};
+		
+		Fonts.prototype._singleFontLoadCallback = function() {
+		    if (--this.numFileToLoad == 0 && this.loadCallback)
+		    {
+		        this.loadCallback();
+		        this.loadCallback = null;
+		    }
 		};
 			
 		singleton = new Fonts();
