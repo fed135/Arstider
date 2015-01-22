@@ -103,14 +103,12 @@
 		};
 
 		Fonts.prototype._parseFile = function(fontList){
-		    this.numFileToLoad = Object.keys(fontList).length;
-		    
-			for(var i in fontList)
-			{
+		    this.numFileToLoad = fontList.length; 
+			for(var i in fontList){
 				fontList[i].name = i;
 				fontList[i].loadCallbacks =
 				[
-				    this._singleFontLoadCallback.bind(this)
+				    this.loadCallback.bind(this)
 				];
 				this.create(fontList[i]);
 			}
@@ -118,7 +116,7 @@
 		
 		Fonts.prototype._singleFontLoadCallback = function() {
 		    --this.numFileToLoad;
-
+		    
 		    if (this.numFileToLoad == 0 && this.loadCallback)
 		    {
 		        this.loadCallback();

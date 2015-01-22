@@ -21,6 +21,47 @@ define("Arstider/texts/Font", ["Arstider/Request"], /** @lends texts/Font */ fun
 		
 		props = props || Arstider.emptyObject;
 		
+		if(props.url){
+			this.url = props.url.split(".").join("");
+			this.family = props.name;
+			this.loaded = false;
+			
+			var style = window.document.getElementById("Arstider_font_loader");
+			if(style == null){
+				style = window.document.createElement('style');
+				style.type = 'text/css';
+				style.id = "Arstider_font_loader";
+				window.document.getElementsByTagName('head')[0].appendChild(style);
+			}
+			style.innerHTML += '@font-face{font-family: '+props.name+'; src: url('+props.url+');} .'+props.name+'_fontLoader{font-family:'+props.name+', sans-serif;} \n';
+			
+			var fontLoaderDiv = window.document.createElement("input");
+			fontLoaderDiv.id = "Arstider_font_loader_"+props.name;
+			fontLoaderDiv.style.position = "fixed";
+			fontLoaderDiv.style.border = "0px";
+			fontLoaderDiv.style.backgroundColor = "transparent";
+			fontLoaderDiv.style.zIndex = -1;
+			fontLoaderDiv.value = ".";
+			window.document.body.appendChild(fontLoaderDiv);
+				
+			fontLoaderDiv.className = props.name+'_fontLoader';
+			
+			var req = new Request({
+				url:props.url,
+				type:"blob",
+				caller:thisRef,
+				callback:function(){
+					thisRef.loaded = true;
+					thisRef._runCallbacks.apply(thisRef, [true]);
+				}
+			}).send();
+		}
+		else{
+			this.family = Arstider.checkIn(props.family, "Arial");
+			this.loaded = true;
+			this.url = "null";
+		}
+		
 		this.name = props.name;
 		
 		//is temp fonts - async
@@ -50,47 +91,6 @@ define("Arstider/texts/Font", ["Arstider/Request"], /** @lends texts/Font */ fun
 		this.loadCallbacks = Arstider.checkIn(props.loadCallbacks, []);
 
 		if(this.lineSpacing === null) this.lineSpacing = parseInt(this.size.split("px").join(""));
-        
-        if(props.url){
-            this.url = props.url.split(".").join("");
-            this.family = props.name;
-            this.loaded = false;
-            
-            var style = window.document.getElementById("Arstider_font_loader");
-            if(style == null){
-                style = window.document.createElement('style');
-                style.type = 'text/css';
-                style.id = "Arstider_font_loader";
-                window.document.getElementsByTagName('head')[0].appendChild(style);
-            }
-            style.innerHTML += '@font-face{font-family: '+props.name+'; src: url('+props.url+');} .'+props.name+'_fontLoader{font-family:'+props.name+', sans-serif;} \n';
-            
-            var fontLoaderDiv = window.document.createElement("input");
-            fontLoaderDiv.id = "Arstider_font_loader_"+props.name;
-            fontLoaderDiv.style.position = "fixed";
-            fontLoaderDiv.style.border = "0px";
-            fontLoaderDiv.style.backgroundColor = "transparent";
-            fontLoaderDiv.style.zIndex = -1;
-            fontLoaderDiv.value = ".";
-            window.document.body.appendChild(fontLoaderDiv);
-                
-            fontLoaderDiv.className = props.name+'_fontLoader';
-            
-            var req = new Request({
-                url:props.url,
-                type:"blob",
-                caller:thisRef,
-                callback:function(){
-                    thisRef.loaded = true;
-                    thisRef._runCallbacks.apply(thisRef, [true]);
-                }
-            }).send();
-        }
-        else{
-            this.family = Arstider.checkIn(props.family, "Arial");
-            this.loaded = true;
-            this.url = "null";
-        }
 	}
 	
 	/**
