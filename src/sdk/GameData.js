@@ -253,7 +253,7 @@
 		 * @return {Object} Self reference, for chaining
 		 */
 		GameData.prototype.saveStateAs = function(id, includeStorage, store){
-			Arstider.savedStates[id] = Arstider.clone(this._runtimeSet);
+			Arstider.savedStates[id] = Arstider.deepClone(this._runtimeSet);
 			if(includeStorage){
 				Arstider.savedStates[id]._storage = {};
 				var list = Storage.list();
