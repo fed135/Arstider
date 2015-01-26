@@ -68,7 +68,7 @@ Arstider.error = function(type, props){
 		if(i != "message") err[i] = props[i];
 	}
 	return err;
-}
+};
 
 Arstider.min = function(){
 	for(var i =1, min=0, len = arguments.length; i<len; i++){
@@ -85,11 +85,12 @@ Arstider.max = function(){
 };
 
 Arstider.floor = function(num){
-	return num >>> 0;
+	return num >> 0;
 };
 
 Arstider.ceil = function(num){
-	return num << 1;
+    var c = num >> 0;
+	return c == num ? c : c + 1;
 };
 
 Arstider.log = function(data, level){
@@ -140,7 +141,7 @@ Arstider.guid = function() {
     return Arstider.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
   }
   return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
-}
+};
 
 //IE9 iframe fallback
 if(Object.create == undefined){
@@ -243,7 +244,7 @@ Arstider.savedStates = {};
 
 
 Arstider.queryStringToObject = function(str) {
-	return (str || document.location.search).replace(/(^\?)/,'').split("&").map(function(n){return n = n.split("="),this[n[0]] = n[1],this}.bind({}))[0];
+	return (str || document.location.search).replace(/(^\?)/,'').split("&").map(function(n){return n = n.split("="),this[n[0]] = n[1],this;}.bind({}))[0];
 };
 
 /**
@@ -481,7 +482,7 @@ Arstider.isWindow = function(obj){
 Arstider.isFunction = function(functionToCheck) {
 	var getType = {};
 	return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
-}
+};
 
 /**
  * Find the length of an Object or array
@@ -659,7 +660,7 @@ Arstider.deepClone = function(obj) {
     if(Arstider.verbose > 0){
    		console.warn("Arstider.deepClone: Object type unsupported ",obj);
    	}
-}
+};
 
 /**
  * Utility function to merge two objects recursively
@@ -716,7 +717,7 @@ Arstider.deepMerge = function(src, target, clone)
 	}
 
 	return target;
-}
+};
 
 /**
  * Supers the values of a module to it's parent module
