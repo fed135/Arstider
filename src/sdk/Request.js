@@ -51,6 +51,10 @@ define("Arstider/Request", ["Arstider/Browser", "Arstider/Preloader"], /** @lend
 			"Via"
 		]
 	;
+	
+	Request.flushCache = function(){
+	    cache = {};
+	};
 
 	/**
 	 * Look for a call in the list of pending calls
@@ -61,7 +65,7 @@ define("Arstider/Request", ["Arstider/Browser", "Arstider/Preloader"], /** @lend
 	 */
 	function findInPending(url){
 		var i = pending.length-1;
-		for(i;i>=0;i--){
+		for(; i >= 0; --i){
 			if(url == pending[i].url) return true;
 		}
 		return false;
@@ -76,7 +80,7 @@ define("Arstider/Request", ["Arstider/Browser", "Arstider/Preloader"], /** @lend
 	 */
 	function updateInPending(url, preloaderRef){
 		var i = pending.length-1;
-		for(i;i>=0;i--){
+		for(; i >= 0; --i){
 			if(url == pending[i].url){
 				if(pending[i].callback){
 					pending[i].callback.call(pending[i].caller, cache[url]);
@@ -161,11 +165,11 @@ define("Arstider/Request", ["Arstider/Browser", "Arstider/Preloader"], /** @lend
 		 * @type {boolean}
 		 */
 		this.async = Arstider.checkIn(props.async, true);
-           /**
-            * Mime override
-            * @type {string|null}
-            */
-           this.mimeOverride = Arstider.checkIn(props.mimeOverride, null);
+        /**
+        * Mime override
+        * @type {string|null}
+        */
+        this.mimeOverride = Arstider.checkIn(props.mimeOverride, null);
 		/**
 		 * Optional server user name
 		 * @type {string}
@@ -288,18 +292,21 @@ define("Arstider/Request", ["Arstider/Browser", "Arstider/Preloader"], /** @lend
 		xhr = new XMLHttpRequest();
 				
 		xhr.open(this.method, this.url, this.async, this.user, this.password);
-		if(!(Browser.name == "safari" && Browser.platformVersion < 7)){
-           	if(this.async) xhr.responseType = this.type;
-           	if(this.type == "json") xhr.responseType = "text";
-           }
+		if(!(Browser.name == "safari" && Browser.platformVersion < 7))
+		{
+            if(this.async) xhr.responseType = this.type;
+            if(this.type == "json") xhr.responseType = "text";
+        }
                                       
-           if(this.mimeOverride != null && xhr.overrideMimeType) xhr.overrideMimeType(this.mimeOverride);
-           if(this.method.toLowerCase() == "post"){
-              		//check for content-type header
-          		if(this.headers === Arstider.emptyObj) this.headers = {};
-          		if(this.headers["Content-Type"] == undefined) this.headers["Content-Type"] = "application/x-www-form-urlencoded";
-          	}
-		for(header in this.headers){
+        if(this.mimeOverride != null && xhr.overrideMimeType) xhr.overrideMimeType(this.mimeOverride);
+        if(this.method.toLowerCase() == "post")
+        {
+            //check for content-type header
+          	if(this.headers === Arstider.emptyObj) this.headers = {};
+          	if(this.headers["Content-Type"] == undefined) this.headers["Content-Type"] = "application/x-www-form-urlencoded";
+        }
+		for(header in this.headers)
+		{
 			if(refusedHeaders.indexOf(header) === -1){
 				xhr.setRequestHeader(header, this.headers[header]);
 			}
@@ -320,7 +327,8 @@ define("Arstider/Request", ["Arstider/Browser", "Arstider/Preloader"], /** @lend
 		};
 					
 		xhr.onload = function(){
-			if(this.status == 200){
+			if(this.status == 200)
+			{
 				var res;
 				if(thisRef.type == "json"){
 					try{
