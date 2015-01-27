@@ -63,7 +63,7 @@ define("Arstider/tweens/Animation", ["Arstider/tweens/Transformation", "Arstider
 	Animation.prototype.step = function(target){
 		var i = this.changes.length-1, progress = Arstider.min(this.time / this.startTime, 1);
 		
-		for(i; i>= 0; i--){
+		for(; i >= 0; i--){
 			this.changes[i].lastStep = target.target[this.changes[i].property];
 			if(this.changes[i].isColor){
 				target.target[this.changes[i].property] = this._stepColor(this.changes[i].end, this.changes[i].start, this.easing(progress));
@@ -109,7 +109,7 @@ define("Arstider/tweens/Animation", ["Arstider/tweens/Transformation", "Arstider
 	Animation.prototype.stepBack = function(target){
 		var i = this.changes.length-1;
 		
-		for(i; i>= 0; i--){
+		for(; i >= 0; i--){
 			target.target[this.changes[i].property] = this.changes[i].lastStep;
 		}
 	};

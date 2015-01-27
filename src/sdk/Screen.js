@@ -122,7 +122,7 @@ define("Arstider/Screen", [
 	 Screen.prototype._resolveHierarchy = function(elements){
 	 	var i = 0, u = 0;
 
-	 	for(i; i<elements.length; i++){
+	 	for(; i < elements.length; i++){
 	 		if(elements[i].parent != null){
 	 			for(u = 0; u<elements.length; u++){
 	 				if(elements[u].name == elements[i].parent){
@@ -153,7 +153,7 @@ define("Arstider/Screen", [
 			thisRef.__elements.push(e);
 			callback.apply(thisRef);
 		});
-	}
+	};
 
 	/**
 	 * Private method called when screen unloads, then calls user-defined method

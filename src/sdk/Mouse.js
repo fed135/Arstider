@@ -172,7 +172,7 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 			if(includeReleased) return singleton._ongoingTouches.length;
 
 			var i = 0;
-			for(i; i<singleton._ongoingTouches.length; i++){
+			for(; i < singleton._ongoingTouches.length; i++){
 				if(!singleton._ongoingTouches[i].pressed) break;
 			}
 			return i;
@@ -230,10 +230,10 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 	 * @type {function(this:Mouse)}
 	 */
 	Mouse.prototype.stepGestures = function(){
-		for(i = 0; i< singleton._currentGestures.length; i++){
+		for(i = 0; i < singleton._currentGestures.length; i++){
   			if(singleton._currentGestures[i] && singleton._currentGestures[i].reccording) singleton._currentGestures[i].step();
   		}
-	}
+	};
 
 	/**
 	 * Internal handler for touch input end

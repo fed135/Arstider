@@ -1,4 +1,4 @@
-/*
+/**
  * Transform tracker
  *
  * @author Kevin Moot <kevin.moot@gmail.com>
@@ -49,7 +49,7 @@ define("Arstider/contexts/MatrixTransform", [], function(){
     MatrixTransform.prototype.reset = function(){
         this.setMatrix(this.baseMatrix);
         this.setTransform(true);
-    }
+    };
 
     MatrixTransform.prototype.setTransform = function(force) {
         if (this.pencil){

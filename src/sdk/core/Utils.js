@@ -8,7 +8,6 @@
 /**
  * Engine Namespace
  * @namespace Arstider
- * @type {Object}
  */
 Arstider = {};
 
@@ -420,7 +419,7 @@ Arstider.trimDuplicates = function(arr){
         r = []
     ;
 
-    for (i; i<l; i++){
+    for (; i < l; i++){
         o[arr[i]] = arr[i];
     }
 

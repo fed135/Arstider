@@ -105,7 +105,7 @@ define("Arstider/Filters", ["Arstider/Buffer", "Arstider/Browser"], /** @lends F
 		
 		f = Arstider.checkIn(f, 1);
 		//console.log("tinting ", i, " pixels");
-		for (i; i >= 0; i--) {  
+		for (; i >= 0; i--) {  
 		    pixels[i*4] = Arstider.min(r + pixels[i*4] * f);
 	    	pixels[i*4+1] = Arstider.min(g + pixels[i*4+1] * f); 
 	    	pixels[i*4+2] = Arstider.min(b + pixels[i*4+2] * f); 

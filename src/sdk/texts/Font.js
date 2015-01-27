@@ -117,7 +117,7 @@ define("Arstider/texts/Font", ["Arstider/Request"], /** @lends texts/Font */ fun
 	Font.prototype._runCallbacks = function(remove){
 		var i = this.loadCallbacks.length-1;
 		
-		for(i; i>=0;i--){
+		for(; i >= 0; i--){
 			this.loadCallbacks[i]();
 		}
 		if(remove) this.loadCallbacks.length = 0;

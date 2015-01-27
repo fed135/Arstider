@@ -66,7 +66,7 @@ define("Arstider/commons/ComboBox",[
 			label: comboBox.label,
 			enabled: !comboBox.disabled,
 			size: comboBox.inputSize
-		})
+		});
 
 		// Add Button 
 		comboBox.bar.button = new DisplayObject({
@@ -96,7 +96,7 @@ define("Arstider/commons/ComboBox",[
 				if(comboBox.disabled) return;
 				comboBox.bar.button.loadBitmap(comboBox.imageButton);
 			}
-		})
+		});
 
 		// Add list Popup
 		comboBox.list = new DisplayObject({
@@ -177,7 +177,7 @@ define("Arstider/commons/ComboBox",[
 			var i = this.getAttr("comboBox").dataList.length - value.length;
 
 		// Add Items to List
-		for( i; i < this.getAttr("comboBox").dataList.length; i++){
+		for(; i < this.getAttr("comboBox").dataList.length; i++){
 
 			// Add item container
 			var item = new DisplayObject({
@@ -228,7 +228,7 @@ define("Arstider/commons/ComboBox",[
 		this.getAttr("list").loadSection(this.getAttr("comboBox").imageList, 0, 0,this.listWidth,this.listHeight);
 		this.getAttr("list").alpha = 1;
 	
-		if (!index) var index = 0 ;
+		if (!index) var index = 0;
 		var indexMax = this.getAttr("comboBox").dataList.length ;
 
 		if(this.addScrollbar){
@@ -251,11 +251,10 @@ define("Arstider/commons/ComboBox",[
 			this.getAttr("txt", i).alpha = this.getAttr("item", i).alpha = 0;
 		}
 		var i = 0;
-		for (index ; index < indexMax  ; index++) {
+		for (; index < indexMax; index++, i++) {
 			this.getAttr("item", index).y = this.getAttr("txt", index).y = this.getAttr("comboBox").heightItem * i;
 			this.getAttr("txt", index).alpha = 1;
 			this.getAttr("item", index).alpha = 0.0000000000001;
-			i++;
 		}
 
 	};

@@ -162,7 +162,7 @@
 			
 			fields = fields || [];
 			
-			for(i; i<fields.length; i++){
+			for(; i < fields.length; i++){
 				if(!(fields[i] in friendObj)){
 					if(this.currentNetwork == FACEBOOK){
 						FB.api("/"+uid, {"access_token":this._token, "fields":fields.join()}, function(response){
@@ -231,7 +231,7 @@
 			if(uid == "me" || uid == this.user.id) friendObj = this.user;
 			else{
 				//check current list
-				for(i; i<this.friends.length; i++){
+				for(; i < this.friends.length; i++){
 					if(this.friends[i].id == uid){
 						friendObj = this.friends[i];
 						break;
