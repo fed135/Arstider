@@ -98,6 +98,27 @@ define( "Arstider/Mouse", ["Arstider/Browser", "Arstider/Viewport", "Arstider/Ev
 			Arstider.log("Arstider.Mouse: no Viewport tag, cannot bind mouse events");
 		}
 	};
+	
+	Mouse.prototype.removeListener = function(div){
+	    if(div){
+            if(Browser.isMobile || ('ontouchmove' in window)){
+                div.removeEventListener('touchmove', this._handleTouchMove);
+                div.removeEventListener('touchstart',  this._handleTouchStart);         
+                div.removeEventListener('touchend',  this._handleTouchEnd);
+                div.removeEventListener('touchcancel', this._handleTouchEnd);
+                div.removeEventListener('touchleave', this._handleTouchEnd);
+            }
+            
+            if(!Browser.isMobile && ('onmousemove' in window)){
+                div.removeEventListener('mouseup', this._handleMouseUp);
+                div.removeEventListener('mousedown', this._handleMouseDown);
+                div.removeEventListener('mousemove',  this._handleMouseMove);
+                div.removeEventListener('mouseleave',  this._handleMouseUp);
+                div.removeEventListener("mousewheel", this._mouseWheel);
+                div.removeEventListener("DOMMouseScroll", this._mouseWheel);
+            }
+        }
+	};
 		
 	/**
 	 * Resets mouse values
