@@ -3,28 +3,28 @@
 ### Making mobile-web games quicker than ever!
 
 Created by: 
-	Frederic Charette <fredericcharette@gmail.com>
-		on Feb 9th 2012
 
-Current version: 1.1.3
-Copyright: GNU Licence (2012-2014)
+  Frederic Charette <fredericcharette@gmail.com>
+  on Feb 9th 2012
 
-Collaborators:
-	Ariel Chouinard,
-	Andrew Fraticelli,
-	Frederic Denis,
-	Steve Paquette
+Current version: 1.1.7
+
+Copyright: GNU Licence (2012-2015)
 	
-Special thanks to:
-	Fidel Studios
+Special thanks to: Fidel Studios
 	
 Javascript Libraries included:
-        Google Closure Compiler <https://developers.google.com/closure/compiler>,
-	JSDoc3 <http://usejsdoc.org>, 
+
+  Google Closure Compiler <https://developers.google.com/closure/compiler>,
+        
+  JSDoc3 <http://usejsdoc.org>, 
 	
 Non-included Javascript Libraries:
-	RequireJS <http://requirejs.org>,
-        HowlerJS <https://github.com/goldfire/howler.js>
+
+  RequireJS <http://requirejs.org>,
+	
+  HowlerJS <https://github.com/goldfire/howler.js>
+  
 
 /*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***/
 
