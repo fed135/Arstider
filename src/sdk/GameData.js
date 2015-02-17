@@ -57,22 +57,29 @@
 		 * @param {Object} callback The callback function to call once the file has been parsed
 		 */
 		GameData.prototype.load = function(filename, callback){
-			var req = new Request({
-				url:filename,
-				caller:this,
-				track:true,
-				cache:false,
-				type:"json",
-				callback:function(file){
-					if(file != null){
-						this._defaultSet = file;
+
+			if(filename instanceof String || typeof filename == "string"){
+				var req = new Request({
+					url:filename,
+					caller:this,
+					track:true,
+					cache:false,
+					type:"json",
+					callback:function(file){
+						if(file != null){
+							this._defaultSet = file;
+						}
+						else{
+							if(Arstider.verbose > 0) console.warn("Arstider.GameData.load: JSON parse error in config file");
+						}
+						if(callback) callback();
 					}
-					else{
-						if(Arstider.verbose > 0) console.warn("Arstider.GameData.load: JSON parse error in config file");
-					}
-					if(callback) callback();
-				}
-			}).send();
+				}).send();
+			}
+			else{
+				this._defaultSet = filename;
+			}
+
 		};
 
 		/**
