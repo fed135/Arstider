@@ -135,7 +135,7 @@
 						}
 						else this.currentFrame = 0;
 
-						for(i; i<len; i++){
+						for(; i < len; i++){
 							if(this.currentAnim.callbacks[i]) this.currentAnim.callbacks[i].call(this);
 						}
 					}
@@ -180,7 +180,7 @@
 			if(animSheet.frameHeight != 0) this.height = animSheet.frameHeight;
 
 			var theFrame = getFrame(animSheet, frameNum, this.width, this.height);
-			this.loadSection(animSheet.data, theFrame[0], theFrame[1], this.width, this.height)
+			this.loadSection(animSheet.data, theFrame[0], theFrame[1], this.width, this.height);
 
 			for (var i = this.currentAnim.frameCallbacks.length - 1; i >= 0; i--) {
 				if(this.currentAnim.frameCallbacks[i]) this.currentAnim.frameCallbacks[i].call(this, frameNum);

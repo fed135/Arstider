@@ -7,9 +7,9 @@ define("Arstider/contexts/webgl/Program", ["Arstider/contexts/webgl/Shader", "Ar
 
         this.context = context;
 
-        this.texture;
+        this.texture = null;
 
-        this.compileCallbacks;
+        this.compileCallbacks = null;
 
         this.ready = false;
 	}
@@ -55,7 +55,7 @@ define("Arstider/contexts/webgl/Program", ["Arstider/contexts/webgl/Shader", "Ar
         }
 
         this._compile();
-	}
+	};
 
     Program.prototype._compile = function(){
         if(this.vertexShader == null || this.fragmentShader == null) return;

@@ -139,8 +139,8 @@
 		 */	
 		Storage.prototype.remove = function(key){
 			if(this.enabled === false){
+                if(Arstider.verbose > 1) console.warn("Arstider.Storage.remove: localStorage is unavailable");
 				return false;
-				if(Arstider.verbose > 1) console.warn("Arstider.Storage.remove: localStorage is unavailable");
 			}
 
 			localStorage.removeItem(key);
@@ -172,8 +172,8 @@
 			var item;
 			
 			if(this.enabled === false){
+                if(Arstider.verbose > 1) console.warn("Arstider.Storage.reset: localStorage is unavailable");
 				return false;
-				if(Arstider.verbose > 1) console.warn("Arstider.Storage.reset: localStorage is unavailable");
 			} 
 			for(item in localStorage) {
 				if(this._safeKeys.indexOf(item) == -1 && item.indexOf(this.prefix) != -1) {

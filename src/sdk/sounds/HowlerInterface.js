@@ -7,7 +7,7 @@
 		if(singleton != null) return singleton;
 		
 		function HowlerInterface(){
-			this.managerRef;
+			this.managerRef = null;
 			this.ieTimer = null;
 		}
 
@@ -95,12 +95,14 @@
 
 		HowlerInterface.prototype.playSound = function(handle, id, options, callback){
 			if(Browser.name == "ie") handle.stop();	//Force stop off all sounds before playing new ones
-
+			
 			//Really, really bad hack... I hate myself
 			if(handle._audioNode && handle._audioNode.length){
 				for(var i = 0; i< handle._audioNode.length; i++){
-					if(handle._audioNode[i].paused) handle._audioNode[i].paused = false;
-					break;
+					if(handle._audioNode[i].paused) {
+					   handle._audioNode[i].paused = false;
+					   break;
+					}
 				}
 			}
 

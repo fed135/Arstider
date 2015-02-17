@@ -84,7 +84,7 @@
 				typeName = constructorName(type)
 			;
 			
-			for(_i; _i>= 0; _i--){
+			for(; _i >= 0; _i--){
 				this._alloc(typeName, type);
 			}
 			
@@ -138,7 +138,7 @@
 			if(typeName in this._sets){
 				_i = this._sets[typeName].length;
 				
-				for(_i; _i>= 0; _i--){
+				for(; _i >= 0; _i--){
 					if(this._sets[typeName][_i] == item){
 						if(obliterate) this._sets[typeName].splice(_i, 1);
 						else{
@@ -168,7 +168,7 @@
 			if(typeName in this._sets){
 				_i = this._sets[typeName].length-1;
 				
-				for(_i; _i>= 0; _i--){
+				for(; _i >= 0; _i--){
 					if(this._sets[typeName][_i][this.useKey] == false){
 						this._sets[typeName][_i][this.useKey] = true;
 						callback(this._sets[typeName][_i]);

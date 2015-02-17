@@ -336,7 +336,7 @@ define( "Arstider/TextField", [
 		 */
 		if(this._font === null || this._textValue === null || this._textValue === "") return;
 		if(this._font.loaded === false) return;
-		if(this._font.temp && !Fonts.collection[this._font.name].temp) this.setFont(Fonts.get(this._font.name));
+		if(this._font.temp && !Fonts.collection[this._font.name].temp) this.setFont(this._font.name);
 
 		if(this._finalFont == null){
 			this._finalFont = Arstider.mixin(Arstider.clone(this._font), this._custom, true);

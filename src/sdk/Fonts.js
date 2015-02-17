@@ -70,9 +70,18 @@
 				return false;	
 			}
 			
-			if(this.collection[props.name] && this.collection[props.name].temp == false) return this.collection[props.name];
+			if(this.collection[props.name] && this.collection[props.name].temp == false) {
+                return this.collection[props.name];
+			}
 			
-			if(this.collection[props.name] && this.collection[props.name].loadCallbacks.length > 0) props.loadCallbacks = this.collection[props.name].loadCallbacks;
+			if (this.collection[props.name] && this.collection[props.name].loadCallbacks.length > 0)
+			{
+			    if (props.loadCallbacks) {
+                    props.loadCallbacks = props.loadCallbacks.concat(this.collection[props.name].loadCallbacks);
+                } else {
+                    props.loadCallbacks = this.collection[props.name].loadCallbacks;
+                }
+			}
 			this.collection[props.name] = new Font(props);
 			
 			return this.collection[props.name];

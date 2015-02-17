@@ -18,8 +18,8 @@ define("Arstider/Signal", [], /** @lends commons/Signal */ function(){
      * @constructor
      */
     function Signal(){
-        this.__bindings;
-        this.__bindingsOnce;
+        this.__bindings = null;
+        this.__bindingsOnce = null;
     }
 
     Signal.prototype.add = function(listener) {

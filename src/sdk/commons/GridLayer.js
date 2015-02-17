@@ -288,12 +288,12 @@ define( "Arstider/commons/GridLayer", ["Arstider/DisplayObject", "Arstider/Bitma
 			spawns = []
 		;
 		
-		for(i = rz[0]; i<rz[1]; i++){
-			if(i>=0 && i<=this.parent.mapWidth){
+		for(i = rz[0]; i < rz[1]; i++){
+			if(i >= 0 && i <= this.parent.mapWidth){
 				if(this.tiles[i] == undefined) this.tiles[i] = [];
 				
-				for(u = rz[2]; u<rz[3]; +u++){
-					if(u>=0 && u<=this.parent.mapHeight){
+				for(u = rz[2]; u < rz[3]; ++u){
+					if(u >= 0 && u <= this.parent.mapHeight){
 						
 						if(this.tiles[i][u] == undefined) this.tiles[i][u] = this._createTile(i, u);
 						

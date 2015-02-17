@@ -89,7 +89,7 @@
                 if(Arstider.verbose > 0) console.warn("Arstider.Gradient: gradient must be of type \"linear\" or \"radial\" ");
             }
 
-            for(i; i<this.colors.length; i++){
+            for(; i < this.colors.length; i++){
 				this.pattern.addColorStop(this.colors[i].pos, this.colors[i].color);
 			}
 

@@ -292,7 +292,7 @@ define( "Arstider/core/Debugger", ["Arstider/core/Performance","Arstider/Keyboar
 		;
 			
 		if(t && t.children){
-			for(i; i<t.children.length; i++){
+			for(; i < t.children.length; i++){
 				if(!name || name === t.children[i].name){
 					ret.push(t.children[i]);
 				}
