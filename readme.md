@@ -1,9 +1,8 @@
-# Arstider
-
 [![Arstider](https://github.com/fed135/Arstider/blob/master/arstider.png)](https://github.com/fed135/Arstider)
 
+---
 
-创创Deprecated创创
+**Deprecated!**
 
 Arstider will no longer be maintained. 
 Arstider was developped at a point in time when there were very few options for making
@@ -17,6 +16,7 @@ Thank you for helping build Arstider during these 3 years!
 
 Cheers! 
 
+---
 
 ### Making mobile-web games quicker than ever!
 
