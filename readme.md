@@ -1,14 +1,27 @@
 # Arstider
 
+[![Arstider](https://github.com/fed135/Arstider/blob/master/arstider.png)](https://github.com/fed135/Arstider)
+
+
+创创Deprecated创创
+
+Arstider will no longer be maintained. 
+Arstider was developped at a point in time when there were very few options for making
+canvas apps. It served it's purpose well, helping a couple indiviuals as well as studios build
+close to 50 titles (est.). It was a great learning experience!
+
+I strongly suggest that you take a look at [Phaser](http://www.phaser.io) - for your small to medium projects.
+Unity 5 now offers HTML5 export - which covers your larger project needs. 
+
+Thank you for helping build Arstider during these 3 years! 
+
+Cheers! 
+
+
 ### Making mobile-web games quicker than ever!
 
-**Created by**: Frederic Charette <fredericcharette@gmail.com>
-
-**Current version**: 1.1.7
-
-**Copyright**: GNU Licence (2012-2015)
 	
-**Special thanks**: Fidel Studios
+**Special thanks**: Fidel Studios/ Stolo
 	
 **Javascript Libraries included**:
 
